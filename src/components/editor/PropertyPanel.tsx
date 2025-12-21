@@ -5,25 +5,79 @@
  */
 
 import { useEditor } from "@/lib/editor";
-import { ObjectNames, ObjectIds } from "@/lib/stgy";
+import { ObjectNames, ObjectIds, BackgroundId } from "@/lib/stgy";
 import type { BoardObject } from "@/lib/stgy";
+
+/** 背景名のマッピング */
+const BACKGROUND_NAMES: Record<BackgroundId, string> = {
+  [BackgroundId.None]: "なし",
+  [BackgroundId.FullCheck]: "全面チェック",
+  [BackgroundId.CircleCheck]: "円形チェック",
+  [BackgroundId.SquareCheck]: "四角チェック",
+  [BackgroundId.FullGray]: "全面グレー",
+  [BackgroundId.CircleGray]: "円形グレー",
+  [BackgroundId.SquareGray]: "四角グレー",
+};
 
 /**
  * プロパティパネル
  */
 export function PropertyPanel() {
-  const { state, selectedObjects, updateObject, commitHistory } = useEditor();
-  const { selectedIndices } = state;
+  const { state, selectedObjects, updateObject, commitHistory, updateBoardMeta } = useEditor();
+  const { selectedIndices, board } = state;
 
   // 単一選択のみ編集可能
   const selectedObject = selectedObjects.length === 1 ? selectedObjects[0] : null;
   const selectedIndex = selectedIndices.length === 1 ? selectedIndices[0] : null;
 
+  // オブジェクト未選択時はボード情報を表示
   if (!selectedObject || selectedIndex === null) {
     return (
-      <div className="w-72 bg-slate-800 border-l border-slate-700 p-4">
-        <div className="text-slate-400 text-sm text-center">
-          オブジェクトを選択してください
+      <div className="w-72 bg-slate-800 border-l border-slate-700 overflow-y-auto">
+        <div className="p-3 border-b border-slate-700">
+          <h2 className="text-sm font-semibold text-slate-200">ボード設定</h2>
+        </div>
+
+        <div className="p-3 space-y-4">
+          {/* ボード名 */}
+          <PropertySection title="ボード名">
+            <input
+              type="text"
+              value={board.name}
+              onChange={(e) => updateBoardMeta({ name: e.target.value })}
+              onBlur={() => commitHistory("ボード名変更")}
+              placeholder="ボード名を入力"
+              className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
+            />
+          </PropertySection>
+
+          {/* 背景 */}
+          <PropertySection title="背景">
+            <select
+              value={board.backgroundId}
+              onChange={(e) => {
+                updateBoardMeta({ backgroundId: Number(e.target.value) as BackgroundId });
+                commitHistory("背景変更");
+              }}
+              className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
+            >
+              {Object.entries(BACKGROUND_NAMES).map(([id, name]) => (
+                <option key={id} value={id}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </PropertySection>
+
+          {/* ボードサイズ（参考情報） */}
+          <PropertySection title="サイズ">
+            <div className="text-sm text-slate-300">
+              {board.width} × {board.height}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              ※エクスポート時に自動計算されます
+            </div>
+          </PropertySection>
         </div>
       </div>
     );

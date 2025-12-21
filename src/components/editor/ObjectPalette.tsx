@@ -202,7 +202,7 @@ export function ObjectPalette() {
   };
 
   return (
-    <div className="w-64 bg-slate-800 border-r border-slate-700 overflow-y-auto">
+    <div className="h-full bg-slate-800 overflow-y-auto">
       <div className="p-3 border-b border-slate-700">
         <h2 className="text-sm font-semibold text-slate-200">オブジェクト</h2>
       </div>
@@ -254,18 +254,25 @@ function ObjectPaletteItem({
   const object = createDefaultObject(objectId, { x: 20, y: 20 });
   const name = ObjectNames[objectId] ?? `ID: ${objectId}`;
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData("application/x-object-id", String(objectId));
+    e.dataTransfer.effectAllowed = "copy";
+  };
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="p-1 bg-slate-700 hover:bg-slate-600 rounded transition-colors"
+      draggable
+      onDragStart={handleDragStart}
+      className="p-1 bg-slate-700 hover:bg-slate-600 rounded transition-colors cursor-grab active:cursor-grabbing"
       title={name}
     >
       <svg
         width={40}
         height={40}
         viewBox="0 0 40 40"
-        className="bg-slate-800 rounded"
+        className="bg-slate-800 rounded pointer-events-none"
       >
         <ObjectRenderer
           object={object}

@@ -47,6 +47,10 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
     updateObject,
     commitHistory,
     deleteSelected,
+    addObject,
+    getGroupForObject,
+    selectGroup,
+    moveObjects,
   } = useEditor();
 
   const { board, selectedIndices } = state;
@@ -72,19 +76,58 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
   }, [deselectAll]);
 
   /**
-   * オブジェクトクリック
+   * ドラッグオーバー（ドロップを許可）
+   */
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes("application/x-object-id")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    }
+  }, []);
+
+  /**
+   * ドロップでオブジェクト追加
+   */
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const objectIdStr = e.dataTransfer.getData("application/x-object-id");
+      if (!objectIdStr) return;
+
+      const objectId = Number.parseInt(objectIdStr, 10);
+      if (Number.isNaN(objectId)) return;
+
+      const svg = svgRef.current;
+      if (!svg) return;
+
+      // ドロップ位置をSVG座標に変換
+      const position = screenToSVG(e, svg);
+      addObject(objectId, position);
+    },
+    [addObject]
+  );
+
+  /**
+   * オブジェクトクリック（グループ対応）
    */
   const handleObjectClick = useCallback(
     (index: number, e: React.MouseEvent) => {
       e.stopPropagation();
       const additive = e.ctrlKey || e.metaKey;
-      selectObject(index, additive);
+
+      // グループに属している場合はグループ全体を選択
+      const group = getGroupForObject(index);
+      if (group && !additive) {
+        selectGroup(group.id);
+      } else {
+        selectObject(index, additive);
+      }
     },
-    [selectObject]
+    [selectObject, getGroupForObject, selectGroup]
   );
 
   /**
-   * オブジェクトドラッグ開始
+   * オブジェクトドラッグ開始（グループ対応）
    */
   const handleObjectPointerDown = useCallback(
     (index: number, e: React.PointerEvent) => {
@@ -96,9 +139,14 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
       e.stopPropagation();
       e.preventDefault();
 
-      // まず選択
+      // グループに属している場合はグループ全体を選択
+      const group = getGroupForObject(index);
       if (!selectedIndices.includes(index)) {
-        selectObject(index);
+        if (group) {
+          selectGroup(group.id);
+        } else {
+          selectObject(index);
+        }
       }
 
       const startPointer = screenToSVG(e, svg);
@@ -113,7 +161,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
       (e.target as Element).setPointerCapture(e.pointerId);
     },
-    [objects, selectedIndices, selectObject]
+    [objects, selectedIndices, selectObject, getGroupForObject, selectGroup]
   );
 
   /**
@@ -171,7 +219,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
   );
 
   /**
-   * ポインター移動
+   * ポインター移動（グループ対応）
    */
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
@@ -184,19 +232,18 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
       const { mode, startPointer, startObjectState, objectIndex } = dragState;
 
       if (mode === "drag") {
-        // ドラッグ移動
+        // ドラッグ移動（選択中の全オブジェクトを移動）
         const deltaX = currentPointer.x - startPointer.x;
         const deltaY = currentPointer.y - startPointer.y;
 
-        const newPosition = clampToCanvas(
-          {
-            x: startObjectState.position.x + deltaX,
-            y: startObjectState.position.y + deltaY,
-          },
-          { width: CANVAS_WIDTH, height: CANVAS_HEIGHT }
-        );
+        // 選択中のオブジェクトを全て移動
+        moveObjects(selectedIndices, deltaX, deltaY);
 
-        updateObject(objectIndex, { position: newPosition });
+        // startPointerを更新して累積移動を防ぐ
+        setDragState({
+          ...dragState,
+          startPointer: currentPointer,
+        });
       } else if (mode === "rotate") {
         // 回転
         const center = startObjectState.position;
@@ -276,6 +323,8 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
       onClick={handleBackgroundClick}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
       className="bg-slate-800"
       role="application"
       aria-label="Strategy Board Editor"
@@ -299,7 +348,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
             object={obj}
             index={index}
             showBoundingBox={false}
-            selected={selectedIndices.includes(index)}
+            selected={false}
           />
         </g>
       ))}

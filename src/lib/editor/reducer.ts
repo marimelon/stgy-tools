@@ -4,7 +4,7 @@
 
 import type { BoardData, BoardObject } from "@/lib/stgy";
 import { duplicateObject } from "./factory";
-import type { EditorState, EditorAction, HistoryEntry } from "./types";
+import type { EditorState, EditorAction, HistoryEntry, ObjectGroup } from "./types";
 
 /** 履歴の最大保持数 */
 const MAX_HISTORY = 50;
@@ -22,6 +22,7 @@ function pushHistory(
   // 新しいエントリを追加
   const entry: HistoryEntry = {
     board: structuredClone(state.board),
+    groups: structuredClone(state.groups),
     description,
   };
   newHistory.push(entry);
@@ -36,6 +37,46 @@ function pushHistory(
     historyIndex: newHistory.length - 1,
     isDirty: true,
   };
+}
+
+/**
+ * グループIDを生成
+ */
+function generateGroupId(): string {
+  return `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+/**
+ * オブジェクト追加時にグループのインデックスを更新（先頭追加）
+ */
+function shiftGroupIndices(groups: ObjectGroup[], count: number): ObjectGroup[] {
+  return groups.map(group => ({
+    ...group,
+    objectIndices: group.objectIndices.map(i => i + count),
+  }));
+}
+
+/**
+ * オブジェクト削除時にグループを更新
+ */
+function updateGroupsAfterDelete(groups: ObjectGroup[], deletedIndices: number[]): ObjectGroup[] {
+  const sortedDeleted = [...deletedIndices].sort((a, b) => b - a);
+
+  return groups
+    .map(group => {
+      let newIndices = group.objectIndices.filter(i => !deletedIndices.includes(i));
+
+      // 削除されたインデックスより大きいインデックスを調整
+      for (const deleted of sortedDeleted) {
+        newIndices = newIndices.map(i => i > deleted ? i - 1 : i);
+      }
+
+      return {
+        ...group,
+        objectIndices: newIndices,
+      };
+    })
+    .filter(group => group.objectIndices.length > 0); // 空のグループを削除
 }
 
 /**
@@ -89,8 +130,9 @@ export function editorReducer(
         ...state,
         board: action.board,
         selectedIndices: [],
+        groups: [],
         isDirty: false,
-        history: [{ board: structuredClone(action.board), description: "初期状態" }],
+        history: [{ board: structuredClone(action.board), groups: [], description: "初期状態" }],
         historyIndex: 0,
       };
     }
@@ -142,13 +184,15 @@ export function editorReducer(
 
     case "ADD_OBJECT": {
       const newBoard = cloneBoard(state.board);
-      newBoard.objects.push(action.object);
-      const newIndex = newBoard.objects.length - 1;
+      newBoard.objects.unshift(action.object);
+      // グループのインデックスを更新（先頭に追加するので全て+1）
+      const updatedGroups = shiftGroupIndices(state.groups, 1);
       return {
         ...state,
         board: newBoard,
-        selectedIndices: [newIndex],
-        ...pushHistory(state, "オブジェクト追加"),
+        groups: updatedGroups,
+        selectedIndices: [0],
+        ...pushHistory({ ...state, groups: updatedGroups }, "オブジェクト追加"),
       };
     }
 
@@ -163,11 +207,14 @@ export function editorReducer(
           newBoard.objects.splice(index, 1);
         }
       }
+      // グループを更新
+      const updatedGroups = updateGroupsAfterDelete(state.groups, action.indices);
       return {
         ...state,
         board: newBoard,
+        groups: updatedGroups,
         selectedIndices: [],
-        ...pushHistory(state, "オブジェクト削除"),
+        ...pushHistory({ ...state, groups: updatedGroups }, "オブジェクト削除"),
       };
     }
 
@@ -287,6 +334,7 @@ export function editorReducer(
       return {
         ...state,
         board: structuredClone(entry.board),
+        groups: structuredClone(entry.groups ?? []),
         historyIndex: newIndex,
         selectedIndices: [],
         isDirty: newIndex > 0,
@@ -301,9 +349,112 @@ export function editorReducer(
       return {
         ...state,
         board: structuredClone(entry.board),
+        groups: structuredClone(entry.groups ?? []),
         historyIndex: newIndex,
         selectedIndices: [],
         isDirty: true,
+      };
+    }
+
+    case "MOVE_LAYER": {
+      const { index, direction } = action;
+      const objects = state.board.objects;
+
+      // 範囲外チェック
+      if (index < 0 || index >= objects.length) return state;
+
+      const newBoard = cloneBoard(state.board);
+      const [movedObject] = newBoard.objects.splice(index, 1);
+
+      let newIndex: number;
+      switch (direction) {
+        case "front":
+          // 最前面（配列の先頭）
+          newIndex = 0;
+          break;
+        case "back":
+          // 最背面（配列の末尾）
+          newIndex = newBoard.objects.length;
+          break;
+        case "forward":
+          // 1つ前面へ（配列で前へ）
+          newIndex = Math.max(0, index - 1);
+          break;
+        case "backward":
+          // 1つ背面へ（配列で後ろへ）
+          newIndex = Math.min(newBoard.objects.length, index + 1);
+          break;
+      }
+
+      newBoard.objects.splice(newIndex, 0, movedObject);
+
+      // グループのインデックスを更新
+      const updatedGroups = state.groups.map(group => ({
+        ...group,
+        objectIndices: group.objectIndices.map(i => {
+          if (i === index) return newIndex;
+          if (index < newIndex) {
+            // 下に移動: index+1 ~ newIndex の範囲を -1
+            if (i > index && i <= newIndex) return i - 1;
+          } else {
+            // 上に移動: newIndex ~ index-1 の範囲を +1
+            if (i >= newIndex && i < index) return i + 1;
+          }
+          return i;
+        }),
+      }));
+
+      const descriptions: Record<typeof direction, string> = {
+        front: "最前面へ移動",
+        back: "最背面へ移動",
+        forward: "前面へ移動",
+        backward: "背面へ移動",
+      };
+
+      return {
+        ...state,
+        board: newBoard,
+        groups: updatedGroups,
+        selectedIndices: [newIndex],
+        ...pushHistory({ ...state, groups: updatedGroups }, descriptions[direction]),
+      };
+    }
+
+    case "GROUP_OBJECTS": {
+      if (action.indices.length < 2) return state;
+
+      const newGroup: ObjectGroup = {
+        id: generateGroupId(),
+        objectIndices: [...action.indices].sort((a, b) => a - b),
+      };
+
+      const newGroups = [...state.groups, newGroup];
+
+      return {
+        ...state,
+        groups: newGroups,
+        ...pushHistory({ ...state, groups: newGroups }, "グループ化"),
+      };
+    }
+
+    case "UNGROUP": {
+      const newGroups = state.groups.filter(g => g.id !== action.groupId);
+
+      return {
+        ...state,
+        groups: newGroups,
+        ...pushHistory({ ...state, groups: newGroups }, "グループ解除"),
+      };
+    }
+
+    case "TOGGLE_GROUP_COLLAPSE": {
+      const newGroups = state.groups.map(g =>
+        g.id === action.groupId ? { ...g, collapsed: !g.collapsed } : g
+      );
+
+      return {
+        ...state,
+        groups: newGroups,
       };
     }
 
@@ -320,7 +471,8 @@ export function createInitialState(board: BoardData): EditorState {
     board: structuredClone(board),
     selectedIndices: [],
     clipboard: null,
-    history: [{ board: structuredClone(board), description: "初期状態" }],
+    groups: [],
+    history: [{ board: structuredClone(board), groups: [], description: "初期状態" }],
     historyIndex: 0,
     isDirty: false,
   };

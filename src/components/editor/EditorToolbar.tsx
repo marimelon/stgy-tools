@@ -21,6 +21,11 @@ export function EditorToolbar() {
     copySelected,
     paste,
     setBoard,
+    moveLayer,
+    groupSelected,
+    ungroup,
+    canGroup,
+    selectedGroup,
   } = useEditor();
 
   const [showImportModal, setShowImportModal] = useState(false);
@@ -30,6 +35,7 @@ export function EditorToolbar() {
   const [encodeKey, setEncodeKey] = useState<number | null>(null); // インポート時のキーを保存
 
   const hasSelection = state.selectedIndices.length > 0;
+  const hasSingleSelection = state.selectedIndices.length === 1;
   const hasClipboard = state.clipboard !== null && state.clipboard.length > 0;
 
   // インポート処理
@@ -139,6 +145,60 @@ export function EditorToolbar() {
             title="削除 (Delete)"
           >
             削除
+          </ToolbarButton>
+        </div>
+
+        <Divider />
+
+        {/* レイヤー操作 */}
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={() => moveLayer("front")}
+            disabled={!hasSingleSelection}
+            title="最前面へ"
+          >
+            ⤒
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => moveLayer("forward")}
+            disabled={!hasSingleSelection}
+            title="前面へ"
+          >
+            ↑
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => moveLayer("backward")}
+            disabled={!hasSingleSelection}
+            title="背面へ"
+          >
+            ↓
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => moveLayer("back")}
+            disabled={!hasSingleSelection}
+            title="最背面へ"
+          >
+            ⤓
+          </ToolbarButton>
+        </div>
+
+        <Divider />
+
+        {/* グループ操作 */}
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={groupSelected}
+            disabled={!canGroup}
+            title="グループ化 (Ctrl+G)"
+          >
+            ⊞
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => selectedGroup && ungroup(selectedGroup.id)}
+            disabled={!selectedGroup}
+            title="グループ解除 (Ctrl+Shift+G)"
+          >
+            ⊟
           </ToolbarButton>
         </div>
 

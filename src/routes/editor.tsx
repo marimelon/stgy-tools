@@ -7,6 +7,7 @@ import { EditorProvider, createEmptyBoard } from "@/lib/editor";
 import {
   EditorBoard,
   EditorToolbar,
+  LayerPanel,
   ObjectPalette,
   PropertyPanel,
 } from "@/components/editor";
@@ -37,8 +38,13 @@ function EditorPage() {
 
         {/* メインエリア */}
         <div className="flex-1 flex overflow-hidden">
-          {/* 左: オブジェクトパレット */}
-          <ObjectPalette />
+          {/* 左: オブジェクトパレット + レイヤーパネル */}
+          <div className="w-64 flex flex-col border-r border-slate-700">
+            <div className="flex-1 overflow-hidden">
+              <ObjectPalette />
+            </div>
+            <LayerPanel />
+          </div>
 
           {/* 中央: キャンバス */}
           <div className="flex-1 flex items-center justify-center bg-slate-950 overflow-auto p-4">

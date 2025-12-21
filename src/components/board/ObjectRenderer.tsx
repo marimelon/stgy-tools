@@ -216,6 +216,134 @@ const ENEMY_OBJECT_IDS: readonly number[] = [
 	ObjectIds.EnemyLarge,
 ];
 
+/** ジョブアイコンID */
+const JOB_ICON_IDS: readonly number[] = [
+	// 基本クラス
+	ObjectIds.Gladiator,
+	ObjectIds.Pugilist,
+	ObjectIds.Marauder,
+	ObjectIds.Lancer,
+	ObjectIds.Archer,
+	ObjectIds.Conjurer,
+	ObjectIds.Thaumaturge,
+	ObjectIds.Arcanist,
+	ObjectIds.Rogue,
+	// ジョブ
+	ObjectIds.Paladin,
+	ObjectIds.Monk,
+	ObjectIds.Warrior,
+	ObjectIds.Dragoon,
+	ObjectIds.Bard,
+	ObjectIds.WhiteMage,
+	ObjectIds.BlackMage,
+	ObjectIds.Summoner,
+	ObjectIds.Scholar,
+	ObjectIds.Ninja,
+	ObjectIds.Machinist,
+	ObjectIds.DarkKnight,
+	ObjectIds.Astrologian,
+	ObjectIds.Samurai,
+	ObjectIds.RedMage,
+	ObjectIds.BlueMage,
+	ObjectIds.Gunbreaker,
+	ObjectIds.Dancer,
+	ObjectIds.Reaper,
+	ObjectIds.Sage,
+	ObjectIds.Viper,
+	ObjectIds.Pictomancer,
+];
+
+/** ジョブ略称マップ */
+const JOB_ABBREVIATIONS: Record<number, string> = {
+	// 基本クラス
+	[ObjectIds.Gladiator]: "剣",
+	[ObjectIds.Pugilist]: "格",
+	[ObjectIds.Marauder]: "斧",
+	[ObjectIds.Lancer]: "槍",
+	[ObjectIds.Archer]: "弓",
+	[ObjectIds.Conjurer]: "幻",
+	[ObjectIds.Thaumaturge]: "呪",
+	[ObjectIds.Arcanist]: "巴",
+	[ObjectIds.Rogue]: "双",
+	// タンク
+	[ObjectIds.Paladin]: "ナ",
+	[ObjectIds.Warrior]: "戦",
+	[ObjectIds.DarkKnight]: "暗",
+	[ObjectIds.Gunbreaker]: "ガ",
+	// ヒーラー
+	[ObjectIds.WhiteMage]: "白",
+	[ObjectIds.Scholar]: "学",
+	[ObjectIds.Astrologian]: "占",
+	[ObjectIds.Sage]: "賢",
+	// メレーDPS
+	[ObjectIds.Monk]: "モ",
+	[ObjectIds.Dragoon]: "竜",
+	[ObjectIds.Ninja]: "忍",
+	[ObjectIds.Samurai]: "侍",
+	[ObjectIds.Reaper]: "リ",
+	[ObjectIds.Viper]: "ヴ",
+	// レンジDPS
+	[ObjectIds.Bard]: "詩",
+	[ObjectIds.Machinist]: "機",
+	[ObjectIds.Dancer]: "踊",
+	// キャスターDPS
+	[ObjectIds.BlackMage]: "黒",
+	[ObjectIds.Summoner]: "召",
+	[ObjectIds.RedMage]: "赤",
+	[ObjectIds.Pictomancer]: "ピ",
+	[ObjectIds.BlueMage]: "青",
+};
+
+/** ジョブロール判定 */
+const JOB_ROLES: Record<number, "tank" | "healer" | "melee" | "ranged" | "caster"> = {
+	// 基本クラス
+	[ObjectIds.Gladiator]: "tank",
+	[ObjectIds.Marauder]: "tank",
+	[ObjectIds.Pugilist]: "melee",
+	[ObjectIds.Lancer]: "melee",
+	[ObjectIds.Rogue]: "melee",
+	[ObjectIds.Archer]: "ranged",
+	[ObjectIds.Conjurer]: "healer",
+	[ObjectIds.Thaumaturge]: "caster",
+	[ObjectIds.Arcanist]: "caster",
+	// タンク
+	[ObjectIds.Paladin]: "tank",
+	[ObjectIds.Warrior]: "tank",
+	[ObjectIds.DarkKnight]: "tank",
+	[ObjectIds.Gunbreaker]: "tank",
+	// ヒーラー
+	[ObjectIds.WhiteMage]: "healer",
+	[ObjectIds.Scholar]: "healer",
+	[ObjectIds.Astrologian]: "healer",
+	[ObjectIds.Sage]: "healer",
+	// メレーDPS
+	[ObjectIds.Monk]: "melee",
+	[ObjectIds.Dragoon]: "melee",
+	[ObjectIds.Ninja]: "melee",
+	[ObjectIds.Samurai]: "melee",
+	[ObjectIds.Reaper]: "melee",
+	[ObjectIds.Viper]: "melee",
+	// レンジDPS
+	[ObjectIds.Bard]: "ranged",
+	[ObjectIds.Machinist]: "ranged",
+	[ObjectIds.Dancer]: "ranged",
+	// キャスターDPS
+	[ObjectIds.BlackMage]: "caster",
+	[ObjectIds.Summoner]: "caster",
+	[ObjectIds.RedMage]: "caster",
+	[ObjectIds.Pictomancer]: "caster",
+	[ObjectIds.BlueMage]: "caster",
+};
+
+/** ジョブロールカラー */
+const JOB_ROLE_COLORS: Record<string, string> = {
+	tank: COLORS.ROLE_TANK,
+	healer: COLORS.ROLE_HEALER,
+	melee: COLORS.ROLE_DPS,
+	ranged: "#cc6633", // レンジDPSはオレンジ
+	caster: "#cc33cc", // キャスターDPSは紫
+};
+
 // ========================================
 // コンポーネント
 // ========================================
@@ -284,6 +412,8 @@ export function ObjectRenderer({
 				param2={param2}
 			/>
 		);
+	} else if (isJobIcon(objectId)) {
+		content = <JobIcon objectId={objectId} transform={transform} />;
 	} else if (isRoleIcon(objectId)) {
 		content = <RoleIcon objectId={objectId} transform={transform} />;
 	} else if (isWaymark(objectId)) {
@@ -633,6 +763,26 @@ function getObjectBoundingBox(
 		return { width: enemySize, height: enemySize };
 	}
 
+	// 特殊アイコン（サイズが大きいもの）
+	const specialIconSizes: Record<number, { width: number; height: number }> = {
+		[ObjectIds.Gaze]: { width: 90, height: 90 },
+		[ObjectIds.Block]: { width: 60, height: 60 },
+		[ObjectIds.LockOnRed]: { width: 70, height: 70 },
+		[ObjectIds.LockOnBlue]: { width: 68, height: 68 },
+		[ObjectIds.LockOnPurple]: { width: 70, height: 70 },
+		[ObjectIds.LockOnGreen]: { width: 60, height: 70 },
+		[ObjectIds.EmphasisCircle]: { width: 56, height: 56 },
+		[ObjectIds.EmphasisCross]: { width: 68, height: 68 },
+		[ObjectIds.EmphasisSquare]: { width: 64, height: 64 },
+		[ObjectIds.EmphasisTriangle]: { width: 64, height: 64 },
+		[ObjectIds.Clockwise]: { width: 72, height: 40 },
+		[ObjectIds.CounterClockwise]: { width: 72, height: 40 },
+	};
+	const specialSize = specialIconSizes[objectId];
+	if (specialSize) {
+		return specialSize;
+	}
+
 	// デフォルト
 	return { width: SIZES.WAYMARK, height: SIZES.WAYMARK };
 }
@@ -685,6 +835,10 @@ function isWaymark(id: number): boolean {
 
 function isEnemy(id: number): boolean {
 	return ENEMY_OBJECT_IDS.includes(id);
+}
+
+function isJobIcon(id: number): boolean {
+	return JOB_ICON_IDS.includes(id);
 }
 
 // フィールドオブジェクト
@@ -1216,6 +1370,46 @@ function EnemyIcon({
 						L ${35 * scale} ${76 * scale} Z`}
 				/>
 			</g>
+		</g>
+	);
+}
+
+// ジョブアイコン
+function JobIcon({
+	objectId,
+	transform,
+}: {
+	objectId: number;
+	transform: string;
+}) {
+	const abbreviation = JOB_ABBREVIATIONS[objectId] ?? "?";
+	const role = JOB_ROLES[objectId] ?? "melee";
+	const bgColor = JOB_ROLE_COLORS[role];
+	const size = 24;
+
+	return (
+		<g transform={transform}>
+			{/* 背景円 */}
+			<circle
+				cx={0}
+				cy={0}
+				r={size / 2}
+				fill={bgColor}
+				stroke="#ffffff"
+				strokeWidth="2"
+			/>
+			{/* ジョブ略称 */}
+			<text
+				x={0}
+				y={0}
+				textAnchor="middle"
+				dominantBaseline="central"
+				fill="#ffffff"
+				fontSize="14"
+				fontWeight="bold"
+			>
+				{abbreviation}
+			</text>
 		</g>
 	);
 }

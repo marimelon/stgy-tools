@@ -53,6 +53,18 @@ export interface EditorContextValue {
   moveObjects: (indices: number[], deltaX: number, deltaY: number) => void;
   /** ボードメタデータを更新 */
   updateBoardMeta: (updates: { name?: string; backgroundId?: BackgroundId }) => void;
+  /** レイヤーを移動 */
+  moveLayer: (direction: "front" | "back" | "forward" | "backward") => void;
+  /** 選択オブジェクトをグループ化 */
+  groupSelected: () => void;
+  /** グループを解除 */
+  ungroup: (groupId: string) => void;
+  /** グループの折りたたみ切替 */
+  toggleGroupCollapse: (groupId: string) => void;
+  /** オブジェクトが属するグループを取得 */
+  getGroupForObject: (index: number) => import("./types").ObjectGroup | undefined;
+  /** グループ内の全オブジェクトを選択 */
+  selectGroup: (groupId: string) => void;
 
   // 状態
   /** Undoが可能か */
@@ -61,6 +73,10 @@ export interface EditorContextValue {
   canRedo: boolean;
   /** 選択されているオブジェクト */
   selectedObjects: BoardObject[];
+  /** グループ化可能か（2つ以上選択中） */
+  canGroup: boolean;
+  /** 選択中のオブジェクトが属するグループ（単一選択時） */
+  selectedGroup: import("./types").ObjectGroup | undefined;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -164,6 +180,44 @@ export function EditorProvider({
     []
   );
 
+  const moveLayer = useCallback(
+    (direction: "front" | "back" | "forward" | "backward") => {
+      if (state.selectedIndices.length !== 1) return;
+      dispatch({ type: "MOVE_LAYER", index: state.selectedIndices[0], direction });
+    },
+    [state.selectedIndices]
+  );
+
+  const groupSelected = useCallback(() => {
+    if (state.selectedIndices.length < 2) return;
+    dispatch({ type: "GROUP_OBJECTS", indices: state.selectedIndices });
+  }, [state.selectedIndices]);
+
+  const ungroup = useCallback((groupId: string) => {
+    dispatch({ type: "UNGROUP", groupId });
+  }, []);
+
+  const toggleGroupCollapse = useCallback((groupId: string) => {
+    dispatch({ type: "TOGGLE_GROUP_COLLAPSE", groupId });
+  }, []);
+
+  const getGroupForObject = useCallback(
+    (index: number) => {
+      return state.groups.find(g => g.objectIndices.includes(index));
+    },
+    [state.groups]
+  );
+
+  const selectGroup = useCallback(
+    (groupId: string) => {
+      const group = state.groups.find(g => g.id === groupId);
+      if (group) {
+        dispatch({ type: "SELECT_OBJECTS", indices: group.objectIndices });
+      }
+    },
+    [state.groups]
+  );
+
   // 計算済み状態
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
@@ -173,6 +227,14 @@ export function EditorProvider({
       .filter((i) => i >= 0 && i < state.board.objects.length)
       .map((i) => state.board.objects[i]);
   }, [state.selectedIndices, state.board.objects]);
+
+  const canGroup = state.selectedIndices.length >= 2;
+
+  const selectedGroup = useMemo(() => {
+    if (state.selectedIndices.length === 0) return undefined;
+    // 選択中のオブジェクトが属するグループを探す（最初のオブジェクトで判定）
+    return state.groups.find(g => g.objectIndices.includes(state.selectedIndices[0]));
+  }, [state.selectedIndices, state.groups]);
 
   const value = useMemo<EditorContextValue>(
     () => ({
@@ -192,9 +254,17 @@ export function EditorProvider({
       commitHistory,
       moveObjects,
       updateBoardMeta,
+      moveLayer,
+      groupSelected,
+      ungroup,
+      toggleGroupCollapse,
+      getGroupForObject,
+      selectGroup,
       canUndo,
       canRedo,
       selectedObjects,
+      canGroup,
+      selectedGroup,
     }),
     [
       state,
@@ -212,9 +282,17 @@ export function EditorProvider({
       commitHistory,
       moveObjects,
       updateBoardMeta,
+      moveLayer,
+      groupSelected,
+      ungroup,
+      toggleGroupCollapse,
+      getGroupForObject,
+      selectGroup,
       canUndo,
       canRedo,
       selectedObjects,
+      canGroup,
+      selectedGroup,
     ]
   );
 
