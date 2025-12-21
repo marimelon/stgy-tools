@@ -146,7 +146,7 @@ function parseFlags(value: number): Record<string, boolean> {
     visible: (value & 0x01) !== 0,
     flipHorizontal: (value & 0x02) !== 0,
     flipVertical: (value & 0x04) !== 0,
-    unlocked: (value & 0x08) !== 0,
+    locked: (value & 0x08) !== 0,
   };
 }
 

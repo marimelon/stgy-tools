@@ -25,7 +25,7 @@ describe("encoder", () => {
             visible: true,
             flipHorizontal: false,
             flipVertical: false,
-            unlocked: true,
+            locked: false,
           },
           position: { x: 100, y: 100 },
           rotation: 0,

@@ -196,10 +196,10 @@ export function ObjectPropertyPanel({
             />
             <Checkbox
               label="ロック"
-              checked={!object.flags.unlocked}
+              checked={object.flags.locked}
               onChange={(locked) =>
                 handleChangeAndCommit(
-                  { flags: { ...object.flags, unlocked: !locked } },
+                  { flags: { ...object.flags, locked } },
                   "ロック変更"
                 )
               }

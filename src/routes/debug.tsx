@@ -18,7 +18,7 @@ function createDefaultObject(objectId: number): BoardObject {
 			visible: true,
 			flipHorizontal: false,
 			flipVertical: false,
-			unlocked: true,
+			locked: false,
 		},
 		position: { x: 40, y: 40 },
 		rotation: 0,

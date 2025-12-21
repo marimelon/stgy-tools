@@ -36,7 +36,7 @@ export function createDefaultObject(
       visible: true,
       flipHorizontal: false,
       flipVertical: false,
-      unlocked: true,
+      locked: false,
     },
     position: defaultPosition,
     rotation: 0,

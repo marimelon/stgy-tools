@@ -96,7 +96,7 @@ function parseFlags(value: number): ObjectFlags {
     visible: (value & 0x01) !== 0,
     flipHorizontal: (value & 0x02) !== 0,
     flipVertical: (value & 0x04) !== 0,
-    unlocked: (value & 0x08) !== 0,
+    locked: (value & 0x08) !== 0,
   };
 }
 
@@ -276,7 +276,7 @@ export function parseBoardData(data: Uint8Array): BoardData {
 
     const obj: BoardObject = {
       objectId,
-      flags: flagsArray[i] ?? { visible: true, flipHorizontal: false, flipVertical: false, unlocked: true },
+      flags: flagsArray[i] ?? { visible: true, flipHorizontal: false, flipVertical: false, locked: false },
       position: positions[i] ?? { x: 0, y: 0 },
       rotation: rotations[i] ?? 0,
       size: sizes[i] ?? 100,

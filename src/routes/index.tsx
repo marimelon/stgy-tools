@@ -265,12 +265,12 @@ function SelectedObjectInfo({
 							上下反転
 						</Badge>
 					)}
-					{object.flags.unlocked && (
+					{object.flags.locked && (
 						<Badge
 							variant="outline"
 							className="bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
 						>
-							非ロック
+							ロック
 						</Badge>
 					)}
 				</dd>

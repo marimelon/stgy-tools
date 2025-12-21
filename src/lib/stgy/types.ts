@@ -31,8 +31,8 @@ export interface ObjectFlags {
   flipHorizontal: boolean;
   /** 上下反転 */
   flipVertical: boolean;
-  /** ロック状態 (true = 非ロック) */
-  unlocked: boolean;
+  /** ロック状態 */
+  locked: boolean;
 }
 
 /**

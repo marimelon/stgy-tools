@@ -87,7 +87,7 @@ function serializeFlags(flags: ObjectFlags): number {
   if (flags.visible) value |= 0x01;
   if (flags.flipHorizontal) value |= 0x02;
   if (flags.flipVertical) value |= 0x04;
-  if (flags.unlocked) value |= 0x08;
+  if (flags.locked) value |= 0x08;
   return value;
 }
 

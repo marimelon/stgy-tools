@@ -209,7 +209,7 @@ export function useCanvasInteraction({
 
       // ロックされたオブジェクトはドラッグ不可（選択のみ）
       const obj = objects[index];
-      if (!obj.flags.unlocked) {
+      if (obj.flags.locked) {
         return;
       }
 
@@ -250,7 +250,7 @@ export function useCanvasInteraction({
 
       // ロックされたオブジェクトは回転不可
       const obj = objects[index];
-      if (!obj.flags.unlocked) {
+      if (obj.flags.locked) {
         return;
       }
 
@@ -285,7 +285,7 @@ export function useCanvasInteraction({
 
       // ロックされたオブジェクトはリサイズ不可
       const obj = objects[index];
-      if (!obj.flags.unlocked) {
+      if (obj.flags.locked) {
         return;
       }
 
