@@ -133,7 +133,7 @@ export function LayerPanel() {
   );
 
   return (
-    <div className="bg-slate-800 border-t border-slate-700 flex flex-col max-h-64">
+    <div className="bg-slate-800 flex flex-col h-full">
       <div className="p-2 border-b border-slate-700 flex-shrink-0">
         <h2 className="text-sm font-semibold text-slate-200">レイヤー</h2>
       </div>

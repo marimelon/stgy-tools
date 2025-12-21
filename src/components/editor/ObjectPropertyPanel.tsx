@@ -47,7 +47,7 @@ export function ObjectPropertyPanel({
   const isDonutAoE = object.objectId === ObjectIds.DonutAoE;
 
   return (
-    <div className="w-72 bg-slate-800 border-l border-slate-700 overflow-y-auto">
+    <div className="h-full bg-slate-800 overflow-y-auto">
       <div className="p-3 border-b border-slate-700">
         <h2 className="text-sm font-semibold text-slate-200">プロパティ</h2>
       </div>

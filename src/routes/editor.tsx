@@ -5,6 +5,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { EditorProvider, createEmptyBoard, useKeyboardShortcuts } from "@/lib/editor";
+import { PanelProvider } from "@/lib/panel";
+import { ResizableLayout } from "@/components/panel";
 import {
   EditorBoard,
   EditorToolbar,
@@ -25,9 +27,11 @@ function EditorPage() {
   const initialBoard = createEmptyBoard("新規ボード");
 
   return (
-    <EditorProvider initialBoard={initialBoard}>
-      <EditorContent />
-    </EditorProvider>
+    <PanelProvider>
+      <EditorProvider initialBoard={initialBoard}>
+        <EditorContent />
+      </EditorProvider>
+    </PanelProvider>
   );
 }
 
@@ -93,25 +97,22 @@ function EditorContent() {
       <EditorToolbar />
 
       {/* メインエリア */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* 左: オブジェクトパレット + レイヤーパネル */}
-        <div className="w-64 flex flex-col border-r border-slate-700">
-          <div className="flex-1 overflow-hidden">
-            <ObjectPalette />
-          </div>
-          <LayerPanel />
-        </div>
-
-        {/* 中央: キャンバス */}
-        <div
-          ref={containerRef}
-          className="flex-1 flex items-center justify-center bg-slate-950 overflow-auto p-4"
+      <div className="flex-1 overflow-hidden h-full">
+        <ResizableLayout
+          panelComponents={{
+            objectPalette: <ObjectPalette />,
+            layerPanel: <LayerPanel />,
+            propertyPanel: <PropertyPanel />,
+          }}
         >
-          <EditorBoard scale={scale} />
-        </div>
-
-        {/* 右: プロパティパネル */}
-        <PropertyPanel />
+          {/* 中央: キャンバス */}
+          <div
+            ref={containerRef}
+            className="h-full flex items-center justify-center bg-slate-950 overflow-auto p-4"
+          >
+            <EditorBoard scale={scale} />
+          </div>
+        </ResizableLayout>
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { useEditor, useImportExport, GRID_SIZES } from "@/lib/editor";
 import { ToolbarButton, Divider } from "./ToolbarButton";
 import { ImportModal } from "./ImportModal";
 import { ExportModal } from "./ExportModal";
+import { PanelSettingsDropdown } from "./PanelSettingsDropdown";
 
 /**
  * エディターツールバー
@@ -81,7 +82,7 @@ export function EditorToolbar() {
 
   return (
     <>
-      <div className="flex items-center gap-2 p-2 bg-slate-800 border-b border-slate-700">
+      <div className="flex items-center gap-2 p-2 bg-slate-800 border-b border-slate-700 flex-shrink-0 overflow-x-auto">
         {/* ファイル操作 */}
         <div className="flex items-center gap-1">
           <ToolbarButton onClick={openImportModal}>
@@ -293,6 +294,9 @@ export function EditorToolbar() {
         </div>
 
         <Divider />
+
+        {/* パネルレイアウト設定 */}
+        <PanelSettingsDropdown />
 
         {/* 状態表示 */}
         <div className="flex-1 text-right text-xs text-slate-400">
