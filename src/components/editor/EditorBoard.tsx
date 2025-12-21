@@ -4,7 +4,7 @@
  * BoardViewerを拡張し、ドラッグ/回転/リサイズのインタラクションを追加
  */
 
-import { useRef, useCallback } from "react";
+import { useRef } from "react";
 import { BackgroundRenderer, ObjectRenderer, getObjectBoundingBox } from "@/components/board";
 import {
   useEditor,
@@ -97,6 +97,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
       height={CANVAS_HEIGHT * scale}
       viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
       onClick={handleBackgroundClick}
+      onKeyDown={(e) => e.key === "Escape" && deselectAll()}
       onPointerDown={handleBackgroundPointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -124,6 +125,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
       {/* オブジェクト (逆順で描画してレイヤー順を正しくする) */}
       {[...visibleObjects].reverse().map(({ obj, index }) => (
+        // biome-ignore lint/a11y/noStaticElementInteractions: SVG group elements require onClick for selection
         <g
           key={index}
           onClick={(e) => handleObjectClick(index, e)}

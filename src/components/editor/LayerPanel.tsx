@@ -107,7 +107,7 @@ export function LayerPanel() {
     }
 
     return items;
-  }, [objects, groups, getGroupForObject]);
+  }, [objects, getGroupForObject]);
 
   const handleToggleVisibility = useCallback(
     (index: number) => {
@@ -318,6 +318,7 @@ export function LayerPanel() {
         <h2 className="panel-title">レイヤー</h2>
       </div>
 
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: Drag container for layer reordering */}
       <div
         className="flex-1 overflow-y-auto"
         onDragLeave={handleDragLeave}
@@ -347,6 +348,8 @@ export function LayerPanel() {
                       <div className="drop-indicator absolute top-0 left-1 right-1 z-10" />
                     )}
 
+                    {/* biome-ignore lint/a11y/useKeyWithClickEvents: Drag and drop layer item */}
+                    {/* biome-ignore lint/a11y/noStaticElementInteractions: Interactive draggable layer */}
                     <div
                       draggable
                       onDragStart={(e) => handleGroupDragStart(e, group.id)}
@@ -417,6 +420,8 @@ export function LayerPanel() {
                       <div className="drop-indicator absolute top-0 left-1 right-1 z-10" />
                     )}
 
+                    {/* biome-ignore lint/a11y/useKeyWithClickEvents: Drag and drop layer item */}
+                    {/* biome-ignore lint/a11y/noStaticElementInteractions: Interactive draggable layer */}
                     <div
                       draggable
                       onDragStart={(e) => handleDragStart(e, index)}

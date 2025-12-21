@@ -89,7 +89,7 @@ describe("encoder", () => {
 
     // Re-encode
     const reEncoded = encodeStgy(originalBoard);
-    console.log("Re-encoded:", reEncoded.substring(0, 50) + "...");
+    console.log("Re-encoded:", `${reEncoded.substring(0, 50)}...`);
 
     // Decode again
     const decodedBinary = decodeStgy(reEncoded);
@@ -111,7 +111,7 @@ describe("encoder", () => {
     }
 
     // Test a few values
-    expect(reverseTable["A"]).toBe("f"); // A -> f
+    expect(reverseTable.A).toBe("f"); // A -> f
     expect(reverseTable["0"]).toBe("2"); // 0 -> 2
     expect(reverseTable["-"]).toBe("b"); // - -> b
 

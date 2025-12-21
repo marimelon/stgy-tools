@@ -178,7 +178,10 @@ export function decodeStgyWithInfo(stgyString: string): DecodeResult {
   const stgyData = stgyString.slice(STGY_PREFIX.length, -STGY_SUFFIX.length);
   const keyChar = stgyData[0];
   const keyMapped = KEY_TABLE[keyChar];
-  const key = base64CharToValue(keyMapped!);
+  if (!keyMapped) {
+    throw new Error(`Invalid key character: ${keyChar}`);
+  }
+  const key = base64CharToValue(keyMapped);
   const base64String = decryptCipher(stgyData.slice(1), key);
   const binary = decodeBase64(base64String);
 

@@ -5,7 +5,6 @@
 import {
 	STORAGE_KEY,
 	PERSISTENCE_VERSION,
-	DEFAULT_GRID_SETTINGS,
 	type SessionData,
 } from "./types";
 import type { ObjectGroup, GridSettings } from "@/lib/editor/types";

@@ -79,8 +79,7 @@ function loadConfig(): PanelLayoutConfig {
 		const parsed = JSON.parse(saved) as PanelLayoutConfig;
 		// 必須プロパティの存在確認
 		if (
-			parsed.panels &&
-			parsed.panels.objectPalette &&
+			parsed.panels?.objectPalette &&
 			parsed.panels.layerPanel &&
 			parsed.panels.propertyPanel
 		) {

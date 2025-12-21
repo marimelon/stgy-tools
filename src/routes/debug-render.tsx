@@ -4,7 +4,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useId } from "react";
 import { AlertCircle, Eye, EyeOff, Layers, SplitSquareHorizontal, Download } from "lucide-react";
 import { decodeStgy, parseBoardData, ObjectNames } from "@/lib/stgy";
 import type { BoardData, BoardObject } from "@/lib/stgy";
@@ -38,6 +38,7 @@ function RenderDebugPage() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [showClient, setShowClient] = useState(true);
 	const [showServer, setShowServer] = useState(true);
+	const inputCodeId = useId();
 
 	// stgyコードをパース
 	const parseResult = useMemo(() => {
@@ -135,7 +136,7 @@ function RenderDebugPage() {
 						</div>
 					</div>
 					<Textarea
-						id="input-code"
+						id={inputCodeId}
 						value={inputCode}
 						onChange={(e) => setInputCode(e.target.value)}
 						placeholder="[stgy:a...]"
@@ -449,7 +450,7 @@ function ObjectTable({ objects }: { objects: BoardObject[] }) {
 			</thead>
 			<tbody>
 				{objects.map((obj, idx) => (
-					<tr key={idx} className="border-b border-border/50 hover:bg-muted/50">
+					<tr key={`${obj.objectId}-${obj.position.x}-${obj.position.y}-${idx}`} className="border-b border-border/50 hover:bg-muted/50">
 						<td className="px-2 py-1 font-mono text-muted-foreground">{idx}</td>
 						<td className="px-2 py-1 font-mono">{obj.objectId}</td>
 						<td className="px-2 py-1">{ObjectNames[obj.objectId] ?? "不明"}</td>

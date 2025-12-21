@@ -2061,7 +2061,6 @@ function EnemyIcon({
 					faceColor: "#80dfff",
 					hasGlow: false,
 				};
-			case ObjectIds.EnemyLarge:
 			default:
 				// 赤茶色のシールド
 				return {

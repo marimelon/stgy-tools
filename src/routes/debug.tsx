@@ -62,6 +62,8 @@ function ObjectPreview({ objectId }: { objectId: number }) {
 				height={80}
 				viewBox="0 0 80 80"
 				className="bg-muted rounded"
+				role="img"
+				aria-label={`Object preview: ${name}`}
 			>
 				<ObjectRenderer
 					object={object}

@@ -4,6 +4,7 @@
  * グリッドスナップと表示設定をドロップダウンで提供
  */
 
+import { useId } from "react";
 import { Grid3x3 } from "lucide-react";
 import { GRID_SIZES, type GridSettings } from "@/lib/editor";
 import { DropdownMenu, DropdownDivider } from "./DropdownMenu";
@@ -25,6 +26,7 @@ export function GridSettingsMenu({
 	gridSettings,
 	onGridSettingsChange,
 }: GridSettingsMenuProps) {
+	const gridSizeId = useId();
 	return (
 		<DropdownMenu
 			label={
@@ -53,10 +55,11 @@ export function GridSettingsMenu({
 
 				{/* グリッドサイズ */}
 				<div className="mt-3 mb-3">
-					<label className="block text-xs text-slate-400 mb-1">
+					<label htmlFor={gridSizeId} className="block text-xs text-slate-400 mb-1">
 						グリッドサイズ
 					</label>
 					<select
+						id={gridSizeId}
 						value={gridSettings.size}
 						onChange={(e) =>
 							onGridSettingsChange({ size: Number(e.target.value) })

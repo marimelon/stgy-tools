@@ -111,14 +111,11 @@ export function useAutoSave(
 			}
 		};
 	}, [
-		state.board,
-		state.groups,
-		state.gridSettings,
-		state.isDirty,
-		debounceMs,
-		enabled,
-		performSave,
-		lastSavedAt,
+		state.isDirty, 
+		debounceMs, 
+		enabled, 
+		performSave, 
+		lastSavedAt
 	]);
 
 	// アンマウント時に保存

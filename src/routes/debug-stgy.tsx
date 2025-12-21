@@ -3,7 +3,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo, type ReactNode } from "react";
+import { useState, useMemo, useId, type ReactNode } from "react";
 import { ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
 import {
 	decodeStgyDebug,
@@ -30,6 +30,8 @@ function StgyDebugPage() {
 	const [inputCode, setInputCode] = useState("");
 	const [compareCode, setCompareCode] = useState("");
 	const [activeTab, setActiveTab] = useState<"decode" | "compare">("decode");
+	const inputCodeId = useId();
+	const compareCodeId = useId();
 
 	const debugInfo = useMemo((): DecodeDebugInfo | null => {
 		if (!inputCode.trim()) return null;
@@ -84,11 +86,11 @@ function StgyDebugPage() {
 			<main className="p-4 space-y-4 max-w-6xl mx-auto">
 				{/* 入力エリア */}
 				<section className="bg-card border border-border rounded-lg p-4">
-					<Label htmlFor="input-code" className="mb-2 block">
+					<Label htmlFor={inputCodeId} className="mb-2 block">
 						stgyコードを入力:
 					</Label>
 					<Textarea
-						id="input-code"
+						id={inputCodeId}
 						value={inputCode}
 						onChange={(e) => setInputCode(e.target.value)}
 						placeholder="[stgy:a...]"
@@ -165,8 +167,8 @@ function StgyDebugPage() {
 						{/* フィールド一覧 */}
 						<Section title="Fields">
 							<div className="space-y-2 max-h-96 overflow-y-auto">
-								{debugInfo.fields.map((field, i) => (
-									<FieldRow key={i} field={field} />
+								{debugInfo.fields.map((field) => (
+									<FieldRow key={`${field.offset}-${field.fieldId}`} field={field} />
 								))}
 							</div>
 						</Section>
@@ -207,8 +209,8 @@ function StgyDebugPage() {
 											<div className="text-xs font-mono bg-muted p-2 rounded max-h-32 overflow-y-auto">
 												{roundTripResult.binaryDiff
 													.slice(0, 20)
-													.map((d, i) => (
-														<div key={i}>
+													.map((d) => (
+														<div key={d.offset}>
 															offset{" "}
 															{d.offset.toString(16).padStart(4, "0")}:{" "}
 															{d.original.toString(16).padStart(2, "0")} {"->"}{" "}
@@ -265,11 +267,11 @@ function StgyDebugPage() {
 				{activeTab === "compare" && (
 					<div className="space-y-4">
 						<Section title="Compare with another code">
-							<Label htmlFor="compare-code" className="mb-2 block">
+							<Label htmlFor={compareCodeId} className="mb-2 block">
 								比較対象のstgyコード:
 							</Label>
 							<Textarea
-								id="compare-code"
+								id={compareCodeId}
 								value={compareCode}
 								onChange={(e) => setCompareCode(e.target.value)}
 								placeholder="[stgy:a...]"
@@ -309,8 +311,8 @@ function StgyDebugPage() {
 												{manualCompareResult.binaryDiff.length}):
 											</div>
 											<div className="text-xs font-mono bg-muted p-2 rounded max-h-64 overflow-y-auto">
-												{manualCompareResult.binaryDiff.map((d, i) => (
-													<div key={i}>
+												{manualCompareResult.binaryDiff.map((d) => (
+													<div key={d.offset}>
 														offset {d.offset.toString(16).padStart(4, "0")}:{" "}
 														{d.original.toString(16).padStart(2, "0")} {"->"}{" "}
 														{d.reEncoded.toString(16).padStart(2, "0")}

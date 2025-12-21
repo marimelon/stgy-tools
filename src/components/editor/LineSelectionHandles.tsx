@@ -4,7 +4,7 @@
  * 始点・終点を直接操作できるハンドルを表示
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, } from "react";
 
 interface LineSelectionHandlesProps {
   /** 始点X座標 */

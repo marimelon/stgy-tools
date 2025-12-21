@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useId } from "react";
 import { AlertCircle, Eye } from "lucide-react";
 import { BoardViewer } from "@/components/board";
 import { decodeStgy, parseBoardData, ObjectNames } from "@/lib/stgy";
@@ -38,6 +38,8 @@ function App() {
 	const [selectedObject, setSelectedObject] = useState<BoardObject | null>(
 		null,
 	);
+	const stgyInputId = useId();
+	const showBboxId = useId();
 
 	const handleDecode = () => {
 		try {
@@ -85,9 +87,9 @@ function App() {
 
 			<main className="p-4 max-w-6xl mx-auto">
 				<div className="mb-6 space-y-3">
-					<Label htmlFor="stgy-input">stgyコードを入力:</Label>
+					<Label htmlFor={stgyInputId}>stgyコードを入力:</Label>
 					<Textarea
-						id="stgy-input"
+						id={stgyInputId}
 						value={stgyInput}
 						onChange={(e) => setStgyInput(e.target.value)}
 						className="h-24 font-mono text-sm"
@@ -138,14 +140,14 @@ function App() {
 							<div className="p-4 bg-card border border-border rounded-lg flex-shrink-0">
 								<div className="mb-3 flex items-center gap-2">
 									<Checkbox
-										id="show-bbox"
+										id={showBboxId}
 										checked={showBoundingBox}
 										onCheckedChange={(checked) =>
 											setShowBoundingBox(checked === true)
 										}
 									/>
 									<Label
-										htmlFor="show-bbox"
+										htmlFor={showBboxId}
 										className="text-sm cursor-pointer"
 									>
 										バウンディングボックスを表示
@@ -165,9 +167,9 @@ function App() {
 								<h2 className="text-lg font-semibold mb-3 font-display">
 									選択オブジェクト
 								</h2>
-								{selectedObject ? (
+								{selectedObject && selectedIndex !== null ? (
 									<SelectedObjectInfo
-										index={selectedIndex!}
+										index={selectedIndex}
 										object={selectedObject}
 									/>
 								) : (

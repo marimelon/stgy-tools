@@ -468,6 +468,8 @@ export function renderBoardToSVG(
 			height={totalHeight}
 			viewBox={`0 0 ${CANVAS_WIDTH} ${totalHeight}`}
 			style={{ backgroundColor: "#1a1a1a" }}
+			role="img"
+			aria-label={`Strategy board: ${name}`}
 		>
 			{/* 全体背景色 */}
 			<rect width={CANVAS_WIDTH} height={totalHeight} fill="#1a1a1a" />
@@ -485,8 +487,11 @@ export function renderBoardToSVG(
 				/>
 
 				{/* オブジェクト */}
-				{visibleObjects.map((obj, index) => (
-					<ObjectRenderer key={index} object={obj} />
+				{visibleObjects.map((obj) => (
+					<ObjectRenderer
+						key={`${obj.objectId}-${obj.position.x}-${obj.position.y}`}
+						object={obj}
+					/>
 				))}
 			</g>
 

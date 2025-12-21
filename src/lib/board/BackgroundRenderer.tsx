@@ -3,6 +3,7 @@
  * サーバーサイド・クライアントサイド両方で使用
  */
 
+import { useId } from "react";
 import type { BackgroundId } from "@/lib/stgy/types";
 import { BACKGROUND_SIZES } from "./constants";
 
@@ -35,6 +36,7 @@ export function BackgroundRenderer({
 	width,
 	height,
 }: BackgroundRendererProps) {
+	const patternId = useId();
 	const cx = width / 2;
 	const cy = height / 2;
 	const radius = Math.min(width, height) / 2 - 10;
@@ -50,16 +52,16 @@ export function BackgroundRenderer({
 			return (
 				<g>
 					<rect width={width} height={height} fill="#2a2a2a" />
-					<CheckerPattern id="full-checker" />
-					<rect width={width} height={height} fill="url(#full-checker)" />
+					<CheckerPattern id={`full-checker-${patternId}`} />
+					<rect width={width} height={height} fill={`url(#full-checker-${patternId})`} />
 				</g>
 			);
 
 		case 3: // 円形チェック
 			return (
 				<g>
-					<CheckerPattern id="circle-checker" />
-					<circle cx={cx} cy={cy} r={radius} fill="url(#circle-checker)" />
+					<CheckerPattern id={`circle-checker-${patternId}`} />
+					<circle cx={cx} cy={cy} r={radius} fill={`url(#circle-checker-${patternId})`} />
 					<circle
 						cx={cx}
 						cy={cy}
@@ -74,13 +76,13 @@ export function BackgroundRenderer({
 		case 4: // 正方形チェック
 			return (
 				<g>
-					<CheckerPattern id="square-checker" />
+					<CheckerPattern id={`square-checker-${patternId}`} />
 					<rect
 						x={(width - squareSize) / 2}
 						y={(height - squareSize) / 2}
 						width={squareSize}
 						height={squareSize}
-						fill="url(#square-checker)"
+						fill={`url(#square-checker-${patternId})`}
 					/>
 					<rect
 						x={(width - squareSize) / 2}

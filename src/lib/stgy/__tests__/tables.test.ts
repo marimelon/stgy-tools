@@ -87,8 +87,8 @@ describe("tables", () => {
       // Some sample checks
       expect(KEY_TABLE["+"]).toBe("N");
       expect(KEY_TABLE["-"]).toBe("P");
-      expect(KEY_TABLE["A"]).toBe("D");
-      expect(KEY_TABLE["a"]).toBe("i");
+      expect(KEY_TABLE.A).toBe("D");
+      expect(KEY_TABLE.a).toBe("i");
       expect(KEY_TABLE["0"]).toBe("x");
     });
   });
@@ -96,9 +96,9 @@ describe("tables", () => {
   describe("ALPHABET_TABLE", () => {
     it("should have entries for custom alphabet", () => {
       // Some sample checks
-      expect(ALPHABET_TABLE["b"]).toBe("-");
+      expect(ALPHABET_TABLE.b).toBe("-");
       expect(ALPHABET_TABLE["2"]).toBe("0");
-      expect(ALPHABET_TABLE["f"]).toBe("A");
+      expect(ALPHABET_TABLE.f).toBe("A");
     });
   });
 });

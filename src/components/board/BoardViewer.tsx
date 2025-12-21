@@ -39,12 +39,15 @@ export function BoardViewer({
   };
 
   return (
+    // biome-ignore lint/a11y/useKeyWithClickEvents: SVG element with click for deselection
     <svg
       width={CANVAS_WIDTH * scale}
       height={CANVAS_HEIGHT * scale}
       viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
       style={{ backgroundColor: "#1a1a1a" }}
       onClick={handleBackgroundClick}
+      role="img"
+      aria-label="Strategy Board Viewer"
     >
       <BackgroundRenderer
         backgroundId={backgroundId}

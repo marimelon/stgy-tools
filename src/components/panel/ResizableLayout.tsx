@@ -49,6 +49,7 @@ export function ResizableLayout({
 			{/* 左サイドバー */}
 			{hasLeftSidebar && (
 				<>
+					{/* biome-ignore lint/correctness/useUniqueElementIds: Panel IDs must be static for layout persistence */}
 					<Panel defaultSize="20%" minSize="150px" maxSize="50%" id="left-sidebar">
 						<SidebarGroup
 							panels={leftPanels}
@@ -61,6 +62,7 @@ export function ResizableLayout({
 			)}
 
 			{/* 中央（キャンバス） */}
+			{/* biome-ignore lint/correctness/useUniqueElementIds: Panel IDs must be static for layout persistence */}
 			<Panel minSize="20%" id="center">
 				{children}
 			</Panel>
@@ -69,6 +71,7 @@ export function ResizableLayout({
 			{hasRightSidebar && (
 				<>
 					<PanelResizeHandle className="w-1 bg-slate-700 hover:bg-cyan-500 transition-colors cursor-col-resize" />
+					{/* biome-ignore lint/correctness/useUniqueElementIds: Panel IDs must be static for layout persistence */}
 					<Panel defaultSize="22%" minSize="200px" maxSize="50%" id="right-sidebar">
 						<SidebarGroup
 							panels={rightPanels}

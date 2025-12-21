@@ -53,8 +53,9 @@ function getIconPath(objectId: number): string {
 export function loadImageAsDataUri(objectId: number): string | null {
   const cacheKey = `icon-${objectId}`;
 
-  if (imageCache.has(cacheKey)) {
-    return imageCache.get(cacheKey)!;
+  const cached = imageCache.get(cacheKey);
+  if (cached) {
+    return cached;
   }
 
   try {

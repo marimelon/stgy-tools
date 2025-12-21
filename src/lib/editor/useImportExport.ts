@@ -2,7 +2,7 @@
  * インポート/エクスポート機能のカスタムフック
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useCallback } from "react";
 import type { BoardData } from "@/lib/stgy";
 import { encodeStgy, decodeStgy, parseBoardData, extractKeyFromStgy } from "@/lib/stgy";
 import { recalculateBoardSize } from "./factory";
