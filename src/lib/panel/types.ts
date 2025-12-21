@@ -33,7 +33,7 @@ export type PanelPreset = "default" | "propertyLeft" | "allLeft" | "allRight";
 export const DEFAULT_PANEL_LAYOUT: PanelLayoutConfig = {
 	panels: {
 		objectPalette: { slot: "left", order: 0, visible: true },
-		layerPanel: { slot: "left", order: 1, visible: true },
+		layerPanel: { slot: "right", order: 1, visible: true },
 		propertyPanel: { slot: "right", order: 0, visible: true },
 	},
 };
