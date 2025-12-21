@@ -4,7 +4,7 @@
  * カテゴリ別にオブジェクトを表示し、クリックでボードに追加
  */
 
-import { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ObjectRenderer } from "@/components/board";
 import { ObjectNames, ObjectIds } from "@/lib/stgy";
 import { useEditor, createDefaultObject } from "@/lib/editor";
@@ -251,6 +251,10 @@ function ObjectPaletteItem({
   objectId: number;
   onClick: () => void;
 }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
   const object = createDefaultObject(objectId, { x: 20, y: 20 });
   const name = ObjectNames[objectId] ?? `ID: ${objectId}`;
 
@@ -259,28 +263,73 @@ function ObjectPaletteItem({
     e.dataTransfer.effectAllowed = "copy";
   };
 
+  // ツールチップ位置の計算
+  useEffect(() => {
+    if (isHovered && buttonRef.current && tooltipRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+
+      // ツールチップの中央位置
+      let left = buttonRect.left + buttonRect.width / 2 - tooltipRect.width / 2;
+
+      // 左端からはみ出す場合
+      if (left < 8) {
+        left = 8;
+      }
+      // 右端からはみ出す場合
+      if (left + tooltipRect.width > viewportWidth - 8) {
+        left = viewportWidth - tooltipRect.width - 8;
+      }
+
+      setTooltipStyle({
+        position: "fixed",
+        left: `${left}px`,
+        top: `${buttonRect.top - tooltipRect.height - 8}px`,
+      });
+    }
+  }, [isHovered]);
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      draggable
-      onDragStart={handleDragStart}
-      className="p-1 bg-slate-700 hover:bg-slate-600 rounded transition-colors cursor-grab active:cursor-grabbing"
-      title={name}
+    <div
+      className="relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <svg
-        width={40}
-        height={40}
-        viewBox="0 0 40 40"
-        className="bg-slate-800 rounded pointer-events-none"
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={onClick}
+        draggable
+        onDragStart={handleDragStart}
+        className="p-1 bg-slate-700 hover:bg-slate-600 rounded transition-colors cursor-grab active:cursor-grabbing w-full"
       >
-        <ObjectRenderer
-          object={object}
-          index={0}
-          showBoundingBox={false}
-          selected={false}
-        />
-      </svg>
-    </button>
+        <svg
+          width={40}
+          height={40}
+          viewBox="0 0 40 40"
+          className="bg-slate-800 rounded pointer-events-none"
+        >
+          <ObjectRenderer
+            object={object}
+            index={0}
+            showBoundingBox={false}
+            selected={false}
+          />
+        </svg>
+      </button>
+      {/* カスタムツールチップ */}
+      {isHovered && (
+        <div
+          ref={tooltipRef}
+          className="z-50 pointer-events-none"
+          style={tooltipStyle}
+        >
+          <div className="px-2 py-1 text-xs font-medium text-white bg-slate-900/95 rounded shadow-lg whitespace-nowrap border border-slate-600">
+            {name}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
