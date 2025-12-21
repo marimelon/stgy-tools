@@ -90,6 +90,11 @@ const COLOR_CHANGEABLE_OBJECT_IDS = new Set<number>([
 ]);
 
 /**
+ * デフォルトのAoE塗りつぶし色
+ */
+const DEFAULT_AOE_FILL = "rgba(255, 150, 0, 0.4)";
+
+/**
  * パラメータまたは色が変更されたAoEオブジェクトをSVGでレンダリング
  */
 function renderColoredAoE(
@@ -100,7 +105,10 @@ function renderColoredAoE(
 	param1?: number,
 	param2?: number,
 ): React.ReactNode | null {
-	const fill = colorToRgba(color);
+	// 色変更対応オブジェクト（LineAoE, Line）は指定色を使用、それ以外はデフォルトAoE色
+	const fill = COLOR_CHANGEABLE_OBJECT_IDS.has(objectId)
+		? colorToRgba(color)
+		: DEFAULT_AOE_FILL;
 	const strokeColor = "#ff8800";
 
 	switch (objectId) {
