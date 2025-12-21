@@ -90,6 +90,8 @@ export interface BoardData {
   backgroundId: BackgroundId;
   /** オブジェクトリスト */
   objects: BoardObject[];
+  /** サイズ配列後のパディングバイト (ラウンドトリップ用、内部使用) */
+  _sizePaddingByte?: number;
 }
 
 /**

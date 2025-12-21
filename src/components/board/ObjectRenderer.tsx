@@ -814,6 +814,15 @@ function AoEObject({
 		case ObjectIds.Gaze:
 			return <GazeIcon transform={transform} />;
 
+		case ObjectIds.Area1P:
+			return <Area1PIcon transform={transform} />;
+
+		case ObjectIds.Area2P:
+			return <Area2PIcon transform={transform} />;
+
+		case ObjectIds.Area3P:
+			return <Area3PIcon transform={transform} />;
+
 		case ObjectIds.Area4P:
 			return <Area4PIcon transform={transform} />;
 
@@ -1068,34 +1077,145 @@ function EnemyIcon({
 	objectId: number;
 	transform: string;
 }) {
+	const id = useId();
 	const size = ENEMY_SIZES[objectId] ?? SIZES.ENEMY_SMALL;
+	// 元のSVGは100x100なのでスケール係数を計算
+	const scale = size / 100;
+
+	// エネミータイプに応じた色設定
+	const getColorScheme = () => {
+		switch (objectId) {
+			case ObjectIds.EnemySmall:
+				// 紫色のシールド（グロー効果あり）
+				return {
+					gradientId: `enemySmallGrad-${id}`,
+					glowId: `enemySmallGlow-${id}`,
+					gradientColors: ["#b366ff", "#6600cc", "#330066"],
+					strokeColor: "#ff66ff",
+					faceColor: "#ff66ff",
+					hasGlow: true,
+				};
+			case ObjectIds.EnemyMedium:
+				// 青色のシールド
+				return {
+					gradientId: `enemyMediumGrad-${id}`,
+					glowId: null,
+					gradientColors: ["#0033cc", "#000066", "#000000"],
+					strokeColor: "#80dfff",
+					faceColor: "#80dfff",
+					hasGlow: false,
+				};
+			case ObjectIds.EnemyLarge:
+			default:
+				// 赤茶色のシールド
+				return {
+					gradientId: `enemyLargeGrad-${id}`,
+					glowId: null,
+					gradientColors: ["#4a0000", "#200000", "#000000"],
+					strokeColor: "#ff4d4d",
+					faceColor: "#ff9999",
+					hasGlow: false,
+				};
+		}
+	};
+
+	const colors = getColorScheme();
+
+	// シールドのパス（元SVGのパスをスケーリング）
+	const shieldPath =
+		objectId === ObjectIds.EnemySmall
+			? // エネミー小：角が上に尖った形状
+				`M ${22 * scale} ${30 * scale}
+				Q ${15 * scale} ${10 * scale} ${8 * scale} ${2 * scale}
+				Q ${50 * scale} ${22 * scale} ${92 * scale} ${2 * scale}
+				Q ${85 * scale} ${10 * scale} ${78 * scale} ${30 * scale}
+				C ${88 * scale} ${50 * scale} ${82 * scale} ${80 * scale} ${50 * scale} ${98 * scale}
+				C ${18 * scale} ${80 * scale} ${12 * scale} ${50 * scale} ${22 * scale} ${30 * scale} Z`
+			: // エネミー中・大：少し丸みのある形状
+				`M ${20 * scale} ${25 * scale}
+				L ${15 * scale} ${15 * scale}
+				Q ${50 * scale} ${25 * scale} ${85 * scale} ${15 * scale}
+				L ${80 * scale} ${25 * scale}
+				C ${90 * scale} ${45 * scale} ${85 * scale} ${75 * scale} ${50 * scale} ${95 * scale}
+				C ${15 * scale} ${75 * scale} ${10 * scale} ${45 * scale} ${20 * scale} ${25 * scale} Z`;
+
+	// エネミー大のみ外縁を追加
+	const outerPath =
+		objectId === ObjectIds.EnemyLarge
+			? `M ${18 * scale} ${20 * scale}
+			   Q ${50 * scale} ${28 * scale} ${82 * scale} ${20 * scale}
+			   C ${92 * scale} ${45 * scale} ${88 * scale} ${75 * scale} ${50 * scale} ${95 * scale}
+			   C ${12 * scale} ${75 * scale} ${8 * scale} ${45 * scale} ${18 * scale} ${20 * scale} Z`
+			: null;
 
 	return (
-		<g transform={transform}>
-			<circle
-				cx={0}
-				cy={0}
-				r={size / 2}
-				fill={COLORS.FILL_ENEMY}
-				stroke={COLORS.STROKE_ENEMY}
-				strokeWidth="2"
+		<g transform={`${transform} translate(${-size / 2}, ${-size / 2})`}>
+			<defs>
+				<radialGradient
+					id={colors.gradientId}
+					cx="50%"
+					cy={objectId === ObjectIds.EnemySmall ? "45%" : "40%"}
+					r={objectId === ObjectIds.EnemySmall ? "65%" : "70%"}
+				>
+					<stop offset="0%" stopColor={colors.gradientColors[0]} stopOpacity="1" />
+					<stop offset={objectId === ObjectIds.EnemySmall ? "60%" : "70%"} stopColor={colors.gradientColors[1]} stopOpacity="1" />
+					<stop offset="100%" stopColor={colors.gradientColors[2]} stopOpacity="1" />
+				</radialGradient>
+				{colors.hasGlow && colors.glowId && (
+					<filter id={colors.glowId}>
+						<feGaussianBlur stdDeviation={2.5 * scale} result="coloredBlur" />
+						<feMerge>
+							<feMergeNode in="coloredBlur" />
+							<feMergeNode in="SourceGraphic" />
+						</feMerge>
+					</filter>
+				)}
+			</defs>
+
+			{/* エネミー大の外縁 */}
+			{outerPath && (
+				<path d={outerPath} fill="#ffccaa" stroke="none" />
+			)}
+
+			{/* シールド本体 */}
+			<path
+				d={shieldPath}
+				fill={`url(#${colors.gradientId})`}
+				stroke={colors.strokeColor}
+				strokeWidth={objectId === ObjectIds.EnemySmall ? 2.5 * scale : 2 * scale}
+				strokeLinejoin="round"
+				filter={colors.hasGlow && colors.glowId ? `url(#${colors.glowId})` : undefined}
 			/>
-			<line
-				x1={-size / 4}
-				y1={0}
-				x2={size / 4}
-				y2={0}
-				stroke={COLORS.STROKE_WHITE}
-				strokeWidth="2"
-			/>
-			<line
-				x1={0}
-				y1={-size / 4}
-				x2={0}
-				y2={size / 4}
-				stroke={COLORS.STROKE_WHITE}
-				strokeWidth="2"
-			/>
+
+			{/* 顔のパーツ */}
+			<g
+				fill={colors.faceColor}
+				opacity={objectId === ObjectIds.EnemySmall ? 1 : 0.9}
+				filter={colors.hasGlow && colors.glowId ? `url(#${colors.glowId})` : undefined}
+			>
+				{/* 左目 */}
+				<path
+					d={`M ${32 * scale} ${35 * scale}
+						L ${45 * scale} ${38 * scale}
+						L ${35 * scale} ${48 * scale} Z`}
+				/>
+				{/* 右目 */}
+				<path
+					d={`M ${68 * scale} ${35 * scale}
+						L ${55 * scale} ${38 * scale}
+						L ${65 * scale} ${48 * scale} Z`}
+				/>
+				{/* 口 */}
+				<path
+					d={`M ${32 * scale} ${56 * scale}
+						Q ${50 * scale} ${62 * scale} ${68 * scale} ${56 * scale}
+						L ${65 * scale} ${76 * scale}
+						L ${57 * scale} ${64 * scale}
+						L ${50 * scale} ${78 * scale}
+						L ${43 * scale} ${64 * scale}
+						L ${35 * scale} ${76 * scale} Z`}
+				/>
+			</g>
 		</g>
 	);
 }
@@ -1403,6 +1523,289 @@ function Area4PIcon({ transform }: { transform: string }) {
 					/>
 				</g>
 			))}
+		</g>
+	);
+}
+
+// 1人用エリアアイコン
+function Area1PIcon({ transform }: { transform: string }) {
+	const id = useId();
+	const bgAuraId = `area1pBgAura-${id}`;
+	const centerGradientId = `area1pCenterGrad-${id}`;
+
+	const outerRadius = 32;
+	const centerRadius = 10;
+	const spikeCount = 16;
+
+	// スパイクを生成
+	const spikes = [];
+	for (let i = 0; i < spikeCount; i++) {
+		const angle = (i * 360) / spikeCount;
+		spikes.push(
+			<path
+				key={i}
+				d="M0 -31 L-1.5 -34 L1.5 -34 Z"
+				fill="#ffffff"
+				transform={`rotate(${angle})`}
+			/>,
+		);
+	}
+
+	return (
+		<g transform={transform}>
+			<defs>
+				<radialGradient id={bgAuraId} cx="50%" cy="50%" r="50%">
+					<stop offset="50%" stopColor="#ff99dd" stopOpacity="0.4" />
+					<stop offset="100%" stopColor="#ff99dd" stopOpacity="0" />
+				</radialGradient>
+				<radialGradient id={centerGradientId} cx="50%" cy="50%" r="50%">
+					<stop offset="0%" stopColor="#ffeeb0" stopOpacity="1" />
+					<stop offset="40%" stopColor="#ffaa80" stopOpacity="1" />
+					<stop offset="100%" stopColor="#ff66cc" stopOpacity="1" />
+				</radialGradient>
+			</defs>
+
+			{/* 背景グロー */}
+			<circle cx={0} cy={0} r={outerRadius + 6} fill={`url(#${bgAuraId})`} />
+
+			{/* 外周円 */}
+			<circle
+				cx={0}
+				cy={0}
+				r={outerRadius}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1"
+			/>
+			<circle
+				cx={0}
+				cy={0}
+				r={outerRadius}
+				fill="none"
+				stroke="#ffccff"
+				strokeWidth="2"
+				opacity="0.5"
+			/>
+
+			{/* スパイク */}
+			<g>{spikes}</g>
+
+			{/* 中央の目 */}
+			<circle
+				cx={0}
+				cy={0}
+				r={centerRadius + 2}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle cx={0} cy={0} r={centerRadius} fill={`url(#${centerGradientId})`} />
+		</g>
+	);
+}
+
+// 2人用エリアアイコン
+function Area2PIcon({ transform }: { transform: string }) {
+	const id = useId();
+	const bgAuraId = `area2pBgAura-${id}`;
+	const eyeGradientId = `area2pEyeGrad-${id}`;
+	const bridgeGradientId = `area2pBridgeGrad-${id}`;
+
+	const outerRadius = 32;
+	const eyeRadius = 10;
+	const eyeOffset = 18;
+	const spikeCount = 16;
+
+	// スパイクを生成
+	const spikes = [];
+	for (let i = 0; i < spikeCount; i++) {
+		const angle = (i * 360) / spikeCount;
+		spikes.push(
+			<path
+				key={i}
+				d="M0 -31 L-1.5 -34 L1.5 -34 Z"
+				fill="#ffffff"
+				transform={`rotate(${angle})`}
+			/>,
+		);
+	}
+
+	return (
+		<g transform={transform}>
+			<defs>
+				<radialGradient id={bgAuraId} cx="50%" cy="50%" r="60%">
+					<stop offset="40%" stopColor="#ff99dd" stopOpacity="0.3" />
+					<stop offset="100%" stopColor="#ff99dd" stopOpacity="0" />
+				</radialGradient>
+				<radialGradient id={eyeGradientId} cx="50%" cy="50%" r="50%">
+					<stop offset="0%" stopColor="#ffeeb0" stopOpacity="1" />
+					<stop offset="50%" stopColor="#ffaa80" stopOpacity="1" />
+					<stop offset="100%" stopColor="#ff66cc" stopOpacity="1" />
+				</radialGradient>
+				<linearGradient id={bridgeGradientId} x1="0%" y1="50%" x2="100%" y2="50%">
+					<stop offset="0%" stopColor="#ff66cc" stopOpacity="1" />
+					<stop offset="50%" stopColor="#ffeeb0" stopOpacity="1" />
+					<stop offset="100%" stopColor="#ff66cc" stopOpacity="1" />
+				</linearGradient>
+			</defs>
+
+			{/* 背景グロー */}
+			<circle cx={0} cy={0} r={outerRadius + 8} fill={`url(#${bgAuraId})`} />
+
+			{/* 外周円 */}
+			<circle
+				cx={0}
+				cy={0}
+				r={outerRadius}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1"
+			/>
+
+			{/* スパイク */}
+			<g>{spikes}</g>
+
+			{/* 装飾的な曲線 */}
+			<g fill="none" stroke="#ffffff" strokeWidth="0.8" strokeLinecap="round">
+				<path d="M-30 -13 L-25 -13 Q-20 -13 -17 -16 Q-14 -19 -10 -19 L10 -19 Q14 -19 17 -16 Q20 -13 25 -13 L30 -13" />
+				<path d="M-30 -10 L-24 -10 Q-20 -10 -17 -12 Q-14 -14 -10 -14 L10 -14 Q14 -14 17 -12 Q20 -10 24 -10 L30 -10" opacity="0.7" />
+				<path d="M-30 13 L-25 13 Q-20 13 -17 16 Q-14 19 -10 19 L10 19 Q14 19 17 16 Q20 13 25 13 L30 13" />
+				<path d="M-30 10 L-24 10 Q-20 10 -17 12 Q-14 14 -10 14 L10 14 Q14 14 17 12 Q20 10 24 10 L30 10" opacity="0.7" />
+			</g>
+
+			{/* ブリッジ */}
+			<rect
+				x={-10}
+				y={-3}
+				width={20}
+				height={6}
+				rx={1}
+				ry={1}
+				fill={`url(#${bridgeGradientId})`}
+				stroke="#ffffff"
+				strokeWidth="0.8"
+			/>
+
+			{/* 左の目 */}
+			<circle
+				cx={-eyeOffset}
+				cy={0}
+				r={eyeRadius + 1.5}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle cx={-eyeOffset} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
+
+			{/* 右の目 */}
+			<circle
+				cx={eyeOffset}
+				cy={0}
+				r={eyeRadius + 1.5}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle cx={eyeOffset} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
+		</g>
+	);
+}
+
+// 3人用エリアアイコン
+function Area3PIcon({ transform }: { transform: string }) {
+	const id = useId();
+	const bgAuraId = `area3pBgAura-${id}`;
+	const eyeGradientId = `area3pEyeGrad-${id}`;
+
+	const outerRadius = 32;
+	const eyeRadius = 10;
+	const eyeSpacing = 22;
+	const spikeCount = 16;
+
+	// スパイクを生成
+	const spikes = [];
+	for (let i = 0; i < spikeCount; i++) {
+		const angle = (i * 360) / spikeCount;
+		spikes.push(
+			<path
+				key={i}
+				d="M0 -31 L-1.5 -34 L1.5 -34 Z"
+				fill="#ffffff"
+				transform={`rotate(${angle})`}
+			/>,
+		);
+	}
+
+	return (
+		<g transform={transform}>
+			<defs>
+				<radialGradient id={bgAuraId} cx="50%" cy="50%" r="60%">
+					<stop offset="40%" stopColor="#ff99dd" stopOpacity="0.3" />
+					<stop offset="100%" stopColor="#ff99dd" stopOpacity="0" />
+				</radialGradient>
+				<radialGradient id={eyeGradientId} cx="50%" cy="50%" r="50%">
+					<stop offset="0%" stopColor="#ffeeb0" stopOpacity="1" />
+					<stop offset="50%" stopColor="#ffaa80" stopOpacity="1" />
+					<stop offset="100%" stopColor="#ff66cc" stopOpacity="1" />
+				</radialGradient>
+			</defs>
+
+			{/* 背景グロー */}
+			<circle cx={0} cy={0} r={outerRadius + 8} fill={`url(#${bgAuraId})`} />
+
+			{/* 外周円 */}
+			<circle
+				cx={0}
+				cy={0}
+				r={outerRadius}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1"
+			/>
+
+			{/* スパイク */}
+			<g>{spikes}</g>
+
+			{/* 装飾的な波線 */}
+			<g fill="none" stroke="#ffffff" strokeWidth="0.8" strokeLinecap="round">
+				<path d="M-34 -10 Q-24 -20 -14 -10 Q0 -20 14 -10 Q24 -20 34 -10" />
+				<path d="M-34 -7 Q-24 -17 -14 -7 Q0 -17 14 -7 Q24 -17 34 -7" opacity="0.6" strokeWidth="0.6" />
+				<path d="M-34 10 Q-24 20 -14 10 Q0 20 14 10 Q24 20 34 10" />
+				<path d="M-34 7 Q-24 17 -14 7 Q0 17 14 7 Q24 17 34 7" opacity="0.6" strokeWidth="0.6" />
+			</g>
+
+			{/* 左の目 */}
+			<circle
+				cx={-eyeSpacing}
+				cy={0}
+				r={eyeRadius + 1.5}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle cx={-eyeSpacing} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
+
+			{/* 中央の目 */}
+			<circle
+				cx={0}
+				cy={0}
+				r={eyeRadius + 1.5}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle cx={0} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
+
+			{/* 右の目 */}
+			<circle
+				cx={eyeSpacing}
+				cy={0}
+				r={eyeRadius + 1.5}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle cx={eyeSpacing} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
 		</g>
 	);
 }

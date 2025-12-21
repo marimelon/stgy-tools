@@ -128,6 +128,7 @@ export function parseBoardData(data: Uint8Array): BoardData {
   const param1s: number[] = [];
   const param2s: number[] = [];
   const param3s: number[] = [];
+  let sizePaddingByte: number | undefined;
 
   while (reader.remaining >= 4) {
     const fieldId = reader.readUint16();
@@ -207,8 +208,10 @@ export function parseBoardData(data: Uint8Array): BoardData {
           const size = reader.readUint8();
           sizes.push(size);
         }
-        // 2バイト境界にアライン
-        reader.alignTo(2);
+        // 2バイト境界にアライン (パディングバイトを保存)
+        if (count % 2 === 1) {
+          sizePaddingByte = reader.readUint8();
+        }
         break;
       }
 
@@ -305,5 +308,6 @@ export function parseBoardData(data: Uint8Array): BoardData {
     name: boardName,
     backgroundId,
     objects,
+    _sizePaddingByte: sizePaddingByte,
   };
 }

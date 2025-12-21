@@ -9,9 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as EditorRouteImport } from './routes/editor'
+import { Route as DebugStgyRouteImport } from './routes/debug-stgy'
 import { Route as DebugRouteImport } from './routes/debug'
 import { Route as IndexRouteImport } from './routes/index'
 
+const EditorRoute = EditorRouteImport.update({
+  id: '/editor',
+  path: '/editor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DebugStgyRoute = DebugStgyRouteImport.update({
+  id: '/debug-stgy',
+  path: '/debug-stgy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DebugRoute = DebugRouteImport.update({
   id: '/debug',
   path: '/debug',
@@ -26,31 +38,53 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/debug': typeof DebugRoute
+  '/debug-stgy': typeof DebugStgyRoute
+  '/editor': typeof EditorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/debug': typeof DebugRoute
+  '/debug-stgy': typeof DebugStgyRoute
+  '/editor': typeof EditorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/debug': typeof DebugRoute
+  '/debug-stgy': typeof DebugStgyRoute
+  '/editor': typeof EditorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/debug'
+  fullPaths: '/' | '/debug' | '/debug-stgy' | '/editor'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/debug'
-  id: '__root__' | '/' | '/debug'
+  to: '/' | '/debug' | '/debug-stgy' | '/editor'
+  id: '__root__' | '/' | '/debug' | '/debug-stgy' | '/editor'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DebugRoute: typeof DebugRoute
+  DebugStgyRoute: typeof DebugStgyRoute
+  EditorRoute: typeof EditorRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/editor': {
+      id: '/editor'
+      path: '/editor'
+      fullPath: '/editor'
+      preLoaderRoute: typeof EditorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/debug-stgy': {
+      id: '/debug-stgy'
+      path: '/debug-stgy'
+      fullPath: '/debug-stgy'
+      preLoaderRoute: typeof DebugStgyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/debug': {
       id: '/debug'
       path: '/debug'
@@ -71,6 +105,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DebugRoute: DebugRoute,
+  DebugStgyRoute: DebugStgyRoute,
+  EditorRoute: EditorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
