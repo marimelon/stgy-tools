@@ -23,7 +23,6 @@ import {
 	PropertyPanel,
 } from "@/components/editor";
 import { loadSession, useAutoSave } from "@/lib/persistence";
-import { CompactFooter } from "@/components/ui/Footer";
 
 /** キャンバスの基本サイズ */
 const CANVAS_WIDTH = 512;
@@ -243,8 +242,6 @@ function EditorContent({ initialEncodeKey }: EditorContentProps) {
 				</ResizableLayout>
 			</div>
 
-			{/* フッター */}
-			<CompactFooter className="border-t border-border bg-background/50" />
 		</div>
 	);
 }

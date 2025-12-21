@@ -16,6 +16,17 @@ import { ObjectIds } from "@/lib/stgy/types";
 import { loadImageAsDataUri } from "./imageLoader";
 
 /**
+ * SVGレンダリングオプション
+ */
+export interface RenderOptions {
+	/** ボード名（タイトル）を表示するか */
+	showTitle?: boolean;
+}
+
+/** タイトルバーの高さ */
+const TITLE_BAR_HEIGHT = 32;
+
+/**
  * デフォルトの色（この色の場合はオリジナル画像を使用）
  */
 const DEFAULT_OBJECT_COLOR: Color = { r: 255, g: 100, b: 0, opacity: 0 };
@@ -369,37 +380,118 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 	);
 }
 
+/** 枠線の太さ */
+const BORDER_WIDTH = 2;
+
+/**
+ * タイトルバーコンポーネント（左上にタイトル表示）
+ */
+function TitleBar({ title, width }: { title: string; width: number }) {
+	return (
+		<g>
+			{/* 白い背景バー */}
+			<rect
+				x={BORDER_WIDTH}
+				y={BORDER_WIDTH}
+				width={width - BORDER_WIDTH * 2}
+				height={TITLE_BAR_HEIGHT}
+				fill="#ffffff"
+			/>
+			{/* 下線 */}
+			<line
+				x1={BORDER_WIDTH}
+				y1={TITLE_BAR_HEIGHT + BORDER_WIDTH}
+				x2={width - BORDER_WIDTH}
+				y2={TITLE_BAR_HEIGHT + BORDER_WIDTH}
+				stroke="rgba(128, 128, 128, 0.3)"
+				strokeWidth={1}
+			/>
+			{/* タイトルテキスト（左上に配置、灰色） */}
+			<text
+				x={BORDER_WIDTH + 12}
+				y={BORDER_WIDTH + TITLE_BAR_HEIGHT / 2}
+				fill="#555555"
+				fontSize="14"
+				fontFamily="sans-serif"
+				fontWeight="500"
+				textAnchor="start"
+				dominantBaseline="central"
+			>
+				{title}
+			</text>
+		</g>
+	);
+}
+
+/**
+ * 画像全体を囲む白い枠
+ */
+function BorderFrame({ width, height }: { width: number; height: number }) {
+	return (
+		<rect
+			x={BORDER_WIDTH / 2}
+			y={BORDER_WIDTH / 2}
+			width={width - BORDER_WIDTH}
+			height={height - BORDER_WIDTH}
+			fill="none"
+			stroke="rgba(255, 255, 255, 0.8)"
+			strokeWidth={BORDER_WIDTH}
+		/>
+	);
+}
+
 /**
  * BoardDataをSVG文字列にレンダリング
  */
-export function renderBoardToSVG(boardData: BoardData): string {
-	const { backgroundId, objects } = boardData;
+export function renderBoardToSVG(
+	boardData: BoardData,
+	options: RenderOptions = {},
+): string {
+	const { backgroundId, objects, name } = boardData;
+	const { showTitle = false } = options;
+
+	// タイトル表示時は高さを拡張
+	const totalHeight = showTitle
+		? CANVAS_HEIGHT + TITLE_BAR_HEIGHT
+		: CANVAS_HEIGHT;
 
 	// 表示するオブジェクトのみフィルタ（逆順で描画）
 	const visibleObjects = objects.filter((obj) => obj.flags.visible).reverse();
+
+	// コンテンツ領域のYオフセット（タイトル表示時はタイトルバーの下から）
+	const contentOffsetY = showTitle ? TITLE_BAR_HEIGHT : 0;
 
 	const svgElement = (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			width={CANVAS_WIDTH}
-			height={CANVAS_HEIGHT}
-			viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
+			height={totalHeight}
+			viewBox={`0 0 ${CANVAS_WIDTH} ${totalHeight}`}
 			style={{ backgroundColor: "#1a1a1a" }}
 		>
-			{/* 背景色 */}
-			<rect width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill="#1a1a1a" />
+			{/* 全体背景色 */}
+			<rect width={CANVAS_WIDTH} height={totalHeight} fill="#1a1a1a" />
 
-			{/* 背景パターン（共通コンポーネント使用） */}
-			<BackgroundRenderer
-				backgroundId={backgroundId}
-				width={CANVAS_WIDTH}
-				height={CANVAS_HEIGHT}
-			/>
+			{/* タイトルバー（オプション） */}
+			{showTitle && <TitleBar title={name} width={CANVAS_WIDTH} />}
 
-			{/* オブジェクト */}
-			{visibleObjects.map((obj, index) => (
-				<ObjectRenderer key={index} object={obj} />
-			))}
+			{/* コンテンツ領域 */}
+			<g transform={`translate(0, ${contentOffsetY})`}>
+				{/* 背景パターン（共通コンポーネント使用） */}
+				<BackgroundRenderer
+					backgroundId={backgroundId}
+					width={CANVAS_WIDTH}
+					height={CANVAS_HEIGHT}
+				/>
+
+				{/* オブジェクト */}
+				{visibleObjects.map((obj, index) => (
+					<ObjectRenderer key={index} object={obj} />
+				))}
+			</g>
+
+			{/* 画像全体を囲む白い枠（最前面に描画） */}
+			{showTitle && <BorderFrame width={CANVAS_WIDTH} height={totalHeight} />}
 		</svg>
 	);
 

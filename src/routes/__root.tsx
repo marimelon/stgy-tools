@@ -4,6 +4,9 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import appCss from '../styles.css?url'
 
+// Initialize i18n
+import '../lib/i18n'
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [

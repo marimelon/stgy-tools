@@ -1,0 +1,36 @@
+{
+	"common": {
+		"copy": "Copy",
+		"copied": "Copied",
+		"preview": "Preview",
+		"generate": "Generate",
+		"error": "Error"
+	},
+	"nav": {
+		"viewer": "Viewer",
+		"editor": "Editor"
+	},
+	"imageGenerator": {
+		"pageTitle": "STGY Tools Image Generator",
+		"title": "Generate Image URL",
+		"description": "Enter a stgy code to generate an image URL.",
+		"stgyCode": "stgy Code",
+		"stgyCodePlaceholder": "[stgy:a...]",
+		"outputFormat": "Output Format",
+		"outputSize": "Output Size (PNG)",
+		"showBoardName": "Show Board Name",
+		"generateUrl": "Generate URL",
+		"generatedUrl": "Generated URL",
+		"htmlCode": "HTML Code",
+		"markdownCode": "Markdown Code",
+		"strategyBoard": "Strategy Board",
+		"parseError": "Failed to parse stgy code: {{message}}",
+		"unknownError": "Unknown error"
+	},
+	"language": {
+		"label": "Language",
+		"ja": "日本語",
+		"en": "English"
+	}
+}
+

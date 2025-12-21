@@ -5,6 +5,7 @@
  * GET /image?code=[stgy:a...]&format=svg  (SVGで返す場合)
  * GET /image?code=[stgy:a...]&width=1024  (幅を指定、デフォルト512、最大1024)
  * GET /image?code=[stgy:a...]&scale=2     (スケール指定、1-2倍)
+ * GET /image?code=[stgy:a...]&title=1     (ボード名を表示)
  */
 
 import { Resvg } from "@resvg/resvg-js";
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/image")({
 				const format = url.searchParams.get("format") ?? "png";
 				const widthParam = url.searchParams.get("width");
 				const scaleParam = url.searchParams.get("scale");
+				const titleParam = url.searchParams.get("title");
 
 				if (!code) {
 					// codeパラメータがない場合は生成ページにリダイレクト
@@ -49,6 +51,9 @@ export const Route = createFileRoute("/image")({
 					outputWidth = Math.min(Math.max(Number.parseInt(widthParam, 10) || DEFAULT_WIDTH, MIN_WIDTH), MAX_WIDTH);
 				}
 
+				// ボード名表示オプション（"1", "true", "yes" などで有効）
+				const showTitle = titleParam === "1" || titleParam === "true" || titleParam === "yes";
+
 				try {
 					// 1. stgy コードをデコード
 					const binary = decodeStgy(code);
@@ -57,7 +62,7 @@ export const Route = createFileRoute("/image")({
 					const boardData = parseBoardData(binary);
 
 					// 3. SVG を生成
-					const svg = renderBoardToSVG(boardData);
+					const svg = renderBoardToSVG(boardData, { showTitle });
 
 					// 4. フォーマットに応じて返す
 					if (format === "svg") {
