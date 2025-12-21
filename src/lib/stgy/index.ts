@@ -13,12 +13,17 @@ export type {
 } from "./types";
 export {
   BackgroundId,
+  DEFAULT_EDIT_PARAMS,
   DEFAULT_FLIP_FLAGS,
   DISABLED_OBJECT_IDS,
+  EDIT_PARAMS,
+  EditParamIds,
+  OBJECT_EDIT_PARAMS,
   OBJECT_FLIP_FLAGS,
   ObjectIds,
   ObjectNames,
 } from "./types";
+export type { EditParamDefinition } from "./types";
 
 // Debug utilities
 export { decodeStgyDebug, compareStgy, hexDump } from "./debug";

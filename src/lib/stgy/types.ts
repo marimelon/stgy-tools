@@ -511,3 +511,98 @@ export const DISABLED_OBJECT_IDS: readonly number[] = [
   99, // 未使用
   104, // 図形：矢印右回り
 ] as const;
+
+/**
+ * 編集パラメータID (TofuEditParam.ja.csv)
+ */
+export const EditParamIds = {
+  None: 0,
+  Size: 1, // サイズ (100, 50-200)
+  Rotation: 2, // 角度 (0, -180-180)
+  Opacity: 3, // 透過度 (0, 0-100)
+  Height: 4, // 縦幅 (128, 16-384)
+  Width: 5, // 横幅 (128, 16-512)
+  ConeAngle: 6, // 範囲角度 (90, 10-360)
+  DonutRange: 7, // ドーナツ範囲 (50, 0-240)
+  DisplayCount: 8, // 表示数 (1, 1-5)
+  HeightCount: 9, // 縦幅数 (1, 1-5)
+  WidthCount: 10, // 横幅数 (1, 1-5)
+  LineWidth: 11, // 縦幅/線幅 (6, 2-10)
+  SizeSmall: 12, // サイズ (50, 10-200) - 攻撃範囲用
+} as const;
+
+/**
+ * 編集パラメータ定義 (TofuEditParam.ja.csv から)
+ */
+export interface EditParamDefinition {
+  /** パラメータ名 */
+  name: string;
+  /** デフォルト値 */
+  defaultValue: number;
+  /** 最小値 */
+  min: number;
+  /** 最大値 */
+  max: number;
+  /** スライダー表示するか */
+  useSlider: boolean;
+}
+
+export const EDIT_PARAMS: Record<number, EditParamDefinition> = {
+  [EditParamIds.Size]: { name: "サイズ", defaultValue: 100, min: 50, max: 200, useSlider: true },
+  [EditParamIds.Rotation]: { name: "角度", defaultValue: 0, min: -180, max: 180, useSlider: true },
+  [EditParamIds.Opacity]: { name: "透過度", defaultValue: 0, min: 0, max: 100, useSlider: true },
+  [EditParamIds.Height]: { name: "縦幅", defaultValue: 128, min: 16, max: 384, useSlider: false },
+  [EditParamIds.Width]: { name: "横幅", defaultValue: 128, min: 16, max: 512, useSlider: false },
+  [EditParamIds.ConeAngle]: { name: "範囲角度", defaultValue: 90, min: 10, max: 360, useSlider: false },
+  [EditParamIds.DonutRange]: { name: "ドーナツ範囲", defaultValue: 50, min: 0, max: 240, useSlider: false },
+  [EditParamIds.DisplayCount]: { name: "表示数", defaultValue: 1, min: 1, max: 5, useSlider: false },
+  [EditParamIds.HeightCount]: { name: "縦幅数", defaultValue: 1, min: 1, max: 5, useSlider: false },
+  [EditParamIds.WidthCount]: { name: "横幅数", defaultValue: 1, min: 1, max: 5, useSlider: false },
+  [EditParamIds.LineWidth]: { name: "線幅", defaultValue: 6, min: 2, max: 10, useSlider: false },
+  [EditParamIds.SizeSmall]: { name: "サイズ", defaultValue: 50, min: 10, max: 200, useSlider: true },
+};
+
+/**
+ * オブジェクトごとの編集可能パラメータスロット (TofuObject.ja.csv カラム10-14)
+ * [param1, param2, param3, param4, param5] の順でEditParamIdsを指定
+ */
+export const OBJECT_EDIT_PARAMS: Record<number, readonly number[]> = {
+  // フィールド (サイズ、角度、透過度)
+  [ObjectIds.CircleCheck]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity],
+  [ObjectIds.SquareCheck]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity],
+  [ObjectIds.CircleGray]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity],
+  [ObjectIds.SquareGray]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity],
+
+  // 攻撃範囲
+  [ObjectIds.CircleAoE]: [EditParamIds.SizeSmall, EditParamIds.Rotation, EditParamIds.Opacity], // 12,2,3
+  [ObjectIds.ConeAoE]: [EditParamIds.SizeSmall, EditParamIds.Rotation, EditParamIds.Opacity, EditParamIds.ConeAngle], // 12,2,3,6
+  [ObjectIds.LineAoE]: [EditParamIds.Height, EditParamIds.Width, EditParamIds.Rotation, EditParamIds.Opacity], // 4,5,2,3
+  [ObjectIds.Line]: [EditParamIds.Rotation, EditParamIds.Opacity, EditParamIds.LineWidth], // 2,3,11
+  [ObjectIds.Gaze]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.Stack]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.StackLine]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity, EditParamIds.DisplayCount], // 1,2,3,8
+  [ObjectIds.Proximity]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.DonutAoE]: [EditParamIds.SizeSmall, EditParamIds.Rotation, EditParamIds.Opacity, EditParamIds.ConeAngle, EditParamIds.DonutRange], // 12,2,3,6,7
+  [ObjectIds.StackChain]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.ProximityTarget]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.Tankbuster]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.KnockbackRadial]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.KnockbackLine]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity, EditParamIds.HeightCount, EditParamIds.WidthCount], // 1,2,3,9,10
+  [ObjectIds.Block]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.TargetMarker]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.CircleAoEMoving]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.Area1P]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.Area2P]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.Area3P]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+  [ObjectIds.Area4P]: [EditParamIds.Size, EditParamIds.Rotation, EditParamIds.Opacity], // 1,2,3
+
+  // ジョブ・ロール・エネミー・マーカー等 (サイズ、角度、透過度)
+  // 基本的に 1,2,3 なのでデフォルトとして扱う
+};
+
+/** デフォルトの編集パラメータ（ほとんどのオブジェクト用: サイズ、角度、透過度） */
+export const DEFAULT_EDIT_PARAMS: readonly number[] = [
+  EditParamIds.Size,
+  EditParamIds.Rotation,
+  EditParamIds.Opacity,
+];

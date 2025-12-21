@@ -5,7 +5,16 @@
  */
 
 import { rgbToHex, hexToRgb } from "@/lib/editor";
-import { ObjectNames, ObjectIds, OBJECT_FLIP_FLAGS, DEFAULT_FLIP_FLAGS } from "@/lib/stgy";
+import {
+  ObjectNames,
+  ObjectIds,
+  OBJECT_FLIP_FLAGS,
+  DEFAULT_FLIP_FLAGS,
+  OBJECT_EDIT_PARAMS,
+  DEFAULT_EDIT_PARAMS,
+  EDIT_PARAMS,
+  EditParamIds,
+} from "@/lib/stgy";
 import type { BoardObject } from "@/lib/stgy";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -45,13 +54,24 @@ export function ObjectPropertyPanel({
 
   const objectName = ObjectNames[object.objectId] ?? "不明";
   const isTextObject = object.objectId === ObjectIds.Text;
-  const isConeAoE = object.objectId === ObjectIds.ConeAoE;
-  const isDonutAoE = object.objectId === ObjectIds.DonutAoE;
   
   // 反転可能フラグを取得
   const flipFlags = OBJECT_FLIP_FLAGS[object.objectId] ?? DEFAULT_FLIP_FLAGS;
   const canFlipHorizontal = flipFlags.horizontal;
   const canFlipVertical = flipFlags.vertical;
+
+  // 編集可能パラメータを取得
+  const editParams = OBJECT_EDIT_PARAMS[object.objectId] ?? DEFAULT_EDIT_PARAMS;
+  
+  // 追加パラメータ（サイズ、回転、透過度以外）をフィルタリング
+  const additionalParams = editParams.filter(
+    (paramId) =>
+      paramId !== EditParamIds.None &&
+      paramId !== EditParamIds.Size &&
+      paramId !== EditParamIds.SizeSmall &&
+      paramId !== EditParamIds.Rotation &&
+      paramId !== EditParamIds.Opacity
+  );
 
   return (
     <div className="panel h-full overflow-y-auto">
@@ -228,34 +248,76 @@ export function ObjectPropertyPanel({
           </PropertySection>
         )}
 
-        {/* 固有パラメータ */}
-        {isConeAoE && (
-          <PropertySection title="扇の角度">
-            <SliderInput
-              label="角度"
-              value={object.param1 ?? 90}
-              min={15}
-              max={360}
-              step={5}
-              unit="°"
-              onChange={(param1) => handleChange({ param1 })}
-              onBlur={() => onCommitHistory("角度変更")}
-            />
-          </PropertySection>
-        )}
+        {/* 固有パラメータ（動的生成） */}
+        {additionalParams.length > 0 && (
+          <PropertySection title="固有パラメータ">
+            <div className="space-y-3">
+              {additionalParams.map((paramId) => {
+                const paramDef = EDIT_PARAMS[paramId];
+                if (!paramDef) return null;
+                
+                // 各パラメータIDに対応するオブジェクトプロパティを決定
+                let value: number;
+                let onChange: (v: number) => void;
+                
+                if (paramId === EditParamIds.ConeAngle) {
+                  value = object.param1 ?? paramDef.defaultValue;
+                  onChange = (v) => handleChange({ param1: v });
+                } else if (paramId === EditParamIds.DonutRange) {
+                  value = object.param2 ?? paramDef.defaultValue;
+                  onChange = (v) => handleChange({ param2: v });
+                } else if (paramId === EditParamIds.DisplayCount) {
+                  value = object.param1 ?? paramDef.defaultValue;
+                  onChange = (v) => handleChange({ param1: v });
+                } else if (paramId === EditParamIds.HeightCount) {
+                  value = object.param1 ?? paramDef.defaultValue;
+                  onChange = (v) => handleChange({ param1: v });
+                } else if (paramId === EditParamIds.WidthCount) {
+                  value = object.param2 ?? paramDef.defaultValue;
+                  onChange = (v) => handleChange({ param2: v });
+                } else if (paramId === EditParamIds.LineWidth) {
+                  value = object.param1 ?? paramDef.defaultValue;
+                  onChange = (v) => handleChange({ param1: v });
+                } else if (paramId === EditParamIds.Height) {
+                  value = object.param1 ?? paramDef.defaultValue;
+                  onChange = (v) => handleChange({ param1: v });
+                } else if (paramId === EditParamIds.Width) {
+                  value = object.param2 ?? paramDef.defaultValue;
+                  onChange = (v) => handleChange({ param2: v });
+                } else {
+                  return null;
+                }
 
-        {isDonutAoE && (
-          <PropertySection title="ドーナツ内径">
-            <SliderInput
-              label="内径"
-              value={object.param2 ?? 50}
-              min={10}
-              max={90}
-              step={5}
-              unit="%"
-              onChange={(param2) => handleChange({ param2 })}
-              onBlur={() => onCommitHistory("内径変更")}
-            />
+                // 単位を決定
+                const unit = paramId === EditParamIds.ConeAngle ? "°" :
+                             paramId === EditParamIds.DonutRange ? "%" : "";
+
+                return paramDef.useSlider ? (
+                  <SliderInput
+                    key={paramId}
+                    label={paramDef.name}
+                    value={value}
+                    min={paramDef.min}
+                    max={paramDef.max}
+                    step={1}
+                    unit={unit}
+                    onChange={onChange}
+                    onBlur={() => onCommitHistory(`${paramDef.name}変更`)}
+                  />
+                ) : (
+                  <NumberInput
+                    key={paramId}
+                    label={paramDef.name}
+                    value={value}
+                    min={paramDef.min}
+                    max={paramDef.max}
+                    step={1}
+                    onChange={onChange}
+                    onBlur={() => onCommitHistory(`${paramDef.name}変更`)}
+                  />
+                );
+              })}
+            </div>
           </PropertySection>
         )}
       </div>
