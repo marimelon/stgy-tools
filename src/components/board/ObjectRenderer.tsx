@@ -55,7 +55,7 @@ function useOriginalIcons(): boolean {
 /**
  * カスタムアイコン対応オブジェクトIDのセット
  * 画像ファイルは /public/icons/{objectId}.png に配置
- * 注: LineAoE, Line はパラメータ反映のため常にSVGでレンダリング（画像はサイドバーアイコンのみ）
+ * 注: ConeAoE, LineAoE, Line はパラメータ反映のため常にSVGでレンダリング（画像はサイドバーアイコンのみ）
  */
 const CUSTOM_ICON_IDS = new Set<number>([
 	// フィールド
@@ -63,11 +63,11 @@ const CUSTOM_ICON_IDS = new Set<number>([
 	ObjectIds.SquareCheck,
 	ObjectIds.CircleGray,
 	ObjectIds.SquareGray,
-	// 攻撃範囲（LineAoE, Line は除外 - 常にSVGでレンダリング）
+	// 攻撃範囲（ConeAoE, LineAoE, Line は除外 - 常にSVGでレンダリング）
 	ObjectIds.CircleAoE,
-	ObjectIds.ConeAoE,
-	// ObjectIds.LineAoE, // サイドバーアイコンのみ画像使用
-	// ObjectIds.Line,    // サイドバーアイコンのみ画像使用
+	// ObjectIds.ConeAoE,  // 角度パラメータ反映のため常にSVG
+	// ObjectIds.LineAoE,  // サイズパラメータ反映のため常にSVG
+	// ObjectIds.Line,     // 常にSVG
 	ObjectIds.Gaze,
 	ObjectIds.Stack,
 	ObjectIds.StackLine,
@@ -1071,33 +1071,37 @@ function BoundingBox({
 }
 
 // 扇形の外接矩形を計算（中心を原点とした相対座標）
+// 起点は12時方向（-90度）、そこから時計回りに範囲角度分広がる
 function getConeBoundingBox(
 	angle: number,
 	radius: number,
 ): { minX: number; minY: number; width: number; height: number } {
-	const startAngle = 0;
-	const endAngle = angle;
+	// 起点: 12時方向（-90度）
+	// 終点: 起点から時計回りに範囲角度分
+	const startAngle = -90; // 12時方向（度）
+	const endAngle = -90 + angle; // 時計回りに範囲角度分
 
 	// 頂点を収集: 中心(0,0)、開始点、終了点
+	// SVGの座標系: x=cos(θ)*r, y=sin(θ)*r（Y軸は下が正）
 	const points: { x: number; y: number }[] = [
 		{ x: 0, y: 0 },
 		{
 			x: Math.cos((startAngle * Math.PI) / 180) * radius,
-			y: -Math.sin((startAngle * Math.PI) / 180) * radius,
+			y: Math.sin((startAngle * Math.PI) / 180) * radius,
 		},
 		{
 			x: Math.cos((endAngle * Math.PI) / 180) * radius,
-			y: -Math.sin((endAngle * Math.PI) / 180) * radius,
+			y: Math.sin((endAngle * Math.PI) / 180) * radius,
 		},
 	];
 
-	// 0, 90, 180, 270度が扇形の範囲内にあれば追加
-	const cardinalAngles = [0, 90, 180, 270];
+	// 基準角度（0, 90, 180, -90度など）が扇形の範囲内にあれば追加
+	const cardinalAngles = [-90, 0, 90, 180, 270];
 	for (const deg of cardinalAngles) {
 		if (deg > startAngle && deg < endAngle) {
 			points.push({
 				x: Math.cos((deg * Math.PI) / 180) * radius,
-				y: -Math.sin((deg * Math.PI) / 180) * radius,
+				y: Math.sin((deg * Math.PI) / 180) * radius,
 			});
 		}
 	}
@@ -1706,7 +1710,7 @@ function AoEObject({
 
 		case ObjectIds.ConeAoE: {
 			const angle = param1 ?? 90;
-			// バウンディングボックスの中心が座標位置になるようにオフセット計算
+			// バウンディングボックスの中心がオブジェクト座標に来るようにオフセット計算
 			const cone = getConeBoundingBox(angle, SIZES.CONE_RADIUS);
 			const offsetX = -(cone.minX + cone.width / 2);
 			const offsetY = -(cone.minY + cone.height / 2);
@@ -1878,8 +1882,9 @@ function AoEObject({
 }
 
 // 扇形
-// 回転0度、角度90度の場合 → 0度〜90度の扇（右上象限）
-// バウンディングボックスの中心が座標位置になるようにオフセットを適用
+// 起点は常に12時方向（上）、そこから時計回りに範囲角度分だけ広がる
+// 回転0度、角度90度の場合 → 12時〜3時（0時〜3時）
+// 頂点がオブジェクト座標に配置される
 function ConeShape({
 	transform,
 	angle,
@@ -1895,22 +1900,26 @@ function ConeShape({
 	offsetX: number;
 	offsetY: number;
 }) {
-	const startRad = 0;
-	const endRad = angle * (Math.PI / 180);
+	// SVGの座標系: 0度=右、90度=下、-90度=上
+	// 起点: 12時方向（-90度、上）
+	// 終点: 起点から時計回りに範囲角度分
+	const startRad = -Math.PI / 2; // 12時方向（上）
+	const endRad = startRad + (angle * Math.PI) / 180; // 時計回りに範囲角度分
 
 	// オフセットを適用した頂点位置
 	const cx = offsetX;
 	const cy = offsetY;
 
+	// SVGの座標系に合わせて計算（Y軸は下が正）
 	const x1 = cx + Math.cos(startRad) * radius;
-	const y1 = cy - Math.sin(startRad) * radius; // SVGはY軸が下向きなので反転
+	const y1 = cy + Math.sin(startRad) * radius;
 	const x2 = cx + Math.cos(endRad) * radius;
-	const y2 = cy - Math.sin(endRad) * radius;
+	const y2 = cy + Math.sin(endRad) * radius;
 
 	const largeArc = angle > 180 ? 1 : 0;
 
-	// SVGのY軸反転により、sweepは0（反時計回り）
-	const d = `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 0 ${x2} ${y2} Z`;
+	// 時計回り（sweep=1）で描画
+	const d = `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
 
 	return (
 		<path

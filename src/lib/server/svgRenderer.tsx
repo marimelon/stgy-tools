@@ -118,6 +118,62 @@ function renderColoredAoE(
 					/>
 				</g>
 			);
+		case ObjectIds.ConeAoE: {
+			// ConeAoE: param1 = 角度（デフォルト90度）
+			// 起点は12時方向（上）、そこから時計回りに範囲角度分広がる
+			const angle = param1 ?? 90;
+			const radius = 256;
+
+			// SVGの座標系: 0度=右、90度=下、-90度=上
+			const startRad = -Math.PI / 2; // 12時方向（上）
+			const endRad = startRad + (angle * Math.PI) / 180; // 時計回りに範囲角度分
+
+			const x1 = Math.cos(startRad) * radius;
+			const y1 = Math.sin(startRad) * radius;
+			const x2 = Math.cos(endRad) * radius;
+			const y2 = Math.sin(endRad) * radius;
+			const largeArc = angle > 180 ? 1 : 0;
+
+			// バウンディングボックスの中心がオブジェクト座標に来るようにオフセット計算
+			const startAngle = -90;
+			const endAngle = -90 + angle;
+			const points = [
+				{ x: 0, y: 0 },
+				{ x: x1, y: y1 },
+				{ x: x2, y: y2 },
+			];
+			for (const deg of [-90, 0, 90, 180, 270]) {
+				if (deg > startAngle && deg < endAngle) {
+					points.push({
+						x: Math.cos((deg * Math.PI) / 180) * radius,
+						y: Math.sin((deg * Math.PI) / 180) * radius,
+					});
+				}
+			}
+			const xs = points.map((p) => p.x);
+			const ys = points.map((p) => p.y);
+			const minX = Math.min(...xs);
+			const maxX = Math.max(...xs);
+			const minY = Math.min(...ys);
+			const maxY = Math.max(...ys);
+			const cx = -((minX + maxX) / 2);
+			const cy = -((minY + maxY) / 2);
+
+			// 時計回り（sweep=1）で描画
+			const d = `M ${cx} ${cy} L ${cx + x1} ${cy + y1} A ${radius} ${radius} 0 ${largeArc} 1 ${cx + x2} ${cy + y2} Z`;
+
+			return (
+				<g transform={transform}>
+					<path
+						d={d}
+						fill={fill}
+						stroke={strokeColor}
+						strokeWidth="2"
+						opacity={opacity}
+					/>
+				</g>
+			);
+		}
 		case ObjectIds.LineAoE: {
 			// LineAoE: param1 = 縦幅（高さ）、param2 = 横幅
 			const height = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
@@ -229,13 +285,15 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 		return null;
 	}
 
-	// LineAoE, Lineは常にSVGでレンダリング（画像はサイドバーアイコンのみ）
+	// ConeAoE, LineAoE, Lineは常にSVGでレンダリング（画像はサイドバーアイコンのみ）
 	// 色変更可能なのは LineAoE, Line, Text のみ
 	// その他のAoEオブジェクトはパラメータ変更時のみSVGでレンダリング（色変更は無視）
-	const isLineObject =
-		objectId === ObjectIds.LineAoE || objectId === ObjectIds.Line;
+	const alwaysSvgObjects =
+		objectId === ObjectIds.ConeAoE ||
+		objectId === ObjectIds.LineAoE ||
+		objectId === ObjectIds.Line;
 	const shouldRenderAsSvg =
-		isLineObject ||
+		alwaysSvgObjects ||
 		(AOE_OBJECT_IDS.has(objectId) &&
 			((COLOR_CHANGEABLE_OBJECT_IDS.has(objectId) && isColorChanged(color)) ||
 				isLineAoEParamsChanged(objectId, param1, param2)));
