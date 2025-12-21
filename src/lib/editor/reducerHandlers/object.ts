@@ -2,7 +2,7 @@
  * オブジェクト操作ハンドラー
  */
 
-import type { BoardObject } from "@/lib/stgy";
+import { type BoardObject, ObjectIds } from "@/lib/stgy";
 import { duplicateObject } from "../factory";
 import type { EditorState } from "../types";
 import {
@@ -118,12 +118,27 @@ export function handleMoveObjects(
   for (const index of payload.indices) {
     if (index >= 0 && index < newBoard.objects.length) {
       const obj = newBoard.objects[index];
-      newBoard = updateObjectInBoard(newBoard, index, {
-        position: {
-          x: obj.position.x + payload.deltaX,
-          y: obj.position.y + payload.deltaY,
-        },
-      });
+      
+      // Lineオブジェクトの場合は終点座標（param1, param2）も移動
+      if (obj.objectId === ObjectIds.Line) {
+        const deltaX10 = Math.round(payload.deltaX * 10);
+        const deltaY10 = Math.round(payload.deltaY * 10);
+        newBoard = updateObjectInBoard(newBoard, index, {
+          position: {
+            x: obj.position.x + payload.deltaX,
+            y: obj.position.y + payload.deltaY,
+          },
+          param1: (obj.param1 ?? obj.position.x * 10 + 2560) + deltaX10,
+          param2: (obj.param2 ?? obj.position.y * 10) + deltaY10,
+        });
+      } else {
+        newBoard = updateObjectInBoard(newBoard, index, {
+          position: {
+            x: obj.position.x + payload.deltaX,
+            y: obj.position.y + payload.deltaY,
+          },
+        });
+      }
     }
   }
 

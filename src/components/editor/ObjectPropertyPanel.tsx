@@ -54,6 +54,44 @@ export function ObjectPropertyPanel({
 
   const objectName = ObjectNames[object.objectId] ?? "不明";
   const isTextObject = object.objectId === ObjectIds.Text;
+  const isLineObject = object.objectId === ObjectIds.Line;
+
+  // Lineの角度変更時に中央を軸として回転
+  const handleLineRotationChange = (newRotation: number) => {
+    const startX = object.position.x;
+    const startY = object.position.y;
+    const endX = (object.param1 ?? startX * 10 + 2560) / 10;
+    const endY = (object.param2 ?? startY * 10) / 10;
+    
+    // 線分の中央点を計算
+    const centerX = (startX + endX) / 2;
+    const centerY = (startY + endY) / 2;
+    
+    // 中央から端点までの長さ（線分の長さの半分）
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const halfLength = Math.sqrt(dx * dx + dy * dy) / 2;
+    
+    // 新しい角度で中央から始点・終点を計算
+    const radians = newRotation * Math.PI / 180;
+    const offsetX = halfLength * Math.cos(radians);
+    const offsetY = halfLength * Math.sin(radians);
+    
+    // 新しい始点（中央から逆方向）
+    const newStartX = centerX - offsetX;
+    const newStartY = centerY - offsetY;
+    
+    // 新しい終点（中央から正方向）
+    const newEndX = centerX + offsetX;
+    const newEndY = centerY + offsetY;
+    
+    handleChange({
+      rotation: newRotation,
+      position: { x: newStartX, y: newStartY },
+      param1: Math.round(newEndX * 10),
+      param2: Math.round(newEndY * 10),
+    });
+  };
   
   // 反転可能フラグを取得
   const flipFlags = OBJECT_FLIP_FLAGS[object.objectId] ?? DEFAULT_FLIP_FLAGS;
@@ -131,19 +169,21 @@ export function ObjectPropertyPanel({
               max={180}
               step={1}
               unit="°"
-              onChange={(rotation) => handleChange({ rotation })}
+              onChange={isLineObject ? handleLineRotationChange : (rotation) => handleChange({ rotation })}
               onBlur={() => onCommitHistory("回転変更")}
             />
-            <SliderInput
-              label="サイズ"
-              value={object.size}
-              min={50}
-              max={200}
-              step={1}
-              unit="%"
-              onChange={(size) => handleChange({ size })}
-              onBlur={() => onCommitHistory("サイズ変更")}
-            />
+            {!isLineObject && (
+              <SliderInput
+                label="サイズ"
+                value={object.size}
+                min={50}
+                max={200}
+                step={1}
+                unit="%"
+                onChange={(size) => handleChange({ size })}
+                onBlur={() => onCommitHistory("サイズ変更")}
+              />
+            )}
           </div>
         </PropertySection>
 
@@ -276,8 +316,14 @@ export function ObjectPropertyPanel({
                   value = object.param2 ?? paramDef.defaultValue;
                   onChange = (v) => handleChange({ param2: v });
                 } else if (paramId === EditParamIds.LineWidth) {
-                  value = object.param1 ?? paramDef.defaultValue;
-                  onChange = (v) => handleChange({ param1: v });
+                  // Lineの場合はparam3（線の太さ）、それ以外はparam1
+                  if (isLineObject) {
+                    value = object.param3 ?? paramDef.defaultValue;
+                    onChange = (v) => handleChange({ param3: v });
+                  } else {
+                    value = object.param1 ?? paramDef.defaultValue;
+                    onChange = (v) => handleChange({ param1: v });
+                  }
                 } else if (paramId === EditParamIds.Height) {
                   value = object.param1 ?? paramDef.defaultValue;
                   onChange = (v) => handleChange({ param1: v });

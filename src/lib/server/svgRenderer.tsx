@@ -4,135 +4,321 @@
  */
 
 import { renderToStaticMarkup } from "react-dom/server";
-import type { BoardData, BoardObject } from "@/lib/stgy/types";
-import { ObjectIds } from "@/lib/stgy/types";
 import {
-  CANVAS_WIDTH,
-  CANVAS_HEIGHT,
-  OBJECT_BBOX_SIZES,
-  DEFAULT_BBOX_SIZE,
-  BackgroundRenderer,
+	BackgroundRenderer,
+	CANVAS_HEIGHT,
+	CANVAS_WIDTH,
+	DEFAULT_BBOX_SIZE,
+	OBJECT_BBOX_SIZES,
 } from "@/lib/board";
+import type { BoardData, BoardObject, Color } from "@/lib/stgy/types";
+import { ObjectIds } from "@/lib/stgy/types";
 import { loadImageAsDataUri } from "./imageLoader";
+
+/**
+ * デフォルトの色（この色の場合はオリジナル画像を使用）
+ */
+const DEFAULT_OBJECT_COLOR: Color = { r: 255, g: 100, b: 0, opacity: 0 };
+
+/**
+ * デフォルトのパラメータ値
+ */
+const DEFAULT_PARAMS = {
+	LINE_HEIGHT: 128, // 直線範囲攻撃の縦幅デフォルト
+	LINE_WIDTH: 128, // 直線範囲攻撃の横幅デフォルト
+};
+
+/**
+ * 色がデフォルトから変更されているかチェック
+ */
+function isColorChanged(color: Color): boolean {
+	return (
+		color.r !== DEFAULT_OBJECT_COLOR.r ||
+		color.g !== DEFAULT_OBJECT_COLOR.g ||
+		color.b !== DEFAULT_OBJECT_COLOR.b ||
+		color.opacity !== DEFAULT_OBJECT_COLOR.opacity
+	);
+}
+
+/**
+ * 直線範囲攻撃のパラメータがデフォルトから変更されているかチェック
+ * 縦幅・横幅パラメータを持つのはLineAoEのみ（Lineは異なるパラメータ構成）
+ */
+function isLineAoEParamsChanged(
+	objectId: number,
+	param1?: number,
+	param2?: number,
+): boolean {
+	// LineAoEのみが縦幅・横幅パラメータを持つ
+	if (objectId !== ObjectIds.LineAoE) {
+		return false;
+	}
+	const height = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
+	const width = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
+	return (
+		height !== DEFAULT_PARAMS.LINE_HEIGHT || width !== DEFAULT_PARAMS.LINE_WIDTH
+	);
+}
+
+/**
+ * 色をRGBA文字列に変換
+ */
+function colorToRgba(color: Color): string {
+	const alpha = 1 - color.opacity / 100;
+	return `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
+}
+
+/**
+ * AoEオブジェクトのIDセット
+ */
+const AOE_OBJECT_IDS = new Set<number>([
+	ObjectIds.CircleAoE,
+	ObjectIds.ConeAoE,
+	ObjectIds.LineAoE,
+	ObjectIds.Line,
+	ObjectIds.DonutAoE,
+]);
+
+/**
+ * パラメータまたは色が変更されたAoEオブジェクトをSVGでレンダリング
+ */
+function renderColoredAoE(
+	objectId: number,
+	transform: string,
+	color: Color,
+	opacity: number,
+	param1?: number,
+	param2?: number,
+): React.ReactNode | null {
+	const fill = colorToRgba(color);
+	const strokeColor = "#ff8800";
+
+	switch (objectId) {
+		case ObjectIds.CircleAoE:
+			return (
+				<g transform={transform}>
+					<circle
+						cx={0}
+						cy={0}
+						r={64}
+						fill={fill}
+						stroke={strokeColor}
+						strokeWidth="2"
+						opacity={opacity}
+					/>
+				</g>
+			);
+		case ObjectIds.LineAoE: {
+			// LineAoE: param1 = 縦幅（高さ）、param2 = 横幅
+			const height = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
+			const width = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
+			return (
+				<g transform={transform}>
+					<rect
+						x={-width / 2}
+						y={-height / 2}
+						width={width}
+						height={height}
+						fill={fill}
+						stroke={strokeColor}
+						strokeWidth="2"
+						opacity={opacity}
+					/>
+				</g>
+			);
+		}
+		case ObjectIds.Line:
+			// Line: 横長の線（バウンディングボックス: 256x6）
+			return (
+				<g transform={transform}>
+					<rect
+						x={-128}
+						y={-3}
+						width={256}
+						height={6}
+						fill={fill}
+						stroke={strokeColor}
+						strokeWidth="1"
+						opacity={opacity}
+					/>
+				</g>
+			);
+		case ObjectIds.DonutAoE:
+			// ドーナツ型AoE（中央に穴あき）
+			return (
+				<g transform={transform}>
+					<circle
+						cx={0}
+						cy={0}
+						r={64}
+						fill={fill}
+						stroke={strokeColor}
+						strokeWidth="2"
+						opacity={opacity}
+					/>
+					<circle
+						cx={0}
+						cy={0}
+						r={32}
+						fill="#1a1a1a"
+						stroke={strokeColor}
+						strokeWidth="1"
+						opacity={opacity}
+					/>
+				</g>
+			);
+		default:
+			return null;
+	}
+}
 
 /**
  * 単一オブジェクトをレンダリング
  */
 function ObjectRenderer({ object }: { object: BoardObject }) {
-  const { objectId, position, rotation, size, color, flags } = object;
+	const { objectId, position, rotation, size, color, flags, param1, param2 } =
+		object;
 
-  // サイズスケール計算
-  const scale = size / 100;
+	// サイズスケール計算
+	const scale = size / 100;
 
-  // バウンディングボックスサイズ取得（共通モジュールから）
-  const bboxSize = OBJECT_BBOX_SIZES[objectId] ?? DEFAULT_BBOX_SIZE;
+	// バウンディングボックスサイズ取得（共通モジュールから）
+	const bboxSize = OBJECT_BBOX_SIZES[objectId] ?? DEFAULT_BBOX_SIZE;
 
-  // 画像をBase64で読み込み
-  const imageDataUri = loadImageAsDataUri(objectId);
+	// フリップ変換
+	const flipX = flags.flipHorizontal ? -1 : 1;
+	const flipY = flags.flipVertical ? -1 : 1;
 
-  // フリップ変換
-  const flipX = flags.flipHorizontal ? -1 : 1;
-  const flipY = flags.flipVertical ? -1 : 1;
+	// 透過度をSVGのopacityに変換 (color.opacity: 0=不透明, 100=透明)
+	const opacity = 1 - color.opacity / 100;
 
-  // 透過度をSVGのopacityに変換 (color.opacity: 0=不透明, 100=透明)
-  const opacity = 1 - color.opacity / 100;
+	const transform = `translate(${position.x}, ${position.y}) rotate(${rotation}) scale(${scale * flipX}, ${scale * flipY})`;
 
-  // テキストオブジェクトは特別処理
-  if (objectId === ObjectIds.Text && object.text) {
-    return (
-      <g
-        transform={`translate(${position.x}, ${position.y}) rotate(${rotation}) scale(${scale * flipX}, ${scale * flipY})`}
-      >
-        <text
-          x={0}
-          y={0}
-          fill={`rgb(${color.r}, ${color.g}, ${color.b})`}
-          fontSize="14"
-          fontFamily="sans-serif"
-          textAnchor="middle"
-          dominantBaseline="middle"
-          opacity={opacity}
-        >
-          {object.text}
-        </text>
-      </g>
-    );
-  }
+	// テキストオブジェクトは特別処理
+	if (objectId === ObjectIds.Text && object.text) {
+		return (
+			<g transform={transform}>
+				<text
+					x={0}
+					y={0}
+					fill={`rgb(${color.r}, ${color.g}, ${color.b})`}
+					fontSize="14"
+					fontFamily="sans-serif"
+					textAnchor="middle"
+					dominantBaseline="middle"
+					opacity={opacity}
+				>
+					{object.text}
+				</text>
+			</g>
+		);
+	}
 
-  // グループオブジェクトはスキップ
-  if (objectId === ObjectIds.Group) {
-    return null;
-  }
+	// グループオブジェクトはスキップ
+	if (objectId === ObjectIds.Group) {
+		return null;
+	}
 
-  // 画像がない場合はプレースホルダー
-  if (!imageDataUri) {
-    return (
-      <g
-        transform={`translate(${position.x}, ${position.y}) rotate(${rotation}) scale(${scale * flipX}, ${scale * flipY})`}
-      >
-        <rect
-          x={-bboxSize.width / 2}
-          y={-bboxSize.height / 2}
-          width={bboxSize.width}
-          height={bboxSize.height}
-          fill="#666"
-          stroke="#999"
-          strokeWidth="1"
-          opacity={opacity}
-        />
-        <text x={0} y={0} fill="#fff" fontSize="10" textAnchor="middle" dominantBaseline="middle">
-          {objectId}
-        </text>
-      </g>
-    );
-  }
+	// LineAoE, Lineは常にSVGでレンダリング（画像はサイドバーアイコンのみ）
+	// その他のAoEオブジェクトは色またはパラメータが変更されている場合のみSVGでレンダリング
+	const isLineObject =
+		objectId === ObjectIds.LineAoE || objectId === ObjectIds.Line;
+	const shouldRenderAsSvg =
+		isLineObject ||
+		(AOE_OBJECT_IDS.has(objectId) &&
+			(isColorChanged(color) ||
+				isLineAoEParamsChanged(objectId, param1, param2)));
+	if (shouldRenderAsSvg) {
+		const coloredAoE = renderColoredAoE(
+			objectId,
+			transform,
+			color,
+			opacity,
+			param1,
+			param2,
+		);
+		if (coloredAoE) return coloredAoE;
+	}
 
-  return (
-    <g
-      transform={`translate(${position.x}, ${position.y}) rotate(${rotation}) scale(${scale * flipX}, ${scale * flipY})`}
-    >
-      <image
-        href={imageDataUri}
-        x={-bboxSize.width / 2}
-        y={-bboxSize.height / 2}
-        width={bboxSize.width}
-        height={bboxSize.height}
-        preserveAspectRatio="xMidYMid meet"
-        opacity={opacity}
-      />
-    </g>
-  );
+	// 画像をBase64で読み込み
+	const imageDataUri = loadImageAsDataUri(objectId);
+
+	// 画像がない場合はプレースホルダー
+	if (!imageDataUri) {
+		return (
+			<g transform={transform}>
+				<rect
+					x={-bboxSize.width / 2}
+					y={-bboxSize.height / 2}
+					width={bboxSize.width}
+					height={bboxSize.height}
+					fill="#666"
+					stroke="#999"
+					strokeWidth="1"
+					opacity={opacity}
+				/>
+				<text
+					x={0}
+					y={0}
+					fill="#fff"
+					fontSize="10"
+					textAnchor="middle"
+					dominantBaseline="middle"
+				>
+					{objectId}
+				</text>
+			</g>
+		);
+	}
+
+	return (
+		<g transform={transform}>
+			<image
+				href={imageDataUri}
+				x={-bboxSize.width / 2}
+				y={-bboxSize.height / 2}
+				width={bboxSize.width}
+				height={bboxSize.height}
+				preserveAspectRatio="xMidYMid meet"
+				opacity={opacity}
+			/>
+		</g>
+	);
 }
 
 /**
  * BoardDataをSVG文字列にレンダリング
  */
 export function renderBoardToSVG(boardData: BoardData): string {
-  const { backgroundId, objects } = boardData;
+	const { backgroundId, objects } = boardData;
 
-  // 表示するオブジェクトのみフィルタ（逆順で描画）
-  const visibleObjects = objects.filter((obj) => obj.flags.visible).reverse();
+	// 表示するオブジェクトのみフィルタ（逆順で描画）
+	const visibleObjects = objects.filter((obj) => obj.flags.visible).reverse();
 
-  const svgElement = (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={CANVAS_WIDTH}
-      height={CANVAS_HEIGHT}
-      viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
-      style={{ backgroundColor: "#1a1a1a" }}
-    >
-      {/* 背景色 */}
-      <rect width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill="#1a1a1a" />
+	const svgElement = (
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width={CANVAS_WIDTH}
+			height={CANVAS_HEIGHT}
+			viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
+			style={{ backgroundColor: "#1a1a1a" }}
+		>
+			{/* 背景色 */}
+			<rect width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill="#1a1a1a" />
 
-      {/* 背景パターン（共通コンポーネント使用） */}
-      <BackgroundRenderer backgroundId={backgroundId} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} />
+			{/* 背景パターン（共通コンポーネント使用） */}
+			<BackgroundRenderer
+				backgroundId={backgroundId}
+				width={CANVAS_WIDTH}
+				height={CANVAS_HEIGHT}
+			/>
 
-      {/* オブジェクト */}
-      {visibleObjects.map((obj, index) => (
-        <ObjectRenderer key={index} object={obj} />
-      ))}
-    </svg>
-  );
+			{/* オブジェクト */}
+			{visibleObjects.map((obj, index) => (
+				<ObjectRenderer key={index} object={obj} />
+			))}
+		</svg>
+	);
 
-  return renderToStaticMarkup(svgElement);
+	return renderToStaticMarkup(svgElement);
 }

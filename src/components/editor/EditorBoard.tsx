@@ -4,14 +4,16 @@
  * BoardViewerを拡張し、ドラッグ/回転/リサイズのインタラクションを追加
  */
 
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import { BackgroundRenderer, ObjectRenderer, getObjectBoundingBox } from "@/components/board";
 import {
   useEditor,
   useCanvasInteraction,
   type EditorBoardProps,
 } from "@/lib/editor";
+import { ObjectIds } from "@/lib/stgy";
 import { SelectionHandles } from "./SelectionHandles";
+import { LineSelectionHandles } from "./LineSelectionHandles";
 import { GridOverlay, SelectionIndicator } from "./GridOverlay";
 
 /** キャンバスサイズ */
@@ -157,21 +159,66 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
       {/* 選択ハンドル (単一選択時のみ) */}
       {selectedObject && selectedIndices.length === 1 && (() => {
+        const selectedIndex = selectedIndices[0];
+        
+        // Lineの場合は専用ハンドルを表示
+        if (selectedObject.objectId === ObjectIds.Line) {
+          const startX = selectedObject.position.x;
+          const startY = selectedObject.position.y;
+          const endX = (selectedObject.param1 ?? startX * 10 + 2560) / 10;
+          const endY = (selectedObject.param2 ?? startY * 10) / 10;
+          
+          return (
+            <LineSelectionHandles
+              startX={startX}
+              startY={startY}
+              endX={endX}
+              endY={endY}
+              onStartPointDrag={(x, y) => {
+                // 始点移動：positionを更新
+                updateObject(selectedIndex, {
+                  position: { x, y },
+                });
+              }}
+              onStartPointDragEnd={() => {
+                commitHistory();
+              }}
+              onEndPointDrag={(x, y) => {
+                // 終点移動：param1, param2を更新、角度も再計算
+                const dx = x - selectedObject.position.x;
+                const dy = y - selectedObject.position.y;
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                updateObject(selectedIndex, {
+                  param1: Math.round(x * 10),
+                  param2: Math.round(y * 10),
+                  rotation: Math.round(angle),
+                });
+              }}
+              onEndPointDragEnd={() => {
+                commitHistory();
+              }}
+            />
+          );
+        }
+        
+        // 通常オブジェクトのハンドル
         const bbox = getObjectBoundingBox(
           selectedObject.objectId,
           selectedObject.param1,
           selectedObject.param2,
-          selectedObject.text
+          selectedObject.param3,
+          selectedObject.text,
+          selectedObject.position
         );
-        const scale = selectedObject.size / 100;
+        const objScale = selectedObject.size / 100;
         return (
           <SelectionHandles
             x={selectedObject.position.x}
             y={selectedObject.position.y}
-            width={bbox.width * scale}
-            height={bbox.height * scale}
-            offsetX={(bbox.offsetX ?? 0) * scale}
-            offsetY={(bbox.offsetY ?? 0) * scale}
+            width={bbox.width * objScale}
+            height={bbox.height * objScale}
+            offsetX={(bbox.offsetX ?? 0) * objScale}
+            offsetY={(bbox.offsetY ?? 0) * objScale}
             rotation={selectedObject.rotation}
             onRotateStart={handleRotateStart}
             onResizeStart={handleResizeStart}

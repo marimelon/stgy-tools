@@ -54,6 +54,7 @@ function useOriginalIcons(): boolean {
 /**
  * カスタムアイコン対応オブジェクトIDのセット
  * 画像ファイルは /public/icons/{objectId}.png に配置
+ * 注: LineAoE, Line はパラメータ反映のため常にSVGでレンダリング（画像はサイドバーアイコンのみ）
  */
 const CUSTOM_ICON_IDS = new Set<number>([
 	// フィールド
@@ -61,11 +62,11 @@ const CUSTOM_ICON_IDS = new Set<number>([
 	ObjectIds.SquareCheck,
 	ObjectIds.CircleGray,
 	ObjectIds.SquareGray,
-	// 攻撃範囲
+	// 攻撃範囲（LineAoE, Line は除外 - 常にSVGでレンダリング）
 	ObjectIds.CircleAoE,
 	ObjectIds.ConeAoE,
-	ObjectIds.LineAoE,
-	ObjectIds.Line,
+	// ObjectIds.LineAoE, // サイドバーアイコンのみ画像使用
+	// ObjectIds.Line,    // サイドバーアイコンのみ画像使用
 	ObjectIds.Gaze,
 	ObjectIds.Stack,
 	ObjectIds.StackLine,
@@ -244,14 +245,68 @@ function CustomIconImage({
 }
 
 /**
+ * デフォルトの色（この色の場合はオリジナル画像を使用）
+ */
+const DEFAULT_OBJECT_COLOR: Color = { r: 255, g: 100, b: 0, opacity: 0 };
+
+/**
+ * デフォルトのパラメータ値
+ */
+const DEFAULT_PARAMS = {
+	LINE_HEIGHT: 128, // 直線範囲攻撃の縦幅デフォルト
+	LINE_WIDTH: 128, // 直線範囲攻撃の横幅デフォルト
+};
+
+/**
+ * 色がデフォルトから変更されているかチェック
+ */
+function isColorChanged(color: Color): boolean {
+	return (
+		color.r !== DEFAULT_OBJECT_COLOR.r ||
+		color.g !== DEFAULT_OBJECT_COLOR.g ||
+		color.b !== DEFAULT_OBJECT_COLOR.b ||
+		color.opacity !== DEFAULT_OBJECT_COLOR.opacity
+	);
+}
+
+/**
+ * 直線範囲攻撃のパラメータがデフォルトから変更されているかチェック
+ * 縦幅・横幅パラメータを持つのはLineAoEのみ（Lineは異なるパラメータ構成）
+ */
+function isLineAoEParamsChanged(
+	objectId: number,
+	param1?: number,
+	param2?: number,
+): boolean {
+	// LineAoEのみが縦幅・横幅パラメータを持つ
+	if (objectId !== ObjectIds.LineAoE) {
+		return false;
+	}
+	// param1（縦幅）またはparam2（横幅）がデフォルトから変更されているか
+	const height = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
+	const width = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
+	return (
+		height !== DEFAULT_PARAMS.LINE_HEIGHT || width !== DEFAULT_PARAMS.LINE_WIDTH
+	);
+}
+
+/**
  * オリジナル画像が利用可能な場合は画像を返し、そうでなければnullを返す
+ * 色やパラメータがデフォルトから変更されている場合はSVGでレンダリングするためnullを返す
  */
 function renderOriginalIconIfEnabled(
 	objectId: number,
 	transform: string,
+	color?: Color,
+	param1?: number,
+	param2?: number,
 ): React.ReactNode | null {
 	if (!useOriginalIcons()) return null;
 	if (!CUSTOM_ICON_IDS.has(objectId)) return null;
+	// 色がデフォルトから変更されている場合はSVGでレンダリング
+	if (color && isColorChanged(color)) return null;
+	// 直線範囲攻撃のパラメータが変更されている場合はSVGでレンダリング
+	if (isLineAoEParamsChanged(objectId, param1, param2)) return null;
 	return <CustomIconImage objectId={objectId} transform={transform} />;
 }
 
@@ -416,7 +471,7 @@ const AOE_OBJECT_IDS: readonly number[] = [
 	ObjectIds.CircleAoE,
 	ObjectIds.ConeAoE,
 	ObjectIds.LineAoE,
-	ObjectIds.Line,
+	// ObjectIds.Line は特殊処理（始点-終点の絶対座標線）
 	ObjectIds.Gaze,
 	ObjectIds.Stack,
 	ObjectIds.StackLine,
@@ -675,7 +730,14 @@ export function ObjectRenderer({
 	);
 
 	// バウンディングボックスのサイズを取得
-	const bbox = getObjectBoundingBox(objectId, param1, param2, text);
+	const bbox = getObjectBoundingBox(
+		objectId,
+		param1,
+		param2,
+		object.param3,
+		text,
+		position,
+	);
 
 	// クリックハンドラ
 	const handleClick = (e: React.MouseEvent) => {
@@ -690,6 +752,24 @@ export function ObjectRenderer({
 		content = (
 			<FieldObject objectId={objectId} transform={transform} color={color} />
 		);
+	} else if (objectId === ObjectIds.Line) {
+		// Line: 始点(position)から終点(param1/10, param2/10)への線
+		// param1, param2 は座標を10倍した整数値（小数第一位まで対応）
+		const endX = (param1 ?? position.x * 10 + 2560) / 10;
+		const endY = (param2 ?? position.y * 10) / 10;
+		const lineThickness = object.param3 ?? 6;
+		const lineFill = colorToRgba(color);
+		content = (
+			<line
+				x1={position.x}
+				y1={position.y}
+				x2={endX}
+				y2={endY}
+				stroke={lineFill}
+				strokeWidth={lineThickness}
+				strokeLinecap="butt"
+			/>
+		);
 	} else if (isAoEObject(objectId)) {
 		content = (
 			<AoEObject
@@ -698,6 +778,7 @@ export function ObjectRenderer({
 				color={color}
 				param1={param1}
 				param2={param2}
+				param3={object.param3}
 			/>
 		);
 	} else if (isJobIcon(objectId)) {
@@ -716,6 +797,9 @@ export function ObjectRenderer({
 		content = <PlaceholderObject objectId={objectId} transform={transform} />;
 	}
 
+	// Lineは絶対座標で描画するため回転を適用しない
+	const effectiveRotation = objectId === ObjectIds.Line ? 0 : rotation;
+
 	// 選択インジケーター
 	const selectionIndicator = selected && (
 		<SelectionIndicator
@@ -725,7 +809,7 @@ export function ObjectRenderer({
 			height={bbox.height * scale}
 			offsetX={(bbox.offsetX ?? 0) * scale}
 			offsetY={(bbox.offsetY ?? 0) * scale}
-			rotation={rotation}
+			rotation={effectiveRotation}
 		/>
 	);
 
@@ -770,7 +854,7 @@ export function ObjectRenderer({
 				height={bbox.height * scale}
 				offsetX={(bbox.offsetX ?? 0) * scale}
 				offsetY={(bbox.offsetY ?? 0) * scale}
-				rotation={rotation}
+				rotation={effectiveRotation}
 				objectId={objectId}
 			/>
 			<DebugInfo object={object} />
@@ -1014,8 +1098,10 @@ function getConeBoundingBox(
 export function getObjectBoundingBox(
 	objectId: number,
 	param1?: number,
-	_param2?: number,
+	param2?: number,
+	param3?: number,
 	text?: string,
+	position?: Position,
 ): { width: number; height: number; offsetX?: number; offsetY?: number } {
 	// 扇形攻撃（動的計算）
 	if (objectId === ObjectIds.ConeAoE) {
@@ -1034,6 +1120,41 @@ export function getObjectBoundingBox(
 		const textLength = text?.length ?? 4;
 		const width = Math.max(textLength * TEXT.CHAR_WIDTH, TEXT.MIN_BBOX_WIDTH);
 		return { width, height: TEXT.DEFAULT_HEIGHT };
+	}
+
+	// Line: 始点(position)から終点(param1/10, param2/10)への線
+	if (objectId === ObjectIds.Line && position) {
+		const endX = (param1 ?? position.x * 10 + 2560) / 10;
+		const endY = (param2 ?? position.y * 10) / 10;
+		const lineThickness = param3 ?? 6;
+		// position基準の相対座標で計算
+		const relEndX = endX - position.x;
+		const relEndY = endY - position.y;
+		// 始点(0,0)と終点を含むバウンディングボックス
+		const minX = Math.min(0, relEndX);
+		const maxX = Math.max(0, relEndX);
+		const minY = Math.min(0, relEndY);
+		const maxY = Math.max(0, relEndY);
+		const width = Math.max(maxX - minX, lineThickness);
+		const height = Math.max(maxY - minY, lineThickness);
+		return {
+			width,
+			height,
+			offsetX: (minX + maxX) / 2,
+			offsetY: (minY + maxY) / 2,
+		};
+	}
+
+	// LineAoE: アンカーポイント10 = 端点基準
+	if (objectId === ObjectIds.LineAoE) {
+		const length = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
+		const thickness = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
+		return {
+			width: length,
+			height: thickness,
+			offsetX: length / 2,
+			offsetY: 0,
+		};
 	}
 
 	// OBJECT_BBOX_SIZESから取得
@@ -1116,8 +1237,8 @@ function FieldObject({
 }) {
 	const id = useId();
 
-	// オリジナル画像が有効な場合は画像を使用
-	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
+	// オリジナル画像が有効な場合は画像を使用（色が変更されている場合はSVGを使用）
+	const originalIcon = renderOriginalIconIfEnabled(objectId, transform, color);
 	if (originalIcon) return originalIcon;
 	const fill = colorToRgba(color);
 	const size = LARGE_FIELD_IDS.includes(objectId)
@@ -1526,15 +1647,23 @@ function AoEObject({
 	color,
 	param1,
 	param2,
+	param3: _param3,
 }: {
 	objectId: number;
 	transform: string;
 	color: Color;
 	param1?: number;
 	param2?: number;
+	param3?: number;
 }) {
-	// オリジナル画像が有効な場合は画像を使用
-	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
+	// オリジナル画像が有効な場合は画像を使用（色やパラメータが変更されている場合はSVGを使用）
+	const originalIcon = renderOriginalIconIfEnabled(
+		objectId,
+		transform,
+		color,
+		param1,
+		param2,
+	);
 	if (originalIcon) return originalIcon;
 
 	const fill = colorToRgba(color);
@@ -1575,20 +1704,24 @@ function AoEObject({
 			);
 		}
 
-		case ObjectIds.LineAoE:
-		case ObjectIds.Line:
+		case ObjectIds.LineAoE: {
+			// LineAoE: param1 = 縦幅（長さ）、param2 = 横幅（太さ）
+			// アンカーポイント10 = 端点基準（左端が原点）
+			const length = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
+			const thickness = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
 			return (
 				<rect
-					x={-SIZES.LINE_WIDTH / 2}
-					y={-baseSize}
-					width={SIZES.LINE_WIDTH}
-					height={baseSize * 2}
+					x={0}
+					y={-thickness / 2}
+					width={length}
+					height={thickness}
 					fill={fill}
 					stroke={COLORS.STROKE_AOE}
 					strokeWidth="2"
 					transform={transform}
 				/>
 			);
+		}
 
 		case ObjectIds.Gaze:
 			return <GazeIcon transform={transform} />;
