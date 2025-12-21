@@ -20,13 +20,11 @@ export const Route = createFileRoute("/image")({
 				const format = url.searchParams.get("format") ?? "png";
 
 				if (!code) {
-					return new Response(
-						JSON.stringify({ error: "Missing required query parameter: code" }),
-						{
-							status: 400,
-							headers: { "Content-Type": "application/json" },
-						},
-					);
+					// codeパラメータがない場合は生成ページにリダイレクト
+					return new Response(null, {
+						status: 302,
+						headers: { Location: "/image/generate" },
+					});
 				}
 
 				try {

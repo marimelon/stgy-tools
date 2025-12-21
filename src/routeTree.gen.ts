@@ -14,6 +14,7 @@ import { Route as EditorRouteImport } from './routes/editor'
 import { Route as DebugStgyRouteImport } from './routes/debug-stgy'
 import { Route as DebugRouteImport } from './routes/debug'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ImageGenerateRouteImport } from './routes/image.generate'
 
 const ImageRoute = ImageRouteImport.update({
   id: '/image',
@@ -40,20 +41,27 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ImageGenerateRoute = ImageGenerateRouteImport.update({
+  id: '/generate',
+  path: '/generate',
+  getParentRoute: () => ImageRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/debug': typeof DebugRoute
   '/debug-stgy': typeof DebugStgyRoute
   '/editor': typeof EditorRoute
-  '/image': typeof ImageRoute
+  '/image': typeof ImageRouteWithChildren
+  '/image/generate': typeof ImageGenerateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/debug': typeof DebugRoute
   '/debug-stgy': typeof DebugStgyRoute
   '/editor': typeof EditorRoute
-  '/image': typeof ImageRoute
+  '/image': typeof ImageRouteWithChildren
+  '/image/generate': typeof ImageGenerateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,14 +69,28 @@ export interface FileRoutesById {
   '/debug': typeof DebugRoute
   '/debug-stgy': typeof DebugStgyRoute
   '/editor': typeof EditorRoute
-  '/image': typeof ImageRoute
+  '/image': typeof ImageRouteWithChildren
+  '/image/generate': typeof ImageGenerateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/debug' | '/debug-stgy' | '/editor' | '/image'
+  fullPaths:
+    | '/'
+    | '/debug'
+    | '/debug-stgy'
+    | '/editor'
+    | '/image'
+    | '/image/generate'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/debug' | '/debug-stgy' | '/editor' | '/image'
-  id: '__root__' | '/' | '/debug' | '/debug-stgy' | '/editor' | '/image'
+  to: '/' | '/debug' | '/debug-stgy' | '/editor' | '/image' | '/image/generate'
+  id:
+    | '__root__'
+    | '/'
+    | '/debug'
+    | '/debug-stgy'
+    | '/editor'
+    | '/image'
+    | '/image/generate'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,7 +98,7 @@ export interface RootRouteChildren {
   DebugRoute: typeof DebugRoute
   DebugStgyRoute: typeof DebugStgyRoute
   EditorRoute: typeof EditorRoute
-  ImageRoute: typeof ImageRoute
+  ImageRoute: typeof ImageRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -116,15 +138,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/image/generate': {
+      id: '/image/generate'
+      path: '/generate'
+      fullPath: '/image/generate'
+      preLoaderRoute: typeof ImageGenerateRouteImport
+      parentRoute: typeof ImageRoute
+    }
   }
 }
+
+interface ImageRouteChildren {
+  ImageGenerateRoute: typeof ImageGenerateRoute
+}
+
+const ImageRouteChildren: ImageRouteChildren = {
+  ImageGenerateRoute: ImageGenerateRoute,
+}
+
+const ImageRouteWithChildren = ImageRoute._addFileChildren(ImageRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DebugRoute: DebugRoute,
   DebugStgyRoute: DebugStgyRoute,
   EditorRoute: EditorRoute,
-  ImageRoute: ImageRoute,
+  ImageRoute: ImageRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
