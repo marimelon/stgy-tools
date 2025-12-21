@@ -101,7 +101,7 @@ export function ExportModal({
 							id={codeTextareaId}
 							value={exportedCode}
 							readOnly
-							className="h-32 font-mono text-sm resize-none"
+							className="h-32 font-mono text-sm resize-none break-all"
 						/>
 					</div>
 				</div>
