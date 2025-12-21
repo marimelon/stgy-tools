@@ -2,7 +2,50 @@
  * エディター状態管理の型定義
  */
 
-import type { BoardData, BoardObject, BackgroundId } from "@/lib/stgy";
+import type { BoardData, BoardObject, BackgroundId, Position } from "@/lib/stgy";
+
+// ============================================
+// インタラクション関連の型
+// ============================================
+
+/** リサイズハンドルの位置 */
+export type ResizeHandle = "nw" | "ne" | "sw" | "se";
+
+/** ハンドルの種類 */
+export type HandleType = ResizeHandle | "rotate";
+
+/** インタラクションモード */
+export type InteractionMode = "none" | "drag" | "rotate" | "resize";
+
+/** ドラッグ状態 */
+export interface DragState {
+  /** 現在のモード */
+  mode: InteractionMode;
+  /** ドラッグ開始時のポインター位置 */
+  startPointer: Position;
+  /** ドラッグ開始時のオブジェクト状態 */
+  startObjectState: BoardObject;
+  /** 選択中の全オブジェクトの初期位置（グリッドスナップ用） */
+  startPositions: Map<number, Position>;
+  /** 操作中のハンドル */
+  handle?: HandleType;
+  /** 操作対象のオブジェクトインデックス */
+  objectIndex: number;
+}
+
+// ============================================
+// コンポーネントProps
+// ============================================
+
+/** EditorBoardコンポーネントのProps */
+export interface EditorBoardProps {
+  /** 表示スケール */
+  scale?: number;
+}
+
+// ============================================
+// グループ・履歴関連の型
+// ============================================
 
 /**
  * オブジェクトグループ

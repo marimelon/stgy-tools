@@ -14,6 +14,11 @@ export type {
   BoardMetaUpdates,
   GridSettings,
   AlignmentType,
+  ResizeHandle,
+  HandleType,
+  InteractionMode,
+  DragState,
+  EditorBoardProps,
 } from "./types";
 
 export { GRID_SIZES } from "./types";
@@ -35,3 +40,14 @@ export {
 } from "./coordinates";
 
 export { useKeyboardShortcuts, KEYBOARD_SHORTCUTS } from "./useKeyboardShortcuts";
+
+export { useImportExport } from "./useImportExport";
+export type { ImportResult, UseImportExportReturn } from "./useImportExport";
+
+export { useCanvasInteraction } from "./useCanvasInteraction";
+export type {
+  UseCanvasInteractionParams,
+  UseCanvasInteractionReturn,
+} from "./useCanvasInteraction";
+
+export { rgbToHex, hexToRgb } from "./colorUtils";

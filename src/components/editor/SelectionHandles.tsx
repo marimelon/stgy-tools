@@ -5,12 +5,7 @@
  */
 
 import type React from "react";
-
-/** リサイズハンドルの位置 */
-export type ResizeHandle = "nw" | "ne" | "sw" | "se";
-
-/** ハンドルの種類 */
-export type HandleType = ResizeHandle | "rotate";
+import type { ResizeHandle, HandleType } from "@/lib/editor";
 
 interface SelectionHandlesProps {
   /** オブジェクト位置X */
