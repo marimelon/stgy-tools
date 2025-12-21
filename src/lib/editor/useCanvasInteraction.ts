@@ -167,7 +167,7 @@ export function useCanvasInteraction({
   const handleObjectClick = useCallback(
     (index: number, e: React.MouseEvent) => {
       e.stopPropagation();
-      const additive = e.ctrlKey || e.metaKey;
+      const additive = e.shiftKey;
 
       const group = getGroupForObject(index);
       if (group && !additive) {
@@ -192,7 +192,7 @@ export function useCanvasInteraction({
       e.stopPropagation();
       e.preventDefault();
 
-      const additive = e.ctrlKey || e.metaKey;
+      const additive = e.shiftKey;
 
       const group = getGroupForObject(index);
       let indicesToMove = selectedIndices;

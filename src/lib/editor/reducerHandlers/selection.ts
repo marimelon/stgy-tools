@@ -14,7 +14,7 @@ export function handleSelectObject(
   const { index, additive } = payload;
 
   if (additive) {
-    // 追加選択モード (Ctrl/Cmd + クリック)
+    // 追加選択モード (Shift + クリック)
     const exists = state.selectedIndices.includes(index);
     return {
       ...state,
