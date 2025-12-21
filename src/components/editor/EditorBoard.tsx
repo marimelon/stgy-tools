@@ -4,10 +4,10 @@
  * BoardViewerを拡張し、ドラッグ/回転/リサイズのインタラクションを追加
  */
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback } from "react";
 import { BackgroundRenderer, ObjectRenderer } from "@/components/board";
 import { useEditor } from "@/lib/editor";
-import { screenToSVG, calculateRotation, clampToCanvas } from "@/lib/editor";
+import { screenToSVG, calculateRotation, snapToGrid } from "@/lib/editor";
 import {
   SelectionHandles,
   type ResizeHandle,
@@ -27,6 +27,8 @@ interface DragState {
   mode: InteractionMode;
   startPointer: Position;
   startObjectState: BoardObject;
+  /** 選択中の全オブジェクトの初期位置（グリッドスナップ用） */
+  startPositions: Map<number, Position>;
   handle?: HandleType;
   objectIndex: number;
 }
@@ -46,14 +48,13 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
     deselectAll,
     updateObject,
     commitHistory,
-    deleteSelected,
     addObject,
     getGroupForObject,
     selectGroup,
     moveObjects,
   } = useEditor();
 
-  const { board, selectedIndices } = state;
+  const { board, selectedIndices, gridSettings } = state;
   const { backgroundId, objects } = board;
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -139,23 +140,38 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
       e.stopPropagation();
       e.preventDefault();
 
+      const additive = e.ctrlKey || e.metaKey;
+
       // グループに属している場合はグループ全体を選択
       const group = getGroupForObject(index);
+      let indicesToMove = selectedIndices;
+
       if (!selectedIndices.includes(index)) {
-        if (group) {
+        if (group && !additive) {
           selectGroup(group.id);
+          indicesToMove = group.objectIndices;
         } else {
-          selectObject(index);
+          selectObject(index, additive);
+          indicesToMove = additive ? [...selectedIndices, index] : [index];
         }
       }
 
       const startPointer = screenToSVG(e, svg);
       const startObjectState = { ...objects[index] };
 
+      // 選択中の全オブジェクトの初期位置を保存
+      const startPositions = new Map<number, Position>();
+      for (const idx of indicesToMove) {
+        if (idx >= 0 && idx < objects.length) {
+          startPositions.set(idx, { ...objects[idx].position });
+        }
+      }
+
       setDragState({
         mode: "drag",
         startPointer,
         startObjectState,
+        startPositions,
         objectIndex: index,
       });
 
@@ -182,6 +198,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
         mode: "rotate",
         startPointer,
         startObjectState,
+        startPositions: new Map(),
         handle: "rotate",
         objectIndex: index,
       });
@@ -209,6 +226,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
         mode: "resize",
         startPointer,
         startObjectState,
+        startPositions: new Map(),
         handle,
         objectIndex: index,
       });
@@ -229,21 +247,33 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
       if (!svg) return;
 
       const currentPointer = screenToSVG(e, svg);
-      const { mode, startPointer, startObjectState, objectIndex } = dragState;
+      const { mode, startPointer, startObjectState, startPositions, objectIndex } = dragState;
 
       if (mode === "drag") {
         // ドラッグ移動（選択中の全オブジェクトを移動）
         const deltaX = currentPointer.x - startPointer.x;
         const deltaY = currentPointer.y - startPointer.y;
 
-        // 選択中のオブジェクトを全て移動
-        moveObjects(selectedIndices, deltaX, deltaY);
-
-        // startPointerを更新して累積移動を防ぐ
-        setDragState({
-          ...dragState,
-          startPointer: currentPointer,
-        });
+        // グリッドスナップが有効な場合、各オブジェクトの新しい位置を計算
+        if (gridSettings.enabled && startPositions.size > 0) {
+          // 各オブジェクトの位置を個別に更新（スナップ適用）
+          for (const [idx, startPos] of startPositions) {
+            const newPos = {
+              x: startPos.x + deltaX,
+              y: startPos.y + deltaY,
+            };
+            const snappedPos = snapToGrid(newPos, gridSettings.size);
+            updateObject(idx, { position: snappedPos });
+          }
+        } else {
+          // グリッドスナップ無効時は従来通りデルタで移動
+          moveObjects(selectedIndices, deltaX, deltaY);
+          // startPointerを更新して累積移動を防ぐ
+          setDragState({
+            ...dragState,
+            startPointer: currentPointer,
+          });
+        }
       } else if (mode === "rotate") {
         // 回転
         const center = startObjectState.position;
@@ -269,7 +299,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
         }
       }
     },
-    [dragState, updateObject]
+    [dragState, updateObject, gridSettings, selectedIndices, moveObjects]
   );
 
   /**
@@ -297,23 +327,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
     [dragState, commitHistory]
   );
 
-  // キーボードショートカット
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Delete or Backspace で削除
-      if (
-        (e.key === "Delete" || e.key === "Backspace") &&
-        selectedIndices.length > 0
-      ) {
-        e.preventDefault();
-        deleteSelected();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedIndices, deleteSelected]);
-
   return (
     <svg
       ref={svgRef}
@@ -336,6 +349,15 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
         height={CANVAS_HEIGHT}
       />
 
+      {/* グリッド線 */}
+      {gridSettings.enabled && gridSettings.showGrid && (
+        <GridOverlay
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+          gridSize={gridSettings.size}
+        />
+      )}
+
       {/* オブジェクト (逆順で描画してレイヤー順を正しくする) */}
       {[...visibleObjects].reverse().map(({ obj, index }) => (
         <g
@@ -353,6 +375,23 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
         </g>
       ))}
 
+      {/* 選択インジケーター */}
+      {selectedIndices.map((index) => {
+        const obj = objects[index];
+        if (!obj) return null;
+        const size = 48 * (obj.size / 100);
+        return (
+          <SelectionIndicator
+            key={`selection-${index}`}
+            x={obj.position.x}
+            y={obj.position.y}
+            width={size}
+            height={size}
+            rotation={obj.rotation}
+          />
+        );
+      })}
+
       {/* 選択ハンドル (単一選択時のみ) */}
       {selectedObject && selectedIndices.length === 1 && (
         <SelectionHandles
@@ -366,5 +405,91 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
         />
       )}
     </svg>
+  );
+}
+
+/**
+ * グリッドオーバーレイコンポーネント
+ */
+function GridOverlay({
+  width,
+  height,
+  gridSize,
+}: {
+  width: number;
+  height: number;
+  gridSize: number;
+}) {
+  const lines: React.ReactNode[] = [];
+
+  // 縦線
+  for (let x = gridSize; x < width; x += gridSize) {
+    lines.push(
+      <line
+        key={`v-${x}`}
+        x1={x}
+        y1={0}
+        x2={x}
+        y2={height}
+        stroke="rgba(255, 255, 255, 0.1)"
+        strokeWidth={1}
+      />
+    );
+  }
+
+  // 横線
+  for (let y = gridSize; y < height; y += gridSize) {
+    lines.push(
+      <line
+        key={`h-${y}`}
+        x1={0}
+        y1={y}
+        x2={width}
+        y2={y}
+        stroke="rgba(255, 255, 255, 0.1)"
+        strokeWidth={1}
+      />
+    );
+  }
+
+  return <g pointerEvents="none">{lines}</g>;
+}
+
+/**
+ * 選択インジケーターコンポーネント（バウンディングボックス）
+ */
+function SelectionIndicator({
+  x,
+  y,
+  width,
+  height,
+  rotation,
+}: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+}) {
+  const padding = 4;
+  const boxWidth = width + padding * 2;
+  const boxHeight = height + padding * 2;
+
+  return (
+    <g
+      transform={`translate(${x}, ${y}) rotate(${rotation})`}
+      pointerEvents="none"
+    >
+      <rect
+        x={-boxWidth / 2}
+        y={-boxHeight / 2}
+        width={boxWidth}
+        height={boxHeight}
+        fill="none"
+        stroke="#22d3ee"
+        strokeWidth={2}
+        strokeDasharray="4 2"
+      />
+    </g>
   );
 }

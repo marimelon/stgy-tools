@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import type { BoardData, BoardObject, Position, BackgroundId } from "@/lib/stgy";
-import type { EditorState, EditorAction } from "./types";
+import type { EditorState, EditorAction, GridSettings, AlignmentType } from "./types";
 import { editorReducer, createInitialState } from "./reducer";
 import { createDefaultObject } from "./factory";
 
@@ -65,6 +65,10 @@ export interface EditorContextValue {
   getGroupForObject: (index: number) => import("./types").ObjectGroup | undefined;
   /** グループ内の全オブジェクトを選択 */
   selectGroup: (groupId: string) => void;
+  /** グリッド設定を更新 */
+  setGridSettings: (settings: Partial<GridSettings>) => void;
+  /** 選択オブジェクトを整列 */
+  alignObjects: (alignment: AlignmentType) => void;
 
   // 状態
   /** Undoが可能か */
@@ -77,6 +81,8 @@ export interface EditorContextValue {
   canGroup: boolean;
   /** 選択中のオブジェクトが属するグループ（単一選択時） */
   selectedGroup: import("./types").ObjectGroup | undefined;
+  /** 整列可能か（2つ以上選択中） */
+  canAlign: boolean;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -218,6 +224,18 @@ export function EditorProvider({
     [state.groups]
   );
 
+  const setGridSettings = useCallback((settings: Partial<GridSettings>) => {
+    dispatch({ type: "SET_GRID_SETTINGS", settings });
+  }, []);
+
+  const alignObjects = useCallback(
+    (alignment: AlignmentType) => {
+      if (state.selectedIndices.length < 2) return;
+      dispatch({ type: "ALIGN_OBJECTS", indices: state.selectedIndices, alignment });
+    },
+    [state.selectedIndices]
+  );
+
   // 計算済み状態
   const canUndo = state.historyIndex > 0;
   const canRedo = state.historyIndex < state.history.length - 1;
@@ -229,6 +247,7 @@ export function EditorProvider({
   }, [state.selectedIndices, state.board.objects]);
 
   const canGroup = state.selectedIndices.length >= 2;
+  const canAlign = state.selectedIndices.length >= 2;
 
   const selectedGroup = useMemo(() => {
     if (state.selectedIndices.length === 0) return undefined;
@@ -260,11 +279,14 @@ export function EditorProvider({
       toggleGroupCollapse,
       getGroupForObject,
       selectGroup,
+      setGridSettings,
+      alignObjects,
       canUndo,
       canRedo,
       selectedObjects,
       canGroup,
       selectedGroup,
+      canAlign,
     }),
     [
       state,
@@ -288,11 +310,14 @@ export function EditorProvider({
       toggleGroupCollapse,
       getGroupForObject,
       selectGroup,
+      setGridSettings,
+      alignObjects,
       canUndo,
       canRedo,
       selectedObjects,
       canGroup,
       selectedGroup,
+      canAlign,
     ]
   );
 

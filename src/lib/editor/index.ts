@@ -12,7 +12,11 @@ export type {
   EditorAction,
   HistoryEntry,
   BoardMetaUpdates,
+  GridSettings,
+  AlignmentType,
 } from "./types";
+
+export { GRID_SIZES } from "./types";
 
 export {
   createEmptyBoard,
@@ -29,3 +33,5 @@ export {
   snapToGrid,
   distance,
 } from "./coordinates";
+
+export { useKeyboardShortcuts, KEYBOARD_SHORTCUTS } from "./useKeyboardShortcuts";

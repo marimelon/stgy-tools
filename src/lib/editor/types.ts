@@ -31,6 +31,33 @@ export interface HistoryEntry {
 }
 
 /**
+ * グリッド設定
+ */
+export interface GridSettings {
+  /** グリッドスナップ有効 */
+  enabled: boolean;
+  /** グリッドサイズ (px) */
+  size: number;
+  /** グリッド線を表示 */
+  showGrid: boolean;
+}
+
+/** 利用可能なグリッドサイズ */
+export const GRID_SIZES = [8, 16, 32] as const;
+export type GridSize = (typeof GRID_SIZES)[number];
+
+/** 整列タイプ */
+export type AlignmentType =
+  | "left"
+  | "center"
+  | "right"
+  | "top"
+  | "middle"
+  | "bottom"
+  | "distribute-h"
+  | "distribute-v";
+
+/**
  * エディター状態
  */
 export interface EditorState {
@@ -42,6 +69,8 @@ export interface EditorState {
   clipboard: BoardObject[] | null;
   /** オブジェクトグループ */
   groups: ObjectGroup[];
+  /** グリッド設定 */
+  gridSettings: GridSettings;
   /** 履歴 */
   history: HistoryEntry[];
   /** 履歴の現在位置 */
@@ -75,7 +104,9 @@ export type EditorAction =
   | { type: "MOVE_LAYER"; index: number; direction: "front" | "back" | "forward" | "backward" }
   | { type: "GROUP_OBJECTS"; indices: number[] }
   | { type: "UNGROUP"; groupId: string }
-  | { type: "TOGGLE_GROUP_COLLAPSE"; groupId: string };
+  | { type: "TOGGLE_GROUP_COLLAPSE"; groupId: string }
+  | { type: "SET_GRID_SETTINGS"; settings: Partial<GridSettings> }
+  | { type: "ALIGN_OBJECTS"; indices: number[]; alignment: AlignmentType };
 
 /**
  * ボードメタデータ更新用の部分型

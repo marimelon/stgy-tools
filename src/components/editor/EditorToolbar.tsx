@@ -3,7 +3,7 @@
  */
 
 import { useState, useMemo } from "react";
-import { useEditor, recalculateBoardSize } from "@/lib/editor";
+import { useEditor, recalculateBoardSize, GRID_SIZES } from "@/lib/editor";
 import { encodeStgy, decodeStgy, parseBoardData, extractKeyFromStgy } from "@/lib/stgy";
 
 /**
@@ -26,6 +26,9 @@ export function EditorToolbar() {
     ungroup,
     canGroup,
     selectedGroup,
+    setGridSettings,
+    alignObjects,
+    canAlign,
   } = useEditor();
 
   const [showImportModal, setShowImportModal] = useState(false);
@@ -204,6 +207,108 @@ export function EditorToolbar() {
 
         <Divider />
 
+        {/* 整列操作 */}
+        <div className="flex items-center gap-1">
+          <ToolbarButton
+            onClick={() => alignObjects("left")}
+            disabled={!canAlign}
+            title="左揃え"
+          >
+            ⫷
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => alignObjects("center")}
+            disabled={!canAlign}
+            title="左右中央揃え"
+          >
+            ⫿
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => alignObjects("right")}
+            disabled={!canAlign}
+            title="右揃え"
+          >
+            ⫸
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => alignObjects("top")}
+            disabled={!canAlign}
+            title="上揃え"
+          >
+            ⤒
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => alignObjects("middle")}
+            disabled={!canAlign}
+            title="上下中央揃え"
+          >
+            ⎯
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => alignObjects("bottom")}
+            disabled={!canAlign}
+            title="下揃え"
+          >
+            ⤓
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => alignObjects("distribute-h")}
+            disabled={!canAlign}
+            title="水平方向に均等配置"
+          >
+            ⋯
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => alignObjects("distribute-v")}
+            disabled={!canAlign}
+            title="垂直方向に均等配置"
+          >
+            ⋮
+          </ToolbarButton>
+        </div>
+
+        <Divider />
+
+        {/* グリッド設定 */}
+        <div className="flex items-center gap-2">
+          <ToolbarButton
+            onClick={() => setGridSettings({ enabled: !state.gridSettings.enabled })}
+            title={state.gridSettings.enabled ? "グリッドスナップ無効化" : "グリッドスナップ有効化"}
+            className={state.gridSettings.enabled ? "!bg-cyan-600 hover:!bg-cyan-500" : ""}
+          >
+            #
+          </ToolbarButton>
+          <select
+            value={state.gridSettings.size}
+            onChange={(e) => setGridSettings({ size: Number(e.target.value) })}
+            disabled={!state.gridSettings.enabled}
+            className="px-2 py-1 text-sm bg-slate-700 border border-slate-600 rounded text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:border-cyan-500"
+            title="グリッドサイズ"
+          >
+            {GRID_SIZES.map((size) => (
+              <option key={size} value={size}>
+                {size}px
+              </option>
+            ))}
+          </select>
+          <label
+            className={`flex items-center gap-1 text-xs cursor-pointer ${
+              state.gridSettings.enabled ? "text-slate-300" : "text-slate-500"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={state.gridSettings.showGrid}
+              onChange={(e) => setGridSettings({ showGrid: e.target.checked })}
+              disabled={!state.gridSettings.enabled}
+              className="w-3 h-3 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500 disabled:opacity-50"
+            />
+            表示
+          </label>
+        </div>
+
+        <Divider />
+
         {/* 状態表示 */}
         <div className="flex-1 text-right text-xs text-slate-400">
           {state.isDirty && <span className="text-yellow-500 mr-2">●</span>}
@@ -325,11 +430,13 @@ function ToolbarButton({
   onClick,
   disabled,
   title,
+  className = "",
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
   title?: string;
+  className?: string;
 }) {
   return (
     <button
@@ -337,7 +444,7 @@ function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className="px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded transition-colors"
+      className={`px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded transition-colors ${className}`}
     >
       {children}
     </button>
