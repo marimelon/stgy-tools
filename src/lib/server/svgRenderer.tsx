@@ -70,12 +70,12 @@ function colorToRgba(color: Color): string {
 
 /**
  * AoEオブジェクトのIDセット
+ * Note: Line (ObjectId: 12) は絶対座標線として別処理するため含めない
  */
 const AOE_OBJECT_IDS = new Set<number>([
 	ObjectIds.CircleAoE,
 	ObjectIds.ConeAoE,
 	ObjectIds.LineAoE,
-	ObjectIds.Line,
 	ObjectIds.DonutAoE,
 ]);
 
@@ -183,16 +183,18 @@ function renderColoredAoE(
 			);
 		}
 		case ObjectIds.LineAoE: {
-			// LineAoE: param1 = 縦幅（高さ）、param2 = 横幅
-			const height = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
-			const width = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
+			// LineAoE: param1 = 縦幅（長さ）、param2 = 横幅（太さ）
+			// 中央基準（中心が原点）
+			// クライアント側と同様: length → rectのwidth, thickness → rectのheight
+			const length = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
+			const thickness = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
 			return (
 				<g transform={transform}>
 					<rect
-						x={-width / 2}
-						y={-height / 2}
-						width={width}
-						height={height}
+						x={-length / 2}
+						y={-thickness / 2}
+						width={length}
+						height={thickness}
 						fill={fill}
 						stroke={strokeColor}
 						strokeWidth="2"
@@ -201,22 +203,6 @@ function renderColoredAoE(
 				</g>
 			);
 		}
-		case ObjectIds.Line:
-			// Line: 横長の線（バウンディングボックス: 256x6）
-			return (
-				<g transform={transform}>
-					<rect
-						x={-128}
-						y={-3}
-						width={256}
-						height={6}
-						fill={fill}
-						stroke={strokeColor}
-						strokeWidth="1"
-						opacity={opacity}
-					/>
-				</g>
-			);
 		case ObjectIds.DonutAoE:
 			// ドーナツ型AoE（中央に穴あき）
 			return (
@@ -293,13 +279,33 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 		return null;
 	}
 
-	// ConeAoE, LineAoE, Lineは常にSVGでレンダリング（画像はサイドバーアイコンのみ）
-	// 色変更可能なのは LineAoE, Line, Text のみ
+	// Line (ObjectId: 12): 始点(position)から終点(param1/10, param2/10)への絶対座標線
+	// param1, param2 は座標を10倍した整数値（小数第一位まで対応）
+	// param3 は線の太さ（デフォルト6）
+	if (objectId === ObjectIds.Line) {
+		const endX = (param1 ?? position.x * 10 + 2560) / 10;
+		const endY = (param2 ?? position.y * 10) / 10;
+		const lineThickness = object.param3 ?? 6;
+		const lineFill = colorToRgba(color);
+		return (
+			<line
+				x1={position.x}
+				y1={position.y}
+				x2={endX}
+				y2={endY}
+				stroke={lineFill}
+				strokeWidth={lineThickness}
+				strokeLinecap="butt"
+				opacity={opacity}
+			/>
+		);
+	}
+
+	// ConeAoE, LineAoEは常にSVGでレンダリング（画像はサイドバーアイコンのみ）
+	// 色変更可能なのは LineAoE, Text のみ（Lineは上で特別処理）
 	// その他のAoEオブジェクトはパラメータ変更時のみSVGでレンダリング（色変更は無視）
 	const alwaysSvgObjects =
-		objectId === ObjectIds.ConeAoE ||
-		objectId === ObjectIds.LineAoE ||
-		objectId === ObjectIds.Line;
+		objectId === ObjectIds.ConeAoE || objectId === ObjectIds.LineAoE;
 	const shouldRenderAsSvg =
 		alwaysSvgObjects ||
 		(AOE_OBJECT_IDS.has(objectId) &&

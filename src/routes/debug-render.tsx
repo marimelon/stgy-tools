@@ -64,7 +64,9 @@ function RenderDebugPage() {
 		
 		try {
 			const encodedCode = encodeURIComponent(code.trim());
-			const response = await fetch(`/image?code=${encodedCode}&format=svg`);
+			// キャッシュバスティング用のタイムスタンプを追加
+			const timestamp = Date.now();
+			const response = await fetch(`/image?code=${encodedCode}&format=svg&_t=${timestamp}`);
 			
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
