@@ -152,16 +152,17 @@ export function parseBoardData(data: Uint8Array): BoardData {
 
       case 3: {
         // テキスト本文 / 終端マーカー
+        // 終端マーカーは必ず length = 1 (仕様書参照)
         const length = reader.readUint16();
-        if (length > 8) {
+        if (length === 1) {
+          // 終端マーカー
+          reader.readUint16(); // = 1
+          backgroundId = reader.readUint16() as BackgroundId;
+        } else {
           // テキスト
           const paddedLength = Math.ceil(length / 4) * 4;
           const text = reader.readString(paddedLength);
           texts.push(text);
-        } else {
-          // 終端マーカー
-          reader.readUint16(); // = 1
-          backgroundId = reader.readUint16() as BackgroundId;
         }
         break;
       }
