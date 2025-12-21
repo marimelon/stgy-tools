@@ -37,6 +37,161 @@ import {
 } from "./icons";
 
 // ========================================
+// 隠し機能: カスタムアイコン
+// ========================================
+
+/**
+ * カスタムアイコンが利用可能かチェック
+ * localStorage.setItem('useCustomIcons', 'true') で有効化
+ */
+function useCustomIcons(): boolean {
+	return (
+		typeof window !== "undefined" &&
+		localStorage.getItem("useCustomIcons") === "true"
+	);
+}
+
+/**
+ * カスタムアイコン対応オブジェクトIDのセット
+ * 画像ファイルは /public/icons/{objectId}.png に配置
+ */
+const CUSTOM_ICON_IDS = new Set<number>([
+	// フィールド
+	ObjectIds.CircleCheck,
+	ObjectIds.SquareCheck,
+	ObjectIds.CircleGray,
+	ObjectIds.SquareGray,
+	// 攻撃範囲
+	ObjectIds.CircleAoE,
+	ObjectIds.ConeAoE,
+	ObjectIds.LineAoE,
+	ObjectIds.Line,
+	ObjectIds.Gaze,
+	ObjectIds.Stack,
+	ObjectIds.StackLine,
+	ObjectIds.Proximity,
+	ObjectIds.DonutAoE,
+	ObjectIds.StackChain,
+	ObjectIds.ProximityTarget,
+	ObjectIds.Tankbuster,
+	ObjectIds.KnockbackRadial,
+	ObjectIds.KnockbackLine,
+	ObjectIds.Block,
+	ObjectIds.TargetMarker,
+	ObjectIds.CircleAoEMoving,
+	ObjectIds.Area1P,
+	ObjectIds.Area2P,
+	ObjectIds.Area3P,
+	ObjectIds.Area4P,
+	// エネミー
+	ObjectIds.EnemySmall,
+	ObjectIds.EnemyMedium,
+	ObjectIds.EnemyLarge,
+	// バフ/デバフ
+	ObjectIds.Buff,
+	ObjectIds.Debuff,
+	// 図形
+	ObjectIds.ShapeCircle,
+	ObjectIds.ShapeCross,
+	ObjectIds.ShapeTriangle,
+	ObjectIds.ShapeSquare,
+	ObjectIds.ShapeArrow,
+	ObjectIds.ShapeRotation,
+	// ロックオン
+	ObjectIds.LockOnRed,
+	ObjectIds.LockOnBlue,
+	ObjectIds.LockOnPurple,
+	ObjectIds.LockOnGreen,
+	// 強調
+	ObjectIds.EmphasisCircle,
+	ObjectIds.EmphasisCross,
+	ObjectIds.EmphasisSquare,
+	ObjectIds.EmphasisTriangle,
+	// 回転
+	ObjectIds.Clockwise,
+	ObjectIds.CounterClockwise,
+	// グループ
+	ObjectIds.Group,
+	// テキスト
+	ObjectIds.Text,
+	// 攻撃マーカー
+	ObjectIds.Attack1,
+	ObjectIds.Attack2,
+	ObjectIds.Attack3,
+	ObjectIds.Attack4,
+	ObjectIds.Attack5,
+	ObjectIds.Attack6,
+	ObjectIds.Attack7,
+	ObjectIds.Attack8,
+	// 足止めマーカー
+	ObjectIds.Bind1,
+	ObjectIds.Bind2,
+	ObjectIds.Bind3,
+	// 禁止マーカー
+	ObjectIds.Ignore1,
+	ObjectIds.Ignore2,
+	// 汎用マーカー
+	ObjectIds.Square,
+	ObjectIds.Circle,
+	ObjectIds.Plus,
+	ObjectIds.Triangle,
+	// ウェイマーク
+	ObjectIds.WaymarkA,
+	ObjectIds.WaymarkB,
+	ObjectIds.WaymarkC,
+	ObjectIds.WaymarkD,
+	ObjectIds.Waymark1,
+	ObjectIds.Waymark2,
+	ObjectIds.Waymark3,
+	ObjectIds.Waymark4,
+	// ロールアイコン
+	ObjectIds.Tank,
+	ObjectIds.Tank1,
+	ObjectIds.Tank2,
+	ObjectIds.Healer,
+	ObjectIds.Healer1,
+	ObjectIds.Healer2,
+	ObjectIds.DPS,
+	ObjectIds.DPS1,
+	ObjectIds.DPS2,
+	ObjectIds.DPS3,
+	ObjectIds.DPS4,
+	// ジョブアイコン（基本クラス）
+	ObjectIds.Gladiator,
+	ObjectIds.Pugilist,
+	ObjectIds.Marauder,
+	ObjectIds.Lancer,
+	ObjectIds.Archer,
+	ObjectIds.Conjurer,
+	ObjectIds.Thaumaturge,
+	ObjectIds.Arcanist,
+	ObjectIds.Rogue,
+	// ジョブアイコン（上級ジョブ）
+	ObjectIds.Paladin,
+	ObjectIds.Monk,
+	ObjectIds.Warrior,
+	ObjectIds.Dragoon,
+	ObjectIds.Bard,
+	ObjectIds.WhiteMage,
+	ObjectIds.BlackMage,
+	ObjectIds.Summoner,
+	ObjectIds.Scholar,
+	ObjectIds.Ninja,
+	ObjectIds.Machinist,
+	ObjectIds.DarkKnight,
+	ObjectIds.Astrologian,
+	ObjectIds.Samurai,
+	ObjectIds.RedMage,
+	ObjectIds.BlueMage,
+	ObjectIds.Gunbreaker,
+	ObjectIds.Dancer,
+	ObjectIds.Reaper,
+	ObjectIds.Sage,
+	ObjectIds.Viper,
+	ObjectIds.Pictomancer,
+]);
+
+// ========================================
 // 定数定義
 // ========================================
 
@@ -245,6 +400,46 @@ export const OBJECT_BBOX_SIZES: Record<
 	[ObjectIds.Clockwise]: { width: 72, height: 40 },
 	[ObjectIds.CounterClockwise]: { width: 72, height: 40 },
 };
+
+/**
+ * カスタムアイコン画像をレンダリング
+ * OBJECT_BBOX_SIZESのサイズを使用してバウンディングボックス内に収める
+ */
+function CustomIconImage({
+	objectId,
+	transform,
+}: {
+	objectId: number;
+	transform: string;
+}) {
+	const iconSize = OBJECT_BBOX_SIZES[objectId];
+	if (!iconSize) return null;
+
+	return (
+		<g transform={transform}>
+			<image
+				href={`/icons/${objectId}.png`}
+				x={-iconSize.width / 2}
+				y={-iconSize.height / 2}
+				width={iconSize.width}
+				height={iconSize.height}
+				preserveAspectRatio="xMidYMid meet"
+			/>
+		</g>
+	);
+}
+
+/**
+ * カスタムアイコンが利用可能な場合は画像を返し、そうでなければnullを返す
+ */
+function renderCustomIconIfEnabled(
+	objectId: number,
+	transform: string,
+): React.ReactNode | null {
+	if (!useCustomIcons()) return null;
+	if (!CUSTOM_ICON_IDS.has(objectId)) return null;
+	return <CustomIconImage objectId={objectId} transform={transform} />;
+}
 
 /** 色定数 */
 const COLORS = {
@@ -1109,6 +1304,10 @@ function FieldObject({
 	color: Color;
 }) {
 	const id = useId();
+
+	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
+	const customIcon = renderCustomIconIfEnabled(objectId, transform);
+	if (customIcon) return customIcon;
 	const fill = colorToRgba(color);
 	const size = LARGE_FIELD_IDS.includes(objectId)
 		? SIZES.FIELD_LARGE
@@ -1523,6 +1722,10 @@ function AoEObject({
 	param1?: number;
 	param2?: number;
 }) {
+	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
+	const customIcon = renderCustomIconIfEnabled(objectId, transform);
+	if (customIcon) return customIcon;
+
 	const fill = colorToRgba(color);
 	const baseSize = SIZES.AOE_BASE;
 
@@ -1763,6 +1966,10 @@ function RoleIcon({
 	objectId: number;
 	transform: string;
 }) {
+	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
+	const customIcon = renderCustomIconIfEnabled(objectId, transform);
+	if (customIcon) return customIcon;
+
 	const label = ROLE_LABELS[objectId] ?? "?";
 	const bgColor = ROLE_COLORS[objectId] ?? COLORS.ROLE_DEFAULT;
 	const size = SIZES.ROLE_ICON;
@@ -1798,6 +2005,10 @@ function WaymarkIcon({
 	objectId: number;
 	transform: string;
 }) {
+	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
+	const customIcon = renderCustomIconIfEnabled(objectId, transform);
+	if (customIcon) return customIcon;
+
 	const size = SIZES.WAYMARK;
 	const info = WAYMARK_INFO[objectId] ?? {
 		label: "?",
@@ -1836,6 +2047,10 @@ function EnemyIcon({
 	transform: string;
 }) {
 	const id = useId();
+
+	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
+	const customIcon = renderCustomIconIfEnabled(objectId, transform);
+	if (customIcon) return customIcon;
 	const size = ENEMY_SIZES[objectId] ?? SIZES.ENEMY_SMALL;
 	// 元のSVGは100x100なのでスケール係数を計算
 	const scale = size / 100;
@@ -2002,6 +2217,10 @@ function JobIcon({
 	objectId: number;
 	transform: string;
 }) {
+	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
+	const customIcon = renderCustomIconIfEnabled(objectId, transform);
+	if (customIcon) return customIcon;
+
 	const abbreviation = JOB_ABBREVIATIONS[objectId] ?? "?";
 	const role = JOB_ROLES[objectId] ?? "melee";
 	const bgColor = JOB_ROLE_COLORS[role];
@@ -2065,6 +2284,10 @@ function MarkerIcon({
 	objectId: number;
 	transform: string;
 }) {
+	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
+	const customIcon = renderCustomIconIfEnabled(objectId, transform);
+	if (customIcon) return customIcon;
+
 	if (ATTACK_MARKER_IDS.includes(objectId)) {
 		return <AttackMarkerIcon objectId={objectId} transform={transform} />;
 	}

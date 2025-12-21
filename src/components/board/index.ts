@@ -1,3 +1,7 @@
-export { BoardViewer } from "./BoardViewer";
 export { BackgroundRenderer } from "./BackgroundRenderer";
-export { ObjectRenderer, getObjectBoundingBox, OBJECT_BBOX_SIZES } from "./ObjectRenderer";
+export { BoardViewer } from "./BoardViewer";
+export {
+	getObjectBoundingBox,
+	OBJECT_BBOX_SIZES,
+	ObjectRenderer,
+} from "./ObjectRenderer";
