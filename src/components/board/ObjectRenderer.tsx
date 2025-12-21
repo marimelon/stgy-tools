@@ -449,6 +449,9 @@ export function ObjectRenderer({
 		/>
 	);
 
+	// 透過度をSVGのopacityに変換 (color.opacity: 0=不透明, 100=透明)
+	const svgOpacity = 1 - color.opacity / 100;
+
 	if (!showBoundingBox) {
 		return (
 			// biome-ignore lint/a11y/useSemanticElements: SVG elements cannot be replaced with button
@@ -457,7 +460,7 @@ export function ObjectRenderer({
 				tabIndex={0}
 				onClick={handleClick}
 				onKeyDown={(e) => e.key === "Enter" && handleClick(e as unknown as React.MouseEvent)}
-				style={{ cursor: "pointer" }}
+				style={{ cursor: "pointer", opacity: svgOpacity }}
 			>
 				{content}
 				{selectionIndicator}
@@ -472,7 +475,7 @@ export function ObjectRenderer({
 			tabIndex={0}
 			onClick={handleClick}
 			onKeyDown={(e) => e.key === "Enter" && handleClick(e as unknown as React.MouseEvent)}
-			style={{ cursor: "pointer" }}
+			style={{ cursor: "pointer", opacity: svgOpacity }}
 		>
 			{content}
 			{selectionIndicator}
