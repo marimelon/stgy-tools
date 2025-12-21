@@ -777,7 +777,7 @@ function getConeBoundingBox(
 }
 
 // オブジェクトのバウンディングボックスサイズとオフセットを取得
-function getObjectBoundingBox(
+export function getObjectBoundingBox(
 	objectId: number,
 	param1?: number,
 	_param2?: number,
@@ -791,7 +791,7 @@ function getObjectBoundingBox(
 		return { width: size, height: size };
 	}
 
-	// AoE
+	// AoE（特殊サイズを持つものを先にチェック）
 	if (isAoEObject(objectId)) {
 		// 扇形
 		if (objectId === ObjectIds.ConeAoE) {
@@ -808,6 +808,21 @@ function getObjectBoundingBox(
 		if (objectId === ObjectIds.LineAoE || objectId === ObjectIds.Line) {
 			return { width: SIZES.LINE_WIDTH, height: SIZES.AOE_BASE * 2 };
 		}
+
+		// 特殊サイズを持つAoEオブジェクト
+		const aoeSpecialSizes: Record<number, { width: number; height: number }> = {
+			[ObjectIds.Gaze]: { width: 100, height: 100 },
+			[ObjectIds.CircleAoE]: { width: 256, height: 256 },
+			[ObjectIds.KnockbackRadial]: { width: 256, height: 256 },
+			[ObjectIds.KnockbackLine]: { width: 256, height: 256 },
+			[ObjectIds.CircleAoEMoving]: { width: 134, height: 134 },
+			[ObjectIds.StackChain]: { width: 134, height: 134 },
+		};
+		const aoeSpecialSize = aoeSpecialSizes[objectId];
+		if (aoeSpecialSize) {
+			return aoeSpecialSize;
+		}
+
 		return { width: SIZES.AOE_BASE, height: SIZES.AOE_BASE };
 	}
 

@@ -5,7 +5,7 @@
  */
 
 import { useRef } from "react";
-import { BackgroundRenderer, ObjectRenderer } from "@/components/board";
+import { BackgroundRenderer, ObjectRenderer, getObjectBoundingBox } from "@/components/board";
 import {
   useEditor,
   useCanvasInteraction,
@@ -156,17 +156,28 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
         })}
 
       {/* 選択ハンドル (単一選択時のみ) */}
-      {selectedObject && selectedIndices.length === 1 && (
-        <SelectionHandles
-          x={selectedObject.position.x}
-          y={selectedObject.position.y}
-          width={48 * (selectedObject.size / 100)}
-          height={48 * (selectedObject.size / 100)}
-          rotation={selectedObject.rotation}
-          onRotateStart={handleRotateStart}
-          onResizeStart={handleResizeStart}
-        />
-      )}
+      {selectedObject && selectedIndices.length === 1 && (() => {
+        const bbox = getObjectBoundingBox(
+          selectedObject.objectId,
+          selectedObject.param1,
+          selectedObject.param2,
+          selectedObject.text
+        );
+        const scale = selectedObject.size / 100;
+        return (
+          <SelectionHandles
+            x={selectedObject.position.x}
+            y={selectedObject.position.y}
+            width={bbox.width * scale}
+            height={bbox.height * scale}
+            offsetX={(bbox.offsetX ?? 0) * scale}
+            offsetY={(bbox.offsetY ?? 0) * scale}
+            rotation={selectedObject.rotation}
+            onRotateStart={handleRotateStart}
+            onResizeStart={handleResizeStart}
+          />
+        );
+      })()}
 
       {/* マーキー選択矩形 */}
       {marqueeRect && (
