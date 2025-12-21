@@ -204,13 +204,16 @@ function EditorContent({ initialEncodeKey }: EditorContentProps) {
 					<h1 className="app-logo">Strategy Board Editor</h1>
 				</div>
 				<Link
-					to="/"
+					to="/image/generate"
+					target="_blank"
 					className="text-sm font-medium transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
 				>
 					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-						<path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+						<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" strokeLinecap="round" strokeLinejoin="round" />
+						<polyline points="15 3 21 3 21 9" strokeLinecap="round" strokeLinejoin="round" />
+						<line x1="10" y1="14" x2="21" y2="3" strokeLinecap="round" strokeLinejoin="round" />
 					</svg>
-					ビューアーに戻る
+					画像生成
 				</Link>
 			</header>
 

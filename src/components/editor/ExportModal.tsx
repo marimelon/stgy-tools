@@ -3,7 +3,7 @@
  * shadcn/ui Dialog ベース
  */
 
-import { Check, Copy, Key } from "lucide-react";
+import { Check, Copy, ExternalLink, Key } from "lucide-react";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -113,23 +113,37 @@ export function ExportModal({
 					</div>
 				</div>
 
-				<DialogFooter>
-					<Button variant="ghost" onClick={onClose}>
-						閉じる
+				<DialogFooter className="flex-col sm:flex-row gap-2">
+					<Button
+						variant="outline"
+						onClick={() => {
+							const url = `/image/generate?code=${encodeURIComponent(exportedCode)}`;
+							window.open(url, "_blank");
+						}}
+						disabled={!exportedCode}
+						className="sm:mr-auto"
+					>
+						<ExternalLink className="size-4" />
+						画像生成を開く
 					</Button>
-					<Button onClick={handleCopy}>
-						{copied ? (
-							<>
-								<Check className="size-4" />
-								コピーしました
-							</>
-						) : (
-							<>
-								<Copy className="size-4" />
-								コピー
-							</>
-						)}
-					</Button>
+					<div className="flex gap-2">
+						<Button variant="ghost" onClick={onClose}>
+							閉じる
+						</Button>
+						<Button onClick={handleCopy}>
+							{copied ? (
+								<>
+									<Check className="size-4" />
+									コピーしました
+								</>
+							) : (
+								<>
+									<Copy className="size-4" />
+									コピー
+								</>
+							)}
+						</Button>
+					</div>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
