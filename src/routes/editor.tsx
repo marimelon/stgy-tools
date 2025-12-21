@@ -23,6 +23,7 @@ import {
 	PropertyPanel,
 } from "@/components/editor";
 import { loadSession, useAutoSave } from "@/lib/persistence";
+import { CompactFooter } from "@/components/ui/Footer";
 
 /** キャンバスの基本サイズ */
 const CANVAS_WIDTH = 512;
@@ -201,20 +202,23 @@ function EditorContent({ initialEncodeKey }: EditorContentProps) {
 							<path d="M8.5 15.5h7M15.5 8.5v7" strokeLinecap="round" />
 						</svg>
 					</div>
-					<h1 className="app-logo">Strategy Board Editor</h1>
+					<h1 className="app-logo">STGY Tools Editor</h1>
 				</div>
-				<Link
-					to="/image/generate"
-					target="_blank"
-					className="text-sm font-medium transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
-				>
-					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-						<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" strokeLinecap="round" strokeLinejoin="round" />
-						<polyline points="15 3 21 3 21 9" strokeLinecap="round" strokeLinejoin="round" />
-						<line x1="10" y1="14" x2="21" y2="3" strokeLinecap="round" strokeLinejoin="round" />
-					</svg>
-					画像生成
-				</Link>
+				<nav className="flex items-center gap-4">
+					<Link
+						to="/"
+						className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+					>
+						Viewer
+					</Link>
+					<Link
+						to="/image/generate"
+						target="_blank"
+						className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+					>
+						Image Generator
+					</Link>
+				</nav>
 			</header>
 
 			{/* ツールバー */}
@@ -238,6 +242,9 @@ function EditorContent({ initialEncodeKey }: EditorContentProps) {
 					</div>
 				</ResizableLayout>
 			</div>
+
+			{/* フッター */}
+			<CompactFooter className="border-t border-border bg-background/50" />
 		</div>
 	);
 }

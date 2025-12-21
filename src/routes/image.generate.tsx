@@ -3,7 +3,7 @@
  * stgyコードを入力して画像URLを生成する
  */
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useCallback, useEffect } from "react";
 import { decodeStgy } from "@/lib/stgy/decoder";
 import { parseBoardData } from "@/lib/stgy/parser";
@@ -102,8 +102,21 @@ function ImageGeneratePage() {
 
 	return (
 		<div style={styles.container}>
+			{/* ヘッダー */}
+			<header style={styles.header}>
+				<h1 style={styles.headerTitle}>STGY Tools Image Generator</h1>
+				<nav style={styles.nav}>
+					<Link to="/" style={styles.navLink}>
+						Viewer
+					</Link>
+					<Link to="/editor" style={styles.navLink}>
+						Editor
+					</Link>
+				</nav>
+			</header>
+
 			<div style={styles.card}>
-				<h1 style={styles.title}>画像URL生成</h1>
+				<h2 style={styles.title}>Generate Image URL</h2>
 				<p style={styles.description}>
 					stgyコードを入力して、画像URLを生成します。
 				</p>
@@ -251,8 +264,33 @@ const styles: Record<string, React.CSSProperties> = {
 		backgroundColor: "#0a0a0a",
 		padding: "2rem",
 		display: "flex",
-		justifyContent: "center",
-		alignItems: "flex-start",
+		flexDirection: "column",
+		alignItems: "center",
+		gap: "1.5rem",
+	},
+	header: {
+		width: "100%",
+		maxWidth: "800px",
+		display: "flex",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	headerTitle: {
+		color: "#fff",
+		fontSize: "1.25rem",
+		fontWeight: "bold",
+		margin: 0,
+	},
+	nav: {
+		display: "flex",
+		gap: "1.5rem",
+	},
+	navLink: {
+		color: "#888",
+		fontSize: "0.875rem",
+		fontWeight: 500,
+		textDecoration: "none",
+		transition: "color 0.2s",
 	},
 	card: {
 		backgroundColor: "#1a1a1a",
@@ -264,7 +302,7 @@ const styles: Record<string, React.CSSProperties> = {
 	},
 	title: {
 		color: "#fff",
-		fontSize: "1.5rem",
+		fontSize: "1.25rem",
 		fontWeight: "bold",
 		marginBottom: "0.5rem",
 	},

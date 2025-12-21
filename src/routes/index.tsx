@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Footer } from "@/components/ui/Footer";
 
 export const Route = createFileRoute("/")({ component: App });
 
@@ -64,11 +65,20 @@ function App() {
 		<div className="min-h-screen bg-background text-foreground">
 			<header className="app-header p-4">
 				<div className="flex items-center justify-between max-w-6xl mx-auto">
-					<h1 className="app-logo text-2xl">Strategy Board Viewer</h1>
-					<nav className="flex gap-4">
-						<Button asChild>
-							<Link to="/editor">エディタを開く</Link>
-						</Button>
+					<h1 className="app-logo text-2xl">STGY Tools Viewer</h1>
+					<nav className="flex items-center gap-4">
+						<Link
+							to="/editor"
+							className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+						>
+							Editor
+						</Link>
+						<Link
+							to="/image/generate"
+							className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+						>
+							Image Generator
+						</Link>
 					</nav>
 				</div>
 			</header>
@@ -170,6 +180,8 @@ function App() {
 					</div>
 				)}
 			</main>
+
+			<Footer />
 		</div>
 	);
 }
