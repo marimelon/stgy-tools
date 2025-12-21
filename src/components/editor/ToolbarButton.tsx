@@ -38,7 +38,7 @@ export function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded transition-colors whitespace-nowrap ${className}`}
+      className={`px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded transition-colors whitespace-nowrap flex items-center ${className}`}
     >
       {children}
     </button>
