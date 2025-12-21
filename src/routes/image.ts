@@ -3,6 +3,8 @@
  *
  * GET /image?code=[stgy:a...]
  * GET /image?code=[stgy:a...]&format=svg  (SVGで返す場合)
+ * GET /image?code=[stgy:a...]&width=1024  (幅を指定、デフォルト512、最大1024)
+ * GET /image?code=[stgy:a...]&scale=2     (スケール指定、1-2倍)
  */
 
 import { Resvg } from "@resvg/resvg-js";
@@ -11,6 +13,15 @@ import { renderBoardToSVG } from "@/lib/server/svgRenderer";
 import { decodeStgy } from "@/lib/stgy/decoder";
 import { parseBoardData } from "@/lib/stgy/parser";
 
+/** デフォルトの出力幅 */
+const DEFAULT_WIDTH = 512;
+/** 最小出力幅 */
+const MIN_WIDTH = 128;
+/** 最大出力幅（素材画像の解像度制限のため） */
+const MAX_WIDTH = 1024;
+/** 最大スケール（素材画像の解像度制限のため） */
+const MAX_SCALE = 2;
+
 export const Route = createFileRoute("/image")({
 	server: {
 		handlers: {
@@ -18,6 +29,8 @@ export const Route = createFileRoute("/image")({
 				const url = new URL(request.url);
 				const code = url.searchParams.get("code");
 				const format = url.searchParams.get("format") ?? "png";
+				const widthParam = url.searchParams.get("width");
+				const scaleParam = url.searchParams.get("scale");
 
 				if (!code) {
 					// codeパラメータがない場合は生成ページにリダイレクト
@@ -25,6 +38,15 @@ export const Route = createFileRoute("/image")({
 						status: 302,
 						headers: { Location: "/image/generate" },
 					});
+				}
+
+				// 出力幅を計算
+				let outputWidth = DEFAULT_WIDTH;
+				if (scaleParam) {
+					const scale = Math.min(Math.max(Number.parseFloat(scaleParam) || 1, 1), MAX_SCALE);
+					outputWidth = Math.round(DEFAULT_WIDTH * scale);
+				} else if (widthParam) {
+					outputWidth = Math.min(Math.max(Number.parseInt(widthParam, 10) || DEFAULT_WIDTH, MIN_WIDTH), MAX_WIDTH);
 				}
 
 				try {
@@ -47,12 +69,12 @@ export const Route = createFileRoute("/image")({
 						});
 					}
 
-					// PNG変換
+					// PNG変換（指定された幅で出力）
 					const resvg = new Resvg(svg, {
 						background: "#1a1a1a",
 						fitTo: {
 							mode: "width",
-							value: 512,
+							value: outputWidth,
 						},
 					});
 

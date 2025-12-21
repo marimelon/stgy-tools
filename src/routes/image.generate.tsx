@@ -12,9 +12,17 @@ export const Route = createFileRoute("/image/generate")({
 	component: ImageGeneratePage,
 });
 
+/** スケールオプション */
+const SCALE_OPTIONS = [
+	{ value: "1", label: "1x (512×384)", width: 512 },
+	{ value: "1.5", label: "1.5x (768×576)", width: 768 },
+	{ value: "2", label: "2x (1024×768)", width: 1024 },
+] as const;
+
 function ImageGeneratePage() {
 	const [code, setCode] = useState("");
 	const [format, setFormat] = useState<"png" | "svg">("png");
+	const [scale, setScale] = useState("1");
 	const [generatedUrl, setGeneratedUrl] = useState("");
 	const [previewUrl, setPreviewUrl] = useState("");
 	const [copied, setCopied] = useState(false);
@@ -38,15 +46,24 @@ function ImageGeneratePage() {
 		setError("");
 		const baseUrl = window.location.origin;
 		const encodedCode = encodeURIComponent(code.trim());
-		const url =
-			format === "png"
+		
+		let url: string;
+		if (format === "svg") {
+			url = `${baseUrl}/image?code=${encodedCode}&format=svg`;
+		} else {
+			// PNGの場合はスケールを追加（1x以外の場合のみ）
+			url = scale === "1"
 				? `${baseUrl}/image?code=${encodedCode}`
-				: `${baseUrl}/image?code=${encodedCode}&format=svg`;
+				: `${baseUrl}/image?code=${encodedCode}&scale=${scale}`;
+		}
 
 		setGeneratedUrl(url);
-		setPreviewUrl(`/image?code=${encodedCode}`);
+		// プレビューは常にスケールを適用
+		const previewScale = format === "png" && scale !== "1" ? `&scale=${scale}` : "";
+		const previewFormat = format === "svg" ? "&format=svg" : "";
+		setPreviewUrl(`/image?code=${encodedCode}${previewFormat}${previewScale}`);
 		setCopied(false);
-	}, [code, format]);
+	}, [code, format, scale]);
 
 	const copyToClipboard = useCallback(async () => {
 		if (!generatedUrl) return;
@@ -116,6 +133,30 @@ function ImageGeneratePage() {
 						</label>
 					</div>
 				</div>
+
+				{format === "png" && (
+					<div style={styles.inputGroup}>
+						<label style={styles.label}>出力サイズ（PNG）</label>
+						<div style={styles.radioGroup}>
+							{SCALE_OPTIONS.map((option) => (
+								<label key={option.value} style={styles.radioLabel}>
+									<input
+										type="radio"
+										name="scale"
+										value={option.value}
+										checked={scale === option.value}
+										onChange={() => setScale(option.value)}
+										style={styles.radio}
+									/>
+									{option.label}
+								</label>
+							))}
+						</div>
+						<p style={styles.hint}>
+							※ 2x が最高画質です（素材解像度の制限）
+						</p>
+					</div>
+				)}
 
 				<button
 					type="button"
@@ -333,6 +374,11 @@ const styles: Record<string, React.CSSProperties> = {
 	errorText: {
 		color: "#ef4444",
 		fontSize: "0.875rem",
+	},
+	hint: {
+		color: "#666",
+		fontSize: "0.75rem",
+		marginTop: "0.5rem",
 	},
 };
 
