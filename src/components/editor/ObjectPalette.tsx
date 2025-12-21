@@ -273,8 +273,21 @@ function ObjectPaletteItem({
   // フィールドオブジェクトかどうかでviewBoxを調整
   const isFieldObject = FIELD_OBJECT_IDS.includes(objectId);
   
-  // viewBoxサイズを決定（フィールドオブジェクトは256pxなので広い範囲を表示）
-  const viewBoxSize = isFieldObject ? 280 : 40;
+  // 256pxサイズの範囲攻撃オブジェクト
+  const isLargeAoE = [
+    ObjectIds.CircleAoE,
+    ObjectIds.KnockbackRadial,
+    ObjectIds.KnockbackLine,
+  ].includes(objectId);
+  
+  // 134pxサイズの範囲攻撃オブジェクト
+  const isMediumAoE = [
+    ObjectIds.CircleAoEMoving,
+    ObjectIds.StackChain,
+  ].includes(objectId);
+  
+  // viewBoxサイズを決定（オブジェクトサイズに合わせて調整）
+  const viewBoxSize = (isFieldObject || isLargeAoE) ? 280 : isMediumAoE ? 150 : 40;
   const objectPos = viewBoxSize / 2;
   
   const object = createDefaultObject(objectId, { x: objectPos, y: objectPos });

@@ -226,6 +226,47 @@ const ENEMY_OBJECT_IDS: readonly number[] = [
 	ObjectIds.EnemyLarge,
 ];
 
+/** 攻撃マーカーID */
+const ATTACK_MARKER_IDS: readonly number[] = [
+	ObjectIds.Attack1,
+	ObjectIds.Attack2,
+	ObjectIds.Attack3,
+	ObjectIds.Attack4,
+	ObjectIds.Attack5,
+	ObjectIds.Attack6,
+	ObjectIds.Attack7,
+	ObjectIds.Attack8,
+];
+
+/** 足止めマーカーID */
+const BIND_MARKER_IDS: readonly number[] = [
+	ObjectIds.Bind1,
+	ObjectIds.Bind2,
+	ObjectIds.Bind3,
+];
+
+/** 禁止マーカーID */
+const IGNORE_MARKER_IDS: readonly number[] = [
+	ObjectIds.Ignore1,
+	ObjectIds.Ignore2,
+];
+
+/** 汎用マーカーID */
+const GENERIC_MARKER_IDS: readonly number[] = [
+	ObjectIds.Square,
+	ObjectIds.Circle,
+	ObjectIds.Plus,
+	ObjectIds.Triangle,
+];
+
+/** マーカーオブジェクトID（全種類） */
+const MARKER_OBJECT_IDS: readonly number[] = [
+	...ATTACK_MARKER_IDS,
+	...BIND_MARKER_IDS,
+	...IGNORE_MARKER_IDS,
+	...GENERIC_MARKER_IDS,
+];
+
 /** ジョブアイコンID */
 const JOB_ICON_IDS: readonly number[] = [
 	// 基本クラス
@@ -433,6 +474,8 @@ export function ObjectRenderer({
 		content = <WaymarkIcon objectId={objectId} transform={transform} />;
 	} else if (isEnemy(objectId)) {
 		content = <EnemyIcon objectId={objectId} transform={transform} />;
+	} else if (isMarker(objectId)) {
+		content = <MarkerIcon objectId={objectId} transform={transform} />;
 	} else if (objectId === ObjectIds.Text && text) {
 		content = <TextObject transform={transform} text={text} color={color} />;
 	} else {
@@ -805,6 +848,13 @@ function getObjectBoundingBox(
 		[ObjectIds.EmphasisTriangle]: { width: 64, height: 64 },
 		[ObjectIds.Clockwise]: { width: 72, height: 40 },
 		[ObjectIds.CounterClockwise]: { width: 72, height: 40 },
+		// 134px範囲攻撃オブジェクト
+		[ObjectIds.CircleAoEMoving]: { width: 134, height: 134 },
+		[ObjectIds.StackChain]: { width: 134, height: 134 },
+		// 256px範囲攻撃オブジェクト
+		[ObjectIds.CircleAoE]: { width: 256, height: 256 },
+		[ObjectIds.KnockbackRadial]: { width: 256, height: 256 },
+		[ObjectIds.KnockbackLine]: { width: 256, height: 256 },
 	};
 	const specialSize = specialIconSizes[objectId];
 	if (specialSize) {
@@ -863,6 +913,10 @@ function isWaymark(id: number): boolean {
 
 function isEnemy(id: number): boolean {
 	return ENEMY_OBJECT_IDS.includes(id);
+}
+
+function isMarker(id: number): boolean {
+	return MARKER_OBJECT_IDS.includes(id);
 }
 
 function isJobIcon(id: number): boolean {
@@ -3723,13 +3777,13 @@ function StackChainIcon({ transform }: { transform: string }) {
 	const chevronPath = "M-50 -25 L0 25 L50 -25 L50 -5 L0 45 L-50 -5 Z";
 	const centerPiecePath = "M-20 -15 L0 5 L20 -15 L20 -5 L0 15 L-20 -5 Z";
 
-	// スケール係数（500x500を56x56に縮小）
-	const baseScale = 56 / 500;
+	// スケール係数（500x500を134x134に縮小）
+	const baseScale = 134 / 500;
 
 	return (
 		<g transform={transform}>
 			{/* 透明な背景（クリック領域） */}
-			<rect x={-28} y={-28} width={56} height={56} fill="transparent" />
+			<rect x={-67} y={-67} width={134} height={134} fill="transparent" />
 			<defs>
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
 					<feGaussianBlur stdDeviation={12 * baseScale} result="blur" />
@@ -3817,13 +3871,13 @@ function KnockbackRadialIcon({ transform }: { transform: string }) {
 	// シェブロン形状（上向きV型）
 	const chevronShape = "M 0 -20 L 22 0 L 22 12 L 0 -8 L -22 12 L -22 0 Z";
 
-	// スケール係数（500x500を56x56に縮小）
-	const baseScale = 56 / 500;
+	// スケール係数（500x500を256x256に縮小）
+	const baseScale = 256 / 500;
 
 	return (
 		<g transform={transform}>
 			{/* 透明な背景（クリック領域） */}
-			<rect x={-28} y={-28} width={56} height={56} fill="transparent" />
+			<rect x={-128} y={-128} width={256} height={256} fill="transparent" />
 			<defs>
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
 					<feGaussianBlur
@@ -3926,13 +3980,13 @@ function CircleAoEMovingIcon({ transform }: { transform: string }) {
 	// シェブロンのパス
 	const chevronPath = "M 140 0 L 200 45 L 260 0";
 
-	// スケール係数（400x400を48x48に縮小）
-	const baseScale = 48 / 400;
+	// スケール係数（400x400を134x134に縮小）
+	const baseScale = 134 / 400;
 
 	return (
 		<g transform={transform}>
 			{/* 透明な背景（クリック領域） */}
-			<rect x={-24} y={-24} width={48} height={48} fill="transparent" />
+			<rect x={-67} y={-67} width={134} height={134} fill="transparent" />
 			<defs>
 				<radialGradient
 					id={outerGlowId}
@@ -4040,13 +4094,13 @@ function KnockbackLineIcon({ transform }: { transform: string }) {
 	// シェブロン形状（上向きV型）
 	const chevronPath = "M 20 60 L 50 35 L 80 60 L 80 45 L 50 20 L 20 45 Z";
 
-	// スケール係数（300x400を48x64に縮小）
-	const baseScale = 48 / 300;
+	// スケール係数（300x400を256x256に縮小）
+	const baseScale = 256 / 300;
 
 	return (
 		<g transform={transform}>
 			{/* 透明な背景（クリック領域） */}
-			<rect x={-24} y={-32} width={48} height={64} fill="transparent" />
+			<rect x={-128} y={-128} width={256} height={256} fill="transparent" />
 			<defs>
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
 					<feGaussianBlur stdDeviation={6 * baseScale} result="coloredBlur" />
@@ -4293,6 +4347,566 @@ function KnockbackLineIcon({ transform }: { transform: string }) {
 					</g>
 				</g>
 			</g>
+		</g>
+	);
+}
+
+// マーカーアイコン（攻撃マーカー、足止めマーカー、禁止マーカー、汎用マーカー）
+function MarkerIcon({
+	objectId,
+	transform,
+}: {
+	objectId: number;
+	transform: string;
+}) {
+	if (ATTACK_MARKER_IDS.includes(objectId)) {
+		return <AttackMarkerIcon objectId={objectId} transform={transform} />;
+	}
+	if (BIND_MARKER_IDS.includes(objectId)) {
+		return <BindMarkerIcon objectId={objectId} transform={transform} />;
+	}
+	if (IGNORE_MARKER_IDS.includes(objectId)) {
+		return <IgnoreMarkerIcon objectId={objectId} transform={transform} />;
+	}
+	if (GENERIC_MARKER_IDS.includes(objectId)) {
+		return <GenericMarkerIcon objectId={objectId} transform={transform} />;
+	}
+	return <PlaceholderObject objectId={objectId} transform={transform} />;
+}
+
+// 攻撃マーカー（六角形、下にタブ付き、中央に数字）
+function AttackMarkerIcon({
+	objectId,
+	transform,
+}: {
+	objectId: number;
+	transform: string;
+}) {
+	const id = useId();
+	const glowId = `attackMarkerGlow-${id}`;
+	const gradId = `attackMarkerGrad-${id}`;
+
+	// 数字を取得
+	const numberMap: Record<number, number> = {
+		[ObjectIds.Attack1]: 1,
+		[ObjectIds.Attack2]: 2,
+		[ObjectIds.Attack3]: 3,
+		[ObjectIds.Attack4]: 4,
+		[ObjectIds.Attack5]: 5,
+		[ObjectIds.Attack6]: 6,
+		[ObjectIds.Attack7]: 7,
+		[ObjectIds.Attack8]: 8,
+	};
+	const num = numberMap[objectId] ?? 1;
+
+	// 六角形のパス（下にタブ付き）
+	const hexPath = `
+		M 0 -20
+		L 17 -10
+		L 17 10
+		L 8 18
+		L 8 24
+		L -8 24
+		L -8 18
+		L -17 10
+		L -17 -10
+		Z
+	`;
+
+	return (
+		<g transform={transform}>
+			{/* 透明な背景（クリック領域） */}
+			<rect x={-20} y={-22} width={40} height={48} fill="transparent" />
+			<defs>
+				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur stdDeviation="2" result="blur" />
+					<feMerge>
+						<feMergeNode in="blur" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+				<linearGradient id={gradId} x1="0%" y1="0%" x2="0%" y2="100%">
+					<stop offset="0%" stopColor="#ffee88" />
+					<stop offset="50%" stopColor="#ffcc00" />
+					<stop offset="100%" stopColor="#ff9900" />
+				</linearGradient>
+			</defs>
+
+			{/* グロー効果 */}
+			<path
+				d={hexPath}
+				fill="none"
+				stroke="#ffaa00"
+				strokeWidth="6"
+				filter={`url(#${glowId})`}
+				opacity="0.6"
+			/>
+
+			{/* 六角形の縁 */}
+			<path
+				d={hexPath}
+				fill="none"
+				stroke={`url(#${gradId})`}
+				strokeWidth="3"
+				strokeLinejoin="round"
+			/>
+
+			{/* 内側の六角形 */}
+			<path
+				d={`
+					M 0 -16
+					L 13 -8
+					L 13 8
+					L 6 14
+					L 6 20
+					L -6 20
+					L -6 14
+					L -13 8
+					L -13 -8
+					Z
+				`}
+				fill="rgba(40, 30, 20, 0.8)"
+				stroke="none"
+			/>
+
+			{/* 数字 */}
+			<text
+				x={0}
+				y={2}
+				textAnchor="middle"
+				dominantBaseline="middle"
+				fill="#ffdd66"
+				fontSize="18"
+				fontWeight="bold"
+				fontFamily="Arial, sans-serif"
+			>
+				{num}
+			</text>
+		</g>
+	);
+}
+
+// 足止めマーカー（3つのチェーンリンク）
+function BindMarkerIcon({
+	objectId,
+	transform,
+}: {
+	objectId: number;
+	transform: string;
+}) {
+	const id = useId();
+	const glowId = `bindMarkerGlow-${id}`;
+
+	// 数字を取得
+	const numberMap: Record<number, number> = {
+		[ObjectIds.Bind1]: 1,
+		[ObjectIds.Bind2]: 2,
+		[ObjectIds.Bind3]: 3,
+	};
+	const num = numberMap[objectId] ?? 1;
+
+	// 楕円形のチェーンリンク（縦長の楕円）
+	const rx = 8; // 横の半径
+	const ry = 12; // 縦の半径
+
+	return (
+		<g transform={transform}>
+			{/* 透明な背景（クリック領域） */}
+			<rect x={-20} y={-30} width={44} height={64} fill="transparent" />
+			<defs>
+				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur stdDeviation="1.5" result="blur" />
+					<feMerge>
+						<feMergeNode in="blur" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+			</defs>
+
+			{/* グロー効果 */}
+			<g filter={`url(#${glowId})`} opacity="0.5">
+				<ellipse
+					cx={-4}
+					cy={-14}
+					rx={rx}
+					ry={ry}
+					fill="none"
+					stroke="#bb77dd"
+					strokeWidth="6"
+				/>
+				<ellipse
+					cx={4}
+					cy={0}
+					rx={rx}
+					ry={ry}
+					fill="none"
+					stroke="#bb77dd"
+					strokeWidth="6"
+				/>
+				<ellipse
+					cx={-4}
+					cy={14}
+					rx={rx}
+					ry={ry}
+					fill="none"
+					stroke="#bb77dd"
+					strokeWidth="6"
+				/>
+			</g>
+
+			{/* リンク1（上）- 外側の白い縁 */}
+			<ellipse
+				cx={-4}
+				cy={-14}
+				rx={rx}
+				ry={ry}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="3"
+			/>
+			{/* リンク1 - 内側の紫 */}
+			<ellipse
+				cx={-4}
+				cy={-14}
+				rx={rx}
+				ry={ry}
+				fill="none"
+				stroke="#9955bb"
+				strokeWidth="1.5"
+			/>
+
+			{/* リンク2（中央）- 外側の白い縁 */}
+			<ellipse
+				cx={4}
+				cy={0}
+				rx={rx}
+				ry={ry}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="3"
+			/>
+			{/* リンク2 - 内側の紫 */}
+			<ellipse
+				cx={4}
+				cy={0}
+				rx={rx}
+				ry={ry}
+				fill="none"
+				stroke="#9955bb"
+				strokeWidth="1.5"
+			/>
+
+			{/* リンク3（下）- 外側の白い縁 */}
+			<ellipse
+				cx={-4}
+				cy={14}
+				rx={rx}
+				ry={ry}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="3"
+			/>
+			{/* リンク3 - 内側の紫 */}
+			<ellipse
+				cx={-4}
+				cy={14}
+				rx={rx}
+				ry={ry}
+				fill="none"
+				stroke="#9955bb"
+				strokeWidth="1.5"
+			/>
+
+			{/* 数字 */}
+			<text
+				x={16}
+				y={-16}
+				textAnchor="middle"
+				dominantBaseline="middle"
+				fill="#ffffff"
+				fontSize="14"
+				fontWeight="bold"
+				fontFamily="Arial, sans-serif"
+			>
+				{num}
+			</text>
+		</g>
+	);
+}
+
+// 禁止マーカー（円に斜線）
+function IgnoreMarkerIcon({
+	objectId,
+	transform,
+}: {
+	objectId: number;
+	transform: string;
+}) {
+	const id = useId();
+	const glowId = `ignoreMarkerGlow-${id}`;
+
+	// 数字を取得
+	const numberMap: Record<number, number> = {
+		[ObjectIds.Ignore1]: 1,
+		[ObjectIds.Ignore2]: 2,
+	};
+	const num = numberMap[objectId] ?? 1;
+
+	const radius = 18;
+
+	return (
+		<g transform={transform}>
+			{/* 透明な背景（クリック領域） */}
+			<rect x={-22} y={-22} width={44} height={44} fill="transparent" />
+			<defs>
+				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur stdDeviation="2" result="blur" />
+					<feMerge>
+						<feMergeNode in="blur" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+			</defs>
+
+			{/* グロー効果 */}
+			<g filter={`url(#${glowId})`} opacity="0.6">
+				<circle
+					cx={0}
+					cy={0}
+					r={radius}
+					fill="none"
+					stroke="#ff4444"
+					strokeWidth="5"
+				/>
+				<line
+					x1={-12}
+					y1={12}
+					x2={12}
+					y2={-12}
+					stroke="#ff4444"
+					strokeWidth="5"
+				/>
+			</g>
+
+			{/* メインの円 */}
+			<circle
+				cx={0}
+				cy={0}
+				r={radius}
+				fill="none"
+				stroke="#ff6666"
+				strokeWidth="3"
+			/>
+
+			{/* 斜線 */}
+			<line
+				x1={-12}
+				y1={12}
+				x2={12}
+				y2={-12}
+				stroke="#ff6666"
+				strokeWidth="3"
+				strokeLinecap="round"
+			/>
+
+			{/* 数字（左上に小さく） */}
+			<text
+				x={-10}
+				y={-10}
+				textAnchor="middle"
+				dominantBaseline="middle"
+				fill="#ffffff"
+				fontSize="10"
+				fontWeight="bold"
+				fontFamily="Arial, sans-serif"
+			>
+				{num}
+			</text>
+		</g>
+	);
+}
+
+// 汎用マーカー（四角、丸、プラス、三角）
+function GenericMarkerIcon({
+	objectId,
+	transform,
+}: {
+	objectId: number;
+	transform: string;
+}) {
+	const id = useId();
+	const glowId = `genericMarkerGlow-${id}`;
+	const gradId = `genericMarkerGrad-${id}`;
+
+	return (
+		<g transform={transform}>
+			{/* 透明な背景（クリック領域） */}
+			<rect x={-24} y={-24} width={48} height={48} fill="transparent" />
+			<defs>
+				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur stdDeviation="3" result="blur" />
+					<feMerge>
+						<feMergeNode in="blur" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+				<linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+					<stop offset="0%" stopColor="#88ddff" />
+					<stop offset="50%" stopColor="#44aaff" />
+					<stop offset="100%" stopColor="#2288dd" />
+				</linearGradient>
+			</defs>
+
+			{objectId === ObjectIds.Square && (
+				<>
+					{/* グロー */}
+					<rect
+						x={-16}
+						y={-16}
+						width={32}
+						height={32}
+						rx={4}
+						ry={4}
+						fill="none"
+						stroke="#66ccff"
+						strokeWidth="8"
+						filter={`url(#${glowId})`}
+						opacity="0.5"
+					/>
+					{/* 外側の四角 */}
+					<rect
+						x={-16}
+						y={-16}
+						width={32}
+						height={32}
+						rx={4}
+						ry={4}
+						fill="none"
+						stroke={`url(#${gradId})`}
+						strokeWidth="3"
+					/>
+					{/* 内側の四角 */}
+					<rect
+						x={-10}
+						y={-10}
+						width={20}
+						height={20}
+						rx={2}
+						ry={2}
+						fill="none"
+						stroke={`url(#${gradId})`}
+						strokeWidth="2"
+					/>
+				</>
+			)}
+
+			{objectId === ObjectIds.Circle && (
+				<>
+					{/* グロー */}
+					<circle
+						cx={0}
+						cy={0}
+						r={16}
+						fill="none"
+						stroke="#66ccff"
+						strokeWidth="8"
+						filter={`url(#${glowId})`}
+						opacity="0.5"
+					/>
+					{/* 外側の円 */}
+					<circle
+						cx={0}
+						cy={0}
+						r={16}
+						fill="none"
+						stroke={`url(#${gradId})`}
+						strokeWidth="3"
+					/>
+					{/* 内側の円 */}
+					<circle
+						cx={0}
+						cy={0}
+						r={10}
+						fill="none"
+						stroke={`url(#${gradId})`}
+						strokeWidth="2"
+					/>
+				</>
+			)}
+
+			{objectId === ObjectIds.Plus && (
+				<>
+					{/* グロー */}
+					<g filter={`url(#${glowId})`} opacity="0.5">
+						<line
+							x1={0}
+							y1={-16}
+							x2={0}
+							y2={16}
+							stroke="#66ccff"
+							strokeWidth="10"
+						/>
+						<line
+							x1={-16}
+							y1={0}
+							x2={16}
+							y2={0}
+							stroke="#66ccff"
+							strokeWidth="10"
+						/>
+					</g>
+					{/* プラス記号 */}
+					<line
+						x1={0}
+						y1={-16}
+						x2={0}
+						y2={16}
+						stroke={`url(#${gradId})`}
+						strokeWidth="4"
+						strokeLinecap="round"
+					/>
+					<line
+						x1={-16}
+						y1={0}
+						x2={16}
+						y2={0}
+						stroke={`url(#${gradId})`}
+						strokeWidth="4"
+						strokeLinecap="round"
+					/>
+				</>
+			)}
+
+			{objectId === ObjectIds.Triangle && (
+				<>
+					{/* グロー */}
+					<path
+						d="M 0 -18 L 16 14 L -16 14 Z"
+						fill="none"
+						stroke="#66ccff"
+						strokeWidth="8"
+						filter={`url(#${glowId})`}
+						opacity="0.5"
+						strokeLinejoin="round"
+					/>
+					{/* 外側の三角形 */}
+					<path
+						d="M 0 -18 L 16 14 L -16 14 Z"
+						fill="none"
+						stroke={`url(#${gradId})`}
+						strokeWidth="3"
+						strokeLinejoin="round"
+					/>
+					{/* 内側の三角形 */}
+					<path
+						d="M 0 -10 L 10 8 L -10 8 Z"
+						fill="none"
+						stroke={`url(#${gradId})`}
+						strokeWidth="2"
+						strokeLinejoin="round"
+					/>
+				</>
+			)}
 		</g>
 	);
 }
