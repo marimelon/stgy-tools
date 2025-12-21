@@ -181,9 +181,6 @@ function ImageGeneratePage() {
 								</label>
 							))}
 						</div>
-						<p style={styles.hint}>
-							※ 2x が最高画質です（素材解像度の制限）
-						</p>
 					</div>
 				)}
 
@@ -428,11 +425,6 @@ const styles: Record<string, React.CSSProperties> = {
 	errorText: {
 		color: "#ef4444",
 		fontSize: "0.875rem",
-	},
-	hint: {
-		color: "#666",
-		fontSize: "0.75rem",
-		marginTop: "0.5rem",
 	},
 };
 
