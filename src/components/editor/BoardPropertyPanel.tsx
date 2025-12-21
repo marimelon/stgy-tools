@@ -1,11 +1,19 @@
 /**
  * ボードプロパティパネルコンポーネント
  *
- * ボード設定（名前、背景など）を編集
+ * shadcn/ui ベースのボード設定パネル
  */
 
 import type { BoardData, BackgroundId } from "@/lib/stgy";
 import { BackgroundId as BgId } from "@/lib/stgy";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PropertySection } from "./FormInputs";
 
 /** 背景名のマッピング */
@@ -40,48 +48,53 @@ export function BoardPropertyPanel({
   onCommitHistory,
 }: BoardPropertyPanelProps) {
   return (
-    <div className="h-full bg-slate-800 overflow-y-auto">
-      <div className="p-3 border-b border-slate-700">
-        <h2 className="text-sm font-semibold text-slate-200">ボード設定</h2>
+    <div className="panel h-full overflow-y-auto">
+      <div className="panel-header">
+        <h2 className="panel-title">ボード設定</h2>
       </div>
 
-      <div className="p-3 space-y-4">
+      <div className="p-4 space-y-1">
         {/* ボード名 */}
         <PropertySection title="ボード名">
-          <input
+          <Input
             type="text"
             value={board.name}
             onChange={(e) => onUpdateMeta({ name: e.target.value })}
             onBlur={() => onCommitHistory("ボード名変更")}
             placeholder="ボード名を入力"
-            className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
           />
         </PropertySection>
 
         {/* 背景 */}
         <PropertySection title="背景">
-          <select
-            value={board.backgroundId}
-            onChange={(e) => {
-              onUpdateMeta({ backgroundId: Number(e.target.value) as BackgroundId });
+          <Select
+            value={String(board.backgroundId)}
+            onValueChange={(value) => {
+              onUpdateMeta({ backgroundId: Number(value) as BackgroundId });
               onCommitHistory("背景変更");
             }}
-            className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
           >
-            {Object.entries(BACKGROUND_NAMES).map(([id, name]) => (
-              <option key={id} value={id}>
-                {name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(BACKGROUND_NAMES).map(([id, name]) => (
+                <SelectItem key={id} value={id}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </PropertySection>
 
         {/* ボードサイズ（参考情報） */}
         <PropertySection title="サイズ">
-          <div className="text-sm text-slate-300">
-            {board.width} × {board.height}
+          <div className="text-sm font-medium font-mono">
+            <span className="text-primary">{board.width}</span>
+            <span className="text-muted-foreground"> × </span>
+            <span className="text-primary">{board.height}</span>
           </div>
-          <div className="text-xs text-slate-500 mt-1">
+          <div className="text-xs mt-1.5 text-muted-foreground">
             ※エクスポート時に自動計算されます
           </div>
         </PropertySection>

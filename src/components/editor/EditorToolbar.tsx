@@ -149,7 +149,7 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 		<>
 			<div
 				ref={toolbarRef}
-				className="flex items-center gap-2 p-2 bg-slate-800 border-b border-slate-700 flex-shrink-0 flex-nowrap overflow-x-auto"
+				className="app-toolbar flex items-center gap-2 flex-shrink-0 flex-nowrap overflow-x-auto"
 			>
 				{/* ファイル操作 */}
 				<div className="flex items-center gap-1 flex-shrink-0">
@@ -354,11 +354,7 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 											? "グリッドスナップ無効化"
 											: "グリッドスナップ有効化"
 									}
-									className={
-										state.gridSettings.enabled
-											? "!bg-cyan-600 hover:!bg-cyan-500"
-											: ""
-									}
+									active={state.gridSettings.enabled}
 								>
 									<Grid3x3 size={ICON_SIZE} />
 								</ToolbarButton>
@@ -368,7 +364,7 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 										setGridSettings({ size: Number(e.target.value) })
 									}
 									disabled={!state.gridSettings.enabled}
-									className="px-2 py-1 text-sm bg-slate-700 border border-slate-600 rounded text-slate-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:border-cyan-500"
+									className="h-8 px-2 text-sm bg-input border border-border rounded-md text-foreground disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-ring"
 									title="グリッドサイズ"
 								>
 									{GRID_SIZES.map((size) => (
@@ -378,10 +374,10 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 									))}
 								</select>
 								<label
-									className={`flex items-center gap-1 text-xs cursor-pointer ${
+									className={`flex items-center gap-1.5 text-xs cursor-pointer font-medium ${
 										state.gridSettings.enabled
-											? "text-slate-300"
-											: "text-slate-500"
+											? "text-foreground"
+											: "text-muted-foreground"
 									}`}
 								>
 									<input
@@ -391,7 +387,7 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 											setGridSettings({ showGrid: e.target.checked })
 										}
 										disabled={!state.gridSettings.enabled}
-										className="w-3 h-3 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500 disabled:opacity-50"
+										className="w-3.5 h-3.5 rounded accent-accent"
 									/>
 									表示
 								</label>
@@ -443,22 +439,30 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 				)}
 
 				{/* 状態表示 */}
-				<div className="ml-auto text-right text-xs text-slate-400 flex-shrink-0 whitespace-nowrap flex items-center gap-2">
-					{state.isDirty && <span className="text-yellow-500">●</span>}
+				<div className="ml-auto text-right text-xs flex-shrink-0 whitespace-nowrap flex items-center gap-3 text-muted-foreground font-mono">
+					{state.isDirty && (
+						<span className="status-dot dirty" title="未保存の変更があります" />
+					)}
 					{lastSavedAt && (
-						<span className="text-slate-500" title={`保存: ${lastSavedAt.toLocaleString()}`}>
+						<span title={`保存: ${lastSavedAt.toLocaleString()}`}>
 							{formatRelativeTime(lastSavedAt)}
 						</span>
 					)}
 					{toolbarSize === "large" ? (
 						<span>
-							オブジェクト数: {state.board.objects.length}
-							{hasSelection && ` | 選択: ${state.selectedIndices.length}`}
+							オブジェクト数: <span className="text-primary">{state.board.objects.length}</span>
+							{hasSelection && (
+								<>
+									{" | "}選択: <span className="text-accent">{state.selectedIndices.length}</span>
+								</>
+							)}
 						</span>
 					) : (
 						<span>
-							{state.board.objects.length}
-							{hasSelection && ` / ${state.selectedIndices.length}`}
+							<span className="text-primary">{state.board.objects.length}</span>
+							{hasSelection && (
+								<span className="text-accent"> / {state.selectedIndices.length}</span>
+							)}
 						</span>
 					)}
 				</div>

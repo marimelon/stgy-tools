@@ -78,8 +78,26 @@ function EditorPage() {
 	// ローディング中
 	if (isLoading) {
 		return (
-			<div className="h-screen flex items-center justify-center bg-slate-900 text-white">
-				<div className="text-slate-400">読み込み中...</div>
+			<div className="h-screen flex flex-col items-center justify-center gap-4 bg-background">
+				<div className="w-12 h-12 rounded-lg flex items-center justify-center animate-pulse bg-muted border border-border">
+					<svg 
+						width="24" 
+						height="24" 
+						viewBox="0 0 24 24" 
+						fill="none" 
+						stroke="currentColor" 
+						strokeWidth="2" 
+						className="text-foreground"
+					>
+						<rect x="3" y="3" width="18" height="18" rx="2" />
+						<circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+						<circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" />
+						<path d="M8.5 15.5h7M15.5 8.5v7" strokeLinecap="round" />
+					</svg>
+				</div>
+				<div className="text-muted-foreground font-display">
+					読み込み中...
+				</div>
 			</div>
 		);
 	}
@@ -170,14 +188,28 @@ function EditorContent({ initialEncodeKey }: EditorContentProps) {
 	}, [calculateScale]);
 
 	return (
-		<div className="h-screen flex flex-col bg-slate-900 text-white">
+		<div className="h-screen flex flex-col bg-background">
 			{/* ヘッダー */}
-			<header className="flex items-center justify-between px-4 py-2 border-b border-slate-700">
-				<h1 className="text-lg font-bold">Strategy Board Editor</h1>
+			<header className="app-header flex items-center justify-between px-4 py-2.5">
+				<div className="flex items-center gap-3">
+					{/* ロゴアイコン */}
+					<div className="w-8 h-8 rounded-md flex items-center justify-center bg-muted border border-border">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground">
+							<rect x="3" y="3" width="18" height="18" rx="2" />
+							<circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+							<circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" />
+							<path d="M8.5 15.5h7M15.5 8.5v7" strokeLinecap="round" />
+						</svg>
+					</div>
+					<h1 className="app-logo">Strategy Board Editor</h1>
+				</div>
 				<Link
 					to="/"
-					className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
+					className="text-sm font-medium transition-colors flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
 				>
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+						<path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+					</svg>
 					ビューアーに戻る
 				</Link>
 			</header>
@@ -197,7 +229,7 @@ function EditorContent({ initialEncodeKey }: EditorContentProps) {
 					{/* 中央: キャンバス */}
 					<div
 						ref={containerRef}
-						className="h-full flex items-center justify-center bg-slate-950 overflow-auto p-4"
+						className="canvas-container h-full flex items-center justify-center overflow-auto p-4"
 					>
 						<EditorBoard scale={scale} />
 					</div>

@@ -1,10 +1,14 @@
 /**
  * フォーム入力コンポーネント
  *
- * プロパティパネルなどで使用する共通のフォーム入力部品
+ * shadcn/ui ベースのプロパティパネル用入力部品
  */
 
 import type { ReactNode } from "react";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox as ShadcnCheckbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 /**
  * プロパティセクション
@@ -17,8 +21,10 @@ export function PropertySection({
   children: ReactNode;
 }) {
   return (
-    <div>
-      <div className="text-xs text-slate-400 mb-2">{title}</div>
+    <div className="mb-4">
+      <div className="text-xs font-medium mb-2 uppercase tracking-wide text-muted-foreground font-display">
+        {title}
+      </div>
       {children}
     </div>
   );
@@ -57,9 +63,9 @@ export function NumberInput({
   onBlur,
 }: NumberInputProps) {
   return (
-    <div>
-      <label className="block text-xs text-slate-500 mb-0.5">{label}</label>
-      <input
+    <div className="space-y-1">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      <Input
         type="number"
         value={Math.round(value * 10) / 10}
         min={min}
@@ -67,7 +73,7 @@ export function NumberInput({
         step={step}
         onChange={(e) => onChange(Number(e.target.value))}
         onBlur={onBlur}
-        className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
+        className="font-mono"
       />
     </div>
   );
@@ -109,24 +115,21 @@ export function SliderInput({
   onBlur,
 }: SliderInputProps) {
   return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <label className="text-xs text-slate-500">{label}</label>
-        <span className="text-xs text-slate-400">
-          {value}
-          {unit}
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs text-muted-foreground">{label}</Label>
+        <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-accent/20 text-accent font-mono">
+          {value}{unit}
         </span>
       </div>
-      <input
-        type="range"
-        value={value}
+      <Slider
+        value={[value]}
         min={min}
         max={max}
         step={step}
-        onChange={(e) => onChange(Number(e.target.value))}
-        onMouseUp={onBlur}
-        onTouchEnd={onBlur}
-        className="w-full h-1.5 bg-slate-600 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-cyan-500 [&::-webkit-slider-thumb]:rounded-full"
+        onValueChange={([newValue]) => onChange(newValue)}
+        onValueCommit={() => onBlur?.()}
+        className="w-full"
       />
     </div>
   );
@@ -148,15 +151,18 @@ export interface CheckboxProps {
  * チェックボックス
  */
 export function Checkbox({ label, checked, onChange }: CheckboxProps) {
+  const id = `checkbox-${label.replace(/\s/g, "-")}`;
+  
   return (
-    <label className="flex items-center gap-2 cursor-pointer">
-      <input
-        type="checkbox"
+    <div className="flex items-center gap-2.5">
+      <ShadcnCheckbox
+        id={id}
         checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500"
+        onCheckedChange={(checkedState) => onChange(checkedState === true)}
       />
-      <span className="text-sm text-slate-300">{label}</span>
-    </label>
+      <Label htmlFor={id} className="text-sm cursor-pointer">
+        {label}
+      </Label>
+    </div>
   );
 }

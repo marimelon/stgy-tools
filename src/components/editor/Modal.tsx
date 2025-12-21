@@ -1,10 +1,16 @@
 /**
  * モーダルコンポーネント
  *
- * 汎用的なモーダルダイアログ
+ * shadcn/ui Dialog をベースにした汎用モーダル
  */
 
 import type { ReactNode } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 /**
  * モーダルコンポーネントのProps
@@ -16,27 +22,22 @@ export interface ModalProps {
   children: ReactNode;
   /** 閉じるときのコールバック */
   onClose: () => void;
+  /** 開閉状態 */
+  open?: boolean;
 }
 
 /**
  * モーダルコンポーネント
  */
-export function Modal({ children, onClose, title }: ModalProps) {
+export function Modal({ children, onClose, title, open = true }: ModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-slate-800 border border-slate-700 rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
-          <h3 className="text-lg font-semibold text-slate-200">{title}</h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-200"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="p-4">{children}</div>
-      </div>
-    </div>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-display">{title}</DialogTitle>
+        </DialogHeader>
+        {children}
+      </DialogContent>
+    </Dialog>
   );
 }

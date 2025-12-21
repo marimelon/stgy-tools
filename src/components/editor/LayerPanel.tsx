@@ -3,6 +3,7 @@
  *
  * オブジェクトのレイヤー順を表示・編集（グループ対応）
  * ドラッグ&ドロップでレイヤー順序を変更可能
+ * カスタムテーマ対応のリッチなデザイン
  */
 
 import { useCallback, useMemo, useState, type DragEvent } from "react";
@@ -309,9 +310,12 @@ export function LayerPanel() {
   }, []);
 
   return (
-    <div className="bg-slate-800 flex flex-col h-full">
-      <div className="p-2 border-b border-slate-700 flex-shrink-0">
-        <h2 className="text-sm font-semibold text-slate-200">レイヤー</h2>
+    <div 
+      className="panel flex flex-col h-full"
+      style={{ background: "var(--color-bg-base)" }}
+    >
+      <div className="panel-header flex-shrink-0">
+        <h2 className="panel-title">レイヤー</h2>
       </div>
 
       <div
@@ -319,7 +323,8 @@ export function LayerPanel() {
         onDragLeave={handleDragLeave}
       >
         {objects.length === 0 ? (
-          <div className="p-3 text-sm text-slate-500 text-center">
+          <div className="p-4 text-sm text-center text-muted-foreground">
+            <div className="text-3xl mb-2 opacity-50">📋</div>
             オブジェクトがありません
           </div>
         ) : (
@@ -339,7 +344,7 @@ export function LayerPanel() {
                   <div key={`group-${group.id}`} className="relative">
                     {/* ドロップインジケーター（グループの前） */}
                     {isDropBeforeGroup && (
-                      <div className="absolute top-0 left-1 right-1 h-0.5 bg-cyan-500 rounded z-10" />
+                      <div className="drop-indicator absolute top-0 left-1 right-1 z-10" />
                     )}
 
                     <div
@@ -349,15 +354,10 @@ export function LayerPanel() {
                       onDragEnd={handleDragEnd}
                       onDrop={handleDrop}
                       onClick={(e) => handleSelectGroup(group.id, e)}
-                      className={`
-                        flex items-center gap-2 px-2 py-1 mx-1 rounded cursor-pointer
-                        transition-colors select-none
-                        ${isDraggingGroup ? "opacity-50" : ""}
-                        ${allSelected ? "bg-purple-600/30 border border-purple-500/50" : "hover:bg-slate-700 border border-transparent"}
-                      `}
+                      className={`layer-item select-none ${isDraggingGroup ? "opacity-50" : ""} ${allSelected ? "bg-purple-500/15 border-purple-500" : ""}`}
                     >
                       {/* ドラッグハンドル */}
-                      <span className="text-slate-500 cursor-grab active:cursor-grabbing">
+                      <span className="cursor-grab active:cursor-grabbing text-muted-foreground">
                         <GripVertical size={14} />
                       </span>
 
@@ -365,7 +365,7 @@ export function LayerPanel() {
                       <button
                         type="button"
                         onClick={(e) => handleToggleCollapse(group.id, e)}
-                        className="text-slate-400 hover:text-slate-200 w-4"
+                        className="w-4 text-muted-foreground hover:text-foreground"
                       >
                         {group.collapsed ? (
                           <ChevronRight size={14} />
@@ -378,7 +378,7 @@ export function LayerPanel() {
                       <span className="text-purple-400 text-xs">⊞</span>
 
                       {/* グループ名 */}
-                      <span className="flex-1 text-xs text-purple-300 truncate">
+                      <span className="flex-1 text-xs truncate font-medium text-purple-400">
                         グループ ({group.objectIndices.length})
                       </span>
 
@@ -386,7 +386,7 @@ export function LayerPanel() {
                       <button
                         type="button"
                         onClick={(e) => handleUngroupClick(group.id, e)}
-                        className="text-slate-500 hover:text-slate-300"
+                        className="text-muted-foreground hover:text-foreground"
                         title="グループ解除"
                       >
                         <X size={14} />
@@ -414,7 +414,7 @@ export function LayerPanel() {
                   <div key={`obj-${index}`} className="relative">
                     {/* ドロップインジケーター（前） */}
                     {isDropBefore && (
-                      <div className="absolute top-0 left-1 right-1 h-0.5 bg-cyan-500 rounded z-10" />
+                      <div className="drop-indicator absolute top-0 left-1 right-1 z-10" />
                     )}
 
                     <div
@@ -424,16 +424,10 @@ export function LayerPanel() {
                       onDragEnd={handleDragEnd}
                       onDrop={handleDrop}
                       onClick={(e) => handleSelectObject(index, e)}
-                      className={`
-                        flex items-center gap-2 px-2 py-1 mx-1 rounded cursor-pointer
-                        transition-colors select-none
-                        ${item.isInGroup ? "ml-4" : ""}
-                        ${isDragging ? "opacity-50" : ""}
-                        ${isSelected ? "bg-cyan-600/30 border border-cyan-500/50" : "hover:bg-slate-700 border border-transparent"}
-                      `}
+                      className={`layer-item select-none ${item.isInGroup ? "ml-4" : ""} ${isDragging ? "opacity-50" : ""} ${isSelected ? "bg-accent/20 border-accent" : ""}`}
                     >
                       {/* ドラッグハンドル */}
-                      <span className="text-slate-500 cursor-grab active:cursor-grabbing">
+                      <span className="cursor-grab active:cursor-grabbing text-muted-foreground">
                         <GripVertical size={14} />
                       </span>
 
@@ -444,24 +438,24 @@ export function LayerPanel() {
                           e.stopPropagation();
                           handleToggleVisibility(index);
                         }}
-                        className={`${obj.flags.visible ? "text-slate-300" : "text-slate-600"}`}
+                        className={obj.flags.visible ? "text-foreground" : "text-muted-foreground"}
                         title={obj.flags.visible ? "非表示にする" : "表示する"}
                       >
                         {obj.flags.visible ? <Eye size={14} /> : <EyeOff size={14} />}
                       </button>
 
                       {/* オブジェクト名 */}
-                      <span
-                        className={`flex-1 text-xs truncate ${obj.flags.visible ? "text-slate-300" : "text-slate-500"}`}
-                      >
+                      <span className={`flex-1 text-xs truncate ${obj.flags.visible ? "text-foreground" : "text-muted-foreground"}`}>
                         {name}
-                        {obj.text && ` "${obj.text}"`}
+                        {obj.text && (
+                          <span className="text-muted-foreground"> "{obj.text}"</span>
+                        )}
                       </span>
                     </div>
 
                     {/* ドロップインジケーター（後） */}
                     {isDropAfter && (
-                      <div className="absolute bottom-0 left-1 right-1 h-0.5 bg-cyan-500 rounded z-10" />
+                      <div className="drop-indicator absolute bottom-0 left-1 right-1 z-10" />
                     )}
                   </div>
                 );
@@ -474,9 +468,15 @@ export function LayerPanel() {
       </div>
 
       {/* レイヤー数表示 */}
-      <div className="px-3 py-1 border-t border-slate-700 text-xs text-slate-500 flex-shrink-0 flex justify-between">
-        <span>{objects.length} オブジェクト</span>
-        {groups.length > 0 && <span>{groups.length} グループ</span>}
+      <div className="px-3 py-2 text-xs flex justify-between flex-shrink-0 border-t border-border text-muted-foreground font-mono">
+        <span>
+          <span className="text-primary">{objects.length}</span> オブジェクト
+        </span>
+        {groups.length > 0 && (
+          <span>
+            <span className="text-purple-400">{groups.length}</span> グループ
+          </span>
+        )}
       </div>
     </div>
   );

@@ -1,12 +1,14 @@
 /**
  * オブジェクトプロパティパネルコンポーネント
  *
- * 選択オブジェクトのプロパティを編集
+ * shadcn/ui ベースの選択オブジェクトプロパティ編集
  */
 
 import { rgbToHex, hexToRgb } from "@/lib/editor";
 import { ObjectNames, ObjectIds } from "@/lib/stgy";
 import type { BoardObject } from "@/lib/stgy";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { PropertySection, NumberInput, SliderInput, Checkbox } from "./FormInputs";
 
 /**
@@ -47,23 +49,28 @@ export function ObjectPropertyPanel({
   const isDonutAoE = object.objectId === ObjectIds.DonutAoE;
 
   return (
-    <div className="h-full bg-slate-800 overflow-y-auto">
-      <div className="p-3 border-b border-slate-700">
-        <h2 className="text-sm font-semibold text-slate-200">プロパティ</h2>
+    <div className="panel h-full overflow-y-auto">
+      <div className="panel-header">
+        <h2 className="panel-title">プロパティ</h2>
       </div>
 
-      <div className="p-3 space-y-4">
+      <div className="p-4 space-y-1">
         {/* オブジェクト情報 */}
-        <div>
-          <div className="text-xs text-slate-400 mb-1">オブジェクト</div>
-          <div className="text-sm text-slate-200">
-            {objectName} (ID: {object.objectId})
+        <div className="mb-4">
+          <div className="text-xs font-medium mb-1.5 uppercase tracking-wide text-muted-foreground font-display">
+            オブジェクト
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{objectName}</span>
+            <Badge variant="secondary" className="font-mono text-xs">
+              ID: {object.objectId}
+            </Badge>
           </div>
         </div>
 
         {/* 位置 */}
         <PropertySection title="位置">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <NumberInput
               label="X"
               value={object.position.x}
@@ -91,7 +98,7 @@ export function ObjectPropertyPanel({
 
         {/* 変形 */}
         <PropertySection title="変形">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <SliderInput
               label="回転"
               value={object.rotation}
@@ -117,25 +124,26 @@ export function ObjectPropertyPanel({
 
         {/* 色 */}
         <PropertySection title="色">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={rgbToHex(
-                  object.color.r,
-                  object.color.g,
-                  object.color.b
-                )}
-                onChange={(e) => {
-                  const { r, g, b } = hexToRgb(e.target.value);
-                  handleChange({ color: { ...object.color, r, g, b } });
-                }}
-                onBlur={() => onCommitHistory("色変更")}
-                className="w-10 h-8 rounded cursor-pointer"
-              />
-              <span className="text-xs text-slate-400">
-                RGB({object.color.r}, {object.color.g},{" "}
-                {object.color.b})
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="relative rounded-md overflow-hidden border-2 border-border">
+                <input
+                  type="color"
+                  value={rgbToHex(
+                    object.color.r,
+                    object.color.g,
+                    object.color.b
+                  )}
+                  onChange={(e) => {
+                    const { r, g, b } = hexToRgb(e.target.value);
+                    handleChange({ color: { ...object.color, r, g, b } });
+                  }}
+                  onBlur={() => onCommitHistory("色変更")}
+                  className="w-10 h-8 cursor-pointer border-0 bg-transparent"
+                />
+              </div>
+              <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground font-mono">
+                RGB({object.color.r}, {object.color.g}, {object.color.b})
               </span>
             </div>
             <SliderInput
@@ -155,7 +163,7 @@ export function ObjectPropertyPanel({
 
         {/* フラグ */}
         <PropertySection title="状態">
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <Checkbox
               label="表示"
               checked={object.flags.visible}
@@ -202,12 +210,11 @@ export function ObjectPropertyPanel({
         {/* テキスト (テキストオブジェクトのみ) */}
         {isTextObject && (
           <PropertySection title="テキスト">
-            <input
+            <Input
               type="text"
               value={object.text ?? ""}
               onChange={(e) => handleChange({ text: e.target.value })}
               onBlur={() => onCommitHistory("テキスト変更")}
-              className="w-full px-2 py-1 bg-slate-700 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:border-cyan-500"
             />
           </PropertySection>
         )}
