@@ -305,7 +305,10 @@ const JOB_ABBREVIATIONS: Record<number, string> = {
 };
 
 /** ジョブロール判定 */
-const JOB_ROLES: Record<number, "tank" | "healer" | "melee" | "ranged" | "caster"> = {
+const JOB_ROLES: Record<
+	number,
+	"tank" | "healer" | "melee" | "ranged" | "caster"
+> = {
 	// 基本クラス
 	[ObjectIds.Gladiator]: "tank",
 	[ObjectIds.Marauder]: "tank",
@@ -459,7 +462,9 @@ export function ObjectRenderer({
 				role="button"
 				tabIndex={0}
 				onClick={handleClick}
-				onKeyDown={(e) => e.key === "Enter" && handleClick(e as unknown as React.MouseEvent)}
+				onKeyDown={(e) =>
+					e.key === "Enter" && handleClick(e as unknown as React.MouseEvent)
+				}
 				style={{ cursor: "pointer", opacity: svgOpacity }}
 			>
 				{content}
@@ -474,7 +479,9 @@ export function ObjectRenderer({
 			role="button"
 			tabIndex={0}
 			onClick={handleClick}
-			onKeyDown={(e) => e.key === "Enter" && handleClick(e as unknown as React.MouseEvent)}
+			onKeyDown={(e) =>
+				e.key === "Enter" && handleClick(e as unknown as React.MouseEvent)
+			}
 			style={{ cursor: "pointer", opacity: svgOpacity }}
 		>
 			{content}
@@ -555,7 +562,8 @@ function SelectionIndicator({
 
 // デバッグ情報表示コンポーネント
 function DebugInfo({ object }: { object: BoardObject }) {
-	const { objectId, position, rotation, size, param1, param2, text, flags } = object;
+	const { objectId, position, rotation, size, param1, param2, text, flags } =
+		object;
 
 	const lines = [
 		`ID: ${objectId}`,
@@ -662,7 +670,12 @@ function BoundingBox({
 			<circle cx={0} cy={0} r={2} fill={COLORS.DEBUG_RED} />
 			{/* バウンディングボックスの中心 */}
 			{(offsetX !== 0 || offsetY !== 0) && (
-				<circle cx={boxCenterX} cy={boxCenterY} r={2} fill={COLORS.DEBUG_GREEN} />
+				<circle
+					cx={boxCenterX}
+					cy={boxCenterY}
+					r={2}
+					fill={COLORS.DEBUG_GREEN}
+				/>
 			)}
 			{/* オブジェクトID表示 */}
 			<text
@@ -729,7 +742,9 @@ function getObjectBoundingBox(
 ): { width: number; height: number; offsetX?: number; offsetY?: number } {
 	// フィールド
 	if (isFieldObject(objectId)) {
-		const size = LARGE_FIELD_IDS.includes(objectId) ? SIZES.FIELD_LARGE : SIZES.FIELD;
+		const size = LARGE_FIELD_IDS.includes(objectId)
+			? SIZES.FIELD_LARGE
+			: SIZES.FIELD;
 		return { width: size, height: size };
 	}
 
@@ -866,7 +881,9 @@ function FieldObject({
 }) {
 	const id = useId();
 	const fill = colorToRgba(color);
-	const size = LARGE_FIELD_IDS.includes(objectId) ? SIZES.FIELD_LARGE : SIZES.FIELD;
+	const size = LARGE_FIELD_IDS.includes(objectId)
+		? SIZES.FIELD_LARGE
+		: SIZES.FIELD;
 
 	// チェッカーパターンのタイルサイズ（参照画像に合わせて調整）
 	const tileSize = LARGE_FIELD_IDS.includes(objectId) ? 16 : 4;
@@ -877,7 +894,10 @@ function FieldObject({
 	const borderGradientId = `border-${id}`;
 
 	// チェック柄（CircleCheck, SquareCheck）
-	if (objectId === ObjectIds.CircleCheck || objectId === ObjectIds.SquareCheck) {
+	if (
+		objectId === ObjectIds.CircleCheck ||
+		objectId === ObjectIds.SquareCheck
+	) {
 		const isCircle = objectId === ObjectIds.CircleCheck;
 		return (
 			<g transform={transform}>
@@ -892,10 +912,22 @@ function FieldObject({
 					>
 						<rect width={tileSize * 2} height={tileSize * 2} fill="#a0a0a0" />
 						<rect width={tileSize} height={tileSize} fill="#707070" />
-						<rect x={tileSize} y={tileSize} width={tileSize} height={tileSize} fill="#707070" />
+						<rect
+							x={tileSize}
+							y={tileSize}
+							width={tileSize}
+							height={tileSize}
+							fill="#707070"
+						/>
 					</pattern>
 					{/* 縁のグラデーション */}
-					<linearGradient id={borderGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+					<linearGradient
+						id={borderGradientId}
+						x1="0%"
+						y1="0%"
+						x2="100%"
+						y2="100%"
+					>
 						<stop offset="0%" stopColor="#b0b0b0" />
 						<stop offset="50%" stopColor="#808080" />
 						<stop offset="100%" stopColor="#606060" />
@@ -903,13 +935,39 @@ function FieldObject({
 				</defs>
 				{isCircle ? (
 					<>
-						<circle cx={0} cy={0} r={size / 2} fill={`url(#${checkerPatternId})`} />
-						<circle cx={0} cy={0} r={size / 2} fill="none" stroke={`url(#${borderGradientId})`} strokeWidth="2" />
+						<circle
+							cx={0}
+							cy={0}
+							r={size / 2}
+							fill={`url(#${checkerPatternId})`}
+						/>
+						<circle
+							cx={0}
+							cy={0}
+							r={size / 2}
+							fill="none"
+							stroke={`url(#${borderGradientId})`}
+							strokeWidth="2"
+						/>
 					</>
 				) : (
 					<>
-						<rect x={-size / 2} y={-size / 2} width={size} height={size} fill={`url(#${checkerPatternId})`} />
-						<rect x={-size / 2} y={-size / 2} width={size} height={size} fill="none" stroke={`url(#${borderGradientId})`} strokeWidth="2" />
+						<rect
+							x={-size / 2}
+							y={-size / 2}
+							width={size}
+							height={size}
+							fill={`url(#${checkerPatternId})`}
+						/>
+						<rect
+							x={-size / 2}
+							y={-size / 2}
+							width={size}
+							height={size}
+							fill="none"
+							stroke={`url(#${borderGradientId})`}
+							strokeWidth="2"
+						/>
 					</>
 				)}
 			</g>
@@ -917,7 +975,10 @@ function FieldObject({
 	}
 
 	// グレー無地（CircleGraySolid, SquareGraySolid）
-	if (objectId === ObjectIds.CircleGraySolid || objectId === ObjectIds.SquareGraySolid) {
+	if (
+		objectId === ObjectIds.CircleGraySolid ||
+		objectId === ObjectIds.SquareGraySolid
+	) {
 		const isCircle = objectId === ObjectIds.CircleGraySolid;
 		return (
 			<g transform={transform}>
@@ -929,7 +990,13 @@ function FieldObject({
 						<stop offset="100%" stopColor="#989898" />
 					</radialGradient>
 					{/* 縁のグラデーション */}
-					<linearGradient id={borderGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+					<linearGradient
+						id={borderGradientId}
+						x1="0%"
+						y1="0%"
+						x2="100%"
+						y2="100%"
+					>
 						<stop offset="0%" stopColor="#a0a0a0" />
 						<stop offset="50%" stopColor="#707070" />
 						<stop offset="100%" stopColor="#505050" />
@@ -937,13 +1004,39 @@ function FieldObject({
 				</defs>
 				{isCircle ? (
 					<>
-						<circle cx={0} cy={0} r={size / 2} fill={`url(#${marblePatternId})`} />
-						<circle cx={0} cy={0} r={size / 2} fill="none" stroke={`url(#${borderGradientId})`} strokeWidth="2" />
+						<circle
+							cx={0}
+							cy={0}
+							r={size / 2}
+							fill={`url(#${marblePatternId})`}
+						/>
+						<circle
+							cx={0}
+							cy={0}
+							r={size / 2}
+							fill="none"
+							stroke={`url(#${borderGradientId})`}
+							strokeWidth="2"
+						/>
 					</>
 				) : (
 					<>
-						<rect x={-size / 2} y={-size / 2} width={size} height={size} fill={`url(#${marblePatternId})`} />
-						<rect x={-size / 2} y={-size / 2} width={size} height={size} fill="none" stroke={`url(#${borderGradientId})`} strokeWidth="2" />
+						<rect
+							x={-size / 2}
+							y={-size / 2}
+							width={size}
+							height={size}
+							fill={`url(#${marblePatternId})`}
+						/>
+						<rect
+							x={-size / 2}
+							y={-size / 2}
+							width={size}
+							height={size}
+							fill="none"
+							stroke={`url(#${borderGradientId})`}
+							strokeWidth="2"
+						/>
 					</>
 				)}
 			</g>
@@ -951,7 +1044,10 @@ function FieldObject({
 	}
 
 	// 白タイル（CircleWhiteTile, SquareWhiteTile）
-	if (objectId === ObjectIds.CircleWhiteTile || objectId === ObjectIds.SquareWhiteTile) {
+	if (
+		objectId === ObjectIds.CircleWhiteTile ||
+		objectId === ObjectIds.SquareWhiteTile
+	) {
 		const isCircle = objectId === ObjectIds.CircleWhiteTile;
 		return (
 			<g transform={transform}>
@@ -966,10 +1062,22 @@ function FieldObject({
 					>
 						<rect width={tileSize * 2} height={tileSize * 2} fill="#e8e8e8" />
 						<rect width={tileSize} height={tileSize} fill="#c8c8c8" />
-						<rect x={tileSize} y={tileSize} width={tileSize} height={tileSize} fill="#c8c8c8" />
+						<rect
+							x={tileSize}
+							y={tileSize}
+							width={tileSize}
+							height={tileSize}
+							fill="#c8c8c8"
+						/>
 					</pattern>
 					{/* 縁のグラデーション */}
-					<linearGradient id={borderGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+					<linearGradient
+						id={borderGradientId}
+						x1="0%"
+						y1="0%"
+						x2="100%"
+						y2="100%"
+					>
 						<stop offset="0%" stopColor="#b0b0b0" />
 						<stop offset="50%" stopColor="#808080" />
 						<stop offset="100%" stopColor="#606060" />
@@ -977,13 +1085,39 @@ function FieldObject({
 				</defs>
 				{isCircle ? (
 					<>
-						<circle cx={0} cy={0} r={size / 2} fill={`url(#${checkerPatternId})`} />
-						<circle cx={0} cy={0} r={size / 2} fill="none" stroke={`url(#${borderGradientId})`} strokeWidth="2" />
+						<circle
+							cx={0}
+							cy={0}
+							r={size / 2}
+							fill={`url(#${checkerPatternId})`}
+						/>
+						<circle
+							cx={0}
+							cy={0}
+							r={size / 2}
+							fill="none"
+							stroke={`url(#${borderGradientId})`}
+							strokeWidth="2"
+						/>
 					</>
 				) : (
 					<>
-						<rect x={-size / 2} y={-size / 2} width={size} height={size} fill={`url(#${checkerPatternId})`} />
-						<rect x={-size / 2} y={-size / 2} width={size} height={size} fill="none" stroke={`url(#${borderGradientId})`} strokeWidth="2" />
+						<rect
+							x={-size / 2}
+							y={-size / 2}
+							width={size}
+							height={size}
+							fill={`url(#${checkerPatternId})`}
+						/>
+						<rect
+							x={-size / 2}
+							y={-size / 2}
+							width={size}
+							height={size}
+							fill="none"
+							stroke={`url(#${borderGradientId})`}
+							strokeWidth="2"
+						/>
 					</>
 				)}
 			</g>
@@ -991,7 +1125,10 @@ function FieldObject({
 	}
 
 	// 白無地（CircleWhiteSolid, SquareWhiteSolid）
-	if (objectId === ObjectIds.CircleWhiteSolid || objectId === ObjectIds.SquareWhiteSolid) {
+	if (
+		objectId === ObjectIds.CircleWhiteSolid ||
+		objectId === ObjectIds.SquareWhiteSolid
+	) {
 		const isCircle = objectId === ObjectIds.CircleWhiteSolid;
 		return (
 			<g transform={transform}>
@@ -1003,7 +1140,13 @@ function FieldObject({
 						<stop offset="100%" stopColor="#d0d0d0" />
 					</radialGradient>
 					{/* 縁のグラデーション */}
-					<linearGradient id={borderGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+					<linearGradient
+						id={borderGradientId}
+						x1="0%"
+						y1="0%"
+						x2="100%"
+						y2="100%"
+					>
 						<stop offset="0%" stopColor="#a0a0a0" />
 						<stop offset="50%" stopColor="#707070" />
 						<stop offset="100%" stopColor="#505050" />
@@ -1011,13 +1154,39 @@ function FieldObject({
 				</defs>
 				{isCircle ? (
 					<>
-						<circle cx={0} cy={0} r={size / 2} fill={`url(#${marblePatternId})`} />
-						<circle cx={0} cy={0} r={size / 2} fill="none" stroke={`url(#${borderGradientId})`} strokeWidth="2" />
+						<circle
+							cx={0}
+							cy={0}
+							r={size / 2}
+							fill={`url(#${marblePatternId})`}
+						/>
+						<circle
+							cx={0}
+							cy={0}
+							r={size / 2}
+							fill="none"
+							stroke={`url(#${borderGradientId})`}
+							strokeWidth="2"
+						/>
 					</>
 				) : (
 					<>
-						<rect x={-size / 2} y={-size / 2} width={size} height={size} fill={`url(#${marblePatternId})`} />
-						<rect x={-size / 2} y={-size / 2} width={size} height={size} fill="none" stroke={`url(#${borderGradientId})`} strokeWidth="2" />
+						<rect
+							x={-size / 2}
+							y={-size / 2}
+							width={size}
+							height={size}
+							fill={`url(#${marblePatternId})`}
+						/>
+						<rect
+							x={-size / 2}
+							y={-size / 2}
+							width={size}
+							height={size}
+							fill="none"
+							stroke={`url(#${borderGradientId})`}
+							strokeWidth="2"
+						/>
 					</>
 				)}
 			</g>
@@ -1029,7 +1198,13 @@ function FieldObject({
 		return (
 			<g transform={transform}>
 				<defs>
-					<linearGradient id={borderGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+					<linearGradient
+						id={borderGradientId}
+						x1="0%"
+						y1="0%"
+						x2="100%"
+						y2="100%"
+					>
 						<stop offset="0%" stopColor="#a0a0a0" />
 						<stop offset="50%" stopColor="#808080" />
 						<stop offset="100%" stopColor="#606060" />
@@ -1052,7 +1227,13 @@ function FieldObject({
 		return (
 			<g transform={transform}>
 				<defs>
-					<linearGradient id={borderGradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+					<linearGradient
+						id={borderGradientId}
+						x1="0%"
+						y1="0%"
+						x2="100%"
+						y2="100%"
+					>
 						<stop offset="0%" stopColor="#a0a0a0" />
 						<stop offset="50%" stopColor="#808080" />
 						<stop offset="100%" stopColor="#606060" />
@@ -1118,7 +1299,6 @@ function AoEObject({
 
 	switch (objectId) {
 		case ObjectIds.CircleAoE:
-		case ObjectIds.CircleAoEMoving:
 			return (
 				<circle
 					cx={0}
@@ -1130,6 +1310,9 @@ function AoEObject({
 					transform={transform}
 				/>
 			);
+
+		case ObjectIds.CircleAoEMoving:
+			return <CircleAoEMovingIcon transform={transform} />;
 
 		case ObjectIds.ConeAoE: {
 			const angle = param1 ?? 90;
@@ -1197,29 +1380,19 @@ function AoEObject({
 		}
 
 		case ObjectIds.Stack:
+			return <StackIcon transform={transform} />;
+
 		case ObjectIds.StackLine:
+			return <StackLineIcon transform={transform} />;
+
 		case ObjectIds.StackChain:
-			return (
-				<g transform={transform}>
-					<circle
-						cx={0}
-						cy={0}
-						r={baseSize / 3}
-						fill={fill}
-						stroke={COLORS.STROKE_STACK}
-						strokeWidth="3"
-					/>
-					<text
-						textAnchor="middle"
-						dy="5"
-						fill={COLORS.STROKE_WHITE}
-						fontSize="14"
-						fontWeight="bold"
-					>
-						集
-					</text>
-				</g>
-			);
+			return <StackChainIcon transform={transform} />;
+
+		case ObjectIds.KnockbackRadial:
+			return <KnockbackRadialIcon transform={transform} />;
+
+		case ObjectIds.KnockbackLine:
+			return <KnockbackLineIcon transform={transform} />;
 
 		case ObjectIds.Block:
 			return <BlockIcon transform={transform} />;
@@ -1397,7 +1570,10 @@ function WaymarkIcon({
 	transform: string;
 }) {
 	const size = SIZES.WAYMARK;
-	const info = WAYMARK_INFO[objectId] ?? { label: "?", color: COLORS.ROLE_DEFAULT };
+	const info = WAYMARK_INFO[objectId] ?? {
+		label: "?",
+		color: COLORS.ROLE_DEFAULT,
+	};
 
 	return (
 		<g transform={transform}>
@@ -1510,9 +1686,21 @@ function EnemyIcon({
 					cy={objectId === ObjectIds.EnemySmall ? "45%" : "40%"}
 					r={objectId === ObjectIds.EnemySmall ? "65%" : "70%"}
 				>
-					<stop offset="0%" stopColor={colors.gradientColors[0]} stopOpacity="1" />
-					<stop offset={objectId === ObjectIds.EnemySmall ? "60%" : "70%"} stopColor={colors.gradientColors[1]} stopOpacity="1" />
-					<stop offset="100%" stopColor={colors.gradientColors[2]} stopOpacity="1" />
+					<stop
+						offset="0%"
+						stopColor={colors.gradientColors[0]}
+						stopOpacity="1"
+					/>
+					<stop
+						offset={objectId === ObjectIds.EnemySmall ? "60%" : "70%"}
+						stopColor={colors.gradientColors[1]}
+						stopOpacity="1"
+					/>
+					<stop
+						offset="100%"
+						stopColor={colors.gradientColors[2]}
+						stopOpacity="1"
+					/>
 				</radialGradient>
 				{colors.hasGlow && colors.glowId && (
 					<filter id={colors.glowId}>
@@ -1526,25 +1714,29 @@ function EnemyIcon({
 			</defs>
 
 			{/* エネミー大の外縁 */}
-			{outerPath && (
-				<path d={outerPath} fill="#ffccaa" stroke="none" />
-			)}
+			{outerPath && <path d={outerPath} fill="#ffccaa" stroke="none" />}
 
 			{/* シールド本体 */}
 			<path
 				d={shieldPath}
 				fill={`url(#${colors.gradientId})`}
 				stroke={colors.strokeColor}
-				strokeWidth={objectId === ObjectIds.EnemySmall ? 2.5 * scale : 2 * scale}
+				strokeWidth={
+					objectId === ObjectIds.EnemySmall ? 2.5 * scale : 2 * scale
+				}
 				strokeLinejoin="round"
-				filter={colors.hasGlow && colors.glowId ? `url(#${colors.glowId})` : undefined}
+				filter={
+					colors.hasGlow && colors.glowId ? `url(#${colors.glowId})` : undefined
+				}
 			/>
 
 			{/* 顔のパーツ */}
 			<g
 				fill={colors.faceColor}
 				opacity={objectId === ObjectIds.EnemySmall ? 1 : 0.9}
-				filter={colors.hasGlow && colors.glowId ? `url(#${colors.glowId})` : undefined}
+				filter={
+					colors.hasGlow && colors.glowId ? `url(#${colors.glowId})` : undefined
+				}
 			>
 				{/* 左目 */}
 				<path
@@ -1757,12 +1949,7 @@ function BlockIcon({ transform }: { transform: string }) {
 			/>
 
 			{/* 内側の白い領域 */}
-			<circle
-				cx={0}
-				cy={0}
-				r={innerRadius}
-				fill={`url(#${innerGradientId})`}
-			/>
+			<circle cx={0} cy={0} r={innerRadius} fill={`url(#${innerGradientId})`} />
 
 			{/* 中心のグロー */}
 			<circle
@@ -1908,12 +2095,7 @@ function Area4PIcon({ transform }: { transform: string }) {
 						strokeWidth="1"
 					/>
 					{/* 球の中心 */}
-					<circle
-						cx={pos.x}
-						cy={pos.y}
-						r={orbRadius * 0.4}
-						fill="#ff9988"
-					/>
+					<circle cx={pos.x} cy={pos.y} r={orbRadius * 0.4} fill="#ff9988" />
 				</g>
 			))}
 		</g>
@@ -1992,7 +2174,12 @@ function Area1PIcon({ transform }: { transform: string }) {
 				stroke="#ffffff"
 				strokeWidth="1.5"
 			/>
-			<circle cx={0} cy={0} r={centerRadius} fill={`url(#${centerGradientId})`} />
+			<circle
+				cx={0}
+				cy={0}
+				r={centerRadius}
+				fill={`url(#${centerGradientId})`}
+			/>
 		</g>
 	);
 }
@@ -2035,7 +2222,13 @@ function Area2PIcon({ transform }: { transform: string }) {
 					<stop offset="50%" stopColor="#ffaa80" stopOpacity="1" />
 					<stop offset="100%" stopColor="#ff66cc" stopOpacity="1" />
 				</radialGradient>
-				<linearGradient id={bridgeGradientId} x1="0%" y1="50%" x2="100%" y2="50%">
+				<linearGradient
+					id={bridgeGradientId}
+					x1="0%"
+					y1="50%"
+					x2="100%"
+					y2="50%"
+				>
 					<stop offset="0%" stopColor="#ff66cc" stopOpacity="1" />
 					<stop offset="50%" stopColor="#ffeeb0" stopOpacity="1" />
 					<stop offset="100%" stopColor="#ff66cc" stopOpacity="1" />
@@ -2061,9 +2254,15 @@ function Area2PIcon({ transform }: { transform: string }) {
 			{/* 装飾的な曲線 */}
 			<g fill="none" stroke="#ffffff" strokeWidth="0.8" strokeLinecap="round">
 				<path d="M-30 -13 L-25 -13 Q-20 -13 -17 -16 Q-14 -19 -10 -19 L10 -19 Q14 -19 17 -16 Q20 -13 25 -13 L30 -13" />
-				<path d="M-30 -10 L-24 -10 Q-20 -10 -17 -12 Q-14 -14 -10 -14 L10 -14 Q14 -14 17 -12 Q20 -10 24 -10 L30 -10" opacity="0.7" />
+				<path
+					d="M-30 -10 L-24 -10 Q-20 -10 -17 -12 Q-14 -14 -10 -14 L10 -14 Q14 -14 17 -12 Q20 -10 24 -10 L30 -10"
+					opacity="0.7"
+				/>
 				<path d="M-30 13 L-25 13 Q-20 13 -17 16 Q-14 19 -10 19 L10 19 Q14 19 17 16 Q20 13 25 13 L30 13" />
-				<path d="M-30 10 L-24 10 Q-20 10 -17 12 Q-14 14 -10 14 L10 14 Q14 14 17 12 Q20 10 24 10 L30 10" opacity="0.7" />
+				<path
+					d="M-30 10 L-24 10 Q-20 10 -17 12 Q-14 14 -10 14 L10 14 Q14 14 17 12 Q20 10 24 10 L30 10"
+					opacity="0.7"
+				/>
 			</g>
 
 			{/* ブリッジ */}
@@ -2088,7 +2287,12 @@ function Area2PIcon({ transform }: { transform: string }) {
 				stroke="#ffffff"
 				strokeWidth="1.5"
 			/>
-			<circle cx={-eyeOffset} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
+			<circle
+				cx={-eyeOffset}
+				cy={0}
+				r={eyeRadius}
+				fill={`url(#${eyeGradientId})`}
+			/>
 
 			{/* 右の目 */}
 			<circle
@@ -2099,7 +2303,12 @@ function Area2PIcon({ transform }: { transform: string }) {
 				stroke="#ffffff"
 				strokeWidth="1.5"
 			/>
-			<circle cx={eyeOffset} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
+			<circle
+				cx={eyeOffset}
+				cy={0}
+				r={eyeRadius}
+				fill={`url(#${eyeGradientId})`}
+			/>
 		</g>
 	);
 }
@@ -2162,9 +2371,17 @@ function Area3PIcon({ transform }: { transform: string }) {
 			{/* 装飾的な波線 */}
 			<g fill="none" stroke="#ffffff" strokeWidth="0.8" strokeLinecap="round">
 				<path d="M-34 -10 Q-24 -20 -14 -10 Q0 -20 14 -10 Q24 -20 34 -10" />
-				<path d="M-34 -7 Q-24 -17 -14 -7 Q0 -17 14 -7 Q24 -17 34 -7" opacity="0.6" strokeWidth="0.6" />
+				<path
+					d="M-34 -7 Q-24 -17 -14 -7 Q0 -17 14 -7 Q24 -17 34 -7"
+					opacity="0.6"
+					strokeWidth="0.6"
+				/>
 				<path d="M-34 10 Q-24 20 -14 10 Q0 20 14 10 Q24 20 34 10" />
-				<path d="M-34 7 Q-24 17 -14 7 Q0 17 14 7 Q24 17 34 7" opacity="0.6" strokeWidth="0.6" />
+				<path
+					d="M-34 7 Q-24 17 -14 7 Q0 17 14 7 Q24 17 34 7"
+					opacity="0.6"
+					strokeWidth="0.6"
+				/>
 			</g>
 
 			{/* 左の目 */}
@@ -2176,7 +2393,12 @@ function Area3PIcon({ transform }: { transform: string }) {
 				stroke="#ffffff"
 				strokeWidth="1.5"
 			/>
-			<circle cx={-eyeSpacing} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
+			<circle
+				cx={-eyeSpacing}
+				cy={0}
+				r={eyeRadius}
+				fill={`url(#${eyeGradientId})`}
+			/>
 
 			{/* 中央の目 */}
 			<circle
@@ -2198,7 +2420,12 @@ function Area3PIcon({ transform }: { transform: string }) {
 				stroke="#ffffff"
 				strokeWidth="1.5"
 			/>
-			<circle cx={eyeSpacing} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
+			<circle
+				cx={eyeSpacing}
+				cy={0}
+				r={eyeRadius}
+				fill={`url(#${eyeGradientId})`}
+			/>
 		</g>
 	);
 }
@@ -2375,13 +2602,7 @@ function LockOnBlueIcon({ transform }: { transform: string }) {
 			<circle cx={0} cy={0} r={orbRadius} fill={`url(#${orbGradId})`} />
 
 			{/* 球体のハイライト */}
-			<ellipse
-				cx={-2}
-				cy={-3}
-				rx={4}
-				ry={3}
-				fill="rgba(255, 255, 255, 0.5)"
-			/>
+			<ellipse cx={-2} cy={-3} rx={4} ry={3} fill="rgba(255, 255, 255, 0.5)" />
 
 			{/* 球体の輪郭 */}
 			<circle
@@ -3015,18 +3236,10 @@ function BuffIcon({ transform }: { transform: string }) {
 			/>
 
 			{/* 内側のグロー */}
-			<path
-				d={shieldPath}
-				fill={`url(#${glowId})`}
-				transform="scale(0.85)"
-			/>
+			<path d={shieldPath} fill={`url(#${glowId})`} transform="scale(0.85)" />
 
 			{/* 人のシルエット */}
-			<path
-				d={personPath}
-				fill="#00ccff"
-				opacity="0.9"
-			/>
+			<path d={personPath} fill="#00ccff" opacity="0.9" />
 
 			{/* シルエットのグロー */}
 			<path
@@ -3107,11 +3320,7 @@ function DebuffIcon({ transform }: { transform: string }) {
 			/>
 
 			{/* 内側のグロー */}
-			<path
-				d={shieldPath}
-				fill={`url(#${glowId})`}
-				transform="scale(0.85)"
-			/>
+			<path d={shieldPath} fill={`url(#${glowId})`} transform="scale(0.85)" />
 
 			{/* 人のシルエット */}
 			<path
@@ -3313,6 +3522,777 @@ function ShapeRotationIcon({ transform }: { transform: string }) {
 				strokeWidth="2"
 				strokeLinejoin="round"
 			/>
+		</g>
+	);
+}
+
+// 頭割りダメージ攻撃アイコン（放射型のシェブロン）
+function StackIcon({ transform }: { transform: string }) {
+	const id = useId();
+	const glowId = `stackGlow-${id}`;
+
+	// シェブロンのパス（中心点からの相対座標）
+	const chevronPath = "M-50 -25 L0 25 L50 -25 L50 -5 L0 45 L-50 -5 Z";
+	const centerPiecePath = "M-20 -15 L0 5 L20 -15 L20 -5 L0 15 L-20 -5 Z";
+
+	// スケール係数（500x500のビューボックスを48x48に縮小）
+	const baseScale = 48 / 500;
+
+	return (
+		<g transform={transform}>
+			{/* 透明な背景（クリック領域） */}
+			<rect x={-24} y={-24} width={48} height={48} fill="transparent" />
+			<defs>
+				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur stdDeviation={12 * baseScale} result="blur" />
+					<feFlood floodColor="#ff4800" result="color" />
+					<feComposite
+						in="color"
+						in2="blur"
+						operator="in"
+						result="coloredBlur"
+					/>
+					<feMerge>
+						<feMergeNode in="coloredBlur" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+			</defs>
+
+			<g transform={`scale(${baseScale})`}>
+				{/* グロー効果付きの背景 */}
+				<g fill="#ff4800" opacity="0.8" filter={`url(#${glowId})`}>
+					<use href={`#stackChevron-${id}`} transform="translate(0, -110)" />
+					<use href={`#stackChevron-${id}`} transform="translate(0, -70)" />
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(180) translate(0, -110)"
+					/>
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(180) translate(0, -70)"
+					/>
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(90) translate(0, -110)"
+					/>
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(90) translate(0, -70)"
+					/>
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(-90) translate(0, -110)"
+					/>
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(-90) translate(0, -70)"
+					/>
+					<path d={centerPiecePath} transform="translate(0, -10) scale(1.2)" />
+					<path d={centerPiecePath} transform="translate(0, 10) scale(1.2)" />
+				</g>
+
+				{/* メインのシェブロン（上） */}
+				<g>
+					<path d={chevronPath} fill="#fedc57" transform="translate(0, -110)" />
+					<path d={chevronPath} fill="#ffffff" transform="translate(0, -70)" />
+				</g>
+
+				{/* メインのシェブロン（下） */}
+				<g transform="rotate(180)">
+					<path d={chevronPath} fill="#fedc57" transform="translate(0, -110)" />
+					<path d={chevronPath} fill="#ffffff" transform="translate(0, -70)" />
+				</g>
+
+				{/* メインのシェブロン（右） */}
+				<g transform="rotate(90)">
+					<path d={chevronPath} fill="#fedc57" transform="translate(0, -110)" />
+					<path d={chevronPath} fill="#ffffff" transform="translate(0, -70)" />
+				</g>
+
+				{/* メインのシェブロン（左） */}
+				<g transform="rotate(-90)">
+					<path d={chevronPath} fill="#fedc57" transform="translate(0, -110)" />
+					<path d={chevronPath} fill="#ffffff" transform="translate(0, -70)" />
+				</g>
+
+				{/* 中央のピース */}
+				<g>
+					<path
+						d={centerPiecePath}
+						fill="#fedc57"
+						transform="translate(0, -10)"
+					/>
+					<path
+						d={centerPiecePath}
+						fill="#fedc57"
+						transform="translate(0, 10)"
+					/>
+				</g>
+			</g>
+		</g>
+	);
+}
+
+// 頭割りダメージ攻撃：直線型アイコン
+function StackLineIcon({ transform }: { transform: string }) {
+	const id = useId();
+	const glowId = `stackLineGlow-${id}`;
+
+	// シェブロンのパス（右向き）
+	const chevronPath = "M0 0 L40 40 L0 80 L25 80 L65 40 L25 0 Z";
+
+	// スケール係数（500x500を60x60に縮小）
+	const baseScale = 60 / 500;
+
+	return (
+		<g transform={transform}>
+			{/* 透明な背景（クリック領域） */}
+			<rect x={-30} y={-30} width={60} height={60} fill="transparent" />
+			<defs>
+				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur
+						in="SourceAlpha"
+						stdDeviation={8 * baseScale}
+						result="blur"
+					/>
+					<feFlood floodColor="#FF3D00" result="color" />
+					<feComposite in="color" in2="blur" operator="in" result="glow" />
+					<feMerge>
+						<feMergeNode in="glow" />
+						<feMergeNode in="glow" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+			</defs>
+
+			<g
+				transform={`scale(${baseScale}) translate(-250, -250)`}
+				filter={`url(#${glowId})`}
+			>
+				{/* 左側の矢印 */}
+				<g transform="translate(60, 50)">
+					<g>
+						<path d={chevronPath} fill="#FFD54F" x="0" y="0" />
+						<path d={chevronPath} fill="#FFFFFF" transform="translate(35, 0)" />
+					</g>
+					<g transform="translate(0, 130)">
+						<path d={chevronPath} fill="#FFD54F" />
+						<path d={chevronPath} fill="#FFFFFF" transform="translate(35, 0)" />
+					</g>
+					<g transform="translate(0, 260)">
+						<path d={chevronPath} fill="#FFD54F" />
+						<path d={chevronPath} fill="#FFFFFF" transform="translate(35, 0)" />
+					</g>
+				</g>
+
+				{/* 右側の矢印（反転） */}
+				<g transform="translate(440, 50) scale(-1, 1)">
+					<g>
+						<path d={chevronPath} fill="#FFD54F" />
+						<path d={chevronPath} fill="#FFFFFF" transform="translate(35, 0)" />
+					</g>
+					<g transform="translate(0, 130)">
+						<path d={chevronPath} fill="#FFD54F" />
+						<path d={chevronPath} fill="#FFFFFF" transform="translate(35, 0)" />
+					</g>
+					<g transform="translate(0, 260)">
+						<path d={chevronPath} fill="#FFD54F" />
+						<path d={chevronPath} fill="#FFFFFF" transform="translate(35, 0)" />
+					</g>
+				</g>
+
+				{/* 中央の矢印 */}
+				<g transform="translate(250, 230)">
+					<g transform="rotate(90) scale(0.6) translate(-50, -40)">
+						<path d={chevronPath} fill="#FFD54F" />
+						<path d={chevronPath} fill="#FFFFFF" transform="translate(35, 0)" />
+					</g>
+				</g>
+			</g>
+		</g>
+	);
+}
+
+// 頭割りダメージ攻撃：連続型アイコン（リング付き）
+function StackChainIcon({ transform }: { transform: string }) {
+	const id = useId();
+	const glowId = `stackChainGlow-${id}`;
+
+	// シェブロンのパス
+	const chevronPath = "M-50 -25 L0 25 L50 -25 L50 -5 L0 45 L-50 -5 Z";
+	const centerPiecePath = "M-20 -15 L0 5 L20 -15 L20 -5 L0 15 L-20 -5 Z";
+
+	// スケール係数（500x500を56x56に縮小）
+	const baseScale = 56 / 500;
+
+	return (
+		<g transform={transform}>
+			{/* 透明な背景（クリック領域） */}
+			<rect x={-28} y={-28} width={56} height={56} fill="transparent" />
+			<defs>
+				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur stdDeviation={12 * baseScale} result="blur" />
+					<feFlood floodColor="#ff4800" result="color" />
+					<feComposite
+						in="color"
+						in2="blur"
+						operator="in"
+						result="coloredBlur"
+					/>
+					<feMerge>
+						<feMergeNode in="coloredBlur" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+			</defs>
+
+			<g transform={`scale(${baseScale})`}>
+				{/* 外側のリング */}
+				<circle r={185} fill="none" stroke="#e6e6e6" strokeWidth="35" />
+				<circle r={115} fill="none" stroke="#e6e6e6" strokeWidth="35" />
+
+				{/* グロー効果付きの背景 */}
+				<g fill="#ff4800" opacity="0.8" filter={`url(#${glowId})`}>
+					<circle r={132} fill="none" stroke="#ff4800" strokeWidth="8" />
+					<path d={chevronPath} transform="translate(0, -110)" />
+					<path d={chevronPath} transform="translate(0, -70)" />
+					<path d={chevronPath} transform="rotate(180) translate(0, -110)" />
+					<path d={chevronPath} transform="rotate(180) translate(0, -70)" />
+					<path d={chevronPath} transform="rotate(90) translate(0, -110)" />
+					<path d={chevronPath} transform="rotate(90) translate(0, -70)" />
+					<path d={chevronPath} transform="rotate(-90) translate(0, -110)" />
+					<path d={chevronPath} transform="rotate(-90) translate(0, -70)" />
+					<path d={centerPiecePath} transform="translate(0, -10) scale(1.2)" />
+					<path d={centerPiecePath} transform="translate(0, 10) scale(1.2)" />
+				</g>
+
+				{/* メインのシェブロン（上） */}
+				<g>
+					<path d={chevronPath} fill="#fedc57" transform="translate(0, -110)" />
+					<path d={chevronPath} fill="#ffffff" transform="translate(0, -70)" />
+				</g>
+
+				{/* メインのシェブロン（下） */}
+				<g transform="rotate(180)">
+					<path d={chevronPath} fill="#fedc57" transform="translate(0, -110)" />
+					<path d={chevronPath} fill="#ffffff" transform="translate(0, -70)" />
+				</g>
+
+				{/* メインのシェブロン（右） */}
+				<g transform="rotate(90)">
+					<path d={chevronPath} fill="#fedc57" transform="translate(0, -110)" />
+					<path d={chevronPath} fill="#ffffff" transform="translate(0, -70)" />
+				</g>
+
+				{/* メインのシェブロン（左） */}
+				<g transform="rotate(-90)">
+					<path d={chevronPath} fill="#fedc57" transform="translate(0, -110)" />
+					<path d={chevronPath} fill="#ffffff" transform="translate(0, -70)" />
+				</g>
+
+				{/* 中央のピース */}
+				<g>
+					<path
+						d={centerPiecePath}
+						fill="#fedc57"
+						transform="translate(0, -10)"
+					/>
+					<path
+						d={centerPiecePath}
+						fill="#fedc57"
+						transform="translate(0, 10)"
+					/>
+				</g>
+			</g>
+		</g>
+	);
+}
+
+// ノックバック攻撃：放射型アイコン
+function KnockbackRadialIcon({ transform }: { transform: string }) {
+	const id = useId();
+	const glowId = `kbRadialGlow-${id}`;
+
+	// シェブロン形状（上向きV型）
+	const chevronShape = "M 0 -20 L 22 0 L 22 12 L 0 -8 L -22 12 L -22 0 Z";
+
+	// スケール係数（500x500を56x56に縮小）
+	const baseScale = 56 / 500;
+
+	return (
+		<g transform={transform}>
+			{/* 透明な背景（クリック領域） */}
+			<rect x={-28} y={-28} width={56} height={56} fill="transparent" />
+			<defs>
+				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur
+						in="SourceGraphic"
+						stdDeviation={12 * baseScale}
+						result="blur"
+					/>
+				</filter>
+			</defs>
+
+			<g transform={`scale(${baseScale})`}>
+				{/* グロー効果の背景 */}
+				<g filter={`url(#${glowId})`}>
+					{[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+						<g key={`bg-${angle}`} transform={`rotate(${angle})`}>
+							<g transform="translate(0, -60) scale(0.6)">
+								<path
+									d={chevronShape}
+									stroke="#FF7F00"
+									strokeWidth="25"
+									fill="#FF7F00"
+									strokeLinejoin="round"
+								/>
+							</g>
+							<g transform="translate(0, -110) scale(0.8)">
+								<path
+									d={chevronShape}
+									stroke="#FF7F00"
+									strokeWidth="25"
+									fill="#FF7F00"
+									strokeLinejoin="round"
+								/>
+							</g>
+							<g transform="translate(0, -170) scale(1.0)">
+								<path
+									d={chevronShape}
+									stroke="#FF7F00"
+									strokeWidth="25"
+									fill="#FF7F00"
+									strokeLinejoin="round"
+								/>
+							</g>
+						</g>
+					))}
+					<circle cx={0} cy={0} r={60} fill="#FF7F00" />
+				</g>
+
+				{/* 前景のシェブロン */}
+				{[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
+					<g key={`fg-${angle}`} transform={`rotate(${angle})`}>
+						<g transform="translate(0, -60) scale(0.6)">
+							<path
+								d={chevronShape}
+								fill="#FDD875"
+								transform="translate(0, 10)"
+							/>
+							<path d={chevronShape} fill="#FFFFFF" />
+						</g>
+						<g transform="translate(0, -110) scale(0.8)">
+							<path
+								d={chevronShape}
+								fill="#FDD875"
+								transform="translate(0, 10)"
+							/>
+							<path d={chevronShape} fill="#FFFFFF" />
+						</g>
+						<g transform="translate(0, -170) scale(1.0)">
+							<path
+								d={chevronShape}
+								fill="#FDD875"
+								transform="translate(0, 10)"
+							/>
+							<path d={chevronShape} fill="#FFFFFF" />
+						</g>
+					</g>
+				))}
+
+				{/* 中央の白い円 */}
+				<circle
+					cx={0}
+					cy={0}
+					r={40}
+					fill="#FFFFFF"
+					filter={`url(#${glowId})`}
+					opacity="0.8"
+				/>
+				<circle cx={0} cy={0} r={35} fill="#FFFFFF" />
+			</g>
+		</g>
+	);
+}
+
+// 円形範囲攻撃：移動型アイコン
+function CircleAoEMovingIcon({ transform }: { transform: string }) {
+	const id = useId();
+	const outerGlowId = `circleMovingOuterGlow-${id}`;
+	const innerButtonId = `circleMovingInnerButton-${id}`;
+	const glowBlurId = `circleMovingGlowBlur-${id}`;
+
+	// シェブロンのパス
+	const chevronPath = "M 140 0 L 200 45 L 260 0";
+
+	// スケール係数（400x400を48x48に縮小）
+	const baseScale = 48 / 400;
+
+	return (
+		<g transform={transform}>
+			{/* 透明な背景（クリック領域） */}
+			<rect x={-24} y={-24} width={48} height={48} fill="transparent" />
+			<defs>
+				<radialGradient
+					id={outerGlowId}
+					cx="50%"
+					cy="50%"
+					r="50%"
+					fx="50%"
+					fy="50%"
+				>
+					<stop offset="60%" stopColor="#ff6b6b" stopOpacity="0.7" />
+					<stop offset="92%" stopColor="#ff8a8a" stopOpacity="0.5" />
+					<stop offset="100%" stopColor="#ffcccc" stopOpacity="0.3" />
+				</radialGradient>
+
+				<radialGradient
+					id={innerButtonId}
+					cx="50%"
+					cy="40%"
+					r="50%"
+					fx="50%"
+					fy="40%"
+				>
+					<stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+					<stop offset="40%" stopColor="#ffe0b2" stopOpacity="1" />
+					<stop offset="100%" stopColor="#ffcc80" stopOpacity="1" />
+				</radialGradient>
+
+				<filter id={glowBlurId} x="-20%" y="-20%" width="140%" height="140%">
+					<feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+				</filter>
+			</defs>
+
+			<g transform={`scale(${baseScale}) translate(-200, -200)`}>
+				{/* 外側の円（グロー効果） */}
+				<circle
+					cx={200}
+					cy={200}
+					r={190}
+					fill={`url(#${outerGlowId})`}
+					stroke="#ffb3b3"
+					strokeWidth="3"
+				/>
+
+				{/* 内側のボタン */}
+				<circle
+					cx={200}
+					cy={200}
+					r={100}
+					fill={`url(#${innerButtonId})`}
+					stroke="#ff8a65"
+					strokeWidth="2"
+				/>
+
+				{/* シェブロン（矢印） */}
+				<g transform="translate(0, 140)">
+					{/* グロー効果の背景 */}
+					<g
+						stroke="#ff3333"
+						strokeWidth="26"
+						filter={`url(#${glowBlurId})`}
+						opacity="0.8"
+						fill="none"
+						strokeLinecap="butt"
+						strokeLinejoin="miter"
+					>
+						<path d={chevronPath} transform="translate(0, 0)" />
+						<path d={chevronPath} transform="translate(0, 45)" />
+						<path d={chevronPath} transform="translate(0, 90)" />
+					</g>
+
+					{/* 前景のシェブロン */}
+					<g
+						fill="none"
+						strokeWidth="14"
+						strokeLinecap="butt"
+						strokeLinejoin="miter"
+					>
+						<path
+							d={chevronPath}
+							stroke="#ffa000"
+							transform="translate(0, 0)"
+						/>
+						<path
+							d={chevronPath}
+							stroke="#fdd835"
+							transform="translate(0, 45)"
+						/>
+						<path
+							d={chevronPath}
+							stroke="#ffffff"
+							transform="translate(0, 90)"
+						/>
+					</g>
+				</g>
+			</g>
+		</g>
+	);
+}
+
+// ノックバック攻撃：直線型アイコン
+function KnockbackLineIcon({ transform }: { transform: string }) {
+	const id = useId();
+	const glowId = `kbLineGlow-${id}`;
+
+	// シェブロン形状（上向きV型）
+	const chevronPath = "M 20 60 L 50 35 L 80 60 L 80 45 L 50 20 L 20 45 Z";
+
+	// スケール係数（300x400を48x64に縮小）
+	const baseScale = 48 / 300;
+
+	return (
+		<g transform={transform}>
+			{/* 透明な背景（クリック領域） */}
+			<rect x={-24} y={-32} width={48} height={64} fill="transparent" />
+			<defs>
+				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur stdDeviation={6 * baseScale} result="coloredBlur" />
+					<feMerge>
+						<feMergeNode in="coloredBlur" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
+			</defs>
+
+			<g transform={`scale(${baseScale}) translate(-150, -200)`}>
+				{/* 3x4のグリッドでシェブロンを配置（上向き） */}
+				<g transform="translate(0, 20)">
+					{/* 上から1行目 */}
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(0, 0)"
+						/>
+						<path d={chevronPath} fill="#FFA726" transform="translate(0, 0)" />
+						<path d={chevronPath} fill="#FFF8E1" transform="translate(0, 0)" />
+					</g>
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(100, 0)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFA726"
+							transform="translate(100, 0)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFF8E1"
+							transform="translate(100, 0)"
+						/>
+					</g>
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(200, 0)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFA726"
+							transform="translate(200, 0)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFF8E1"
+							transform="translate(200, 0)"
+						/>
+					</g>
+
+					{/* 上から2行目 */}
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(0, 90)"
+						/>
+						<path d={chevronPath} fill="#FFA726" transform="translate(0, 90)" />
+						<path d={chevronPath} fill="#FFF8E1" transform="translate(0, 90)" />
+					</g>
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(100, 90)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFA726"
+							transform="translate(100, 90)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFF8E1"
+							transform="translate(100, 90)"
+						/>
+					</g>
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(200, 90)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFA726"
+							transform="translate(200, 90)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFF8E1"
+							transform="translate(200, 90)"
+						/>
+					</g>
+
+					{/* 上から3行目 */}
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(0, 180)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFA726"
+							transform="translate(0, 180)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFF8E1"
+							transform="translate(0, 180)"
+						/>
+					</g>
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(100, 180)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFA726"
+							transform="translate(100, 180)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFF8E1"
+							transform="translate(100, 180)"
+						/>
+					</g>
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(200, 180)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFA726"
+							transform="translate(200, 180)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFF8E1"
+							transform="translate(200, 180)"
+						/>
+					</g>
+
+					{/* 上から4行目 */}
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(0, 270)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFA726"
+							transform="translate(0, 270)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFF8E1"
+							transform="translate(0, 270)"
+						/>
+					</g>
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(100, 270)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFA726"
+							transform="translate(100, 270)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFF8E1"
+							transform="translate(100, 270)"
+						/>
+					</g>
+					<g filter={`url(#${glowId})`}>
+						<path
+							d={chevronPath}
+							fill="#FF8C00"
+							stroke="#FF8C00"
+							strokeWidth="4"
+							opacity="0.8"
+							transform="translate(200, 270)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFA726"
+							transform="translate(200, 270)"
+						/>
+						<path
+							d={chevronPath}
+							fill="#FFF8E1"
+							transform="translate(200, 270)"
+						/>
+					</g>
+				</g>
+			</g>
 		</g>
 	);
 }
