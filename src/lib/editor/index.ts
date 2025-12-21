@@ -18,6 +18,7 @@ export type {
   HandleType,
   InteractionMode,
   DragState,
+  MarqueeState,
   EditorBoardProps,
 } from "./types";
 

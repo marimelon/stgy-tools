@@ -29,6 +29,8 @@ export interface EditorContextValue {
   setBoard: (board: BoardData) => void;
   /** オブジェクトを選択 */
   selectObject: (index: number, additive?: boolean) => void;
+  /** 複数オブジェクトを選択 */
+  selectObjects: (indices: number[]) => void;
   /** 選択を解除 */
   deselectAll: () => void;
   /** オブジェクトを更新 */
@@ -126,6 +128,10 @@ export function EditorProvider({
 
   const selectObject = useCallback((index: number, additive?: boolean) => {
     dispatch({ type: "SELECT_OBJECT", index, additive });
+  }, []);
+
+  const selectObjects = useCallback((indices: number[]) => {
+    dispatch({ type: "SELECT_OBJECTS", indices });
   }, []);
 
   const deselectAll = useCallback(() => {
@@ -261,6 +267,7 @@ export function EditorProvider({
       dispatch,
       setBoard,
       selectObject,
+      selectObjects,
       deselectAll,
       updateObject,
       addObject,
@@ -292,6 +299,7 @@ export function EditorProvider({
       state,
       setBoard,
       selectObject,
+      selectObjects,
       deselectAll,
       updateObject,
       addObject,

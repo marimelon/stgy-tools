@@ -25,6 +25,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
   const {
     state,
     selectObject,
+    selectObjects,
     deselectAll,
     updateObject,
     commitHistory,
@@ -41,7 +42,9 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
   // インタラクションフック
   const {
+    marqueeState,
     handleBackgroundClick,
+    handleBackgroundPointerDown,
     handleDragOver,
     handleDrop,
     handleObjectClick,
@@ -56,6 +59,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
     selectedIndices,
     gridSettings,
     selectObject,
+    selectObjects,
     selectGroup,
     getGroupForObject,
     updateObject,
@@ -74,6 +78,16 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
   const selectedObject =
     selectedIndices.length === 1 ? objects[selectedIndices[0]] : null;
 
+  // マーキー矩形の計算
+  const marqueeRect = marqueeState
+    ? {
+        x: Math.min(marqueeState.startPoint.x, marqueeState.currentPoint.x),
+        y: Math.min(marqueeState.startPoint.y, marqueeState.currentPoint.y),
+        width: Math.abs(marqueeState.currentPoint.x - marqueeState.startPoint.x),
+        height: Math.abs(marqueeState.currentPoint.y - marqueeState.startPoint.y),
+      }
+    : null;
+
   return (
     <svg
       ref={svgRef}
@@ -81,6 +95,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
       height={CANVAS_HEIGHT * scale}
       viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
       onClick={handleBackgroundClick}
+      onPointerDown={handleBackgroundPointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onDragOver={handleDragOver}
@@ -150,6 +165,21 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
           rotation={selectedObject.rotation}
           onRotateStart={handleRotateStart}
           onResizeStart={handleResizeStart}
+        />
+      )}
+
+      {/* マーキー選択矩形 */}
+      {marqueeRect && (
+        <rect
+          x={marqueeRect.x}
+          y={marqueeRect.y}
+          width={marqueeRect.width}
+          height={marqueeRect.height}
+          fill="rgba(34, 211, 238, 0.1)"
+          stroke="#22d3ee"
+          strokeWidth={1}
+          strokeDasharray="4 2"
+          pointerEvents="none"
         />
       )}
     </svg>

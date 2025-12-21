@@ -4,9 +4,9 @@
  * ドラッグ、回転、リサイズなどのインタラクションを管理
  */
 
-import { useState, useCallback, type RefObject } from "react";
+import { useState, useCallback, useRef, type RefObject } from "react";
 import type { BoardObject, Position } from "@/lib/stgy";
-import type { DragState, InteractionMode, ResizeHandle, GridSettings } from "./types";
+import type { DragState, InteractionMode, ResizeHandle, GridSettings, MarqueeState } from "./types";
 import { screenToSVG, calculateRotation, snapToGrid } from "./coordinates";
 
 /**
@@ -23,6 +23,8 @@ export interface UseCanvasInteractionParams {
   gridSettings: GridSettings;
   /** オブジェクト選択 */
   selectObject: (index: number, additive?: boolean) => void;
+  /** 複数オブジェクト選択 */
+  selectObjects: (indices: number[]) => void;
   /** グループ選択 */
   selectGroup: (groupId: string) => void;
   /** オブジェクトが属するグループを取得 */
@@ -45,8 +47,12 @@ export interface UseCanvasInteractionParams {
 export interface UseCanvasInteractionReturn {
   /** 現在のドラッグ状態 */
   dragState: DragState | null;
+  /** マーキー選択状態 */
+  marqueeState: MarqueeState | null;
   /** 背景クリックハンドラ */
   handleBackgroundClick: () => void;
+  /** 背景ポインターダウンハンドラ（マーキー選択開始） */
+  handleBackgroundPointerDown: (e: React.PointerEvent) => void;
   /** ドラッグオーバーハンドラ */
   handleDragOver: (e: React.DragEvent) => void;
   /** ドロップハンドラ */
@@ -74,6 +80,7 @@ export function useCanvasInteraction({
   selectedIndices,
   gridSettings,
   selectObject,
+  selectObjects,
   selectGroup,
   getGroupForObject,
   updateObject,
@@ -83,13 +90,45 @@ export function useCanvasInteraction({
   deselectAll,
 }: UseCanvasInteractionParams): UseCanvasInteractionReturn {
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [marqueeState, setMarqueeState] = useState<MarqueeState | null>(null);
+  const marqueeStateRef = useRef<MarqueeState | null>(null);
+  const skipNextClickRef = useRef(false);
 
   /**
    * 背景クリックで選択解除
    */
   const handleBackgroundClick = useCallback(() => {
+    if (skipNextClickRef.current) {
+      skipNextClickRef.current = false;
+      return;
+    }
     deselectAll();
   }, [deselectAll]);
+
+  /**
+   * 背景ポインターダウンでマーキー選択開始
+   */
+  const handleBackgroundPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.button !== 0) return;
+
+      const svg = svgRef.current;
+      if (!svg) return;
+
+      e.preventDefault();
+
+      const point = screenToSVG(e, svg);
+      const newState = {
+        startPoint: point,
+        currentPoint: point,
+      };
+      marqueeStateRef.current = newState;
+      setMarqueeState(newState);
+
+      (e.target as Element).setPointerCapture(e.pointerId);
+    },
+    [svgRef]
+  );
 
   /**
    * ドラッグオーバー（ドロップを許可）
@@ -248,16 +287,28 @@ export function useCanvasInteraction({
   );
 
   /**
-   * ポインター移動（グループ対応）
+   * ポインター移動（グループ対応、マーキー対応）
    */
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
-      if (!dragState) return;
-
       const svg = svgRef.current;
       if (!svg) return;
 
       const currentPointer = screenToSVG(e, svg);
+
+      // マーキー選択中
+      if (marqueeStateRef.current) {
+        const newState = {
+          ...marqueeStateRef.current,
+          currentPoint: currentPointer,
+        };
+        marqueeStateRef.current = newState;
+        setMarqueeState(newState);
+        return;
+      }
+
+      if (!dragState) return;
+
       const { mode, startPointer, startObjectState, startPositions, objectIndex } = dragState;
 
       if (mode === "drag") {
@@ -307,32 +358,85 @@ export function useCanvasInteraction({
   );
 
   /**
-   * ポインターアップ
+   * マーキー範囲内のオブジェクトを取得
+   */
+  const getObjectsInMarquee = useCallback(
+    (marquee: MarqueeState): number[] => {
+      const { startPoint, currentPoint } = marquee;
+      const minX = Math.min(startPoint.x, currentPoint.x);
+      const maxX = Math.max(startPoint.x, currentPoint.x);
+      const minY = Math.min(startPoint.y, currentPoint.y);
+      const maxY = Math.max(startPoint.y, currentPoint.y);
+
+      const indices: number[] = [];
+      for (let i = 0; i < objects.length; i++) {
+        const obj = objects[i];
+        if (!obj.flags.visible) continue;
+
+        const { x, y } = obj.position;
+        if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+          indices.push(i);
+        }
+      }
+      return indices;
+    },
+    [objects]
+  );
+
+  /**
+   * ポインターアップ（マーキー対応）
    */
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
-      if (!dragState) return;
-
       (e.target as Element).releasePointerCapture(e.pointerId);
+
+      // マーキー選択の完了
+      if (marqueeStateRef.current) {
+        const { startPoint, currentPoint } = marqueeStateRef.current;
+        const width = Math.abs(currentPoint.x - startPoint.x);
+        const height = Math.abs(currentPoint.y - startPoint.y);
+
+        // ドラッグせずクリックした場合（5px未満）は選択解除
+        const isClick = width < 5 && height < 5;
+
+        if (isClick) {
+          deselectAll();
+        } else {
+          skipNextClickRef.current = true;
+          const selectedByMarquee = getObjectsInMarquee(marqueeStateRef.current);
+          if (selectedByMarquee.length > 0) {
+            selectObjects(selectedByMarquee);
+          }
+        }
+
+        marqueeStateRef.current = null;
+        setMarqueeState(null);
+        return;
+      }
+
+      if (!dragState) return;
 
       const descriptions: Record<InteractionMode, string> = {
         none: "",
         drag: "オブジェクト移動",
         rotate: "オブジェクト回転",
         resize: "オブジェクトリサイズ",
+        marquee: "",
       };
-      if (dragState.mode !== "none") {
+      if (dragState.mode !== "none" && dragState.mode !== "marquee") {
         commitHistory(descriptions[dragState.mode]);
       }
 
       setDragState(null);
     },
-    [dragState, commitHistory]
+    [dragState, commitHistory, getObjectsInMarquee, selectObjects, deselectAll]
   );
 
   return {
     dragState,
+    marqueeState,
     handleBackgroundClick,
+    handleBackgroundPointerDown,
     handleDragOver,
     handleDrop,
     handleObjectClick,

@@ -15,7 +15,7 @@ export type ResizeHandle = "nw" | "ne" | "sw" | "se";
 export type HandleType = ResizeHandle | "rotate";
 
 /** インタラクションモード */
-export type InteractionMode = "none" | "drag" | "rotate" | "resize";
+export type InteractionMode = "none" | "drag" | "rotate" | "resize" | "marquee";
 
 /** ドラッグ状態 */
 export interface DragState {
@@ -31,6 +31,14 @@ export interface DragState {
   handle?: HandleType;
   /** 操作対象のオブジェクトインデックス */
   objectIndex: number;
+}
+
+/** マーキー選択状態 */
+export interface MarqueeState {
+  /** 開始位置 */
+  startPoint: Position;
+  /** 現在位置 */
+  currentPoint: Position;
 }
 
 // ============================================
