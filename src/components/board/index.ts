@@ -1,7 +1,5 @@
+// OBJECT_BBOX_SIZES は @/lib/board から再エクスポート
+export { DEFAULT_BBOX_SIZE, OBJECT_BBOX_SIZES } from "@/lib/board";
 export { BackgroundRenderer } from "./BackgroundRenderer";
 export { BoardViewer } from "./BoardViewer";
-export {
-	getObjectBoundingBox,
-	OBJECT_BBOX_SIZES,
-	ObjectRenderer,
-} from "./ObjectRenderer";
+export { getObjectBoundingBox, ObjectRenderer } from "./ObjectRenderer";

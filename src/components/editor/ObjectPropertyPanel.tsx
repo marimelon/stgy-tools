@@ -5,7 +5,7 @@
  */
 
 import { rgbToHex, hexToRgb } from "@/lib/editor";
-import { ObjectNames, ObjectIds } from "@/lib/stgy";
+import { ObjectNames, ObjectIds, OBJECT_FLIP_FLAGS, DEFAULT_FLIP_FLAGS } from "@/lib/stgy";
 import type { BoardObject } from "@/lib/stgy";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +47,11 @@ export function ObjectPropertyPanel({
   const isTextObject = object.objectId === ObjectIds.Text;
   const isConeAoE = object.objectId === ObjectIds.ConeAoE;
   const isDonutAoE = object.objectId === ObjectIds.DonutAoE;
+  
+  // 反転可能フラグを取得
+  const flipFlags = OBJECT_FLIP_FLAGS[object.objectId] ?? DEFAULT_FLIP_FLAGS;
+  const canFlipHorizontal = flipFlags.horizontal;
+  const canFlipVertical = flipFlags.vertical;
 
   return (
     <div className="panel h-full overflow-y-auto">
@@ -174,26 +179,30 @@ export function ObjectPropertyPanel({
                 )
               }
             />
-            <Checkbox
-              label="左右反転"
-              checked={object.flags.flipHorizontal}
-              onChange={(flipHorizontal) =>
-                handleChangeAndCommit(
-                  { flags: { ...object.flags, flipHorizontal } },
-                  "反転変更"
-                )
-              }
-            />
-            <Checkbox
-              label="上下反転"
-              checked={object.flags.flipVertical}
-              onChange={(flipVertical) =>
-                handleChangeAndCommit(
-                  { flags: { ...object.flags, flipVertical } },
-                  "反転変更"
-                )
-              }
-            />
+            {canFlipHorizontal && (
+              <Checkbox
+                label="左右反転"
+                checked={object.flags.flipHorizontal}
+                onChange={(flipHorizontal) =>
+                  handleChangeAndCommit(
+                    { flags: { ...object.flags, flipHorizontal } },
+                    "反転変更"
+                  )
+                }
+              />
+            )}
+            {canFlipVertical && (
+              <Checkbox
+                label="上下反転"
+                checked={object.flags.flipVertical}
+                onChange={(flipVertical) =>
+                  handleChangeAndCommit(
+                    { flags: { ...object.flags, flipVertical } },
+                    "反転変更"
+                  )
+                }
+              />
+            )}
             <Checkbox
               label="ロック"
               checked={object.flags.locked}

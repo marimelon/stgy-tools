@@ -16,14 +16,10 @@ const OBJECT_CATEGORIES: Record<string, { name: string; ids: number[] }> = {
 	fields: {
 		name: "フィールド",
 		ids: [
-			ObjectIds.CircleWhiteSolid,
-			ObjectIds.CircleWhiteTile,
-			ObjectIds.CircleGraySolid,
+			// 注意: CircleWhiteSolid, CircleWhiteTile, CircleGraySolid,
+			// SquareWhiteSolid, SquareWhiteTile, SquareGraySolid は未使用 (CSV: False)
 			ObjectIds.CircleCheck,
 			ObjectIds.CircleGray,
-			ObjectIds.SquareWhiteSolid,
-			ObjectIds.SquareWhiteTile,
-			ObjectIds.SquareGraySolid,
 			ObjectIds.SquareCheck,
 			ObjectIds.SquareGray,
 		],
@@ -247,16 +243,12 @@ export function ObjectPalette() {
 	);
 }
 
-/** フィールドオブジェクトのID一覧 */
+/** フィールドオブジェクトのID一覧 (表示用viewBox調整に使用) */
 const FIELD_OBJECT_IDS = [
-	ObjectIds.CircleWhiteSolid,
-	ObjectIds.CircleWhiteTile,
-	ObjectIds.CircleGraySolid,
+	// 注意: CircleWhiteSolid, CircleWhiteTile, CircleGraySolid,
+	// SquareWhiteSolid, SquareWhiteTile, SquareGraySolid は未使用 (CSV: False)
 	ObjectIds.CircleCheck,
 	ObjectIds.CircleGray,
-	ObjectIds.SquareWhiteSolid,
-	ObjectIds.SquareWhiteTile,
-	ObjectIds.SquareGraySolid,
 	ObjectIds.SquareCheck,
 	ObjectIds.SquareGray,
 ];

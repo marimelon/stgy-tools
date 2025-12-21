@@ -100,13 +100,13 @@ export interface BoardData {
 /** オブジェクト名マップ */
 export const ObjectNames: Record<number, string> = {
   // フィールド
-  1: "円形白無地フィールド",
-  2: "円形白タイルフィールド",
-  3: "円形グレー無地フィールド",
+  1: "円形白無地フィールド", // 未使用 (CSV: False)
+  2: "円形白タイルフィールド", // 未使用 (CSV: False)
+  3: "円形グレー無地フィールド", // 未使用 (CSV: False)
   4: "円形チェック",
-  5: "四角形白無地フィールド",
-  6: "四角形白タイルフィールド",
-  7: "四角形グレー無地フィールド",
+  5: "四角形白無地フィールド", // 未使用 (CSV: False)
+  6: "四角形白タイルフィールド", // 未使用 (CSV: False)
+  7: "四角形グレー無地フィールド", // 未使用 (CSV: False)
   8: "正方形チェック",
   124: "円形グレー",
   125: "正方形グレー",
@@ -257,12 +257,18 @@ export const ObjectNames: Record<number, string> = {
 
 export const ObjectIds = {
   // フィールド
+  /** @deprecated 未使用 (CSV: False) */
   CircleWhiteSolid: 1,
+  /** @deprecated 未使用 (CSV: False) */
   CircleWhiteTile: 2,
+  /** @deprecated 未使用 (CSV: False) */
   CircleGraySolid: 3,
   CircleCheck: 4,
+  /** @deprecated 未使用 (CSV: False) */
   SquareWhiteSolid: 5,
+  /** @deprecated 未使用 (CSV: False) */
   SquareWhiteTile: 6,
+  /** @deprecated 未使用 (CSV: False) */
   SquareGraySolid: 7,
   SquareCheck: 8,
   CircleGray: 124,
@@ -411,3 +417,97 @@ export const ObjectIds = {
   Text: 100,
   Group: 105,
 } as const;
+
+/**
+ * オブジェクトの反転可能フラグ (CSV カラム19=左右反転, カラム20=上下反転)
+ * プロパティパネルで反転オプションの表示制御に使用
+ */
+export const OBJECT_FLIP_FLAGS: Record<
+  number,
+  { horizontal: boolean; vertical: boolean }
+> = {
+  // フィールド
+  4: { horizontal: false, vertical: false }, // 円形チェック
+  8: { horizontal: false, vertical: false }, // 正方形チェック
+  124: { horizontal: false, vertical: false }, // 円形グレー
+  125: { horizontal: false, vertical: false }, // 正方形グレー
+
+  // 攻撃範囲
+  9: { horizontal: false, vertical: false }, // 円形範囲攻撃
+  10: { horizontal: true, vertical: true }, // 扇範囲攻撃
+  11: { horizontal: false, vertical: false }, // 直線範囲攻撃
+  12: { horizontal: false, vertical: false }, // ライン
+  13: { horizontal: false, vertical: false }, // 視線攻撃
+  14: { horizontal: false, vertical: false }, // 頭割りダメージ攻撃
+  15: { horizontal: false, vertical: true }, // 頭割りダメージ攻撃：直線型
+  16: { horizontal: false, vertical: false }, // 距離減衰ダメージ攻撃
+  17: { horizontal: true, vertical: true }, // 輪形範囲攻撃
+  106: { horizontal: false, vertical: false }, // 頭割りダメージ攻撃：連続型
+  107: { horizontal: false, vertical: true }, // 距離減衰ダメージ攻撃：対象発動型
+  108: { horizontal: false, vertical: false }, // 強攻撃
+  109: { horizontal: false, vertical: false }, // ノックバック攻撃：放射型
+  110: { horizontal: false, vertical: true }, // ノックバック攻撃：直線型
+  111: { horizontal: false, vertical: false }, // 受け止め攻撃
+  112: { horizontal: false, vertical: false }, // ターゲット予兆
+  126: { horizontal: false, vertical: true }, // 円形範囲攻撃：移動型
+  127: { horizontal: false, vertical: false }, // 1人用エリア
+  128: { horizontal: false, vertical: false }, // 2人用エリア
+  129: { horizontal: false, vertical: false }, // 3人用エリア
+  130: { horizontal: false, vertical: false }, // 4人用エリア
+
+  // エネミー
+  60: { horizontal: false, vertical: true }, // エネミー小
+  62: { horizontal: false, vertical: true }, // エネミー中
+  64: { horizontal: false, vertical: true }, // エネミー大
+
+  // バフ/デバフ
+  113: { horizontal: true, vertical: true }, // バフ効果
+  114: { horizontal: true, vertical: true }, // デバフ効果
+
+  // 図形
+  87: { horizontal: false, vertical: false }, // 図形マル
+  88: { horizontal: false, vertical: false }, // 図形バツ
+  89: { horizontal: false, vertical: true }, // 図形サンカク
+  90: { horizontal: false, vertical: false }, // 図形シカク
+  94: { horizontal: false, vertical: true }, // 図形ヤジルシ
+  103: { horizontal: true, vertical: true }, // 図形カイテン
+  135: { horizontal: false, vertical: false }, // 強調マル
+  136: { horizontal: false, vertical: false }, // 強調バツ
+  137: { horizontal: false, vertical: false }, // 強調シカク
+  138: { horizontal: false, vertical: false }, // 強調サンカク
+  139: { horizontal: false, vertical: false }, // 時計回り
+  140: { horizontal: false, vertical: false }, // 反時計回り
+};
+
+/** デフォルトの反転フラグ（未定義のオブジェクト用） */
+export const DEFAULT_FLIP_FLAGS = { horizontal: false, vertical: false };
+
+/**
+ * 未使用オブジェクトID一覧 (CSV 2カラム目が False)
+ * パレットやエディタUIで非表示にするために使用
+ */
+export const DISABLED_OBJECT_IDS: readonly number[] = [
+  // フィールド (未使用)
+  ObjectIds.CircleWhiteSolid, // 1
+  ObjectIds.CircleWhiteTile, // 2
+  ObjectIds.CircleGraySolid, // 3
+  ObjectIds.SquareWhiteSolid, // 5
+  ObjectIds.SquareWhiteTile, // 6
+  ObjectIds.SquareGraySolid, // 7
+  // ロール (未使用)
+  58, // DPS5
+  59, // DPS6
+  // エネミー (未使用)
+  61, // エネミー小2
+  63, // エネミー中2
+  // 図形 (未使用)
+  91, // 未使用
+  92, // 未使用
+  93, // 未使用
+  95, // 未使用
+  96, // 未使用
+  97, // 未使用
+  98, // 未使用
+  99, // 未使用
+  104, // 図形：矢印右回り
+] as const;

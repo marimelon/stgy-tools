@@ -11,7 +11,14 @@ export type {
   Position,
   ObjectFlags,
 } from "./types";
-export { BackgroundId, ObjectIds, ObjectNames } from "./types";
+export {
+  BackgroundId,
+  DEFAULT_FLIP_FLAGS,
+  DISABLED_OBJECT_IDS,
+  OBJECT_FLIP_FLAGS,
+  ObjectIds,
+  ObjectNames,
+} from "./types";
 
 // Debug utilities
 export { decodeStgyDebug, compareStgy, hexDump } from "./debug";

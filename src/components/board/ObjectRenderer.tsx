@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { DEFAULT_BBOX_SIZE, OBJECT_BBOX_SIZES } from "@/lib/board";
 import type { BoardObject, Color } from "@/lib/stgy";
 import { ObjectIds } from "@/lib/stgy";
 import {
@@ -37,18 +38,17 @@ import {
 } from "./icons";
 
 // ========================================
-// 隠し機能: カスタムアイコン
+// アイコン表示設定
 // ========================================
 
 /**
- * カスタムアイコンが利用可能かチェック
- * localStorage.setItem('useCustomIcons', 'true') で有効化
+ * オリジナル画像（PNG）を使用するかチェック
+ * デフォルトでオリジナル画像を使用
+ * localStorage.setItem('useFallbackSvg', 'true') で代替SVGに切り替え可能
  */
-function useCustomIcons(): boolean {
-	return (
-		typeof window !== "undefined" &&
-		localStorage.getItem("useCustomIcons") === "true"
-	);
+function useOriginalIcons(): boolean {
+	if (typeof window === "undefined") return true;
+	return localStorage.getItem("useFallbackSvg") !== "true";
 }
 
 /**
@@ -195,16 +195,6 @@ const CUSTOM_ICON_IDS = new Set<number>([
 // 定数定義
 // ========================================
 
-/** デフォルトサイズ定数 */
-const DEFAULT_SIZES = {
-	FIELD: 256,
-	ROLE_ICON: 24,
-	WAYMARK: 32,
-	MARKER: 32,
-	AOE: 48,
-	PLACEHOLDER: 16,
-} as const;
-
 /** 扇形攻撃の半径 */
 const CONE_RADIUS = 256;
 
@@ -223,183 +213,7 @@ const SIZES = {
 	PLACEHOLDER: 16,
 } as const;
 
-/**
- * オブジェクトごとのバウンディングボックスサイズ定義
- * アイコンを差し替える際はここのサイズを変更してください
- */
-export const OBJECT_BBOX_SIZES: Record<
-	number,
-	{ width: number; height: number }
-> = {
-	// ========================================
-	// フィールド (256x256)
-	// ========================================
-	[ObjectIds.CircleWhiteSolid]: { width: 256, height: 256 },
-	[ObjectIds.CircleWhiteTile]: { width: 256, height: 256 },
-	[ObjectIds.CircleGraySolid]: { width: 256, height: 256 },
-	[ObjectIds.CircleCheck]: { width: 256, height: 256 },
-	[ObjectIds.SquareWhiteSolid]: { width: 256, height: 256 },
-	[ObjectIds.SquareWhiteTile]: { width: 256, height: 256 },
-	[ObjectIds.SquareGraySolid]: { width: 256, height: 256 },
-	[ObjectIds.SquareCheck]: { width: 256, height: 256 },
-	[ObjectIds.CircleGray]: { width: 256, height: 256 },
-	[ObjectIds.SquareGray]: { width: 256, height: 256 },
-
-	// ========================================
-	// 攻撃範囲
-	// ========================================
-	[ObjectIds.CircleAoE]: { width: 256, height: 256 },
-	// ConeAoE: 動的計算（角度による）
-	[ObjectIds.LineAoE]: { width: 16, height: 96 },
-	[ObjectIds.Line]: { width: 16, height: 96 },
-	[ObjectIds.Gaze]: { width: 100, height: 100 },
-	[ObjectIds.Stack]: { width: 48, height: 48 },
-	[ObjectIds.StackLine]: { width: 48, height: 48 },
-	[ObjectIds.Proximity]: { width: 48, height: 48 },
-	[ObjectIds.DonutAoE]: { width: 48, height: 48 },
-	[ObjectIds.StackChain]: { width: 134, height: 134 },
-	[ObjectIds.ProximityTarget]: { width: 48, height: 48 },
-	[ObjectIds.Tankbuster]: { width: 48, height: 48 },
-	[ObjectIds.KnockbackRadial]: { width: 256, height: 256 },
-	[ObjectIds.KnockbackLine]: { width: 256, height: 256 },
-	[ObjectIds.Block]: { width: 60, height: 60 },
-	[ObjectIds.TargetMarker]: { width: 48, height: 48 },
-	[ObjectIds.CircleAoEMoving]: { width: 134, height: 134 },
-	[ObjectIds.Area1P]: { width: 70, height: 70 },
-	[ObjectIds.Area2P]: { width: 70, height: 70 },
-	[ObjectIds.Area3P]: { width: 70, height: 70 },
-	[ObjectIds.Area4P]: { width: 70, height: 70 },
-
-	// ========================================
-	// ジョブアイコン (24x24)
-	// ========================================
-	[ObjectIds.Gladiator]: { width: 24, height: 24 },
-	[ObjectIds.Pugilist]: { width: 24, height: 24 },
-	[ObjectIds.Marauder]: { width: 24, height: 24 },
-	[ObjectIds.Lancer]: { width: 24, height: 24 },
-	[ObjectIds.Archer]: { width: 24, height: 24 },
-	[ObjectIds.Conjurer]: { width: 24, height: 24 },
-	[ObjectIds.Thaumaturge]: { width: 24, height: 24 },
-	[ObjectIds.Arcanist]: { width: 24, height: 24 },
-	[ObjectIds.Rogue]: { width: 24, height: 24 },
-	[ObjectIds.Paladin]: { width: 24, height: 24 },
-	[ObjectIds.Monk]: { width: 24, height: 24 },
-	[ObjectIds.Warrior]: { width: 24, height: 24 },
-	[ObjectIds.Dragoon]: { width: 24, height: 24 },
-	[ObjectIds.Bard]: { width: 24, height: 24 },
-	[ObjectIds.WhiteMage]: { width: 24, height: 24 },
-	[ObjectIds.BlackMage]: { width: 24, height: 24 },
-	[ObjectIds.Summoner]: { width: 24, height: 24 },
-	[ObjectIds.Scholar]: { width: 24, height: 24 },
-	[ObjectIds.Ninja]: { width: 24, height: 24 },
-	[ObjectIds.Machinist]: { width: 24, height: 24 },
-	[ObjectIds.DarkKnight]: { width: 24, height: 24 },
-	[ObjectIds.Astrologian]: { width: 24, height: 24 },
-	[ObjectIds.Samurai]: { width: 24, height: 24 },
-	[ObjectIds.RedMage]: { width: 24, height: 24 },
-	[ObjectIds.BlueMage]: { width: 24, height: 24 },
-	[ObjectIds.Gunbreaker]: { width: 24, height: 24 },
-	[ObjectIds.Dancer]: { width: 24, height: 24 },
-	[ObjectIds.Reaper]: { width: 24, height: 24 },
-	[ObjectIds.Sage]: { width: 24, height: 24 },
-	[ObjectIds.Viper]: { width: 24, height: 24 },
-	[ObjectIds.Pictomancer]: { width: 24, height: 24 },
-
-	// ========================================
-	// ロールアイコン (24x24)
-	// ========================================
-	[ObjectIds.Tank]: { width: 24, height: 24 },
-	[ObjectIds.Tank1]: { width: 24, height: 24 },
-	[ObjectIds.Tank2]: { width: 24, height: 24 },
-	[ObjectIds.Healer]: { width: 24, height: 24 },
-	[ObjectIds.Healer1]: { width: 24, height: 24 },
-	[ObjectIds.Healer2]: { width: 24, height: 24 },
-	[ObjectIds.DPS]: { width: 24, height: 24 },
-	[ObjectIds.DPS1]: { width: 24, height: 24 },
-	[ObjectIds.DPS2]: { width: 24, height: 24 },
-	[ObjectIds.DPS3]: { width: 24, height: 24 },
-	[ObjectIds.DPS4]: { width: 24, height: 24 },
-	[ObjectIds.MeleeDPS]: { width: 24, height: 24 },
-	[ObjectIds.RangedDPS]: { width: 24, height: 24 },
-	[ObjectIds.PhysicalRangedDPS]: { width: 24, height: 24 },
-	[ObjectIds.MagicalRangedDPS]: { width: 24, height: 24 },
-	[ObjectIds.PureHealer]: { width: 24, height: 24 },
-	[ObjectIds.BarrierHealer]: { width: 24, height: 24 },
-
-	// ========================================
-	// エネミー
-	// ========================================
-	[ObjectIds.EnemySmall]: { width: 32, height: 32 },
-	[ObjectIds.EnemyMedium]: { width: 48, height: 48 },
-	[ObjectIds.EnemyLarge]: { width: 64, height: 64 },
-
-	// ========================================
-	// マーカー (32x32)
-	// ========================================
-	// 攻撃マーカー
-	[ObjectIds.Attack1]: { width: 32, height: 32 },
-	[ObjectIds.Attack2]: { width: 32, height: 32 },
-	[ObjectIds.Attack3]: { width: 32, height: 32 },
-	[ObjectIds.Attack4]: { width: 32, height: 32 },
-	[ObjectIds.Attack5]: { width: 32, height: 32 },
-	[ObjectIds.Attack6]: { width: 32, height: 32 },
-	[ObjectIds.Attack7]: { width: 32, height: 32 },
-	[ObjectIds.Attack8]: { width: 32, height: 32 },
-	// 足止めマーカー
-	[ObjectIds.Bind1]: { width: 32, height: 32 },
-	[ObjectIds.Bind2]: { width: 32, height: 32 },
-	[ObjectIds.Bind3]: { width: 32, height: 32 },
-	// 禁止マーカー
-	[ObjectIds.Ignore1]: { width: 32, height: 32 },
-	[ObjectIds.Ignore2]: { width: 32, height: 32 },
-	// 汎用マーカー
-	[ObjectIds.Square]: { width: 32, height: 32 },
-	[ObjectIds.Circle]: { width: 32, height: 32 },
-	[ObjectIds.Plus]: { width: 32, height: 32 },
-	[ObjectIds.Triangle]: { width: 32, height: 32 },
-
-	// ========================================
-	// ウェイマーク (32x32)
-	// ========================================
-	[ObjectIds.WaymarkA]: { width: 32, height: 32 },
-	[ObjectIds.WaymarkB]: { width: 32, height: 32 },
-	[ObjectIds.WaymarkC]: { width: 32, height: 32 },
-	[ObjectIds.WaymarkD]: { width: 32, height: 32 },
-	[ObjectIds.Waymark1]: { width: 32, height: 32 },
-	[ObjectIds.Waymark2]: { width: 32, height: 32 },
-	[ObjectIds.Waymark3]: { width: 32, height: 32 },
-	[ObjectIds.Waymark4]: { width: 32, height: 32 },
-
-	// ========================================
-	// バフ/デバフ (32x32)
-	// ========================================
-	[ObjectIds.Buff]: { width: 32, height: 32 },
-	[ObjectIds.Debuff]: { width: 32, height: 32 },
-
-	// ========================================
-	// ロックオンマーカー
-	// ========================================
-	[ObjectIds.LockOnRed]: { width: 70, height: 70 },
-	[ObjectIds.LockOnBlue]: { width: 68, height: 68 },
-	[ObjectIds.LockOnPurple]: { width: 70, height: 70 },
-	[ObjectIds.LockOnGreen]: { width: 60, height: 70 },
-
-	// ========================================
-	// 図形
-	// ========================================
-	[ObjectIds.ShapeCircle]: { width: 32, height: 32 },
-	[ObjectIds.ShapeCross]: { width: 32, height: 32 },
-	[ObjectIds.ShapeTriangle]: { width: 32, height: 32 },
-	[ObjectIds.ShapeSquare]: { width: 32, height: 32 },
-	[ObjectIds.ShapeArrow]: { width: 32, height: 32 },
-	[ObjectIds.ShapeRotation]: { width: 32, height: 32 },
-	[ObjectIds.EmphasisCircle]: { width: 56, height: 56 },
-	[ObjectIds.EmphasisCross]: { width: 68, height: 68 },
-	[ObjectIds.EmphasisSquare]: { width: 64, height: 64 },
-	[ObjectIds.EmphasisTriangle]: { width: 64, height: 64 },
-	[ObjectIds.Clockwise]: { width: 72, height: 40 },
-	[ObjectIds.CounterClockwise]: { width: 72, height: 40 },
-};
+// OBJECT_BBOX_SIZES と DEFAULT_BBOX_SIZE は @/lib/board から import
 
 /**
  * カスタムアイコン画像をレンダリング
@@ -430,13 +244,13 @@ function CustomIconImage({
 }
 
 /**
- * カスタムアイコンが利用可能な場合は画像を返し、そうでなければnullを返す
+ * オリジナル画像が利用可能な場合は画像を返し、そうでなければnullを返す
  */
-function renderCustomIconIfEnabled(
+function renderOriginalIconIfEnabled(
 	objectId: number,
 	transform: string,
 ): React.ReactNode | null {
-	if (!useCustomIcons()) return null;
+	if (!useOriginalIcons()) return null;
 	if (!CUSTOM_ICON_IDS.has(objectId)) return null;
 	return <CustomIconImage objectId={objectId} transform={transform} />;
 }
@@ -1229,10 +1043,7 @@ export function getObjectBoundingBox(
 	}
 
 	// デフォルト
-	return {
-		width: DEFAULT_SIZES.PLACEHOLDER,
-		height: DEFAULT_SIZES.PLACEHOLDER,
-	};
+	return DEFAULT_BBOX_SIZE;
 }
 
 function buildTransform(
@@ -1305,9 +1116,9 @@ function FieldObject({
 }) {
 	const id = useId();
 
-	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
-	const customIcon = renderCustomIconIfEnabled(objectId, transform);
-	if (customIcon) return customIcon;
+	// オリジナル画像が有効な場合は画像を使用
+	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
+	if (originalIcon) return originalIcon;
 	const fill = colorToRgba(color);
 	const size = LARGE_FIELD_IDS.includes(objectId)
 		? SIZES.FIELD_LARGE
@@ -1722,9 +1533,9 @@ function AoEObject({
 	param1?: number;
 	param2?: number;
 }) {
-	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
-	const customIcon = renderCustomIconIfEnabled(objectId, transform);
-	if (customIcon) return customIcon;
+	// オリジナル画像が有効な場合は画像を使用
+	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
+	if (originalIcon) return originalIcon;
 
 	const fill = colorToRgba(color);
 	const baseSize = SIZES.AOE_BASE;
@@ -1966,9 +1777,9 @@ function RoleIcon({
 	objectId: number;
 	transform: string;
 }) {
-	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
-	const customIcon = renderCustomIconIfEnabled(objectId, transform);
-	if (customIcon) return customIcon;
+	// オリジナル画像が有効な場合は画像を使用
+	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
+	if (originalIcon) return originalIcon;
 
 	const label = ROLE_LABELS[objectId] ?? "?";
 	const bgColor = ROLE_COLORS[objectId] ?? COLORS.ROLE_DEFAULT;
@@ -2005,9 +1816,9 @@ function WaymarkIcon({
 	objectId: number;
 	transform: string;
 }) {
-	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
-	const customIcon = renderCustomIconIfEnabled(objectId, transform);
-	if (customIcon) return customIcon;
+	// オリジナル画像が有効な場合は画像を使用
+	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
+	if (originalIcon) return originalIcon;
 
 	const size = SIZES.WAYMARK;
 	const info = WAYMARK_INFO[objectId] ?? {
@@ -2048,9 +1859,9 @@ function EnemyIcon({
 }) {
 	const id = useId();
 
-	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
-	const customIcon = renderCustomIconIfEnabled(objectId, transform);
-	if (customIcon) return customIcon;
+	// オリジナル画像が有効な場合は画像を使用
+	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
+	if (originalIcon) return originalIcon;
 	const size = ENEMY_SIZES[objectId] ?? SIZES.ENEMY_SMALL;
 	// 元のSVGは100x100なのでスケール係数を計算
 	const scale = size / 100;
@@ -2217,9 +2028,9 @@ function JobIcon({
 	objectId: number;
 	transform: string;
 }) {
-	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
-	const customIcon = renderCustomIconIfEnabled(objectId, transform);
-	if (customIcon) return customIcon;
+	// オリジナル画像が有効な場合は画像を使用
+	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
+	if (originalIcon) return originalIcon;
 
 	const abbreviation = JOB_ABBREVIATIONS[objectId] ?? "?";
 	const role = JOB_ROLES[objectId] ?? "melee";
@@ -2284,9 +2095,9 @@ function MarkerIcon({
 	objectId: number;
 	transform: string;
 }) {
-	// 隠し機能: カスタムアイコンが有効な場合は画像を使用
-	const customIcon = renderCustomIconIfEnabled(objectId, transform);
-	if (customIcon) return customIcon;
+	// オリジナル画像が有効な場合は画像を使用
+	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
+	if (originalIcon) return originalIcon;
 
 	if (ATTACK_MARKER_IDS.includes(objectId)) {
 		return <AttackMarkerIcon objectId={objectId} transform={transform} />;
