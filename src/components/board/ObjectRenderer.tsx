@@ -158,6 +158,12 @@ const CUSTOM_ICON_IDS = new Set<number>([
 	ObjectIds.DPS2,
 	ObjectIds.DPS3,
 	ObjectIds.DPS4,
+	ObjectIds.MeleeDPS,
+	ObjectIds.RangedDPS,
+	ObjectIds.PhysicalRangedDPS,
+	ObjectIds.MagicalRangedDPS,
+	ObjectIds.PureHealer,
+	ObjectIds.BarrierHealer,
 	// ジョブアイコン（基本クラス）
 	ObjectIds.Gladiator,
 	ObjectIds.Pugilist,
@@ -811,6 +817,9 @@ export function ObjectRenderer({
 		content = <MarkerIcon objectId={objectId} transform={transform} />;
 	} else if (objectId === ObjectIds.Text && text) {
 		content = <TextObject transform={transform} text={text} color={color} />;
+	} else if (objectId === ObjectIds.Group) {
+		// グループアイコン - オリジナル画像を使用
+		content = <CustomIconImage objectId={objectId} transform={transform} />;
 	} else {
 		content = <PlaceholderObject objectId={objectId} transform={transform} />;
 	}

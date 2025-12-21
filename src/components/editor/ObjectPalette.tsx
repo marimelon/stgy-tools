@@ -5,11 +5,35 @@
  * カスタムテーマ対応のリッチなデザイン
  */
 
-import { ChevronRight } from "lucide-react";
+import { Bug, ChevronRight } from "lucide-react";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { ObjectRenderer } from "@/components/board";
 import { createDefaultObject, useEditor } from "@/lib/editor";
 import { ObjectIds, ObjectNames } from "@/lib/stgy";
+
+/** 非表示オブジェクト（CSVでFalse） - デバッグモード時のみ表示 */
+const HIDDEN_OBJECTS: { name: string; ids: number[] } = {
+	name: "デバッグ（非表示）",
+	ids: [
+		// フィールド（非表示）
+		ObjectIds.CircleWhiteSolid, // 1: 円形白無地フィールド
+		ObjectIds.CircleWhiteTile, // 2: 円形白タイルフィールド
+		ObjectIds.CircleGraySolid, // 3: 円形グレー無地フィールド
+		ObjectIds.SquareWhiteSolid, // 5: 四角形白無地フィールド
+		ObjectIds.SquareWhiteTile, // 6: 四角形白タイルフィールド
+		ObjectIds.SquareGraySolid, // 7: 四角形グレー無地フィールド
+		// ロール（非表示）
+		58, // DPS5
+		59, // DPS6
+		// エネミー（非表示）
+		61, // エネミー小2
+		63, // エネミー中2
+		// 図形（非表示）
+		104, // 図形：矢印右回り
+		// グループ
+		ObjectIds.Group, // 105: グループ
+	],
+};
 
 /** オブジェクトカテゴリ */
 const OBJECT_CATEGORIES: Record<string, { name: string; ids: number[] }> = {
@@ -175,6 +199,19 @@ const OBJECT_CATEGORIES: Record<string, { name: string; ids: number[] }> = {
 };
 
 /**
+ * デバッグモードの状態を取得/保存
+ */
+function getDebugMode(): boolean {
+	if (typeof window === "undefined") return false;
+	return localStorage.getItem("debugObjectPalette") === "true";
+}
+
+function setDebugMode(enabled: boolean) {
+	if (typeof window === "undefined") return;
+	localStorage.setItem("debugObjectPalette", enabled ? "true" : "false");
+}
+
+/**
  * オブジェクトパレットコンポーネント
  */
 export function ObjectPalette() {
@@ -182,6 +219,12 @@ export function ObjectPalette() {
 	const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
 		new Set(["roles", "attacks"]),
 	);
+	const [debugMode, setDebugModeState] = useState(false);
+
+	// 初期化時にlocalStorageからデバッグモードを読み込み
+	useEffect(() => {
+		setDebugModeState(getDebugMode());
+	}, []);
 
 	const toggleCategory = (category: string) => {
 		setExpandedCategories((prev) => {
@@ -195,6 +238,12 @@ export function ObjectPalette() {
 		});
 	};
 
+	const toggleDebugMode = () => {
+		const newValue = !debugMode;
+		setDebugModeState(newValue);
+		setDebugMode(newValue);
+	};
+
 	const handleAddObject = (objectId: number) => {
 		addObject(objectId);
 	};
@@ -204,8 +253,21 @@ export function ObjectPalette() {
 			className="panel h-full overflow-y-auto"
 			style={{ background: "var(--color-bg-base)" }}
 		>
-			<div className="panel-header">
+			<div className="panel-header flex items-center justify-between">
 				<h2 className="panel-title">オブジェクト</h2>
+				{/* デバッグモードトグル */}
+				<button
+					type="button"
+					onClick={toggleDebugMode}
+					className={`p-1 rounded transition-colors ${
+						debugMode
+							? "text-amber-400 bg-amber-400/20"
+							: "text-muted-foreground hover:text-foreground hover:bg-muted"
+					}`}
+					title={debugMode ? "デバッグモード: ON" : "デバッグモード: OFF"}
+				>
+					<Bug size={16} />
+				</button>
 			</div>
 
 			<div className="p-2">
@@ -238,6 +300,39 @@ export function ObjectPalette() {
 						)}
 					</div>
 				))}
+
+				{/* デバッグモード時のみ非表示オブジェクトを表示 */}
+				{debugMode && (
+					<div className="mb-1">
+						<button
+							type="button"
+							onClick={() => toggleCategory("_debug")}
+							className="category-header w-full text-amber-400"
+						>
+							<span className="flex items-center gap-1">
+								<Bug size={12} />
+								{HIDDEN_OBJECTS.name}
+							</span>
+							<ChevronRight
+								size={14}
+								className={`category-chevron ${expandedCategories.has("_debug") ? "expanded" : ""}`}
+							/>
+						</button>
+
+						{expandedCategories.has("_debug") && (
+							<div className="grid grid-cols-4 gap-1.5 mt-1.5 px-1 animate-slideIn">
+								{HIDDEN_OBJECTS.ids.map((objectId) => (
+									<ObjectPaletteItem
+										key={objectId}
+										objectId={objectId}
+										onClick={() => handleAddObject(objectId)}
+										isDebug
+									/>
+								))}
+							</div>
+						)}
+					</div>
+				)}
 			</div>
 		</div>
 	);
@@ -259,9 +354,11 @@ const FIELD_OBJECT_IDS = [
 function ObjectPaletteItem({
 	objectId,
 	onClick,
+	isDebug = false,
 }: {
 	objectId: number;
 	onClick: () => void;
+	isDebug?: boolean;
 }) {
 	const [isHovered, setIsHovered] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
@@ -349,6 +446,7 @@ function ObjectPaletteItem({
 						background: "var(--color-bg-deep)",
 						borderRadius: "var(--radius-sm)",
 						pointerEvents: "none",
+						border: isDebug ? "2px solid #f59e0b" : undefined,
 					}}
 				>
 					<ObjectRenderer
