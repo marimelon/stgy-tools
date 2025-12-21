@@ -9,6 +9,7 @@ import { AlertCircle, Eye, EyeOff, Layers, SplitSquareHorizontal, Download } fro
 import { decodeStgy, parseBoardData, ObjectNames } from "@/lib/stgy";
 import type { BoardData, BoardObject } from "@/lib/stgy";
 import { BoardViewer } from "@/components/board";
+import { DebugHeader } from "@/components/debug/DebugHeader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -110,12 +111,10 @@ function RenderDebugPage() {
 
 	return (
 		<div className="min-h-screen bg-background text-foreground">
-			<header className="app-header p-4 border-b border-border">
-				<h1 className="app-logo text-2xl">Render Comparison Debug</h1>
-				<p className="text-muted-foreground text-sm mt-1">
-					クライアント側とサーバー側のレンダリング差異を確認
-				</p>
-			</header>
+			<DebugHeader
+				title="Render Comparison Debug"
+				description="クライアント側とサーバー側のレンダリング差異を確認"
+			/>
 
 			<main className="p-4 space-y-4 max-w-7xl mx-auto">
 				{/* 入力エリア */}

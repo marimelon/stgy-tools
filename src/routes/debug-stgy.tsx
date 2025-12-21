@@ -16,6 +16,7 @@ import {
 	type CompareResult,
 } from "@/lib/stgy";
 import { recalculateBoardSize } from "@/lib/editor";
+import { DebugHeader } from "@/components/debug/DebugHeader";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -75,12 +76,10 @@ function StgyDebugPage() {
 
 	return (
 		<div className="min-h-screen bg-background text-foreground">
-			<header className="app-header p-4">
-				<h1 className="app-logo text-2xl">stgy Encoder/Decoder Debug</h1>
-				<p className="text-muted-foreground text-sm mt-1">
-					stgyコードの解析・比較・ラウンドトリップテスト
-				</p>
-			</header>
+			<DebugHeader
+				title="stgy Encoder/Decoder Debug"
+				description="stgyコードの解析・比較・ラウンドトリップテスト"
+			/>
 
 			<main className="p-4 space-y-4 max-w-6xl mx-auto">
 				{/* 入力エリア */}

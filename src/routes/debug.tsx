@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ObjectNames, ObjectIds } from "@/lib/stgy";
 import type { BoardObject } from "@/lib/stgy";
 import { ObjectRenderer } from "@/components/board";
+import { DebugHeader } from "@/components/debug/DebugHeader";
 
 export const Route = createFileRoute("/debug")({ component: DebugPage });
 
@@ -34,12 +35,10 @@ function createDefaultObject(objectId: number): BoardObject {
 function DebugPage() {
 	return (
 		<div className="min-h-screen bg-background text-foreground">
-			<header className="app-header p-4">
-				<h1 className="app-logo text-2xl">Object ID Debug View</h1>
-				<p className="text-muted-foreground text-sm mt-1">
-					全{ALL_OBJECT_IDS.length}種類のオブジェクトID描画確認
-				</p>
-			</header>
+			<DebugHeader
+				title="Object ID Debug View"
+				description={`全${ALL_OBJECT_IDS.length}種類のオブジェクトID描画確認`}
+			/>
 
 			<main className="p-4">
 				<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
