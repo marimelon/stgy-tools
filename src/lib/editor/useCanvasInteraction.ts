@@ -8,6 +8,48 @@ import { useState, useCallback, useRef, type RefObject } from "react";
 import type { BoardObject, Position } from "@/lib/stgy";
 import type { DragState, InteractionMode, ResizeHandle, GridSettings, MarqueeState } from "./types";
 import { screenToSVG, calculateRotation, snapToGrid } from "./coordinates";
+import { getObjectBoundingBox } from "@/components/board";
+
+/**
+ * 指定位置がオブジェクトのバウンディングボックス内にあるかを判定
+ * 回転を考慮した正確なヒットテスト
+ */
+function isPointInObject(point: Position, object: BoardObject): boolean {
+  if (!object.flags.visible) return false;
+  
+  const bbox = getObjectBoundingBox(
+    object.objectId,
+    object.param1,
+    object.param2,
+    object.param3,
+    object.text,
+    object.position
+  );
+  const scale = object.size / 100;
+  const halfWidth = (bbox.width * scale) / 2;
+  const halfHeight = (bbox.height * scale) / 2;
+  const offsetX = (bbox.offsetX ?? 0) * scale;
+  const offsetY = (bbox.offsetY ?? 0) * scale;
+  
+  // ポイントをオブジェクトの中心からの相対座標に変換
+  const dx = point.x - object.position.x;
+  const dy = point.y - object.position.y;
+  
+  // オブジェクトの回転の逆回転を適用してローカル座標に変換
+  const rad = (-object.rotation * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  const localX = dx * cos - dy * sin;
+  const localY = dx * sin + dy * cos;
+  
+  // オフセットを考慮してバウンディングボックス内かチェック
+  const left = offsetX - halfWidth;
+  const right = offsetX + halfWidth;
+  const top = offsetY - halfHeight;
+  const bottom = offsetY + halfHeight;
+  
+  return localX >= left && localX <= right && localY >= top && localY <= bottom;
+}
 
 /**
  * フックに渡すパラメータ
@@ -181,6 +223,9 @@ export function useCanvasInteraction({
 
   /**
    * オブジェクトドラッグ開始（グループ対応）
+   * 
+   * 選択中のオブジェクトがクリック位置にある場合は、
+   * 選択を変更せずに既存の選択をドラッグする（Figma等と同様の動作）
    */
   const handleObjectPointerDown = useCallback(
     (index: number, e: React.PointerEvent) => {
@@ -193,32 +238,49 @@ export function useCanvasInteraction({
       e.preventDefault();
 
       const additive = e.shiftKey;
+      const startPointer = screenToSVG(e, svg);
 
       const group = getGroupForObject(index);
       let indicesToMove = selectedIndices;
 
+      // クリックされたオブジェクトが選択されていない場合
       if (!selectedIndices.includes(index)) {
-        if (group && !additive) {
-          selectGroup(group.id);
-          indicesToMove = group.objectIndices;
+        // 選択中のオブジェクトがクリック位置にあるかチェック
+        // あれば選択を維持してそのままドラッグ（前面オブジェクトをクリックスルー）
+        const selectedObjectAtPoint = selectedIndices.find((idx) => {
+          const obj = objects[idx];
+          return obj && isPointInObject(startPointer, obj);
+        });
+
+        if (selectedObjectAtPoint !== undefined) {
+          // 選択中のオブジェクトがクリック位置にある場合は、
+          // 選択を変更せずに既存の選択をドラッグ
+          indicesToMove = selectedIndices;
         } else {
-          selectObject(index, additive);
-          indicesToMove = additive ? [...selectedIndices, index] : [index];
+          // 選択中のオブジェクトがクリック位置にない場合は、
+          // クリックされたオブジェクトを選択
+          if (group && !additive) {
+            selectGroup(group.id);
+            indicesToMove = group.objectIndices;
+          } else {
+            selectObject(index, additive);
+            indicesToMove = additive ? [...selectedIndices, index] : [index];
+          }
         }
       }
 
       // ロックされたオブジェクトはドラッグ不可（選択のみ）
-      const obj = objects[index];
-      if (obj.flags.locked) {
+      // 複数選択時は、移動対象にロックされていないオブジェクトが含まれていれば移動可能
+      const allLocked = indicesToMove.every((idx) => objects[idx]?.flags.locked);
+      if (allLocked) {
         return;
       }
 
-      const startPointer = screenToSVG(e, svg);
-      const startObjectState = { ...objects[index] };
+      const startObjectState = { ...objects[indicesToMove[0]] };
 
       const startPositions = new Map<number, Position>();
       for (const idx of indicesToMove) {
-        if (idx >= 0 && idx < objects.length) {
+        if (idx >= 0 && idx < objects.length && !objects[idx].flags.locked) {
           startPositions.set(idx, { ...objects[idx].position });
         }
       }
@@ -228,7 +290,7 @@ export function useCanvasInteraction({
         startPointer,
         startObjectState,
         startPositions,
-        objectIndex: index,
+        objectIndex: indicesToMove[0],
       });
 
       (e.target as Element).setPointerCapture(e.pointerId);
