@@ -3,8 +3,8 @@
  * shadcn/ui Dialog ベース
  */
 
-import { Copy, Key } from "lucide-react";
-import { useId } from "react";
+import { Check, Copy, Key } from "lucide-react";
+import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -45,6 +45,13 @@ export function ExportModal({
 }: ExportModalProps) {
 	const keyInputId = useId();
 	const codeTextareaId = useId();
+	const [copied, setCopied] = useState(false);
+
+	const handleCopy = () => {
+		onCopy();
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
 
 	const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const val = e.target.value;
@@ -110,9 +117,18 @@ export function ExportModal({
 					<Button variant="ghost" onClick={onClose}>
 						閉じる
 					</Button>
-					<Button onClick={onCopy}>
-						<Copy className="size-4" />
-						コピー
+					<Button onClick={handleCopy}>
+						{copied ? (
+							<>
+								<Check className="size-4" />
+								コピーしました
+							</>
+						) : (
+							<>
+								<Copy className="size-4" />
+								コピー
+							</>
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
