@@ -59,6 +59,33 @@ export function ShapeCrossIcon({ transform }: IconProps) {
 	);
 }
 
+/** 図形シカクアイコン（二重四角形） */
+export function ShapeSquareIcon({ transform }: IconProps) {
+	const strokeColor = "#ccaa44";
+	const fillColor = "#ffffff";
+	const outerSize = 22;
+	const innerSize = 16;
+
+	const doublePath = `
+		M ${-outerSize} ${-outerSize}
+		L ${outerSize} ${-outerSize}
+		L ${outerSize} ${outerSize}
+		L ${-outerSize} ${outerSize}
+		Z
+		M ${-innerSize} ${-innerSize}
+		L ${-innerSize} ${innerSize}
+		L ${innerSize} ${innerSize}
+		L ${innerSize} ${-innerSize}
+		Z
+	`;
+
+	return (
+		<g transform={transform}>
+			<path d={doublePath} fill={fillColor} stroke={strokeColor} strokeWidth="2" strokeLinejoin="round" fillRule="evenodd" />
+		</g>
+	);
+}
+
 /** 図形サンカクアイコン（二重三角形） */
 export function ShapeTriangleIcon({ transform }: IconProps) {
 	const strokeColor = "#ccaa44";

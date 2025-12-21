@@ -80,6 +80,16 @@ const AOE_OBJECT_IDS = new Set<number>([
 ]);
 
 /**
+ * 色変更が有効なオブジェクトID
+ * 直線範囲攻撃、ライン、テキストのみ色変更に対応
+ */
+const COLOR_CHANGEABLE_OBJECT_IDS = new Set<number>([
+	ObjectIds.LineAoE,
+	ObjectIds.Line,
+	ObjectIds.Text,
+]);
+
+/**
  * パラメータまたは色が変更されたAoEオブジェクトをSVGでレンダリング
  */
 function renderColoredAoE(
@@ -220,13 +230,14 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 	}
 
 	// LineAoE, Lineは常にSVGでレンダリング（画像はサイドバーアイコンのみ）
-	// その他のAoEオブジェクトは色またはパラメータが変更されている場合のみSVGでレンダリング
+	// 色変更可能なのは LineAoE, Line, Text のみ
+	// その他のAoEオブジェクトはパラメータ変更時のみSVGでレンダリング（色変更は無視）
 	const isLineObject =
 		objectId === ObjectIds.LineAoE || objectId === ObjectIds.Line;
 	const shouldRenderAsSvg =
 		isLineObject ||
 		(AOE_OBJECT_IDS.has(objectId) &&
-			(isColorChanged(color) ||
+			((COLOR_CHANGEABLE_OBJECT_IDS.has(objectId) && isColorChanged(color)) ||
 				isLineAoEParamsChanged(objectId, param1, param2)));
 	if (shouldRenderAsSvg) {
 		const coloredAoE = renderColoredAoE(

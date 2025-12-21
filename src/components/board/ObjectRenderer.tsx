@@ -31,6 +31,7 @@ import {
 	ShapeCircleIcon,
 	ShapeCrossIcon,
 	ShapeRotationIcon,
+	ShapeSquareIcon,
 	ShapeTriangleIcon,
 	StackChainIcon,
 	StackIcon,
@@ -291,6 +292,16 @@ function isLineAoEParamsChanged(
 }
 
 /**
+ * 色変更が有効なオブジェクトID
+ * 直線範囲攻撃、ライン、テキストのみ色変更に対応
+ */
+const COLOR_CHANGEABLE_OBJECT_IDS = new Set<number>([
+	ObjectIds.LineAoE,
+	ObjectIds.Line,
+	ObjectIds.Text,
+]);
+
+/**
  * オリジナル画像が利用可能な場合は画像を返し、そうでなければnullを返す
  * 色やパラメータがデフォルトから変更されている場合はSVGでレンダリングするためnullを返す
  */
@@ -303,8 +314,14 @@ function renderOriginalIconIfEnabled(
 ): React.ReactNode | null {
 	if (!useOriginalIcons()) return null;
 	if (!CUSTOM_ICON_IDS.has(objectId)) return null;
-	// 色がデフォルトから変更されている場合はSVGでレンダリング
-	if (color && isColorChanged(color)) return null;
+	// 色変更可能なオブジェクト（LineAoE, Line, Text）のみ色変更をチェック
+	// それ以外のオブジェクトは色が設定されていてもオリジナル画像を使用
+	if (
+		COLOR_CHANGEABLE_OBJECT_IDS.has(objectId) &&
+		color &&
+		isColorChanged(color)
+	)
+		return null;
 	// 直線範囲攻撃のパラメータが変更されている場合はSVGでレンダリング
 	if (isLineAoEParamsChanged(objectId, param1, param2)) return null;
 	return <CustomIconImage objectId={objectId} transform={transform} />;
@@ -503,6 +520,7 @@ const AOE_OBJECT_IDS: readonly number[] = [
 	ObjectIds.Debuff,
 	ObjectIds.ShapeCircle,
 	ObjectIds.ShapeCross,
+	ObjectIds.ShapeSquare,
 	ObjectIds.ShapeTriangle,
 	ObjectIds.ShapeArrow,
 	ObjectIds.ShapeRotation,
@@ -1145,14 +1163,14 @@ export function getObjectBoundingBox(
 		};
 	}
 
-	// LineAoE: アンカーポイント10 = 端点基準
+	// LineAoE: 中央基準
 	if (objectId === ObjectIds.LineAoE) {
 		const length = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
 		const thickness = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
 		return {
 			width: length,
 			height: thickness,
-			offsetX: length / 2,
+			offsetX: 0,
 			offsetY: 0,
 		};
 	}
@@ -1706,12 +1724,12 @@ function AoEObject({
 
 		case ObjectIds.LineAoE: {
 			// LineAoE: param1 = 縦幅（長さ）、param2 = 横幅（太さ）
-			// アンカーポイント10 = 端点基準（左端が原点）
+			// 中央基準（中心が原点）
 			const length = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
 			const thickness = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
 			return (
 				<rect
-					x={0}
+					x={-length / 2}
 					y={-thickness / 2}
 					width={length}
 					height={thickness}
@@ -1814,6 +1832,9 @@ function AoEObject({
 
 		case ObjectIds.ShapeCross:
 			return <ShapeCrossIcon transform={transform} />;
+
+		case ObjectIds.ShapeSquare:
+			return <ShapeSquareIcon transform={transform} />;
 
 		case ObjectIds.ShapeTriangle:
 			return <ShapeTriangleIcon transform={transform} />;

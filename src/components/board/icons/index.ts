@@ -41,6 +41,7 @@ export {
 export {
 	ShapeCircleIcon,
 	ShapeCrossIcon,
+	ShapeSquareIcon,
 	ShapeTriangleIcon,
 	ShapeArrowIcon,
 	ShapeRotationIcon,
