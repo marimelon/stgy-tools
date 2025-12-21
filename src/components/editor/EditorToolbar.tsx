@@ -48,10 +48,33 @@ import {
 /** アイコンサイズ */
 const ICON_SIZE = 16;
 
+/** EditorToolbarのProps */
+export interface EditorToolbarProps {
+	/** 最終保存時刻 */
+	lastSavedAt?: Date | null;
+}
+
+/**
+ * 相対時間をフォーマット
+ */
+function formatRelativeTime(date: Date): string {
+	const now = new Date();
+	const diffMs = now.getTime() - date.getTime();
+	const diffSec = Math.floor(diffMs / 1000);
+	const diffMin = Math.floor(diffSec / 60);
+	const diffHour = Math.floor(diffMin / 60);
+
+	if (diffSec < 10) return "たった今";
+	if (diffSec < 60) return `${diffSec}秒前`;
+	if (diffMin < 60) return `${diffMin}分前`;
+	if (diffHour < 24) return `${diffHour}時間前`;
+	return date.toLocaleDateString();
+}
+
 /**
  * エディターツールバー
  */
-export function EditorToolbar() {
+export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 	const toolbarRef = useRef<HTMLDivElement>(null);
 	const toolbarSize = useToolbarSize(toolbarRef);
 
@@ -420,18 +443,23 @@ export function EditorToolbar() {
 				)}
 
 				{/* 状態表示 */}
-				<div className="ml-auto text-right text-xs text-slate-400 flex-shrink-0 whitespace-nowrap">
-					{state.isDirty && <span className="text-yellow-500 mr-2">●</span>}
+				<div className="ml-auto text-right text-xs text-slate-400 flex-shrink-0 whitespace-nowrap flex items-center gap-2">
+					{state.isDirty && <span className="text-yellow-500">●</span>}
+					{lastSavedAt && (
+						<span className="text-slate-500" title={`保存: ${lastSavedAt.toLocaleString()}`}>
+							{formatRelativeTime(lastSavedAt)}
+						</span>
+					)}
 					{toolbarSize === "large" ? (
-						<>
+						<span>
 							オブジェクト数: {state.board.objects.length}
 							{hasSelection && ` | 選択: ${state.selectedIndices.length}`}
-						</>
+						</span>
 					) : (
-						<>
+						<span>
 							{state.board.objects.length}
 							{hasSelection && ` / ${state.selectedIndices.length}`}
-						</>
+						</span>
 					)}
 				</div>
 			</div>

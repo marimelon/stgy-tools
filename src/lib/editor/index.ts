@@ -5,7 +5,8 @@
 export { EditorProvider, useEditor } from "./EditorContext";
 export type { EditorContextValue } from "./EditorContext";
 
-export { editorReducer, createInitialState } from "./reducer";
+export { editorReducer, createInitialState, createInitialStateWithOptions } from "./reducer";
+export type { CreateInitialStateOptions } from "./reducer";
 
 export type {
   EditorState,
@@ -20,6 +21,7 @@ export type {
   DragState,
   MarqueeState,
   EditorBoardProps,
+  ObjectGroup,
 } from "./types";
 
 export { GRID_SIZES } from "./types";

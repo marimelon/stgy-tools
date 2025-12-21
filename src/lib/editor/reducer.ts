@@ -3,149 +3,202 @@
  */
 
 import type { BoardData } from "@/lib/stgy";
-import type { EditorState, EditorAction } from "./types";
+import type {
+	EditorState,
+	EditorAction,
+	ObjectGroup,
+	GridSettings,
+} from "./types";
 import {
-  // 選択系
-  handleSelectObject,
-  handleSelectObjects,
-  handleDeselectAll,
-  // オブジェクト操作
-  handleUpdateObject,
-  handleAddObject,
-  handleDeleteObjects,
-  handleDuplicateObjects,
-  handleMoveObjects,
-  // クリップボード
-  handleCopyObjects,
-  handlePasteObjects,
-  // 履歴・ボード
-  handleSetBoard,
-  handleUpdateBoardMeta,
-  handleCommitHistory,
-  handleUndo,
-  handleRedo,
-  // レイヤー
-  handleMoveLayer,
-  handleReorderLayer,
-  handleReorderGroup,
-  // グループ・グリッド
-  handleGroupObjects,
-  handleUngroup,
-  handleToggleGroupCollapse,
-  handleRemoveFromGroup,
-  handleSetGridSettings,
-  // 整列
-  handleAlignObjects,
+	// 選択系
+	handleSelectObject,
+	handleSelectObjects,
+	handleDeselectAll,
+	// オブジェクト操作
+	handleUpdateObject,
+	handleAddObject,
+	handleDeleteObjects,
+	handleDuplicateObjects,
+	handleMoveObjects,
+	// クリップボード
+	handleCopyObjects,
+	handlePasteObjects,
+	// 履歴・ボード
+	handleSetBoard,
+	handleUpdateBoardMeta,
+	handleCommitHistory,
+	handleUndo,
+	handleRedo,
+	// レイヤー
+	handleMoveLayer,
+	handleReorderLayer,
+	handleReorderGroup,
+	// グループ・グリッド
+	handleGroupObjects,
+	handleUngroup,
+	handleToggleGroupCollapse,
+	handleRemoveFromGroup,
+	handleSetGridSettings,
+	// 整列
+	handleAlignObjects,
 } from "./reducerHandlers";
 
 /**
  * エディターReducer
  */
 export function editorReducer(
-  state: EditorState,
-  action: EditorAction
+	state: EditorState,
+	action: EditorAction,
 ): EditorState {
-  switch (action.type) {
-    case "SET_BOARD":
-      return handleSetBoard(state, { board: action.board });
+	switch (action.type) {
+		case "SET_BOARD":
+			return handleSetBoard(state, { board: action.board });
 
-    case "SELECT_OBJECT":
-      return handleSelectObject(state, { index: action.index, additive: action.additive });
+		case "SELECT_OBJECT":
+			return handleSelectObject(state, {
+				index: action.index,
+				additive: action.additive,
+			});
 
-    case "SELECT_OBJECTS":
-      return handleSelectObjects(state, { indices: action.indices });
+		case "SELECT_OBJECTS":
+			return handleSelectObjects(state, { indices: action.indices });
 
-    case "DESELECT_ALL":
-      return handleDeselectAll(state);
+		case "DESELECT_ALL":
+			return handleDeselectAll(state);
 
-    case "UPDATE_OBJECT":
-      return handleUpdateObject(state, { index: action.index, updates: action.updates });
+		case "UPDATE_OBJECT":
+			return handleUpdateObject(state, {
+				index: action.index,
+				updates: action.updates,
+			});
 
-    case "ADD_OBJECT":
-      return handleAddObject(state, { object: action.object });
+		case "ADD_OBJECT":
+			return handleAddObject(state, { object: action.object });
 
-    case "DELETE_OBJECTS":
-      return handleDeleteObjects(state, { indices: action.indices });
+		case "DELETE_OBJECTS":
+			return handleDeleteObjects(state, { indices: action.indices });
 
-    case "DUPLICATE_OBJECTS":
-      return handleDuplicateObjects(state, { indices: action.indices });
+		case "DUPLICATE_OBJECTS":
+			return handleDuplicateObjects(state, { indices: action.indices });
 
-    case "COPY_OBJECTS":
-      return handleCopyObjects(state);
+		case "COPY_OBJECTS":
+			return handleCopyObjects(state);
 
-    case "PASTE_OBJECTS":
-      return handlePasteObjects(state, { position: action.position });
+		case "PASTE_OBJECTS":
+			return handlePasteObjects(state, { position: action.position });
 
-    case "MOVE_OBJECTS":
-      return handleMoveObjects(state, {
-        indices: action.indices,
-        deltaX: action.deltaX,
-        deltaY: action.deltaY,
-      });
+		case "MOVE_OBJECTS":
+			return handleMoveObjects(state, {
+				indices: action.indices,
+				deltaX: action.deltaX,
+				deltaY: action.deltaY,
+			});
 
-    case "COMMIT_HISTORY":
-      return handleCommitHistory(state, { description: action.description });
+		case "COMMIT_HISTORY":
+			return handleCommitHistory(state, { description: action.description });
 
-    case "UPDATE_BOARD_META":
-      return handleUpdateBoardMeta(state, { updates: action.updates });
+		case "UPDATE_BOARD_META":
+			return handleUpdateBoardMeta(state, { updates: action.updates });
 
-    case "UNDO":
-      return handleUndo(state);
+		case "UNDO":
+			return handleUndo(state);
 
-    case "REDO":
-      return handleRedo(state);
+		case "REDO":
+			return handleRedo(state);
 
-    case "MOVE_LAYER":
-      return handleMoveLayer(state, { index: action.index, direction: action.direction });
+		case "MOVE_LAYER":
+			return handleMoveLayer(state, {
+				index: action.index,
+				direction: action.direction,
+			});
 
-    case "REORDER_LAYER":
-      return handleReorderLayer(state, { fromIndex: action.fromIndex, toIndex: action.toIndex });
+		case "REORDER_LAYER":
+			return handleReorderLayer(state, {
+				fromIndex: action.fromIndex,
+				toIndex: action.toIndex,
+			});
 
-    case "REORDER_GROUP":
-      return handleReorderGroup(state, { groupId: action.groupId, toIndex: action.toIndex });
+		case "REORDER_GROUP":
+			return handleReorderGroup(state, {
+				groupId: action.groupId,
+				toIndex: action.toIndex,
+			});
 
-    case "GROUP_OBJECTS":
-      return handleGroupObjects(state, { indices: action.indices });
+		case "GROUP_OBJECTS":
+			return handleGroupObjects(state, { indices: action.indices });
 
-    case "UNGROUP":
-      return handleUngroup(state, { groupId: action.groupId });
+		case "UNGROUP":
+			return handleUngroup(state, { groupId: action.groupId });
 
-    case "TOGGLE_GROUP_COLLAPSE":
-      return handleToggleGroupCollapse(state, { groupId: action.groupId });
+		case "TOGGLE_GROUP_COLLAPSE":
+			return handleToggleGroupCollapse(state, { groupId: action.groupId });
 
-    case "REMOVE_FROM_GROUP":
-      return handleRemoveFromGroup(state, { objectIndex: action.objectIndex });
+		case "REMOVE_FROM_GROUP":
+			return handleRemoveFromGroup(state, { objectIndex: action.objectIndex });
 
-    case "SET_GRID_SETTINGS":
-      return handleSetGridSettings(state, { settings: action.settings });
+		case "SET_GRID_SETTINGS":
+			return handleSetGridSettings(state, { settings: action.settings });
 
-    case "ALIGN_OBJECTS":
-      return handleAlignObjects(state, { indices: action.indices, alignment: action.alignment });
+		case "ALIGN_OBJECTS":
+			return handleAlignObjects(state, {
+				indices: action.indices,
+				alignment: action.alignment,
+			});
 
-    default:
-      return state;
-  }
+		default:
+			return state;
+	}
 }
 
 /** デフォルトのグリッド設定 */
 const DEFAULT_GRID_SETTINGS = {
-  enabled: false,
-  size: 16,
-  showGrid: false,
+	enabled: false,
+	size: 16,
+	showGrid: false,
 };
+
+/**
+ * 初期状態生成オプション
+ */
+export interface CreateInitialStateOptions {
+	board: BoardData;
+	groups?: ObjectGroup[];
+	gridSettings?: GridSettings;
+}
 
 /**
  * 初期状態を生成
  */
 export function createInitialState(board: BoardData): EditorState {
-  return {
-    board: structuredClone(board),
-    selectedIndices: [],
-    clipboard: null,
-    groups: [],
-    gridSettings: { ...DEFAULT_GRID_SETTINGS },
-    history: [{ board: structuredClone(board), groups: [], description: "初期状態" }],
-    historyIndex: 0,
-    isDirty: false,
-  };
+	return createInitialStateWithOptions({ board });
+}
+
+/**
+ * オプション付きで初期状態を生成
+ */
+export function createInitialStateWithOptions(
+	options: CreateInitialStateOptions,
+): EditorState {
+	const { board, groups = [], gridSettings } = options;
+	const initialGroups = structuredClone(groups);
+	const initialGridSettings = gridSettings
+		? { ...gridSettings }
+		: { ...DEFAULT_GRID_SETTINGS };
+
+	return {
+		board: structuredClone(board),
+		selectedIndices: [],
+		clipboard: null,
+		groups: initialGroups,
+		gridSettings: initialGridSettings,
+		history: [
+			{
+				board: structuredClone(board),
+				groups: initialGroups,
+				description: "初期状態",
+			},
+		],
+		historyIndex: 0,
+		isDirty: false,
+	};
 }
