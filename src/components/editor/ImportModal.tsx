@@ -59,7 +59,7 @@ export function ImportModal({
 							value={importText}
 							onChange={(e) => onImportTextChange(e.target.value)}
 							placeholder="[stgy:a...]"
-							className="h-32 font-mono text-sm resize-none"
+							className="h-32 font-mono text-sm resize-none break-all"
 						/>
 					</div>
 
