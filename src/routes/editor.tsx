@@ -3,7 +3,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { EditorProvider, createEmptyBoard, useKeyboardShortcuts } from "@/lib/editor";
 import {
   EditorBoard,
@@ -81,12 +81,12 @@ function EditorContent() {
       {/* ヘッダー */}
       <header className="flex items-center justify-between px-4 py-2 border-b border-slate-700">
         <h1 className="text-lg font-bold">Strategy Board Editor</h1>
-        <a
-          href="/"
+        <Link
+          to="/"
           className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
         >
           ビューアーに戻る
-        </a>
+        </Link>
       </header>
 
       {/* ツールバー */}

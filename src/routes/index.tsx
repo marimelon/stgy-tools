@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { BoardViewer } from "@/components/board";
 import { decodeStgy, parseBoardData, ObjectNames } from "@/lib/stgy";
@@ -52,7 +52,17 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       <header className="border-b border-slate-700 p-4">
-        <h1 className="text-2xl font-bold">Strategy Board Viewer</h1>
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <h1 className="text-2xl font-bold">Strategy Board Viewer</h1>
+          <nav className="flex gap-4">
+            <Link
+              to="/editor"
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 rounded-lg font-medium transition-colors"
+            >
+              エディタを開く
+            </Link>
+          </nav>
+        </div>
       </header>
 
       <main className="p-4 max-w-6xl mx-auto">
