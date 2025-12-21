@@ -207,6 +207,12 @@ export function useCanvasInteraction({
         }
       }
 
+      // ロックされたオブジェクトはドラッグ不可（選択のみ）
+      const obj = objects[index];
+      if (!obj.flags.unlocked) {
+        return;
+      }
+
       const startPointer = screenToSVG(e, svg);
       const startObjectState = { ...objects[index] };
 
@@ -241,6 +247,13 @@ export function useCanvasInteraction({
       if (!svg) return;
 
       const index = selectedIndices[0];
+
+      // ロックされたオブジェクトは回転不可
+      const obj = objects[index];
+      if (!obj.flags.unlocked) {
+        return;
+      }
+
       const startPointer = screenToSVG(e, svg);
       const startObjectState = { ...objects[index] };
 
@@ -269,6 +282,13 @@ export function useCanvasInteraction({
       if (!svg) return;
 
       const index = selectedIndices[0];
+
+      // ロックされたオブジェクトはリサイズ不可
+      const obj = objects[index];
+      if (!obj.flags.unlocked) {
+        return;
+      }
+
       const startPointer = screenToSVG(e, svg);
       const startObjectState = { ...objects[index] };
 

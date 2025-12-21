@@ -57,10 +57,16 @@ export interface EditorContextValue {
   updateBoardMeta: (updates: { name?: string; backgroundId?: BackgroundId }) => void;
   /** レイヤーを移動 */
   moveLayer: (direction: "front" | "back" | "forward" | "backward") => void;
+  /** レイヤーを任意の位置に移動（ドラッグ&ドロップ用） */
+  reorderLayer: (fromIndex: number, toIndex: number) => void;
+  /** グループ全体を任意の位置に移動 */
+  reorderGroup: (groupId: string, toIndex: number) => void;
   /** 選択オブジェクトをグループ化 */
   groupSelected: () => void;
   /** グループを解除 */
   ungroup: (groupId: string) => void;
+  /** オブジェクトをグループから除外 */
+  removeFromGroup: (objectIndex: number) => void;
   /** グループの折りたたみ切替 */
   toggleGroupCollapse: (groupId: string) => void;
   /** オブジェクトが属するグループを取得 */
@@ -200,6 +206,14 @@ export function EditorProvider({
     [state.selectedIndices]
   );
 
+  const reorderLayer = useCallback((fromIndex: number, toIndex: number) => {
+    dispatch({ type: "REORDER_LAYER", fromIndex, toIndex });
+  }, []);
+
+  const reorderGroup = useCallback((groupId: string, toIndex: number) => {
+    dispatch({ type: "REORDER_GROUP", groupId, toIndex });
+  }, []);
+
   const groupSelected = useCallback(() => {
     if (state.selectedIndices.length < 2) return;
     dispatch({ type: "GROUP_OBJECTS", indices: state.selectedIndices });
@@ -207,6 +221,10 @@ export function EditorProvider({
 
   const ungroup = useCallback((groupId: string) => {
     dispatch({ type: "UNGROUP", groupId });
+  }, []);
+
+  const removeFromGroup = useCallback((objectIndex: number) => {
+    dispatch({ type: "REMOVE_FROM_GROUP", objectIndex });
   }, []);
 
   const toggleGroupCollapse = useCallback((groupId: string) => {
@@ -281,8 +299,11 @@ export function EditorProvider({
       moveObjects,
       updateBoardMeta,
       moveLayer,
+      reorderLayer,
+      reorderGroup,
       groupSelected,
       ungroup,
+      removeFromGroup,
       toggleGroupCollapse,
       getGroupForObject,
       selectGroup,
@@ -313,8 +334,11 @@ export function EditorProvider({
       moveObjects,
       updateBoardMeta,
       moveLayer,
+      reorderLayer,
+      reorderGroup,
       groupSelected,
       ungroup,
+      removeFromGroup,
       toggleGroupCollapse,
       getGroupForObject,
       selectGroup,

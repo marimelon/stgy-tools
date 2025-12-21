@@ -157,7 +157,10 @@ export type EditorAction =
   | { type: "UNGROUP"; groupId: string }
   | { type: "TOGGLE_GROUP_COLLAPSE"; groupId: string }
   | { type: "SET_GRID_SETTINGS"; settings: Partial<GridSettings> }
-  | { type: "ALIGN_OBJECTS"; indices: number[]; alignment: AlignmentType };
+  | { type: "ALIGN_OBJECTS"; indices: number[]; alignment: AlignmentType }
+  | { type: "REORDER_LAYER"; fromIndex: number; toIndex: number }
+  | { type: "REMOVE_FROM_GROUP"; objectIndex: number }
+  | { type: "REORDER_GROUP"; groupId: string; toIndex: number };
 
 /**
  * ボードメタデータ更新用の部分型

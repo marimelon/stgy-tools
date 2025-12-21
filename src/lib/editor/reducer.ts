@@ -26,10 +26,13 @@ import {
   handleRedo,
   // レイヤー
   handleMoveLayer,
+  handleReorderLayer,
+  handleReorderGroup,
   // グループ・グリッド
   handleGroupObjects,
   handleUngroup,
   handleToggleGroupCollapse,
+  handleRemoveFromGroup,
   handleSetGridSettings,
   // 整列
   handleAlignObjects,
@@ -95,6 +98,12 @@ export function editorReducer(
     case "MOVE_LAYER":
       return handleMoveLayer(state, { index: action.index, direction: action.direction });
 
+    case "REORDER_LAYER":
+      return handleReorderLayer(state, { fromIndex: action.fromIndex, toIndex: action.toIndex });
+
+    case "REORDER_GROUP":
+      return handleReorderGroup(state, { groupId: action.groupId, toIndex: action.toIndex });
+
     case "GROUP_OBJECTS":
       return handleGroupObjects(state, { indices: action.indices });
 
@@ -103,6 +112,9 @@ export function editorReducer(
 
     case "TOGGLE_GROUP_COLLAPSE":
       return handleToggleGroupCollapse(state, { groupId: action.groupId });
+
+    case "REMOVE_FROM_GROUP":
+      return handleRemoveFromGroup(state, { objectIndex: action.objectIndex });
 
     case "SET_GRID_SETTINGS":
       return handleSetGridSettings(state, { settings: action.settings });

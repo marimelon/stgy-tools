@@ -62,6 +62,40 @@ export function handleToggleGroupCollapse(
 }
 
 /**
+ * オブジェクトをグループから除外
+ */
+export function handleRemoveFromGroup(
+  state: EditorState,
+  payload: { objectIndex: number }
+): EditorState {
+  const { objectIndex } = payload;
+
+  // オブジェクトが属するグループを探す
+  const group = state.groups.find(g => g.objectIndices.includes(objectIndex));
+  if (!group) return state;
+
+  // グループから除外
+  const newIndices = group.objectIndices.filter(i => i !== objectIndex);
+
+  let newGroups: typeof state.groups;
+  if (newIndices.length < 2) {
+    // 残りが1つ以下ならグループ自体を削除
+    newGroups = state.groups.filter(g => g.id !== group.id);
+  } else {
+    // グループを更新
+    newGroups = state.groups.map(g =>
+      g.id === group.id ? { ...g, objectIndices: newIndices } : g
+    );
+  }
+
+  return {
+    ...state,
+    groups: newGroups,
+    ...pushHistory({ ...state, groups: newGroups }, "グループから除外"),
+  };
+}
+
+/**
  * グリッド設定を更新
  */
 export function handleSetGridSettings(

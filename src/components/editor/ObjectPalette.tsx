@@ -241,6 +241,20 @@ export function ObjectPalette() {
   );
 }
 
+/** フィールドオブジェクトのID一覧 */
+const FIELD_OBJECT_IDS = [
+  ObjectIds.CircleWhiteSolid,
+  ObjectIds.CircleWhiteTile,
+  ObjectIds.CircleGraySolid,
+  ObjectIds.CircleCheck,
+  ObjectIds.CircleGray,
+  ObjectIds.SquareWhiteSolid,
+  ObjectIds.SquareWhiteTile,
+  ObjectIds.SquareGraySolid,
+  ObjectIds.SquareCheck,
+  ObjectIds.SquareGray,
+];
+
 /**
  * パレットアイテムコンポーネント
  */
@@ -255,7 +269,15 @@ function ObjectPaletteItem({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
-  const object = createDefaultObject(objectId, { x: 20, y: 20 });
+  
+  // フィールドオブジェクトかどうかでviewBoxを調整
+  const isFieldObject = FIELD_OBJECT_IDS.includes(objectId);
+  
+  // viewBoxサイズを決定（フィールドオブジェクトは256pxなので広い範囲を表示）
+  const viewBoxSize = isFieldObject ? 280 : 40;
+  const objectPos = viewBoxSize / 2;
+  
+  const object = createDefaultObject(objectId, { x: objectPos, y: objectPos });
   const name = ObjectNames[objectId] ?? `ID: ${objectId}`;
 
   const handleDragStart = (e: React.DragEvent) => {
@@ -307,7 +329,7 @@ function ObjectPaletteItem({
         <svg
           width={40}
           height={40}
-          viewBox="0 0 40 40"
+          viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
           className="bg-slate-800 rounded pointer-events-none"
         >
           <ObjectRenderer

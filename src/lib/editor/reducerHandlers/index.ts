@@ -47,6 +47,8 @@ export {
 // レイヤー
 export {
   handleMoveLayer,
+  handleReorderLayer,
+  handleReorderGroup,
   type LayerDirection,
 } from "./layer";
 
@@ -55,6 +57,7 @@ export {
   handleGroupObjects,
   handleUngroup,
   handleToggleGroupCollapse,
+  handleRemoveFromGroup,
   handleSetGridSettings,
 } from "./group";
 
