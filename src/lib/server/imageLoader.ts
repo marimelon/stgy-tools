@@ -89,20 +89,27 @@ async function preloadImagesCloudflare(objectIds: number[]): Promise<void> {
  * Node.js 用: fs を使用してファイルを読み込む
  */
 async function preloadImagesNode(objectIds: number[]): Promise<void> {
-	// public/icons ディレクトリのパス
-	const iconsDir = join(process.cwd(), "public", "icons");
+	// Nitroビルド（.output/public）と開発環境（public）の両方に対応
+	const possibleDirs = [
+		join(process.cwd(), ".output", "public", "icons"),
+		join(process.cwd(), "public", "icons"),
+	];
 
 	const results = await Promise.all(
 		objectIds.map(async (objectId) => {
-			try {
-				const filePath = join(iconsDir, `${objectId}.png`);
-				const buffer = await readFile(filePath);
-				const base64 = buffer.toString("base64");
-				return { objectId, dataUri: `data:image/png;base64,${base64}` };
-			} catch (error) {
-				console.error(`[imageLoader] Error loading icon ${objectId}:`, error);
-				return null;
+			for (const iconsDir of possibleDirs) {
+				try {
+					const filePath = join(iconsDir, `${objectId}.png`);
+					const buffer = await readFile(filePath);
+					const base64 = buffer.toString("base64");
+					return { objectId, dataUri: `data:image/png;base64,${base64}` };
+				} catch {
+					// このディレクトリでは見つからない、次を試す
+					continue;
+				}
 			}
+			console.error(`[imageLoader] Icon ${objectId} not found in any directory`);
+			return null;
 		}),
 	);
 
@@ -178,18 +185,22 @@ async function loadFontCloudflare(): Promise<Uint8Array | null> {
  * Node.js 用: fs を使用してフォントを読み込む
  */
 async function loadFontNode(): Promise<Uint8Array | null> {
-	try {
-		const fontPath = join(
-			process.cwd(),
-			"public",
-			"fonts",
-			"NotoSansJP-Regular.ttf",
-		);
-		const buffer = await readFile(fontPath);
-		fontCache = new Uint8Array(buffer);
-		return fontCache;
-	} catch (error) {
-		console.error("[imageLoader] Error loading font:", error);
-		return null;
+	// Nitroビルド（.output/public）と開発環境（public）の両方に対応
+	const possiblePaths = [
+		join(process.cwd(), ".output", "public", "fonts", "NotoSansJP-Regular.ttf"),
+		join(process.cwd(), "public", "fonts", "NotoSansJP-Regular.ttf"),
+	];
+
+	for (const fontPath of possiblePaths) {
+		try {
+			const buffer = await readFile(fontPath);
+			fontCache = new Uint8Array(buffer);
+			return fontCache;
+		} catch {
+			// このパスでは見つからない、次を試す
+			continue;
+		}
 	}
+	console.error("[imageLoader] Font not found in any directory");
+	return null;
 }
