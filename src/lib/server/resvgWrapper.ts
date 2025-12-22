@@ -3,13 +3,16 @@
  * Cloudflare Workers と Node.js の両方に対応
  *
  * ビルドターゲットに応じて適切な実装を使用:
- * - cloudflare: @cf-wasm/resvg
- * - node: @resvg/resvg-js
+ * - cloudflare: @cf-wasm/resvg（fontBuffersでフォント渡し）
+ * - node: @resvg/resvg-js（fontFilesでファイルパス指定）
  *
  * 最適化:
  * - モジュールのキャッシュ（動的インポートの回避）
- * - フォントファイルパスの使用（毎回のパースを回避）
+ * - フォントのキャッシュ（毎回のロードを回避）
+ * - Node.js: フォントファイルパスの使用（毎回のパースを回避）
  */
+
+import { loadFont } from "./imageLoader";
 
 export interface ResvgOptions {
 	background?: string;
@@ -48,13 +51,25 @@ export async function renderSvgToPng(
 
 /**
  * Cloudflare Workers 用: @cf-wasm/resvg を使用
+ * フォントはASSETSバインディングから読み込み（imageLoader経由、キャッシュ付き）
  */
 async function renderWithCloudflareResvg(
 	svg: string,
 	options: ResvgOptions,
 ): Promise<Uint8Array> {
 	const { Resvg } = await import("@cf-wasm/resvg");
-	const resvg = new Resvg(svg, options);
+
+	// フォントを読み込む（キャッシュされる）
+	const fontData = await loadFont();
+
+	const resvg = new Resvg(svg, {
+		background: options.background,
+		fitTo: options.fitTo,
+		font: {
+			fontBuffers: fontData ? [fontData] : [],
+			defaultFontFamily: "Noto Sans JP",
+		},
+	});
 	const pngData = resvg.render();
 	return new Uint8Array(pngData.asPng());
 }
