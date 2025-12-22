@@ -146,6 +146,8 @@ export interface EditorState {
   historyIndex: number;
   /** 変更があるかどうか */
   isDirty: boolean;
+  /** インライン編集中のテキストオブジェクトのインデックス（null = 編集なし） */
+  editingTextIndex: number | null;
 }
 
 /**
@@ -179,7 +181,9 @@ export type EditorAction =
   | { type: "REORDER_LAYER"; fromIndex: number; toIndex: number }
   | { type: "REMOVE_FROM_GROUP"; objectIndex: number }
   | { type: "REORDER_GROUP"; groupId: string; toIndex: number }
-  | { type: "UPDATE_OBJECTS_BATCH"; indices: number[]; updates: BatchUpdatePayload };
+  | { type: "UPDATE_OBJECTS_BATCH"; indices: number[]; updates: BatchUpdatePayload }
+  | { type: "START_TEXT_EDIT"; index: number }
+  | { type: "END_TEXT_EDIT"; save: boolean; text?: string };
 
 /**
  * ボードメタデータ更新用の部分型

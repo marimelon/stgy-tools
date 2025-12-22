@@ -52,6 +52,11 @@ export function useKeyboardShortcuts() {
    */
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      // テキスト編集中は無視
+      if (state.editingTextIndex !== null) {
+        return;
+      }
+
       // 入力フィールドにフォーカス中は無視
       const target = e.target as HTMLElement;
       if (
@@ -176,6 +181,7 @@ export function useKeyboardShortcuts() {
       }
     },
     [
+      state.editingTextIndex,
       canUndo,
       canRedo,
       hasSelection,

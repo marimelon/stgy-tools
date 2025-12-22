@@ -42,6 +42,9 @@ import {
 	handleSetGridSettings,
 	// 整列
 	handleAlignObjects,
+	// テキスト編集
+	handleStartTextEdit,
+	handleEndTextEdit,
 } from "./reducerHandlers";
 
 /**
@@ -152,6 +155,15 @@ export function editorReducer(
 				updates: action.updates,
 			});
 
+		case "START_TEXT_EDIT":
+			return handleStartTextEdit(state, { index: action.index });
+
+		case "END_TEXT_EDIT":
+			return handleEndTextEdit(state, {
+				save: action.save,
+				text: action.text,
+			});
+
 		default:
 			return state;
 	}
@@ -207,5 +219,6 @@ export function createInitialStateWithOptions(
 		],
 		historyIndex: 0,
 		isDirty: false,
+		editingTextIndex: null,
 	};
 }

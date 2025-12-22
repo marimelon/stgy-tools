@@ -66,3 +66,9 @@ export {
 export {
   handleAlignObjects,
 } from "./alignment";
+
+// テキスト編集
+export {
+  handleStartTextEdit,
+  handleEndTextEdit,
+} from "./textEdit";

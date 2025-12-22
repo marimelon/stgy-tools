@@ -16,6 +16,7 @@ import { SelectionHandles } from "./SelectionHandles";
 import { LineSelectionHandles } from "./LineSelectionHandles";
 import { GridOverlay, SelectionIndicator } from "./GridOverlay";
 import { ContextMenu, type ContextMenuState } from "./ContextMenu";
+import { InlineTextEditor } from "./InlineTextEditor";
 
 /** キャンバスサイズ */
 const CANVAS_WIDTH = 512;
@@ -46,9 +47,11 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
     selectAll,
     canGroup,
     selectedGroup,
+    startTextEdit,
+    endTextEdit,
   } = useEditor();
 
-  const { board, selectedIndices, gridSettings, clipboard } = state;
+  const { board, selectedIndices, gridSettings, clipboard, editingTextIndex } = state;
   const { backgroundId, objects } = board;
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -64,6 +67,18 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
   const closeContextMenu = useCallback(() => {
     setContextMenu((prev) => ({ ...prev, isOpen: false }));
   }, []);
+
+  // オブジェクトダブルクリック（テキスト編集開始）
+  const handleObjectDoubleClick = useCallback(
+    (index: number, e: React.MouseEvent) => {
+      e.stopPropagation();
+      const obj = objects[index];
+      if (obj?.objectId === ObjectIds.Text && !obj.flags.locked) {
+        startTextEdit(index);
+      }
+    },
+    [objects, startTextEdit]
+  );
 
   // 背景での右クリック
   const handleBackgroundContextMenu = useCallback(
@@ -190,9 +205,13 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
         <g
           key={index}
           onClick={(e) => handleObjectClick(index, e)}
+          onDoubleClick={(e) => handleObjectDoubleClick(index, e)}
           onPointerDown={(e) => handleObjectPointerDown(index, e)}
           onContextMenu={(e) => handleObjectContextMenu(index, e)}
-          style={{ cursor: "move" }}
+          style={{
+            cursor: "move",
+            opacity: editingTextIndex === index ? 0.3 : 1,
+          }}
         >
           <ObjectRenderer
             object={obj}
@@ -221,8 +240,16 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
           );
         })}
 
-      {/* 選択ハンドル (単一選択時のみ) */}
-      {selectedObject && selectedIndices.length === 1 && (() => {
+      {/* インラインテキストエディタ */}
+      {editingTextIndex !== null && objects[editingTextIndex] && (
+        <InlineTextEditor
+          object={objects[editingTextIndex]}
+          onEndEdit={endTextEdit}
+        />
+      )}
+
+      {/* 選択ハンドル (単一選択時のみ、テキスト編集中は非表示) */}
+      {selectedObject && selectedIndices.length === 1 && editingTextIndex === null && (() => {
         const selectedIndex = selectedIndices[0];
         
         // Lineの場合は専用ハンドルを表示

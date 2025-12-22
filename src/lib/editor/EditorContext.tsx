@@ -98,6 +98,10 @@ export interface EditorContextValue {
 	alignObjects: (alignment: AlignmentType) => void;
 	/** 全オブジェクトを選択 */
 	selectAll: () => void;
+	/** テキスト編集を開始 */
+	startTextEdit: (index: number) => void;
+	/** テキスト編集を終了 */
+	endTextEdit: (save: boolean, text?: string) => void;
 
 	// 状態
 	/** Undoが可能か */
@@ -316,6 +320,25 @@ export function EditorProvider({
 		dispatch({ type: "SELECT_OBJECTS", indices: allIndices });
 	}, [state.board.objects]);
 
+	const startTextEdit = useCallback((index: number) => {
+		dispatch({ type: "START_TEXT_EDIT", index });
+	}, []);
+
+	const endTextEdit = useCallback(
+		(save: boolean, text?: string) => {
+			const currentText =
+				state.editingTextIndex !== null
+					? state.board.objects[state.editingTextIndex]?.text
+					: undefined;
+			dispatch({ type: "END_TEXT_EDIT", save, text });
+			// テキストが実際に変更された場合のみ履歴をコミット
+			if (save && text !== undefined && text !== currentText) {
+				dispatch({ type: "COMMIT_HISTORY", description: "テキスト編集" });
+			}
+		},
+		[state.editingTextIndex, state.board.objects],
+	);
+
 	// 計算済み状態
 	const canUndo = state.historyIndex > 0;
 	const canRedo = state.historyIndex < state.history.length - 1;
@@ -369,6 +392,8 @@ export function EditorProvider({
 			setGridSettings,
 			alignObjects,
 			selectAll,
+			startTextEdit,
+			endTextEdit,
 			canUndo,
 			canRedo,
 			selectedObjects,
@@ -406,6 +431,8 @@ export function EditorProvider({
 			setGridSettings,
 			alignObjects,
 			selectAll,
+			startTextEdit,
+			endTextEdit,
 			canUndo,
 			canRedo,
 			selectedObjects,
