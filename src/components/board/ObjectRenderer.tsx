@@ -1728,7 +1728,6 @@ function AoEObject({
 					transform={transform}
 					angle={angle}
 					radius={SIZES.CONE_RADIUS}
-					fill={COLORS.FILL_AOE}
 					offsetX={offsetX}
 					offsetY={offsetY}
 				/>
@@ -1894,21 +1893,22 @@ function AoEObject({
 // 起点は常に12時方向（上）、そこから時計回りに範囲角度分だけ広がる
 // 回転0度、角度90度の場合 → 12時〜3時（0時〜3時）
 // 頂点がオブジェクト座標に配置される
+// 10.png（円形グラデーション画像）を扇形にクリップして表示
 function ConeShape({
 	transform,
 	angle,
 	radius,
-	fill,
 	offsetX,
 	offsetY,
 }: {
 	transform: string;
 	angle: number;
 	radius: number;
-	fill: string;
 	offsetX: number;
 	offsetY: number;
 }) {
+	const clipId = useId();
+
 	// SVGの座標系: 0度=右、90度=下、-90度=上
 	// 起点: 12時方向（-90度、上）
 	// 終点: 起点から時計回りに範囲角度分
@@ -1931,13 +1931,22 @@ function ConeShape({
 	const d = `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
 
 	return (
-		<path
-			d={d}
-			fill={fill}
-			stroke={COLORS.STROKE_AOE}
-			strokeWidth="2"
-			transform={transform}
-		/>
+		<g transform={transform}>
+			<defs>
+				<clipPath id={clipId}>
+					<path d={d} />
+				</clipPath>
+			</defs>
+			{/* 円形グラデーション画像を扇形にクリップ */}
+			<image
+				href="/icons/10.png"
+				x={cx - radius}
+				y={cy - radius}
+				width={radius * 2}
+				height={radius * 2}
+				clipPath={`url(#${clipId})`}
+			/>
+		</g>
 	);
 }
 

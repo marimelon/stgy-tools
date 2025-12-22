@@ -56,5 +56,8 @@ export default defineConfig(async () => ({
 		ssr: {
 			external: ["@resvg/resvg-js"],
 		},
+		optimizeDeps: {
+			exclude: ["@resvg/resvg-js"],
+		},
 	}),
 }));

@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev --port 3000",
-    "dev:node": "BUILD_TARGET=node vite dev --port 3000",
+    "dev": "BUILD_TARGET=node vite dev --port 3000",
+    "dev:cloudflare": "BUILD_TARGET=cloudflare vite dev --port 3000",
     "build": "pnpm build:cloudflare && pnpm build:node",
     "build:cloudflare": "BUILD_TARGET=cloudflare vite build",
     "build:node": "BUILD_TARGET=node vite build",

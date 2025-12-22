@@ -140,6 +140,7 @@ function renderColoredAoE(
 		case ObjectIds.ConeAoE: {
 			// ConeAoE: param1 = 角度（デフォルト90度）
 			// 起点は12時方向（上）、そこから時計回りに範囲角度分広がる
+			// 10.png（円形グラデーション画像）を扇形にクリップして表示
 			const angle = param1 ?? 90;
 			const radius = 256;
 
@@ -181,15 +182,28 @@ function renderColoredAoE(
 			// 時計回り（sweep=1）で描画
 			const d = `M ${cx} ${cy} L ${cx + x1} ${cy + y1} A ${radius} ${radius} 0 ${largeArc} 1 ${cx + x2} ${cy + y2} Z`;
 
+			// 円形グラデーション画像（10.png）をBase64で取得
+			const imageDataUri = loadImageAsDataUri(ObjectIds.ConeAoE);
+			const clipId = `cone-clip-${Math.random().toString(36).slice(2, 9)}`;
+
 			return (
-				<g transform={transform}>
-					<path
-						d={d}
-						fill={fill}
-						stroke={strokeColor}
-						strokeWidth="2"
-						opacity={opacity}
-					/>
+				<g transform={transform} opacity={opacity}>
+					<defs>
+						<clipPath id={clipId}>
+							<path d={d} />
+						</clipPath>
+					</defs>
+					{/* 円形グラデーション画像を扇形にクリップ */}
+					{imageDataUri && (
+						<image
+							href={imageDataUri}
+							x={cx - radius}
+							y={cy - radius}
+							width={radius * 2}
+							height={radius * 2}
+							clipPath={`url(#${clipId})`}
+						/>
+					)}
 				</g>
 			);
 		}
