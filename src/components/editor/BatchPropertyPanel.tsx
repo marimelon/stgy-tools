@@ -6,7 +6,7 @@
 
 import { useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { rgbToHex, hexToRgb } from "@/lib/editor";
+import { rgbToHex, hexToRgb, useDebugMode } from "@/lib/editor";
 import {
   OBJECT_FLIP_FLAGS,
   DEFAULT_FLIP_FLAGS,
@@ -20,6 +20,7 @@ import type { BoardObject } from "@/lib/stgy";
 import type { BatchUpdatePayload } from "@/lib/editor/types";
 import { Badge } from "@/components/ui/badge";
 import { PropertySection, SliderInput, Checkbox, NumberInput } from "./FormInputs";
+import { ColorPalette } from "./ColorPalette";
 import {
   computeBatchPropertyValues,
   haveSameObjectId,
@@ -61,6 +62,7 @@ export function BatchPropertyPanel({
   onCommitHistory,
 }: BatchPropertyPanelProps) {
   const { t } = useTranslation();
+  const { debugMode } = useDebugMode();
 
   // 共通プロパティ値を計算
   const batchValues = useMemo(
@@ -225,20 +227,39 @@ export function BatchPropertyPanel({
         {/* 色 */}
         <PropertySection title={t("batchProperty.color", "色")}>
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="relative rounded-md overflow-hidden border-2 border-border">
-                <input
-                  type="color"
-                  value={displayColor}
-                  onChange={(e) => handleColorChange(e.target.value)}
-                  onBlur={() =>
-                    onCommitHistory(t("batchProperty.colorChanged", "色変更"))
-                  }
-                  className="w-10 h-8 cursor-pointer border-0 bg-transparent"
-                />
+            {/* カラーピッカー（デバッグモード時のみ） */}
+            {debugMode && (
+              <div className="flex items-center gap-3">
+                <div className="relative rounded-md overflow-hidden border-2 border-border">
+                  <input
+                    type="color"
+                    value={displayColor}
+                    onChange={(e) => handleColorChange(e.target.value)}
+                    onBlur={() =>
+                      onCommitHistory(t("batchProperty.colorChanged", "色変更"))
+                    }
+                    className="w-10 h-8 cursor-pointer border-0 bg-transparent"
+                  />
+                </div>
+                {isColorMixed && <MixedIndicator />}
               </div>
-              {isColorMixed && <MixedIndicator />}
-            </div>
+            )}
+            {/* カラーパレット */}
+            <ColorPalette
+              currentColor={
+                isColorMixed
+                  ? undefined
+                  : {
+                      r: batchValues.color.r as number,
+                      g: batchValues.color.g as number,
+                      b: batchValues.color.b as number,
+                    }
+              }
+              onColorSelect={(color) => {
+                onUpdate({ color: { r: color.r, g: color.g, b: color.b } });
+                onCommitHistory(t("batchProperty.colorChanged", "色変更"));
+              }}
+            />
             {/* 透過度 */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">

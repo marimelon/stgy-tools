@@ -8,7 +8,7 @@
 import { Bug, ChevronRight } from "lucide-react";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { ObjectRenderer } from "@/components/board";
-import { createDefaultObject, useEditor } from "@/lib/editor";
+import { createDefaultObject, useDebugMode, useEditor } from "@/lib/editor";
 import { ObjectIds, ObjectNames } from "@/lib/stgy";
 
 /** 非表示オブジェクト（CSVでFalse） - デバッグモード時のみ表示 */
@@ -199,32 +199,14 @@ const OBJECT_CATEGORIES: Record<string, { name: string; ids: number[] }> = {
 };
 
 /**
- * デバッグモードの状態を取得/保存
- */
-function getDebugMode(): boolean {
-	if (typeof window === "undefined") return false;
-	return localStorage.getItem("debugObjectPalette") === "true";
-}
-
-function setDebugMode(enabled: boolean) {
-	if (typeof window === "undefined") return;
-	localStorage.setItem("debugObjectPalette", enabled ? "true" : "false");
-}
-
-/**
  * オブジェクトパレットコンポーネント
  */
 export function ObjectPalette() {
 	const { addObject } = useEditor();
+	const { debugMode, toggleDebugMode } = useDebugMode();
 	const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
 		new Set(["roles", "attacks"]),
 	);
-	const [debugMode, setDebugModeState] = useState(false);
-
-	// 初期化時にlocalStorageからデバッグモードを読み込み
-	useEffect(() => {
-		setDebugModeState(getDebugMode());
-	}, []);
 
 	const toggleCategory = (category: string) => {
 		setExpandedCategories((prev) => {
@@ -236,12 +218,6 @@ export function ObjectPalette() {
 			}
 			return next;
 		});
-	};
-
-	const toggleDebugMode = () => {
-		const newValue = !debugMode;
-		setDebugModeState(newValue);
-		setDebugMode(newValue);
 	};
 
 	const handleAddObject = (objectId: number) => {

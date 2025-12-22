@@ -63,4 +63,6 @@ export type {
   UseCanvasInteractionReturn,
 } from "./useCanvasInteraction";
 
-export { rgbToHex, hexToRgb } from "./colorUtils";
+export { rgbToHex, hexToRgb, COLOR_PALETTE, COLOR_PALETTE_ROWS, COLOR_PALETTE_COLS } from "./colorUtils";
+
+export { useDebugMode, getDebugMode, setDebugMode } from "./useDebugMode";

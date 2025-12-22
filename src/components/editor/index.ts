@@ -42,5 +42,9 @@ export type {
   CheckboxProps,
 } from "./FormInputs";
 
+// カラーパレット
+export { ColorPalette } from "./ColorPalette";
+export type { ColorPaletteProps } from "./ColorPalette";
+
 // 型は @/lib/editor から再エクスポート（後方互換性のため）
 export type { ResizeHandle, HandleType } from "@/lib/editor";

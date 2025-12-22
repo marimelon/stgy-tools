@@ -4,7 +4,7 @@
  * shadcn/ui ベースの選択オブジェクトプロパティ編集
  */
 
-import { rgbToHex, hexToRgb } from "@/lib/editor";
+import { rgbToHex, hexToRgb, useDebugMode } from "@/lib/editor";
 import {
   ObjectNames,
   ObjectIds,
@@ -19,6 +19,7 @@ import type { BoardObject } from "@/lib/stgy";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PropertySection, NumberInput, SliderInput, Checkbox } from "./FormInputs";
+import { ColorPalette } from "./ColorPalette";
 
 /**
  * オブジェクトプロパティパネルのProps
@@ -40,6 +41,8 @@ export function ObjectPropertyPanel({
   onUpdate,
   onCommitHistory,
 }: ObjectPropertyPanelProps) {
+  const { debugMode } = useDebugMode();
+
   const handleChange = (updates: Partial<BoardObject>) => {
     onUpdate(updates);
   };
@@ -198,27 +201,38 @@ export function ObjectPropertyPanel({
         {/* 色 */}
         <PropertySection title="色">
           <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="relative rounded-md overflow-hidden border-2 border-border">
-                <input
-                  type="color"
-                  value={rgbToHex(
-                    object.color.r,
-                    object.color.g,
-                    object.color.b
-                  )}
-                  onChange={(e) => {
-                    const { r, g, b } = hexToRgb(e.target.value);
-                    handleChange({ color: { ...object.color, r, g, b } });
-                  }}
-                  onBlur={() => onCommitHistory("色変更")}
-                  className="w-10 h-8 cursor-pointer border-0 bg-transparent"
-                />
+            {/* カラーピッカー（デバッグモード時のみ） */}
+            {debugMode && (
+              <div className="flex items-center gap-3">
+                <div className="relative rounded-md overflow-hidden border-2 border-border">
+                  <input
+                    type="color"
+                    value={rgbToHex(
+                      object.color.r,
+                      object.color.g,
+                      object.color.b
+                    )}
+                    onChange={(e) => {
+                      const { r, g, b } = hexToRgb(e.target.value);
+                      handleChange({ color: { ...object.color, r, g, b } });
+                    }}
+                    onBlur={() => onCommitHistory("色変更")}
+                    className="w-10 h-8 cursor-pointer border-0 bg-transparent"
+                  />
+                </div>
+                <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground font-mono">
+                  RGB({object.color.r}, {object.color.g}, {object.color.b})
+                </span>
               </div>
-              <span className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground font-mono">
-                RGB({object.color.r}, {object.color.g}, {object.color.b})
-              </span>
-            </div>
+            )}
+            {/* カラーパレット */}
+            <ColorPalette
+              currentColor={object.color}
+              onColorSelect={(color) => {
+                handleChange({ color: { ...object.color, ...color } });
+                onCommitHistory("色変更");
+              }}
+            />
             <SliderInput
               label="透過度"
               value={object.color.opacity}
