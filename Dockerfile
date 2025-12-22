@@ -15,8 +15,8 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build application
-RUN pnpm build
+# Build application (Node.js only for Docker)
+RUN pnpm build:node
 
 # Production stage
 FROM node:22-alpine AS runner

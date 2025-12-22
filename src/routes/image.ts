@@ -8,8 +8,9 @@
  * GET /image?code=[stgy:a...]&title=1     (ボード名を表示)
  */
 
-import { Resvg } from "@resvg/resvg-js";
 import { createFileRoute } from "@tanstack/react-router";
+import { loadFont } from "@/lib/server/imageLoader";
+import { renderSvgToPng } from "@/lib/server/resvgWrapper";
 import { renderBoardToSVG } from "@/lib/server/svgRenderer";
 import { decodeStgy } from "@/lib/stgy/decoder";
 import { parseBoardData } from "@/lib/stgy/parser";
@@ -45,14 +46,24 @@ export const Route = createFileRoute("/image")({
 				// 出力幅を計算
 				let outputWidth = DEFAULT_WIDTH;
 				if (scaleParam) {
-					const scale = Math.min(Math.max(Number.parseFloat(scaleParam) || 1, 1), MAX_SCALE);
+					const scale = Math.min(
+						Math.max(Number.parseFloat(scaleParam) || 1, 1),
+						MAX_SCALE,
+					);
 					outputWidth = Math.round(DEFAULT_WIDTH * scale);
 				} else if (widthParam) {
-					outputWidth = Math.min(Math.max(Number.parseInt(widthParam, 10) || DEFAULT_WIDTH, MIN_WIDTH), MAX_WIDTH);
+					outputWidth = Math.min(
+						Math.max(
+							Number.parseInt(widthParam, 10) || DEFAULT_WIDTH,
+							MIN_WIDTH,
+						),
+						MAX_WIDTH,
+					);
 				}
 
 				// ボード名表示オプション（"1", "true", "yes" などで有効）
-				const showTitle = titleParam === "1" || titleParam === "true" || titleParam === "yes";
+				const showTitle =
+					titleParam === "1" || titleParam === "true" || titleParam === "yes";
 
 				try {
 					// 1. stgy コードをデコード
@@ -62,7 +73,9 @@ export const Route = createFileRoute("/image")({
 					const boardData = parseBoardData(binary);
 
 					// 3. SVG を生成
-					const svg = renderBoardToSVG(boardData, { showTitle });
+					const svg = await renderBoardToSVG(boardData, {
+						showTitle,
+					});
 
 					// 4. フォーマットに応じて返す
 					if (format === "svg") {
@@ -74,19 +87,23 @@ export const Route = createFileRoute("/image")({
 						});
 					}
 
-					// PNG変換（指定された幅で出力）
-					const resvg = new Resvg(svg, {
+					// フォントを読み込む
+					const fontData = await loadFont();
+
+					// PNG変換（環境に応じて適切な resvg を使用）
+					const pngBuffer = await renderSvgToPng(svg, {
 						background: "#1a1a1a",
 						fitTo: {
 							mode: "width",
 							value: outputWidth,
 						},
+						font: {
+							fontBuffers: fontData ? [fontData] : [],
+							defaultFontFamily: "Noto Sans JP",
+						},
 					});
 
-					const pngData = resvg.render();
-					const pngBuffer = pngData.asPng();
-
-					return new Response(new Uint8Array(pngBuffer), {
+					return new Response(pngBuffer, {
 						headers: {
 							"Content-Type": "image/png",
 							"Cache-Control": "public, max-age=86400",
@@ -107,4 +124,3 @@ export const Route = createFileRoute("/image")({
 		},
 	},
 });
-

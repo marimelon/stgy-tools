@@ -13,7 +13,7 @@ import {
 } from "@/lib/board";
 import type { BoardData, BoardObject, Color } from "@/lib/stgy/types";
 import { ObjectIds } from "@/lib/stgy/types";
-import { loadImageAsDataUri } from "./imageLoader";
+import { loadImageAsDataUri, preloadImagesAsync } from "./imageLoader";
 
 /**
  * SVGレンダリングオプション
@@ -443,12 +443,27 @@ function BorderFrame({ width, height }: { width: number; height: number }) {
 /**
  * BoardDataをSVG文字列にレンダリング
  */
-export function renderBoardToSVG(
+export async function renderBoardToSVG(
 	boardData: BoardData,
 	options: RenderOptions = {},
-): string {
+): Promise<string> {
 	const { backgroundId, objects, name } = boardData;
 	const { showTitle = false } = options;
+
+	// 画像をプリロード（Cloudflare Workers の ASSETS バインディングを使用）
+	const objectIds = objects
+		.filter(
+			(obj) =>
+				obj.flags.visible &&
+				obj.objectId !== ObjectIds.Text &&
+				obj.objectId !== ObjectIds.Group &&
+				obj.objectId !== ObjectIds.Line,
+		)
+		.map((obj) => obj.objectId);
+	const uniqueObjectIds = [...new Set(objectIds)];
+	console.log("[svgRenderer] Rendering board");
+	console.log("[svgRenderer] Objects to load:", uniqueObjectIds);
+	await preloadImagesAsync(uniqueObjectIds);
 
 	// タイトル表示時は高さを拡張
 	const totalHeight = showTitle

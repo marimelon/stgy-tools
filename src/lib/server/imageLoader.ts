@@ -1,83 +1,195 @@
 /**
- * サーバーサイドで画像をBase64データURIに変換するユーティリティ
+ * サーバーサイドで画像をBase64データURIとして取得
+ * Cloudflare Workers と Node.js の両方に対応
  */
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { getGlobalEnv } from "./cloudflareContext";
+import { isCloudflareWorkers } from "./runtime";
 
-import { readFileSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+// Cloudflare Workers の ASSETS binding の型定義
+export interface AssetsBinding {
+	fetch(request: Request | string): Promise<Response>;
+}
 
 // 画像キャッシュ（メモリ効率のため）
-const imageCache = new Map<string, string>();
+const imageCache = new Map<number, string>();
+
+// フォントキャッシュ
+let fontCache: Uint8Array | null = null;
 
 /**
- * 画像ディレクトリのパスを取得（開発環境とビルド後の両方に対応）
- */
-function getIconsDir(): string {
-  // 開発環境: プロジェクトルート/public/icons
-  const devPath = join(process.cwd(), "public", "icons");
-  if (existsSync(devPath)) {
-    return devPath;
-  }
-
-  // ビルド後: .output/public/icons または dist/client/icons
-  const outputPaths = [
-    join(process.cwd(), ".output", "public", "icons"),
-    join(process.cwd(), "dist", "client", "icons"),
-    // import.meta.urlベースのパス
-    join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "public", "icons"),
-  ];
-
-  for (const path of outputPaths) {
-    if (existsSync(path)) {
-      return path;
-    }
-  }
-
-  // フォールバック
-  return devPath;
-}
-
-// キャッシュされたアイコンディレクトリ
-let cachedIconsDir: string | null = null;
-
-function getIconPath(objectId: number): string {
-  if (!cachedIconsDir) {
-    cachedIconsDir = getIconsDir();
-  }
-  return join(cachedIconsDir, `${objectId}.png`);
-}
-
-/**
- * 画像ファイルをBase64データURIとして読み込む
+ * 画像ファイルをBase64データURIとして取得（キャッシュから）
  */
 export function loadImageAsDataUri(objectId: number): string | null {
-  const cacheKey = `icon-${objectId}`;
-
-  const cached = imageCache.get(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
-  try {
-    const imagePath = getIconPath(objectId);
-    const buffer = readFileSync(imagePath);
-    const base64 = buffer.toString("base64");
-    const dataUri = `data:image/png;base64,${base64}`;
-
-    imageCache.set(cacheKey, dataUri);
-    return dataUri;
-  } catch (error) {
-    console.error(`Failed to load icon ${objectId}:`, error);
-    return null;
-  }
+	return imageCache.get(objectId) ?? null;
 }
 
 /**
- * 全てのアイコン画像をプリロード
+ * 複数の画像を一括でプリロード
  */
-export function preloadAllIcons(objectIds: number[]): void {
-  for (const id of objectIds) {
-    loadImageAsDataUri(id);
-  }
+export async function preloadImagesAsync(
+	objectIds: number[],
+	_assets?: AssetsBinding | undefined,
+): Promise<void> {
+	const uncachedIds = objectIds.filter((id) => !imageCache.has(id));
+	if (uncachedIds.length === 0) return;
+
+	if (isCloudflareWorkers()) {
+		await preloadImagesCloudflare(uncachedIds);
+	} else {
+		await preloadImagesNode(uncachedIds);
+	}
 }
 
+/**
+ * Cloudflare Workers 用: env.ASSETS.fetch() を使用
+ */
+async function preloadImagesCloudflare(objectIds: number[]): Promise<void> {
+	const env = getGlobalEnv();
+	const assets = env?.ASSETS;
+
+	if (!assets) {
+		console.error("[imageLoader] ASSETS binding is not available");
+		return;
+	}
+
+	const results = await Promise.all(
+		objectIds.map(async (objectId) => {
+			try {
+				const assetUrl = new URL(
+					`/icons/${objectId}.png`,
+					"https://assets.local",
+				);
+				const response = await assets.fetch(new Request(assetUrl));
+				if (!response.ok) {
+					console.error(
+						`[imageLoader] Failed to fetch icon ${objectId}: ${response.status}`,
+					);
+					return null;
+				}
+				const arrayBuffer = await response.arrayBuffer();
+				const base64 = arrayBufferToBase64(arrayBuffer);
+				return { objectId, dataUri: `data:image/png;base64,${base64}` };
+			} catch (error) {
+				console.error(`[imageLoader] Error loading icon ${objectId}:`, error);
+				return null;
+			}
+		}),
+	);
+
+	for (const result of results) {
+		if (result) {
+			imageCache.set(result.objectId, result.dataUri);
+		}
+	}
+}
+
+/**
+ * Node.js 用: fs を使用してファイルを読み込む
+ */
+async function preloadImagesNode(objectIds: number[]): Promise<void> {
+	// public/icons ディレクトリのパス
+	const iconsDir = join(process.cwd(), "public", "icons");
+
+	const results = await Promise.all(
+		objectIds.map(async (objectId) => {
+			try {
+				const filePath = join(iconsDir, `${objectId}.png`);
+				const buffer = await readFile(filePath);
+				const base64 = buffer.toString("base64");
+				return { objectId, dataUri: `data:image/png;base64,${base64}` };
+			} catch (error) {
+				console.error(`[imageLoader] Error loading icon ${objectId}:`, error);
+				return null;
+			}
+		}),
+	);
+
+	for (const result of results) {
+		if (result) {
+			imageCache.set(result.objectId, result.dataUri);
+		}
+	}
+}
+
+/**
+ * ArrayBuffer を Base64 文字列に変換
+ */
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+	const bytes = new Uint8Array(buffer);
+	let binary = "";
+	for (let i = 0; i < bytes.byteLength; i++) {
+		binary += String.fromCharCode(bytes[i]);
+	}
+	return btoa(binary);
+}
+
+/**
+ * フォントファイルを読み込む（キャッシュ付き）
+ */
+export async function loadFont(): Promise<Uint8Array | null> {
+	if (fontCache) {
+		return fontCache;
+	}
+
+	if (isCloudflareWorkers()) {
+		return loadFontCloudflare();
+	}
+	return loadFontNode();
+}
+
+/**
+ * Cloudflare Workers 用: env.ASSETS.fetch() を使用
+ */
+async function loadFontCloudflare(): Promise<Uint8Array | null> {
+	const env = getGlobalEnv();
+	const assets = env?.ASSETS;
+
+	if (!assets) {
+		console.error(
+			"[imageLoader] ASSETS binding is not available for font loading",
+		);
+		return null;
+	}
+
+	try {
+		const assetUrl = new URL(
+			"/fonts/NotoSansJP-Regular.ttf",
+			"https://assets.local",
+		);
+		const response = await assets.fetch(new Request(assetUrl));
+
+		if (!response.ok) {
+			console.error(`[imageLoader] Failed to load font: ${response.status}`);
+			return null;
+		}
+
+		const arrayBuffer = await response.arrayBuffer();
+		fontCache = new Uint8Array(arrayBuffer);
+		return fontCache;
+	} catch (error) {
+		console.error("[imageLoader] Error loading font:", error);
+		return null;
+	}
+}
+
+/**
+ * Node.js 用: fs を使用してフォントを読み込む
+ */
+async function loadFontNode(): Promise<Uint8Array | null> {
+	try {
+		const fontPath = join(
+			process.cwd(),
+			"public",
+			"fonts",
+			"NotoSansJP-Regular.ttf",
+		);
+		const buffer = await readFile(fontPath);
+		fontCache = new Uint8Array(buffer);
+		return fontCache;
+	} catch (error) {
+		console.error("[imageLoader] Error loading font:", error);
+		return null;
+	}
+}
