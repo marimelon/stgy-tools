@@ -475,8 +475,6 @@ export async function renderBoardToSVG(
 		)
 		.map((obj) => obj.objectId);
 	const uniqueObjectIds = [...new Set(objectIds)];
-	console.log("[svgRenderer] Rendering board");
-	console.log("[svgRenderer] Objects to load:", uniqueObjectIds);
 	await preloadImagesAsync(uniqueObjectIds);
 
 	// タイトル表示時は高さを拡張

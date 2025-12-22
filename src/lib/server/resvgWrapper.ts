@@ -76,32 +76,36 @@ async function renderWithCloudflareResvg(
 
 /**
  * Node.js用: フォントファイルパスを取得（初回のみファイル存在確認）
+ * Docker環境ではフルフォントを使用（全日本語文字に対応）
  */
 async function getFontPath(): Promise<string | null> {
 	if (cachedFontPath !== null) {
-		return cachedFontPath;
+		return cachedFontPath || null;
 	}
 
 	const { join } = await import("node:path");
 	const { access } = await import("node:fs/promises");
 
-	const possiblePaths = [
-		join(process.cwd(), ".output", "public", "fonts", "NotoSansJP-Regular.ttf"),
-		join(process.cwd(), "public", "fonts", "NotoSansJP-Regular.ttf"),
+	// Node.js/Docker環境: フル版を優先（CPU制限がないため全文字対応）
+	const fontFiles = ["NotoSansJP-Regular.ttf", "NotoSansJP-Subset.ttf"];
+	const baseDirs = [
+		join(process.cwd(), ".output", "public", "fonts"),
+		join(process.cwd(), "public", "fonts"),
 	];
 
-	for (const fontPath of possiblePaths) {
-		try {
-			await access(fontPath);
-			cachedFontPath = fontPath;
-			console.log("[resvgWrapper] Font path cached:", fontPath);
-			return cachedFontPath;
-		} catch {
-			continue;
+	for (const fontFile of fontFiles) {
+		for (const baseDir of baseDirs) {
+			try {
+				const fontPath = join(baseDir, fontFile);
+				await access(fontPath);
+				cachedFontPath = fontPath;
+				return cachedFontPath;
+			} catch {
+				continue;
+			}
 		}
 	}
 
-	console.error("[resvgWrapper] Font file not found");
 	cachedFontPath = ""; // 空文字で「見つからなかった」をキャッシュ
 	return null;
 }
@@ -121,7 +125,6 @@ async function renderWithNodeResvg(
 		// @ts-expect-error 動的インポート - Cloudflare ビルド時は外部化されているため解決されない
 		const module = await import("@resvg/resvg-js");
 		cachedNodeResvg = module.Resvg;
-		console.log("[resvgWrapper] Resvg module cached");
 	}
 
 	// フォントパスを取得（キャッシュされる）

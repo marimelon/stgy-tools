@@ -148,59 +148,64 @@ export async function loadFont(): Promise<Uint8Array | null> {
 
 /**
  * Cloudflare Workers 用: env.ASSETS.fetch() を使用
+ * サブセット化されたフォント（190KB）を優先的に使用
  */
 async function loadFontCloudflare(): Promise<Uint8Array | null> {
 	const env = getGlobalEnv();
 	const assets = env?.ASSETS;
 
 	if (!assets) {
-		console.error(
-			"[imageLoader] ASSETS binding is not available for font loading",
-		);
 		return null;
 	}
 
-	try {
-		const assetUrl = new URL(
-			"/fonts/NotoSansJP-Regular.ttf",
-			"https://assets.local",
-		);
-		const response = await assets.fetch(new Request(assetUrl));
+	// サブセット版を優先、なければフル版にフォールバック
+	const fontPaths = [
+		"/fonts/NotoSansJP-Subset.ttf",
+		"/fonts/NotoSansJP-Regular.ttf",
+	];
 
-		if (!response.ok) {
-			console.error(`[imageLoader] Failed to load font: ${response.status}`);
-			return null;
+	for (const fontPath of fontPaths) {
+		try {
+			const assetUrl = new URL(fontPath, "https://assets.local");
+			const response = await assets.fetch(new Request(assetUrl));
+
+			if (response.ok) {
+				const arrayBuffer = await response.arrayBuffer();
+				fontCache = new Uint8Array(arrayBuffer);
+				return fontCache;
+			}
+		} catch {
+			continue;
 		}
-
-		const arrayBuffer = await response.arrayBuffer();
-		fontCache = new Uint8Array(arrayBuffer);
-		return fontCache;
-	} catch (error) {
-		console.error("[imageLoader] Error loading font:", error);
-		return null;
 	}
+
+	return null;
 }
 
 /**
  * Node.js 用: fs を使用してフォントを読み込む
+ * サブセット化されたフォント（190KB）を優先的に使用
  */
 async function loadFontNode(): Promise<Uint8Array | null> {
-	// Nitroビルド（.output/public）と開発環境（public）の両方に対応
-	const possiblePaths = [
-		join(process.cwd(), ".output", "public", "fonts", "NotoSansJP-Regular.ttf"),
-		join(process.cwd(), "public", "fonts", "NotoSansJP-Regular.ttf"),
+	// サブセット版を優先、なければフル版にフォールバック
+	const fontFiles = ["NotoSansJP-Subset.ttf", "NotoSansJP-Regular.ttf"];
+	const baseDirs = [
+		join(process.cwd(), ".output", "public", "fonts"),
+		join(process.cwd(), "public", "fonts"),
 	];
 
-	for (const fontPath of possiblePaths) {
-		try {
-			const buffer = await readFile(fontPath);
-			fontCache = new Uint8Array(buffer);
-			return fontCache;
-		} catch {
-			// このパスでは見つからない、次を試す
-			continue;
+	for (const fontFile of fontFiles) {
+		for (const baseDir of baseDirs) {
+			try {
+				const fontPath = join(baseDir, fontFile);
+				const buffer = await readFile(fontPath);
+				fontCache = new Uint8Array(buffer);
+				return fontCache;
+			} catch {
+				continue;
+			}
 		}
 	}
-	console.error("[imageLoader] Font not found in any directory");
+
 	return null;
 }
