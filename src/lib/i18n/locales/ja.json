@@ -44,6 +44,31 @@
 		"label": "言語",
 		"ja": "日本語",
 		"en": "English"
+	},
+	"batchProperty": {
+		"title": "一括編集",
+		"selection": "選択",
+		"objectCount": "{{count}}個のオブジェクト",
+		"mixed": "複数の値",
+		"transform": "変形",
+		"rotation": "回転",
+		"size": "サイズ",
+		"color": "色",
+		"opacity": "透過度",
+		"state": "状態",
+		"visible": "表示",
+		"flipHorizontal": "左右反転",
+		"flipVertical": "上下反転",
+		"locked": "ロック",
+		"specificParams": "固有パラメータ",
+		"changed": "変更",
+		"rotationChanged": "回転変更",
+		"sizeChanged": "サイズ変更",
+		"colorChanged": "色変更",
+		"opacityChanged": "透過度変更",
+		"visibilityChanged": "表示状態変更",
+		"flipChanged": "反転変更",
+		"lockChanged": "ロック変更"
 	}
 }
 

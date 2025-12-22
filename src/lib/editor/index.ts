@@ -22,9 +22,19 @@ export type {
   MarqueeState,
   EditorBoardProps,
   ObjectGroup,
+  BatchUpdatePayload,
 } from "./types";
 
 export { GRID_SIZES } from "./types";
+
+export {
+  MIXED_VALUE,
+  isMixed,
+  computeBatchPropertyValues,
+  haveSameObjectId,
+  getCommonFlipFlags,
+} from "./batchUtils";
+export type { MixedValue, BatchPropertyValues } from "./batchUtils";
 
 export {
   createEmptyBoard,

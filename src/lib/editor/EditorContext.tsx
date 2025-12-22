@@ -22,6 +22,7 @@ import type {
 	GridSettings,
 	AlignmentType,
 	ObjectGroup,
+	BatchUpdatePayload,
 } from "./types";
 import { editorReducer, createInitialStateWithOptions } from "./reducer";
 import { createDefaultObject } from "./factory";
@@ -46,6 +47,8 @@ export interface EditorContextValue {
 	deselectAll: () => void;
 	/** オブジェクトを更新 */
 	updateObject: (index: number, updates: Partial<BoardObject>) => void;
+	/** 選択中のオブジェクトを一括更新 */
+	updateObjectsBatch: (updates: BatchUpdatePayload) => void;
 	/** オブジェクトを追加 */
 	addObject: (objectId: number, position?: Position) => void;
 	/** 選択オブジェクトを削除 */
@@ -177,6 +180,18 @@ export function EditorProvider({
 			dispatch({ type: "UPDATE_OBJECT", index, updates });
 		},
 		[],
+	);
+
+	const updateObjectsBatch = useCallback(
+		(updates: BatchUpdatePayload) => {
+			if (state.selectedIndices.length === 0) return;
+			dispatch({
+				type: "UPDATE_OBJECTS_BATCH",
+				indices: state.selectedIndices,
+				updates,
+			});
+		},
+		[state.selectedIndices],
 	);
 
 	const addObject = useCallback((objectId: number, position?: Position) => {
@@ -331,6 +346,7 @@ export function EditorProvider({
 			selectObjects,
 			deselectAll,
 			updateObject,
+			updateObjectsBatch,
 			addObject,
 			deleteSelected,
 			duplicateSelected,
@@ -367,6 +383,7 @@ export function EditorProvider({
 			selectObjects,
 			deselectAll,
 			updateObject,
+			updateObjectsBatch,
 			addObject,
 			deleteSelected,
 			duplicateSelected,

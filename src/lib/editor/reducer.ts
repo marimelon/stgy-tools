@@ -20,6 +20,7 @@ import {
 	handleDeleteObjects,
 	handleDuplicateObjects,
 	handleMoveObjects,
+	handleUpdateObjectsBatch,
 	// クリップボード
 	handleCopyObjects,
 	handlePasteObjects,
@@ -143,6 +144,12 @@ export function editorReducer(
 			return handleAlignObjects(state, {
 				indices: action.indices,
 				alignment: action.alignment,
+			});
+
+		case "UPDATE_OBJECTS_BATCH":
+			return handleUpdateObjectsBatch(state, {
+				indices: action.indices,
+				updates: action.updates,
 			});
 
 		default:

@@ -27,6 +27,7 @@ export {
   handleDeleteObjects,
   handleDuplicateObjects,
   handleMoveObjects,
+  handleUpdateObjectsBatch,
 } from "./object";
 
 // クリップボード

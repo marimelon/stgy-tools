@@ -4,7 +4,7 @@
 
 import { type BoardObject, ObjectIds } from "@/lib/stgy";
 import { duplicateObject } from "../factory";
-import type { EditorState } from "../types";
+import type { EditorState, BatchUpdatePayload } from "../types";
 import {
   cloneBoard,
   updateObjectInBoard,
@@ -140,6 +140,54 @@ export function handleMoveObjects(
         });
       }
     }
+  }
+
+  return {
+    ...state,
+    board: newBoard,
+    isDirty: true,
+  };
+}
+
+/**
+ * 複数オブジェクトを一括更新
+ *
+ * 効率のため単一のボードクローンで全オブジェクトを更新
+ */
+export function handleUpdateObjectsBatch(
+  state: EditorState,
+  payload: { indices: number[]; updates: BatchUpdatePayload }
+): EditorState {
+  const { indices, updates } = payload;
+  if (indices.length === 0 || Object.keys(updates).length === 0) {
+    return state;
+  }
+
+  // 単一クローンで効率的にバッチ更新
+  const newBoard = cloneBoard(state.board);
+
+  for (const index of indices) {
+    if (index < 0 || index >= newBoard.objects.length) continue;
+
+    const obj = newBoard.objects[index];
+
+    // 更新を適用（ネストされたオブジェクトは適切にマージ）
+    newBoard.objects[index] = {
+      ...obj,
+      ...(updates.rotation !== undefined && { rotation: updates.rotation }),
+      ...(updates.size !== undefined && { size: updates.size }),
+      ...(updates.param1 !== undefined && { param1: updates.param1 }),
+      ...(updates.param2 !== undefined && { param2: updates.param2 }),
+      ...(updates.param3 !== undefined && { param3: updates.param3 }),
+      flags: {
+        ...obj.flags,
+        ...(updates.flags ?? {}),
+      },
+      color: {
+        ...obj.color,
+        ...(updates.color ?? {}),
+      },
+    };
   }
 
   return {

@@ -44,6 +44,31 @@
 		"label": "Language",
 		"ja": "日本語",
 		"en": "English"
+	},
+	"batchProperty": {
+		"title": "Batch Edit",
+		"selection": "Selection",
+		"objectCount": "{{count}} objects",
+		"mixed": "Mixed",
+		"transform": "Transform",
+		"rotation": "Rotation",
+		"size": "Size",
+		"color": "Color",
+		"opacity": "Opacity",
+		"state": "State",
+		"visible": "Visible",
+		"flipHorizontal": "Flip Horizontal",
+		"flipVertical": "Flip Vertical",
+		"locked": "Locked",
+		"specificParams": "Parameters",
+		"changed": " changed",
+		"rotationChanged": "Rotation changed",
+		"sizeChanged": "Size changed",
+		"colorChanged": "Color changed",
+		"opacityChanged": "Opacity changed",
+		"visibilityChanged": "Visibility changed",
+		"flipChanged": "Flip changed",
+		"lockChanged": "Lock changed"
 	}
 }
 

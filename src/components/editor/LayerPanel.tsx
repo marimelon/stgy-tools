@@ -9,7 +9,7 @@
 import { useCallback, useMemo, useState, type DragEvent } from "react";
 import { useEditor } from "@/lib/editor";
 import { ObjectNames } from "@/lib/stgy";
-import type { ObjectGroup } from "@/lib/editor/types";
+import type { ObjectGroup, BatchUpdatePayload } from "@/lib/editor/types";
 import { GripVertical, Eye, EyeOff, ChevronRight, ChevronDown, X } from "lucide-react";
 
 /** ドロップターゲット情報 */
@@ -37,6 +37,7 @@ interface LayerItem {
 export function LayerPanel() {
   const {
     state,
+    dispatch,
     selectObject,
     updateObject,
     commitHistory,
@@ -118,6 +119,42 @@ export function LayerPanel() {
       commitHistory("表示状態変更");
     },
     [objects, updateObject, commitHistory]
+  );
+
+  // グループ内の全オブジェクトの表示状態をトグル
+  const handleToggleGroupVisibility = useCallback(
+    (group: ObjectGroup) => {
+      // グループ内の全オブジェクトが表示中かどうかを判定
+      const allVisible = group.objectIndices.every(
+        (i) => objects[i]?.flags.visible
+      );
+      // 全て表示中なら非表示に、そうでなければ表示に
+      const newVisible = !allVisible;
+
+      dispatch({
+        type: "UPDATE_OBJECTS_BATCH",
+        indices: group.objectIndices,
+        updates: { flags: { visible: newVisible } },
+      });
+      commitHistory("グループ表示状態変更");
+    },
+    [objects, dispatch, commitHistory]
+  );
+
+  // グループ内のオブジェクトが全て表示中かどうかを取得
+  const isGroupAllVisible = useCallback(
+    (group: ObjectGroup) => {
+      return group.objectIndices.every((i) => objects[i]?.flags.visible);
+    },
+    [objects]
+  );
+
+  // グループ内のオブジェクトが全て非表示かどうかを取得
+  const isGroupAllHidden = useCallback(
+    (group: ObjectGroup) => {
+      return group.objectIndices.every((i) => !objects[i]?.flags.visible);
+    },
+    [objects]
   );
 
   const handleSelectObject = useCallback(
@@ -340,6 +377,8 @@ export function LayerPanel() {
                 const firstIndex = Math.min(...group.objectIndices);
                 const isDropBeforeGroup =
                   dropTarget?.index === firstIndex && dropTarget?.position === "before";
+                const groupAllVisible = isGroupAllVisible(group);
+                const groupAllHidden = isGroupAllHidden(group);
 
                 return (
                   <div key={`group-${group.id}`} className="relative">
@@ -381,9 +420,22 @@ export function LayerPanel() {
                       <span className="text-purple-400 text-xs">⊞</span>
 
                       {/* グループ名 */}
-                      <span className="flex-1 text-xs truncate font-medium text-purple-400">
+                      <span className={`flex-1 text-xs truncate font-medium ${groupAllHidden ? "text-purple-400/50" : "text-purple-400"}`}>
                         グループ ({group.objectIndices.length})
                       </span>
+
+                      {/* グループ表示/非表示トグル */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleGroupVisibility(group);
+                        }}
+                        className={groupAllVisible ? "text-purple-400" : "text-muted-foreground"}
+                        title={groupAllVisible ? "グループを非表示" : "グループを表示"}
+                      >
+                        {groupAllVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+                      </button>
 
                       {/* グループ解除ボタン */}
                       <button

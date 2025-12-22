@@ -2,7 +2,7 @@
  * エディター状態管理の型定義
  */
 
-import type { BoardData, BoardObject, BackgroundId, Position } from "@/lib/stgy";
+import type { BoardData, BoardObject, BackgroundId, Position, Color, ObjectFlags } from "@/lib/stgy";
 
 // ============================================
 // インタラクション関連の型
@@ -97,6 +97,24 @@ export interface GridSettings {
 export const GRID_SIZES = [8, 16, 32] as const;
 export type GridSize = (typeof GRID_SIZES)[number];
 
+// ============================================
+// バッチ更新関連の型
+// ============================================
+
+/**
+ * バッチ更新ペイロード
+ * 複数オブジェクトに適用する更新内容（指定されたプロパティのみ更新）
+ */
+export interface BatchUpdatePayload {
+  rotation?: number;
+  size?: number;
+  color?: Partial<Color>;
+  flags?: Partial<ObjectFlags>;
+  param1?: number;
+  param2?: number;
+  param3?: number;
+}
+
 /** 整列タイプ */
 export type AlignmentType =
   | "left"
@@ -160,7 +178,8 @@ export type EditorAction =
   | { type: "ALIGN_OBJECTS"; indices: number[]; alignment: AlignmentType }
   | { type: "REORDER_LAYER"; fromIndex: number; toIndex: number }
   | { type: "REMOVE_FROM_GROUP"; objectIndex: number }
-  | { type: "REORDER_GROUP"; groupId: string; toIndex: number };
+  | { type: "REORDER_GROUP"; groupId: string; toIndex: number }
+  | { type: "UPDATE_OBJECTS_BATCH"; indices: number[]; updates: BatchUpdatePayload };
 
 /**
  * ボードメタデータ更新用の部分型
