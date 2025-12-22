@@ -9,7 +9,6 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { loadFont } from "@/lib/server/imageLoader";
 import { renderSvgToPng } from "@/lib/server/resvgWrapper";
 import { renderBoardToSVG } from "@/lib/server/svgRenderer";
 import { decodeStgy } from "@/lib/stgy/decoder";
@@ -77,31 +76,25 @@ export const Route = createFileRoute("/image")({
 						showTitle,
 					});
 
-					// 4. フォーマットに応じて返す
-					if (format === "svg") {
-						return new Response(svg, {
-							headers: {
-								"Content-Type": "image/svg+xml",
-								"Cache-Control": "public, max-age=86400",
-							},
-						});
-					}
-
-					// フォントを読み込む
-					const fontData = await loadFont();
-
-					// PNG変換（環境に応じて適切な resvg を使用）
-					const pngBuffer = await renderSvgToPng(svg, {
-						background: "#1a1a1a",
-						fitTo: {
-							mode: "width",
-							value: outputWidth,
-						},
-						font: {
-							fontBuffers: fontData ? [fontData] : [],
-							defaultFontFamily: "Noto Sans JP",
+				// 4. フォーマットに応じて返す
+				if (format === "svg") {
+					return new Response(svg, {
+						headers: {
+							"Content-Type": "image/svg+xml",
+							"Cache-Control": "public, max-age=86400",
 						},
 					});
+				}
+
+				// PNG変換（環境に応じて適切な resvg を使用）
+				// フォントはresvgWrapper内でファイルパスから直接読み込み（最適化）
+				const pngBuffer = await renderSvgToPng(svg, {
+					background: "#1a1a1a",
+					fitTo: {
+						mode: "width",
+						value: outputWidth,
+					},
+				});
 
 					return new Response(pngBuffer, {
 						headers: {
