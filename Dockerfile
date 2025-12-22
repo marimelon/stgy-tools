@@ -23,6 +23,13 @@ FROM node:22-alpine AS runner
 
 WORKDIR /app
 
+# Install fonts for SVG text rendering with resvg
+# fontconfig: font configuration library
+# font-noto-cjk: Japanese/Chinese/Korean font support
+# ttf-dejavu: Basic Latin font
+RUN apk add --no-cache fontconfig font-noto-cjk ttf-dejavu \
+    && fc-cache -f
+
 # Copy built output
 COPY --from=builder /app/.output ./.output
 
