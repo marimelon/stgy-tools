@@ -4,6 +4,7 @@
  * 小画面で使用する統合メニュー
  */
 
+import { useTranslation } from "react-i18next";
 import {
 	MoreHorizontal,
 	ArrowUpToLine,
@@ -62,67 +63,68 @@ export function MoreMenu({
 	gridSettings,
 	onGridSettingsChange,
 }: MoreMenuProps) {
+	const { t } = useTranslation();
 	return (
 		<DropdownMenu
 			label={<MoreHorizontal size={ICON_SIZE} />}
-			title="その他の操作"
+			title={t("moreMenu.title")}
 		>
 			{/* レイヤー操作 */}
-			<DropdownDivider label="レイヤー" />
+			<DropdownDivider label={t("moreMenu.layer")} />
 			<DropdownItem
 				onClick={() => onMoveLayer("front")}
 				disabled={!hasSingleSelection}
 				icon={<ArrowUpToLine size={ICON_SIZE} />}
 			>
-				最前面へ
+				{t("toolbar.bringToFront")}
 			</DropdownItem>
 			<DropdownItem
 				onClick={() => onMoveLayer("forward")}
 				disabled={!hasSingleSelection}
 				icon={<ArrowUp size={ICON_SIZE} />}
 			>
-				前面へ
+				{t("toolbar.bringForward")}
 			</DropdownItem>
 			<DropdownItem
 				onClick={() => onMoveLayer("backward")}
 				disabled={!hasSingleSelection}
 				icon={<ArrowDown size={ICON_SIZE} />}
 			>
-				背面へ
+				{t("toolbar.sendBackward")}
 			</DropdownItem>
 			<DropdownItem
 				onClick={() => onMoveLayer("back")}
 				disabled={!hasSingleSelection}
 				icon={<ArrowDownToLine size={ICON_SIZE} />}
 			>
-				最背面へ
+				{t("toolbar.sendToBack")}
 			</DropdownItem>
 
 			{/* グループ操作 */}
-			<DropdownDivider label="グループ" />
+			<DropdownDivider label={t("moreMenu.group")} />
 			<DropdownItem
 				onClick={onGroup}
 				disabled={!canGroup}
 				icon={<Group size={ICON_SIZE} />}
 			>
-				グループ化
+				{t("contextMenu.group")}
 			</DropdownItem>
 			<DropdownItem
 				onClick={onUngroup}
 				disabled={!hasSelectedGroup}
 				icon={<Ungroup size={ICON_SIZE} />}
 			>
-				グループ解除
+				{t("contextMenu.ungroup")}
 			</DropdownItem>
 
 			{/* 整列操作 */}
-			<DropdownDivider label="整列" />
+			<DropdownDivider label={t("moreMenu.alignment")} />
 			<div className="grid grid-cols-3 gap-1 p-2">
 				<button
 					type="button"
 					onClick={() => onAlign("left")}
 					disabled={!canAlign}
-					title="左揃え"
+					title={t("alignment.alignLeft")}
 					className="p-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded flex items-center justify-center"
 				>
 					<AlignStartVertical size={ICON_SIZE} />
@@ -131,7 +133,7 @@ export function MoreMenu({
 					type="button"
 					onClick={() => onAlign("center")}
 					disabled={!canAlign}
-					title="左右中央揃え"
+					title={t("alignment.alignCenterH")}
 					className="p-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded flex items-center justify-center"
 				>
 					<AlignCenterVertical size={ICON_SIZE} />
@@ -140,7 +142,7 @@ export function MoreMenu({
 					type="button"
 					onClick={() => onAlign("right")}
 					disabled={!canAlign}
-					title="右揃え"
+					title={t("alignment.alignRight")}
 					className="p-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded flex items-center justify-center"
 				>
 					<AlignEndVertical size={ICON_SIZE} />
@@ -149,7 +151,7 @@ export function MoreMenu({
 					type="button"
 					onClick={() => onAlign("top")}
 					disabled={!canAlign}
-					title="上揃え"
+					title={t("alignment.alignTop")}
 					className="p-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded flex items-center justify-center"
 				>
 					<AlignStartHorizontal size={ICON_SIZE} />
@@ -158,7 +160,7 @@ export function MoreMenu({
 					type="button"
 					onClick={() => onAlign("middle")}
 					disabled={!canAlign}
-					title="上下中央揃え"
+					title={t("alignment.alignCenterV")}
 					className="p-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded flex items-center justify-center"
 				>
 					<AlignCenterHorizontal size={ICON_SIZE} />
@@ -167,7 +169,7 @@ export function MoreMenu({
 					type="button"
 					onClick={() => onAlign("bottom")}
 					disabled={!canAlign}
-					title="下揃え"
+					title={t("alignment.alignBottom")}
 					className="p-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded flex items-center justify-center"
 				>
 					<AlignEndHorizontal size={ICON_SIZE} />
@@ -178,7 +180,7 @@ export function MoreMenu({
 					type="button"
 					onClick={() => onAlign("distribute-h")}
 					disabled={!canAlign}
-					title="水平方向に均等配置"
+					title={t("alignment.distributeH")}
 					className="p-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded flex items-center justify-center"
 				>
 					<AlignHorizontalSpaceAround size={ICON_SIZE} />
@@ -187,7 +189,7 @@ export function MoreMenu({
 					type="button"
 					onClick={() => onAlign("distribute-v")}
 					disabled={!canAlign}
-					title="垂直方向に均等配置"
+					title={t("alignment.distributeV")}
 					className="p-2 bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-500 text-slate-200 rounded flex items-center justify-center"
 				>
 					<AlignVerticalSpaceAround size={ICON_SIZE} />
@@ -195,7 +197,7 @@ export function MoreMenu({
 			</div>
 
 			{/* グリッド設定 */}
-			<DropdownDivider label="グリッド" />
+			<DropdownDivider label={t("moreMenu.grid")} />
 			<div className="p-2">
 				<label className="flex items-center gap-2 cursor-pointer mb-2">
 					<input
@@ -204,7 +206,7 @@ export function MoreMenu({
 						onChange={(e) => onGridSettingsChange({ enabled: e.target.checked })}
 						className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500"
 					/>
-					<span className="text-sm text-slate-200">スナップ</span>
+					<span className="text-sm text-slate-200">{t("moreMenu.gridSnap")}</span>
 				</label>
 
 				<div className="flex items-center gap-2 mb-2">
@@ -238,7 +240,7 @@ export function MoreMenu({
 						disabled={!gridSettings.enabled}
 						className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500 disabled:opacity-50"
 					/>
-					<span className="text-sm text-slate-200">表示</span>
+					<span className="text-sm text-slate-200">{t("moreMenu.showGrid")}</span>
 				</label>
 			</div>
 		</DropdownMenu>

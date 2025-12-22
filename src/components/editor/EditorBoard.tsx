@@ -5,6 +5,7 @@
  */
 
 import { useRef, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { BackgroundRenderer, ObjectRenderer, getObjectBoundingBox } from "@/components/board";
 import {
   useEditor,
@@ -26,6 +27,7 @@ const CANVAS_HEIGHT = 384;
  * エディターボードコンポーネント
  */
 export function EditorBoard({ scale = 1 }: EditorBoardProps) {
+  const { t } = useTranslation();
   const {
     state,
     selectObject,
@@ -272,7 +274,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
                 });
               }}
               onStartPointDragEnd={() => {
-                commitHistory("ライン始点移動");
+                commitHistory(t("toolbar.lineStartMoved"));
               }}
               onEndPointDrag={(x, y) => {
                 // 終点移動：param1, param2を更新、角度も再計算
@@ -286,7 +288,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
                 });
               }}
               onEndPointDragEnd={() => {
-                commitHistory("ライン終点移動");
+                commitHistory(t("toolbar.lineEndMoved"));
               }}
             />
           );

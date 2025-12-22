@@ -5,6 +5,7 @@
 
 import { AlertCircle, Download } from "lucide-react";
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -42,23 +43,24 @@ export function ImportModal({
 	onImport,
 	onClose,
 }: ImportModalProps) {
+	const { t } = useTranslation();
 	const textareaId = useId();
 
 	return (
 		<Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle className="font-display">インポート</DialogTitle>
+					<DialogTitle className="font-display">{t("importModal.title")}</DialogTitle>
 				</DialogHeader>
 
 				<div className="space-y-4">
 					<div className="space-y-2">
-						<Label htmlFor={textareaId}>stgyコードを貼り付け:</Label>
+						<Label htmlFor={textareaId}>{t("importModal.pasteCode")}</Label>
 						<Textarea
 							id={textareaId}
 							value={importText}
 							onChange={(e) => onImportTextChange(e.target.value)}
-							placeholder="[stgy:a...]"
+							placeholder={t("importModal.placeholder")}
 							className="h-32 font-mono text-sm resize-none break-all"
 						/>
 					</div>
@@ -73,11 +75,11 @@ export function ImportModal({
 
 				<DialogFooter>
 					<Button variant="ghost" onClick={onClose}>
-						キャンセル
+						{t("importModal.cancel")}
 					</Button>
 					<Button onClick={onImport} disabled={!importText.trim()}>
 						<Download className="size-4" />
-						インポート
+						{t("importModal.import")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

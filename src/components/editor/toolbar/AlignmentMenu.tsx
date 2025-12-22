@@ -5,6 +5,7 @@
  */
 
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	AlignStartVertical,
 	AlignCenterVertical,
@@ -32,55 +33,55 @@ interface AlignmentMenuProps {
 /** 整列オプションの定義 */
 const ALIGNMENT_OPTIONS: {
 	type: AlignmentType;
-	label: string;
+	i18nKey: string;
 	icon: ReactNode;
 	group: "horizontal" | "vertical" | "distribute";
 }[] = [
 	{
 		type: "left",
-		label: "左揃え",
+		i18nKey: "alignment.alignLeft",
 		icon: <AlignStartVertical size={ICON_SIZE} />,
 		group: "horizontal",
 	},
 	{
 		type: "center",
-		label: "左右中央揃え",
+		i18nKey: "alignment.alignCenterH",
 		icon: <AlignCenterVertical size={ICON_SIZE} />,
 		group: "horizontal",
 	},
 	{
 		type: "right",
-		label: "右揃え",
+		i18nKey: "alignment.alignRight",
 		icon: <AlignEndVertical size={ICON_SIZE} />,
 		group: "horizontal",
 	},
 	{
 		type: "top",
-		label: "上揃え",
+		i18nKey: "alignment.alignTop",
 		icon: <AlignStartHorizontal size={ICON_SIZE} />,
 		group: "vertical",
 	},
 	{
 		type: "middle",
-		label: "上下中央揃え",
+		i18nKey: "alignment.alignCenterV",
 		icon: <AlignCenterHorizontal size={ICON_SIZE} />,
 		group: "vertical",
 	},
 	{
 		type: "bottom",
-		label: "下揃え",
+		i18nKey: "alignment.alignBottom",
 		icon: <AlignEndHorizontal size={ICON_SIZE} />,
 		group: "vertical",
 	},
 	{
 		type: "distribute-h",
-		label: "水平方向に均等配置",
+		i18nKey: "alignment.distributeH",
 		icon: <AlignHorizontalSpaceAround size={ICON_SIZE} />,
 		group: "distribute",
 	},
 	{
 		type: "distribute-v",
-		label: "垂直方向に均等配置",
+		i18nKey: "alignment.distributeV",
 		icon: <AlignVerticalSpaceAround size={ICON_SIZE} />,
 		group: "distribute",
 	},
@@ -90,6 +91,7 @@ const ALIGNMENT_OPTIONS: {
  * 整列メニュー
  */
 export function AlignmentMenu({ onAlign, canAlign }: AlignmentMenuProps) {
+	const { t } = useTranslation();
 	const horizontalOptions = ALIGNMENT_OPTIONS.filter(
 		(opt) => opt.group === "horizontal",
 	);
@@ -103,39 +105,39 @@ export function AlignmentMenu({ onAlign, canAlign }: AlignmentMenuProps) {
 	return (
 		<DropdownMenu
 			label={<AlignLeft size={ICON_SIZE} />}
-			title="整列・配置"
+			title={t("alignment.title")}
 			disabled={!canAlign}
 		>
-			<DropdownDivider label="水平方向" />
+			<DropdownDivider label={t("alignment.horizontal")} />
 			{horizontalOptions.map((opt) => (
 				<DropdownItem
 					key={opt.type}
 					onClick={() => onAlign(opt.type)}
 					icon={opt.icon}
 				>
-					{opt.label}
+					{t(opt.i18nKey)}
 				</DropdownItem>
 			))}
 
-			<DropdownDivider label="垂直方向" />
+			<DropdownDivider label={t("alignment.vertical")} />
 			{verticalOptions.map((opt) => (
 				<DropdownItem
 					key={opt.type}
 					onClick={() => onAlign(opt.type)}
 					icon={opt.icon}
 				>
-					{opt.label}
+					{t(opt.i18nKey)}
 				</DropdownItem>
 			))}
 
-			<DropdownDivider label="均等配置" />
+			<DropdownDivider label={t("alignment.distribute")} />
 			{distributeOptions.map((opt) => (
 				<DropdownItem
 					key={opt.type}
 					onClick={() => onAlign(opt.type)}
 					icon={opt.icon}
 				>
-					{opt.label}
+					{t(opt.i18nKey)}
 				</DropdownItem>
 			))}
 		</DropdownMenu>

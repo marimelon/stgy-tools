@@ -8,6 +8,7 @@
  */
 
 import { useMemo, useRef } from "react";
+import { useTranslation, type TFunction } from "react-i18next";
 import {
 	Download,
 	Upload,
@@ -57,17 +58,17 @@ export interface EditorToolbarProps {
 /**
  * 相対時間をフォーマット
  */
-function formatRelativeTime(date: Date): string {
+function formatRelativeTime(date: Date, t: TFunction): string {
 	const now = new Date();
 	const diffMs = now.getTime() - date.getTime();
 	const diffSec = Math.floor(diffMs / 1000);
 	const diffMin = Math.floor(diffSec / 60);
 	const diffHour = Math.floor(diffMin / 60);
 
-	if (diffSec < 10) return "たった今";
-	if (diffSec < 60) return `${diffSec}秒前`;
-	if (diffMin < 60) return `${diffMin}分前`;
-	if (diffHour < 24) return `${diffHour}時間前`;
+	if (diffSec < 10) return t("toolbar.justNow");
+	if (diffSec < 60) return `${diffSec}${t("toolbar.secondsAgo")}`;
+	if (diffMin < 60) return `${diffMin}${t("toolbar.minutesAgo")}`;
+	if (diffHour < 24) return `${diffHour}${t("toolbar.hoursAgo")}`;
 	return date.toLocaleDateString();
 }
 
@@ -75,6 +76,7 @@ function formatRelativeTime(date: Date): string {
  * エディターツールバー
  */
 export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
+	const { t } = useTranslation();
 	const toolbarRef = useRef<HTMLDivElement>(null);
 	const toolbarSize = useToolbarSize(toolbarRef);
 
@@ -153,10 +155,10 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 			>
 				{/* ファイル操作 */}
 				<div className="flex items-center gap-1 flex-shrink-0">
-					<ToolbarButton onClick={openImportModal} title="インポート">
+					<ToolbarButton onClick={openImportModal} title={t("toolbar.import")}>
 						<Download size={ICON_SIZE} />
 					</ToolbarButton>
-					<ToolbarButton onClick={openExportModal} title="エクスポート">
+					<ToolbarButton onClick={openExportModal} title={t("toolbar.export")}>
 						<Upload size={ICON_SIZE} />
 					</ToolbarButton>
 				</div>
@@ -168,14 +170,14 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 					<ToolbarButton
 						onClick={undo}
 						disabled={!canUndo}
-						title="元に戻す (Ctrl+Z)"
+						title={t("toolbar.undo")}
 					>
 						<Undo2 size={ICON_SIZE} />
 					</ToolbarButton>
 					<ToolbarButton
 						onClick={redo}
 						disabled={!canRedo}
-						title="やり直す (Ctrl+Y)"
+						title={t("toolbar.redo")}
 					>
 						<Redo2 size={ICON_SIZE} />
 					</ToolbarButton>
@@ -188,28 +190,28 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 					<ToolbarButton
 						onClick={copySelected}
 						disabled={!hasSelection}
-						title="コピー (Ctrl+C)"
+						title={t("toolbar.copy")}
 					>
 						<Copy size={ICON_SIZE} />
 					</ToolbarButton>
 					<ToolbarButton
 						onClick={() => paste()}
 						disabled={!hasClipboard}
-						title="貼り付け (Ctrl+V)"
+						title={t("toolbar.paste")}
 					>
 						<ClipboardPaste size={ICON_SIZE} />
 					</ToolbarButton>
 					<ToolbarButton
 						onClick={duplicateSelected}
 						disabled={!hasSelection}
-						title="複製 (Ctrl+D)"
+						title={t("toolbar.duplicate")}
 					>
 						<CopyPlus size={ICON_SIZE} />
 					</ToolbarButton>
 					<ToolbarButton
 						onClick={deleteSelected}
 						disabled={!hasSelection}
-						title="削除 (Delete)"
+						title={t("toolbar.delete")}
 					>
 						<Trash2 size={ICON_SIZE} />
 					</ToolbarButton>
@@ -225,28 +227,28 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 							<ToolbarButton
 								onClick={() => moveLayer("front")}
 								disabled={!hasSingleSelection}
-								title="最前面へ"
+								title={t("toolbar.bringToFront")}
 							>
 								<ArrowUpToLine size={ICON_SIZE} />
 							</ToolbarButton>
 							<ToolbarButton
 								onClick={() => moveLayer("forward")}
 								disabled={!hasSingleSelection}
-								title="前面へ"
+								title={t("toolbar.bringForward")}
 							>
 								<ArrowUp size={ICON_SIZE} />
 							</ToolbarButton>
 							<ToolbarButton
 								onClick={() => moveLayer("backward")}
 								disabled={!hasSingleSelection}
-								title="背面へ"
+								title={t("toolbar.sendBackward")}
 							>
 								<ArrowDown size={ICON_SIZE} />
 							</ToolbarButton>
 							<ToolbarButton
 								onClick={() => moveLayer("back")}
 								disabled={!hasSingleSelection}
-								title="最背面へ"
+								title={t("toolbar.sendToBack")}
 							>
 								<ArrowDownToLine size={ICON_SIZE} />
 							</ToolbarButton>
@@ -259,14 +261,14 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 							<ToolbarButton
 								onClick={groupSelected}
 								disabled={!canGroup}
-								title="グループ化 (Ctrl+G)"
+								title={t("toolbar.group")}
 							>
 								<Group size={ICON_SIZE} />
 							</ToolbarButton>
 							<ToolbarButton
 								onClick={() => selectedGroup && ungroup(selectedGroup.id)}
 								disabled={!selectedGroup}
-								title="グループ解除 (Ctrl+Shift+G)"
+								title={t("toolbar.ungroup")}
 							>
 								<Ungroup size={ICON_SIZE} />
 							</ToolbarButton>
@@ -280,56 +282,56 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 								<ToolbarButton
 									onClick={() => alignObjects("left")}
 									disabled={!canAlign}
-									title="左揃え"
+									title={t("alignment.alignLeft")}
 								>
 									<AlignStartVertical size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
 									onClick={() => alignObjects("center")}
 									disabled={!canAlign}
-									title="左右中央揃え"
+									title={t("alignment.alignCenterH")}
 								>
 									<AlignCenterVertical size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
 									onClick={() => alignObjects("right")}
 									disabled={!canAlign}
-									title="右揃え"
+									title={t("alignment.alignRight")}
 								>
 									<AlignEndVertical size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
 									onClick={() => alignObjects("top")}
 									disabled={!canAlign}
-									title="上揃え"
+									title={t("alignment.alignTop")}
 								>
 									<AlignStartHorizontal size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
 									onClick={() => alignObjects("middle")}
 									disabled={!canAlign}
-									title="上下中央揃え"
+									title={t("alignment.alignCenterV")}
 								>
 									<AlignCenterHorizontal size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
 									onClick={() => alignObjects("bottom")}
 									disabled={!canAlign}
-									title="下揃え"
+									title={t("alignment.alignBottom")}
 								>
 									<AlignEndHorizontal size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
 									onClick={() => alignObjects("distribute-h")}
 									disabled={!canAlign}
-									title="水平方向に均等配置"
+									title={t("alignment.distributeH")}
 								>
 									<AlignHorizontalSpaceAround size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
 									onClick={() => alignObjects("distribute-v")}
 									disabled={!canAlign}
-									title="垂直方向に均等配置"
+									title={t("alignment.distributeV")}
 								>
 									<AlignVerticalSpaceAround size={ICON_SIZE} />
 								</ToolbarButton>
@@ -351,8 +353,8 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 									}
 									title={
 										state.gridSettings.enabled
-											? "グリッドスナップ無効化"
-											: "グリッドスナップ有効化"
+											? t("toolbar.disableGridSnap")
+											: t("toolbar.enableGridSnap")
 									}
 									active={state.gridSettings.enabled}
 								>
@@ -365,7 +367,7 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 									}
 									disabled={!state.gridSettings.enabled}
 									className="h-8 px-2 text-sm bg-input border border-border rounded-md text-foreground disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-ring"
-									title="グリッドサイズ"
+									title={t("toolbar.gridSize")}
 								>
 									{GRID_SIZES.map((size) => (
 										<option key={size} value={size}>
@@ -389,7 +391,7 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 										disabled={!state.gridSettings.enabled}
 										className="w-3.5 h-3.5 rounded accent-accent"
 									/>
-									表示
+									{t("toolbar.show")}
 								</label>
 							</div>
 						) : (
@@ -441,19 +443,19 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 				{/* 状態表示 */}
 				<div className="ml-auto text-right text-xs flex-shrink-0 whitespace-nowrap flex items-center gap-3 text-muted-foreground font-mono">
 					{state.isDirty && (
-						<span className="status-dot dirty" title="未保存の変更があります" />
+						<span className="status-dot dirty" title={t("toolbar.unsavedChanges")} />
 					)}
 					{lastSavedAt && (
-						<span title={`保存: ${lastSavedAt.toLocaleString()}`}>
-							{formatRelativeTime(lastSavedAt)}
+						<span title={`${lastSavedAt.toLocaleString()}`}>
+							{formatRelativeTime(lastSavedAt, t)}
 						</span>
 					)}
 					{toolbarSize === "large" ? (
 						<span>
-							オブジェクト数: <span className="text-primary">{state.board.objects.length}</span>
+							{t("toolbar.objectCount")}<span className="text-primary">{state.board.objects.length}</span>
 							{hasSelection && (
 								<>
-									{" | "}選択: <span className="text-accent">{state.selectedIndices.length}</span>
+									{t("toolbar.selected")}<span className="text-accent">{state.selectedIndices.length}</span>
 								</>
 							)}
 						</span>

@@ -5,6 +5,7 @@
 
 import { Check, Copy, ExternalLink, Key } from "lucide-react";
 import { useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -43,6 +44,7 @@ export function ExportModal({
 	onCopy,
 	onClose,
 }: ExportModalProps) {
+	const { t } = useTranslation();
 	const keyInputId = useId();
 	const codeTextareaId = useId();
 	const [copied, setCopied] = useState(false);
@@ -69,14 +71,14 @@ export function ExportModal({
 		<Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle className="font-display">エクスポート</DialogTitle>
+					<DialogTitle className="font-display">{t("exportModal.title")}</DialogTitle>
 				</DialogHeader>
 
 				<div className="space-y-4">
 					<div className="space-y-2">
 						<Label htmlFor={keyInputId} className="flex items-center gap-2">
 							<Key className="size-4 text-primary" />
-							暗号化キー (0-63):
+							{t("exportModal.encryptionKey")}
 						</Label>
 						<div className="flex items-center gap-3">
 							<Input
@@ -86,24 +88,24 @@ export function ExportModal({
 								max={63}
 								value={encodeKey ?? ""}
 								onChange={handleKeyChange}
-								placeholder="ランダム"
+								placeholder={t("exportModal.randomPlaceholder")}
 								className="w-24 font-mono"
 							/>
 							<span className="text-xs text-muted-foreground px-2 py-1 rounded bg-muted">
 								{encodeKey !== null ? (
 									<>
-										キー <span className="text-primary">{encodeKey}</span>{" "}
-										を使用
+										{t("exportModal.usingKey")} <span className="text-primary">{encodeKey}</span>{" "}
+										{t("exportModal.useKey")}
 									</>
 								) : (
-									"ランダムキーを使用"
+									t("exportModal.usingRandomKey")
 								)}
 							</span>
 						</div>
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor={codeTextareaId}>生成されたstgyコード:</Label>
+						<Label htmlFor={codeTextareaId}>{t("exportModal.generatedCode")}</Label>
 						<Textarea
 							id={codeTextareaId}
 							value={exportedCode}
@@ -124,22 +126,22 @@ export function ExportModal({
 						className="sm:mr-auto"
 					>
 						<ExternalLink className="size-4" />
-						画像生成を開く
+						{t("exportModal.openImageGenerator")}
 					</Button>
 					<div className="flex gap-2">
 						<Button variant="ghost" onClick={onClose}>
-							閉じる
+							{t("exportModal.close")}
 						</Button>
 						<Button onClick={handleCopy}>
 							{copied ? (
 								<>
 									<Check className="size-4" />
-									コピーしました
+									{t("exportModal.copied")}
 								</>
 							) : (
 								<>
 									<Copy className="size-4" />
-									コピー
+									{t("exportModal.copy")}
 								</>
 							)}
 						</Button>

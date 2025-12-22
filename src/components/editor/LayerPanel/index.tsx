@@ -6,6 +6,7 @@
  */
 
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useEditor } from "@/lib/editor";
 import type { ObjectGroup } from "@/lib/editor/types";
 import { useLayerDragDrop } from "./useLayerDragDrop";
@@ -17,6 +18,7 @@ import { LayerGroupHeader } from "./LayerGroupHeader";
  * レイヤーパネル
  */
 export function LayerPanel() {
+	const { t } = useTranslation();
 	const {
 		state,
 		dispatch,
@@ -66,9 +68,9 @@ export function LayerPanel() {
 			updateObject(index, {
 				flags: { ...obj.flags, visible: !obj.flags.visible },
 			});
-			commitHistory("表示状態変更");
+			commitHistory(t("layerPanel.visibilityChanged"));
 		},
-		[objects, updateObject, commitHistory],
+		[objects, updateObject, commitHistory, t],
 	);
 
 	// グループの表示/非表示トグル
@@ -84,9 +86,9 @@ export function LayerPanel() {
 				indices: group.objectIndices,
 				updates: { flags: { visible: newVisible } },
 			});
-			commitHistory("グループ表示状態変更");
+			commitHistory(t("layerPanel.groupVisibilityChanged"));
 		},
-		[objects, dispatch, commitHistory],
+		[objects, dispatch, commitHistory, t],
 	);
 
 	// オブジェクト選択
@@ -131,7 +133,7 @@ export function LayerPanel() {
 			style={{ background: "var(--color-bg-base)" }}
 		>
 			<div className="panel-header flex-shrink-0">
-				<h2 className="panel-title">レイヤー</h2>
+				<h2 className="panel-title">{t("layerPanel.title")}</h2>
 			</div>
 
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: Drag container for layer reordering */}
@@ -139,7 +141,7 @@ export function LayerPanel() {
 				{objects.length === 0 ? (
 					<div className="p-4 text-sm text-center text-muted-foreground">
 						<div className="text-3xl mb-2 opacity-50">📋</div>
-						オブジェクトがありません
+						{t("layerPanel.noObjects")}
 					</div>
 				) : (
 					<div className="py-1">
@@ -204,11 +206,11 @@ export function LayerPanel() {
 			{/* レイヤー数表示 */}
 			<div className="px-3 py-2 text-xs flex justify-between flex-shrink-0 border-t border-border text-muted-foreground font-mono">
 				<span>
-					<span className="text-primary">{objects.length}</span> オブジェクト
+					<span className="text-primary">{objects.length}</span> {t("layerPanel.objectCount")}
 				</span>
 				{groups.length > 0 && (
 					<span>
-						<span className="text-purple-400">{groups.length}</span> グループ
+						<span className="text-purple-400">{groups.length}</span> {t("layerPanel.groupCount")}
 					</span>
 				)}
 			</div>

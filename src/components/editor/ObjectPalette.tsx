@@ -7,201 +7,173 @@
 
 import { Bug, ChevronRight } from "lucide-react";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ObjectRenderer } from "@/components/board";
 import { createDefaultObject, useDebugMode, useEditor } from "@/lib/editor";
-import { ObjectIds, ObjectNames } from "@/lib/stgy";
+import { ObjectIds } from "@/lib/stgy";
 
 /** 非表示オブジェクト（CSVでFalse） - デバッグモード時のみ表示 */
-const HIDDEN_OBJECTS: { name: string; ids: number[] } = {
-	name: "デバッグ（非表示）",
-	ids: [
-		// フィールド（非表示）
-		ObjectIds.CircleWhiteSolid, // 1: 円形白無地フィールド
-		ObjectIds.CircleWhiteTile, // 2: 円形白タイルフィールド
-		ObjectIds.CircleGraySolid, // 3: 円形グレー無地フィールド
-		ObjectIds.SquareWhiteSolid, // 5: 四角形白無地フィールド
-		ObjectIds.SquareWhiteTile, // 6: 四角形白タイルフィールド
-		ObjectIds.SquareGraySolid, // 7: 四角形グレー無地フィールド
-		// ロール（非表示）
-		58, // DPS5
-		59, // DPS6
-		// エネミー（非表示）
-		61, // エネミー小2
-		63, // エネミー中2
-		// 図形（非表示）
-		104, // 図形：矢印右回り
-		// グループ
-		ObjectIds.Group, // 105: グループ
-	],
-};
+const HIDDEN_OBJECT_IDS: number[] = [
+	// フィールド（非表示）
+	ObjectIds.CircleWhiteSolid, // 1: 円形白無地フィールド
+	ObjectIds.CircleWhiteTile, // 2: 円形白タイルフィールド
+	ObjectIds.CircleGraySolid, // 3: 円形グレー無地フィールド
+	ObjectIds.SquareWhiteSolid, // 5: 四角形白無地フィールド
+	ObjectIds.SquareWhiteTile, // 6: 四角形白タイルフィールド
+	ObjectIds.SquareGraySolid, // 7: 四角形グレー無地フィールド
+	// ロール（非表示）
+	58, // DPS5
+	59, // DPS6
+	// エネミー（非表示）
+	61, // エネミー小2
+	63, // エネミー中2
+	// 図形（非表示）
+	104, // 図形：矢印右回り
+	// グループ
+	ObjectIds.Group, // 105: グループ
+];
 
-/** オブジェクトカテゴリ */
-const OBJECT_CATEGORIES: Record<string, { name: string; ids: number[] }> = {
-	fields: {
-		name: "フィールド",
-		ids: [
-			// 注意: CircleWhiteSolid, CircleWhiteTile, CircleGraySolid,
-			// SquareWhiteSolid, SquareWhiteTile, SquareGraySolid は未使用 (CSV: False)
-			ObjectIds.CircleCheck,
-			ObjectIds.CircleGray,
-			ObjectIds.SquareCheck,
-			ObjectIds.SquareGray,
-		],
-	},
-	attacks: {
-		name: "攻撃範囲",
-		ids: [
-			ObjectIds.CircleAoE,
-			ObjectIds.ConeAoE,
-			ObjectIds.LineAoE,
-			ObjectIds.Line,
-			ObjectIds.DonutAoE,
-			ObjectIds.Stack,
-			ObjectIds.StackLine,
-			ObjectIds.StackChain,
-			ObjectIds.Proximity,
-			ObjectIds.ProximityTarget,
-			ObjectIds.Tankbuster,
-			ObjectIds.KnockbackRadial,
-			ObjectIds.KnockbackLine,
-			ObjectIds.Block,
-			ObjectIds.Gaze,
-			ObjectIds.TargetMarker,
-			ObjectIds.CircleAoEMoving,
-			ObjectIds.Area1P,
-			ObjectIds.Area2P,
-			ObjectIds.Area3P,
-			ObjectIds.Area4P,
-		],
-	},
-	roles: {
-		name: "ロール",
-		ids: [
-			ObjectIds.Tank,
-			ObjectIds.Tank1,
-			ObjectIds.Tank2,
-			ObjectIds.Healer,
-			ObjectIds.Healer1,
-			ObjectIds.Healer2,
-			ObjectIds.DPS,
-			ObjectIds.DPS1,
-			ObjectIds.DPS2,
-			ObjectIds.DPS3,
-			ObjectIds.DPS4,
-			ObjectIds.MeleeDPS,
-			ObjectIds.RangedDPS,
-			ObjectIds.PhysicalRangedDPS,
-			ObjectIds.MagicalRangedDPS,
-			ObjectIds.PureHealer,
-			ObjectIds.BarrierHealer,
-		],
-	},
-	jobs: {
-		name: "ジョブ",
-		ids: [
-			// タンク
-			ObjectIds.Paladin,
-			ObjectIds.Warrior,
-			ObjectIds.DarkKnight,
-			ObjectIds.Gunbreaker,
-			// ヒーラー
-			ObjectIds.WhiteMage,
-			ObjectIds.Scholar,
-			ObjectIds.Astrologian,
-			ObjectIds.Sage,
-			// 近接DPS
-			ObjectIds.Monk,
-			ObjectIds.Dragoon,
-			ObjectIds.Ninja,
-			ObjectIds.Samurai,
-			ObjectIds.Reaper,
-			ObjectIds.Viper,
-			// 遠隔物理DPS
-			ObjectIds.Bard,
-			ObjectIds.Machinist,
-			ObjectIds.Dancer,
-			// 遠隔魔法DPS
-			ObjectIds.BlackMage,
-			ObjectIds.Summoner,
-			ObjectIds.RedMage,
-			ObjectIds.Pictomancer,
-			ObjectIds.BlueMage,
-		],
-	},
-	enemies: {
-		name: "エネミー",
-		ids: [ObjectIds.EnemySmall, ObjectIds.EnemyMedium, ObjectIds.EnemyLarge],
-	},
-	markers: {
-		name: "マーカー",
-		ids: [
-			ObjectIds.Attack1,
-			ObjectIds.Attack2,
-			ObjectIds.Attack3,
-			ObjectIds.Attack4,
-			ObjectIds.Attack5,
-			ObjectIds.Attack6,
-			ObjectIds.Attack7,
-			ObjectIds.Attack8,
-			ObjectIds.Bind1,
-			ObjectIds.Bind2,
-			ObjectIds.Bind3,
-			ObjectIds.Ignore1,
-			ObjectIds.Ignore2,
-			ObjectIds.Square,
-			ObjectIds.Circle,
-			ObjectIds.Plus,
-			ObjectIds.Triangle,
-		],
-	},
-	waymarks: {
-		name: "フィールドマーカー",
-		ids: [
-			ObjectIds.WaymarkA,
-			ObjectIds.WaymarkB,
-			ObjectIds.WaymarkC,
-			ObjectIds.WaymarkD,
-			ObjectIds.Waymark1,
-			ObjectIds.Waymark2,
-			ObjectIds.Waymark3,
-			ObjectIds.Waymark4,
-		],
-	},
-	shapes: {
-		name: "図形",
-		ids: [
-			ObjectIds.ShapeCircle,
-			ObjectIds.ShapeCross,
-			ObjectIds.ShapeTriangle,
-			ObjectIds.ShapeSquare,
-			ObjectIds.ShapeArrow,
-			ObjectIds.ShapeRotation,
-			ObjectIds.EmphasisCircle,
-			ObjectIds.EmphasisCross,
-			ObjectIds.EmphasisSquare,
-			ObjectIds.EmphasisTriangle,
-			ObjectIds.Clockwise,
-			ObjectIds.CounterClockwise,
-		],
-	},
-	other: {
-		name: "その他",
-		ids: [
-			ObjectIds.Text,
-			ObjectIds.Buff,
-			ObjectIds.Debuff,
-			ObjectIds.LockOnRed,
-			ObjectIds.LockOnBlue,
-			ObjectIds.LockOnPurple,
-			ObjectIds.LockOnGreen,
-		],
-	},
+/** オブジェクトカテゴリ（キーはi18nのcategory.*に対応） */
+const OBJECT_CATEGORIES: Record<string, number[]> = {
+	fields: [
+		// 注意: CircleWhiteSolid, CircleWhiteTile, CircleGraySolid,
+		// SquareWhiteSolid, SquareWhiteTile, SquareGraySolid は未使用 (CSV: False)
+		ObjectIds.CircleCheck,
+		ObjectIds.CircleGray,
+		ObjectIds.SquareCheck,
+		ObjectIds.SquareGray,
+	],
+	attacks: [
+		ObjectIds.CircleAoE,
+		ObjectIds.ConeAoE,
+		ObjectIds.LineAoE,
+		ObjectIds.Line,
+		ObjectIds.DonutAoE,
+		ObjectIds.Stack,
+		ObjectIds.StackLine,
+		ObjectIds.StackChain,
+		ObjectIds.Proximity,
+		ObjectIds.ProximityTarget,
+		ObjectIds.Tankbuster,
+		ObjectIds.KnockbackRadial,
+		ObjectIds.KnockbackLine,
+		ObjectIds.Block,
+		ObjectIds.Gaze,
+		ObjectIds.TargetMarker,
+		ObjectIds.CircleAoEMoving,
+		ObjectIds.Area1P,
+		ObjectIds.Area2P,
+		ObjectIds.Area3P,
+		ObjectIds.Area4P,
+	],
+	roles: [
+		ObjectIds.Tank,
+		ObjectIds.Tank1,
+		ObjectIds.Tank2,
+		ObjectIds.Healer,
+		ObjectIds.Healer1,
+		ObjectIds.Healer2,
+		ObjectIds.DPS,
+		ObjectIds.DPS1,
+		ObjectIds.DPS2,
+		ObjectIds.DPS3,
+		ObjectIds.DPS4,
+		ObjectIds.MeleeDPS,
+		ObjectIds.RangedDPS,
+		ObjectIds.PhysicalRangedDPS,
+		ObjectIds.MagicalRangedDPS,
+		ObjectIds.PureHealer,
+		ObjectIds.BarrierHealer,
+	],
+	jobs: [
+		// タンク
+		ObjectIds.Paladin,
+		ObjectIds.Warrior,
+		ObjectIds.DarkKnight,
+		ObjectIds.Gunbreaker,
+		// ヒーラー
+		ObjectIds.WhiteMage,
+		ObjectIds.Scholar,
+		ObjectIds.Astrologian,
+		ObjectIds.Sage,
+		// 近接DPS
+		ObjectIds.Monk,
+		ObjectIds.Dragoon,
+		ObjectIds.Ninja,
+		ObjectIds.Samurai,
+		ObjectIds.Reaper,
+		ObjectIds.Viper,
+		// 遠隔物理DPS
+		ObjectIds.Bard,
+		ObjectIds.Machinist,
+		ObjectIds.Dancer,
+		// 遠隔魔法DPS
+		ObjectIds.BlackMage,
+		ObjectIds.Summoner,
+		ObjectIds.RedMage,
+		ObjectIds.Pictomancer,
+		ObjectIds.BlueMage,
+	],
+	enemies: [ObjectIds.EnemySmall, ObjectIds.EnemyMedium, ObjectIds.EnemyLarge],
+	markers: [
+		ObjectIds.Attack1,
+		ObjectIds.Attack2,
+		ObjectIds.Attack3,
+		ObjectIds.Attack4,
+		ObjectIds.Attack5,
+		ObjectIds.Attack6,
+		ObjectIds.Attack7,
+		ObjectIds.Attack8,
+		ObjectIds.Bind1,
+		ObjectIds.Bind2,
+		ObjectIds.Bind3,
+		ObjectIds.Ignore1,
+		ObjectIds.Ignore2,
+		ObjectIds.Square,
+		ObjectIds.Circle,
+		ObjectIds.Plus,
+		ObjectIds.Triangle,
+	],
+	waymarks: [
+		ObjectIds.WaymarkA,
+		ObjectIds.WaymarkB,
+		ObjectIds.WaymarkC,
+		ObjectIds.WaymarkD,
+		ObjectIds.Waymark1,
+		ObjectIds.Waymark2,
+		ObjectIds.Waymark3,
+		ObjectIds.Waymark4,
+	],
+	shapes: [
+		ObjectIds.ShapeCircle,
+		ObjectIds.ShapeCross,
+		ObjectIds.ShapeTriangle,
+		ObjectIds.ShapeSquare,
+		ObjectIds.ShapeArrow,
+		ObjectIds.ShapeRotation,
+		ObjectIds.EmphasisCircle,
+		ObjectIds.EmphasisCross,
+		ObjectIds.EmphasisSquare,
+		ObjectIds.EmphasisTriangle,
+		ObjectIds.Clockwise,
+		ObjectIds.CounterClockwise,
+	],
+	other: [
+		ObjectIds.Text,
+		ObjectIds.Buff,
+		ObjectIds.Debuff,
+		ObjectIds.LockOnRed,
+		ObjectIds.LockOnBlue,
+		ObjectIds.LockOnPurple,
+		ObjectIds.LockOnGreen,
+	],
 };
 
 /**
  * オブジェクトパレットコンポーネント
  */
 export function ObjectPalette() {
+	const { t } = useTranslation();
 	const { addObject } = useEditor();
 	const { debugMode, toggleDebugMode } = useDebugMode();
 	const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
@@ -230,7 +202,7 @@ export function ObjectPalette() {
 			style={{ background: "var(--color-bg-base)" }}
 		>
 			<div className="panel-header flex items-center justify-between">
-				<h2 className="panel-title">オブジェクト</h2>
+				<h2 className="panel-title">{t("objectPalette.title")}</h2>
 				{/* デバッグモードトグル */}
 				<button
 					type="button"
@@ -240,14 +212,14 @@ export function ObjectPalette() {
 							? "text-amber-400 bg-amber-400/20"
 							: "text-muted-foreground hover:text-foreground hover:bg-muted"
 					}`}
-					title={debugMode ? "デバッグモード: ON" : "デバッグモード: OFF"}
+					title={`${t("objectPalette.debugMode")}: ${debugMode ? "ON" : "OFF"}`}
 				>
 					<Bug size={16} />
 				</button>
 			</div>
 
 			<div className="p-2">
-				{Object.entries(OBJECT_CATEGORIES).map(([key, { name, ids }]) => (
+				{Object.entries(OBJECT_CATEGORIES).map(([key, ids]) => (
 					<div key={key} className="mb-1">
 						{/* カテゴリヘッダー */}
 						<button
@@ -255,7 +227,7 @@ export function ObjectPalette() {
 							onClick={() => toggleCategory(key)}
 							className="category-header w-full"
 						>
-							<span>{name}</span>
+							<span>{t(`category.${key}`)}</span>
 							<ChevronRight
 								size={14}
 								className={`category-chevron ${expandedCategories.has(key) ? "expanded" : ""}`}
@@ -287,7 +259,7 @@ export function ObjectPalette() {
 						>
 							<span className="flex items-center gap-1">
 								<Bug size={12} />
-								{HIDDEN_OBJECTS.name}
+								{t("category.debug")}
 							</span>
 							<ChevronRight
 								size={14}
@@ -297,7 +269,7 @@ export function ObjectPalette() {
 
 						{expandedCategories.has("_debug") && (
 							<div className="grid grid-cols-4 gap-1.5 mt-1.5 px-1 animate-slideIn">
-								{HIDDEN_OBJECTS.ids.map((objectId) => (
+								{HIDDEN_OBJECT_IDS.map((objectId) => (
 									<ObjectPaletteItem
 										key={objectId}
 										objectId={objectId}
@@ -336,6 +308,7 @@ function ObjectPaletteItem({
 	onClick: () => void;
 	isDebug?: boolean;
 }) {
+	const { t } = useTranslation();
 	const [isHovered, setIsHovered] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const tooltipRef = useRef<HTMLDivElement>(null);
@@ -364,7 +337,7 @@ function ObjectPaletteItem({
 	const objectPos = viewBoxSize / 2;
 
 	const object = createDefaultObject(objectId, { x: objectPos, y: objectPos });
-	const name = ObjectNames[objectId] ?? `ID: ${objectId}`;
+	const name = t(`object.${objectId}`, { defaultValue: `ID: ${objectId}` });
 
 	const handleDragStart = (e: React.DragEvent) => {
 		e.dataTransfer.setData("application/x-object-id", String(objectId));

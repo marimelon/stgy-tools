@@ -16,6 +16,7 @@ import {
   EditParamIds,
   ObjectNames,
 } from "@/lib/stgy";
+import { COLOR_CHANGEABLE_OBJECT_IDS } from "@/components/board/ObjectRenderer/constants";
 import type { BoardObject } from "@/lib/stgy";
 import type { BatchUpdatePayload } from "@/lib/editor/types";
 import { Badge } from "@/components/ui/badge";
@@ -77,6 +78,11 @@ export function BatchPropertyPanel({
   // 共通のフリップフラグを取得
   const flipFlags = useMemo(() => {
     return getCommonFlipFlags(objects, OBJECT_FLIP_FLAGS, DEFAULT_FLIP_FLAGS);
+  }, [objects]);
+
+  // すべてのオブジェクトが色変更可能かどうか
+  const allColorChangeable = useMemo(() => {
+    return objects.every((obj) => COLOR_CHANGEABLE_OBJECT_IDS.has(obj.objectId));
   }, [objects]);
 
   // ハンドラー
@@ -227,8 +233,8 @@ export function BatchPropertyPanel({
         {/* 色 */}
         <PropertySection title={t("batchProperty.color", "色")}>
           <div className="space-y-3">
-            {/* カラーピッカー（デバッグモード時のみ） */}
-            {debugMode && (
+            {/* カラーピッカー（デバッグモード時のみ・すべて色変更可能オブジェクトの場合のみ） */}
+            {debugMode && allColorChangeable && (
               <div className="flex items-center gap-3">
                 <div className="relative rounded-md overflow-hidden border-2 border-border">
                   <input
@@ -244,22 +250,24 @@ export function BatchPropertyPanel({
                 {isColorMixed && <MixedIndicator />}
               </div>
             )}
-            {/* カラーパレット */}
-            <ColorPalette
-              currentColor={
-                isColorMixed
-                  ? undefined
-                  : {
-                      r: batchValues.color.r as number,
-                      g: batchValues.color.g as number,
-                      b: batchValues.color.b as number,
-                    }
-              }
-              onColorSelect={(color) => {
-                onUpdate({ color: { r: color.r, g: color.g, b: color.b } });
-                onCommitHistory(t("batchProperty.colorChanged", "色変更"));
-              }}
-            />
+            {/* カラーパレット（すべて色変更可能オブジェクトの場合のみ） */}
+            {allColorChangeable && (
+              <ColorPalette
+                currentColor={
+                  isColorMixed
+                    ? undefined
+                    : {
+                        r: batchValues.color.r as number,
+                        g: batchValues.color.g as number,
+                        b: batchValues.color.b as number,
+                      }
+                }
+                onColorSelect={(color) => {
+                  onUpdate({ color: { r: color.r, g: color.g, b: color.b } });
+                  onCommitHistory(t("batchProperty.colorChanged", "色変更"));
+                }}
+              />
+            )}
             {/* 透過度 */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">

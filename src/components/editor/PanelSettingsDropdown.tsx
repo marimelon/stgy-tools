@@ -7,12 +7,11 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { LayoutPanelLeft, ChevronDown, ChevronUp } from "lucide-react";
 import {
-	PANEL_NAMES,
 	type PanelId,
 	type PanelPreset,
-	PRESET_NAMES,
 	usePanelLayout,
 } from "@/lib/panel";
 
@@ -26,6 +25,7 @@ const MENU_WIDTH = 256;
  * パネル設定ドロップダウン
  */
 export function PanelSettingsDropdown() {
+	const { t } = useTranslation();
 	const {
 		config,
 		togglePanelVisibility,
@@ -109,7 +109,7 @@ export function PanelSettingsDropdown() {
 				type="button"
 				onClick={() => setIsOpen(!isOpen)}
 				className="px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-slate-200 rounded transition-colors flex items-center gap-1"
-				title="パネルレイアウト設定"
+				title={t("panelSettings.title")}
 			>
 				<LayoutPanelLeft size={ICON_SIZE} />
 				{isOpen ? (
@@ -133,7 +133,7 @@ export function PanelSettingsDropdown() {
 					>
 						{/* パネル表示/非表示 */}
 						<div className="p-2 border-b border-slate-700">
-							<div className="text-xs text-slate-400 mb-2">パネル表示</div>
+							<div className="text-xs text-slate-400 mb-2">{t("panelSettings.panelVisibility")}</div>
 							{panelIds.map((panelId) => (
 								<label
 									key={panelId}
@@ -146,10 +146,10 @@ export function PanelSettingsDropdown() {
 										className="w-3 h-3 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500"
 									/>
 									<span className="text-sm text-slate-200">
-										{PANEL_NAMES[panelId]}
+										{t(`panelSettings.${panelId}`)}
 									</span>
 									<span className="text-xs text-slate-500 ml-auto">
-										{config.panels[panelId].slot === "left" ? "左" : "右"}
+										{config.panels[panelId].slot === "left" ? t("panelSettings.left") : t("panelSettings.right")}
 									</span>
 								</label>
 							))}
@@ -157,14 +157,14 @@ export function PanelSettingsDropdown() {
 
 						{/* パネル配置 */}
 						<div className="p-2 border-b border-slate-700">
-							<div className="text-xs text-slate-400 mb-2">パネル配置</div>
+							<div className="text-xs text-slate-400 mb-2">{t("panelSettings.panelPosition")}</div>
 							{panelIds.map((panelId) => (
 								<div
 									key={panelId}
 									className="flex items-center gap-2 py-1 px-1"
 								>
 									<span className="text-sm text-slate-200 flex-1">
-										{PANEL_NAMES[panelId]}
+										{t(`panelSettings.${panelId}`)}
 									</span>
 									<div className="flex gap-1">
 										<button
@@ -176,7 +176,7 @@ export function PanelSettingsDropdown() {
 													: "bg-slate-700 text-slate-300 hover:bg-slate-600"
 											}`}
 										>
-											左
+											{t("panelSettings.left")}
 										</button>
 										<button
 											type="button"
@@ -187,7 +187,7 @@ export function PanelSettingsDropdown() {
 													: "bg-slate-700 text-slate-300 hover:bg-slate-600"
 											}`}
 										>
-											右
+											{t("panelSettings.right")}
 										</button>
 									</div>
 								</div>
@@ -196,7 +196,7 @@ export function PanelSettingsDropdown() {
 
 						{/* プリセット */}
 						<div className="p-2">
-							<div className="text-xs text-slate-400 mb-2">プリセット</div>
+							<div className="text-xs text-slate-400 mb-2">{t("panelSettings.presets")}</div>
 							<div className="grid grid-cols-2 gap-1">
 								{presetIds.map((preset) => (
 									<button
@@ -208,7 +208,7 @@ export function PanelSettingsDropdown() {
 										}}
 										className="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 rounded transition-colors"
 									>
-										{PRESET_NAMES[preset]}
+										{t(`panelSettings.${preset}`)}
 									</button>
 								))}
 							</div>
@@ -220,7 +220,7 @@ export function PanelSettingsDropdown() {
 								}}
 								className="w-full mt-2 px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 text-slate-400 rounded transition-colors"
 							>
-								デフォルトに戻す
+								{t("panelSettings.resetToDefault")}
 							</button>
 						</div>
 					</div>,

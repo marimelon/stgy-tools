@@ -4,9 +4,9 @@
  * shadcn/ui ベースの選択オブジェクトプロパティ編集
  */
 
+import { useTranslation } from "react-i18next";
 import { rgbToHex, hexToRgb, useDebugMode } from "@/lib/editor";
 import {
-  ObjectNames,
   ObjectIds,
   OBJECT_FLIP_FLAGS,
   DEFAULT_FLIP_FLAGS,
@@ -15,11 +15,28 @@ import {
   EDIT_PARAMS,
   EditParamIds,
 } from "@/lib/stgy";
+import { COLOR_CHANGEABLE_OBJECT_IDS } from "@/components/board/ObjectRenderer/constants";
 import type { BoardObject } from "@/lib/stgy";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PropertySection, NumberInput, SliderInput, Checkbox } from "./FormInputs";
 import { ColorPalette } from "./ColorPalette";
+
+/** EditParamIds を i18n キーにマッピング */
+const EDIT_PARAM_I18N_KEYS: Record<number, string> = {
+  [EditParamIds.Size]: "editParam.size",
+  [EditParamIds.Rotation]: "editParam.angle",
+  [EditParamIds.Opacity]: "editParam.opacity",
+  [EditParamIds.Height]: "editParam.height",
+  [EditParamIds.Width]: "editParam.width",
+  [EditParamIds.ConeAngle]: "editParam.coneAngle",
+  [EditParamIds.DonutRange]: "editParam.donutRange",
+  [EditParamIds.DisplayCount]: "editParam.displayCount",
+  [EditParamIds.HeightCount]: "editParam.heightCount",
+  [EditParamIds.WidthCount]: "editParam.widthCount",
+  [EditParamIds.LineWidth]: "editParam.lineWidth",
+  [EditParamIds.SizeSmall]: "editParam.size",
+};
 
 /**
  * オブジェクトプロパティパネルのProps
@@ -41,6 +58,7 @@ export function ObjectPropertyPanel({
   onUpdate,
   onCommitHistory,
 }: ObjectPropertyPanelProps) {
+  const { t } = useTranslation();
   const { debugMode } = useDebugMode();
 
   const handleChange = (updates: Partial<BoardObject>) => {
@@ -55,9 +73,10 @@ export function ObjectPropertyPanel({
     onCommitHistory(description);
   };
 
-  const objectName = ObjectNames[object.objectId] ?? "不明";
+  const objectName = t(`object.${object.objectId}`, { defaultValue: t("propertyPanel.unknown") });
   const isTextObject = object.objectId === ObjectIds.Text;
   const isLineObject = object.objectId === ObjectIds.Line;
+  const isColorChangeable = COLOR_CHANGEABLE_OBJECT_IDS.has(object.objectId);
 
   // Lineの角度変更時に中央を軸として回転
   const handleLineRotationChange = (newRotation: number) => {
@@ -117,14 +136,14 @@ export function ObjectPropertyPanel({
   return (
     <div className="panel h-full overflow-y-auto">
       <div className="panel-header">
-        <h2 className="panel-title">プロパティ</h2>
+        <h2 className="panel-title">{t("propertyPanel.title")}</h2>
       </div>
 
       <div className="p-4 space-y-1">
         {/* オブジェクト情報 */}
         <div className="mb-4">
           <div className="text-xs font-medium mb-1.5 uppercase tracking-wide text-muted-foreground font-display">
-            オブジェクト
+            {t("propertyPanel.object")}
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">{objectName}</span>
@@ -135,7 +154,7 @@ export function ObjectPropertyPanel({
         </div>
 
         {/* 位置 */}
-        <PropertySection title="位置">
+        <PropertySection title={t("propertyPanel.position")}>
           <div className="grid grid-cols-2 gap-3">
             <NumberInput
               label="X"
@@ -146,7 +165,7 @@ export function ObjectPropertyPanel({
               onChange={(x) =>
                 handleChange({ position: { ...object.position, x } })
               }
-              onBlur={() => onCommitHistory("位置変更")}
+              onBlur={() => onCommitHistory(t("propertyPanel.positionChanged"))}
             />
             <NumberInput
               label="Y"
@@ -157,23 +176,23 @@ export function ObjectPropertyPanel({
               onChange={(y) =>
                 handleChange({ position: { ...object.position, y } })
               }
-              onBlur={() => onCommitHistory("位置変更")}
+              onBlur={() => onCommitHistory(t("propertyPanel.positionChanged"))}
             />
           </div>
         </PropertySection>
 
         {/* 変形 */}
-        <PropertySection title="変形">
+        <PropertySection title={t("propertyPanel.transform")}>
           <div className="space-y-3">
             <SliderInput
-              label="回転"
+              label={t("propertyPanel.rotation")}
               value={object.rotation}
               min={-180}
               max={180}
               step={1}
               unit="°"
               onChange={isLineObject ? handleLineRotationChange : (rotation) => handleChange({ rotation })}
-              onBlur={() => onCommitHistory("回転変更")}
+              onBlur={() => onCommitHistory(t("propertyPanel.rotationChanged"))}
             />
             {!isLineObject && (() => {
               // オブジェクトタイプに応じたサイズパラメータを取得
@@ -184,14 +203,14 @@ export function ObjectPropertyPanel({
               const sizeParam = EDIT_PARAMS[sizeParamId];
               return (
                 <SliderInput
-                  label="サイズ"
+                  label={t("propertyPanel.size")}
                   value={object.size}
                   min={sizeParam.min}
                   max={sizeParam.max}
                   step={1}
                   unit="%"
                   onChange={(size) => handleChange({ size })}
-                  onBlur={() => onCommitHistory("サイズ変更")}
+                  onBlur={() => onCommitHistory(t("propertyPanel.sizeChanged"))}
                 />
               );
             })()}
@@ -199,10 +218,10 @@ export function ObjectPropertyPanel({
         </PropertySection>
 
         {/* 色 */}
-        <PropertySection title="色">
+        <PropertySection title={t("propertyPanel.color")}>
           <div className="space-y-3">
-            {/* カラーピッカー（デバッグモード時のみ） */}
-            {debugMode && (
+            {/* カラーピッカー（デバッグモード時のみ・色変更可能オブジェクトのみ） */}
+            {debugMode && isColorChangeable && (
               <div className="flex items-center gap-3">
                 <div className="relative rounded-md overflow-hidden border-2 border-border">
                   <input
@@ -216,7 +235,7 @@ export function ObjectPropertyPanel({
                       const { r, g, b } = hexToRgb(e.target.value);
                       handleChange({ color: { ...object.color, r, g, b } });
                     }}
-                    onBlur={() => onCommitHistory("色変更")}
+                    onBlur={() => onCommitHistory(t("propertyPanel.colorChanged"))}
                     className="w-10 h-8 cursor-pointer border-0 bg-transparent"
                   />
                 </div>
@@ -225,16 +244,18 @@ export function ObjectPropertyPanel({
                 </span>
               </div>
             )}
-            {/* カラーパレット */}
-            <ColorPalette
-              currentColor={object.color}
-              onColorSelect={(color) => {
-                handleChange({ color: { ...object.color, ...color } });
-                onCommitHistory("色変更");
-              }}
-            />
+            {/* カラーパレット（色変更可能オブジェクトのみ） */}
+            {isColorChangeable && (
+              <ColorPalette
+                currentColor={object.color}
+                onColorSelect={(color) => {
+                  handleChange({ color: { ...object.color, ...color } });
+                  onCommitHistory(t("propertyPanel.colorChanged"));
+                }}
+              />
+            )}
             <SliderInput
-              label="透過度"
+              label={t("propertyPanel.opacity")}
               value={object.color.opacity}
               min={0}
               max={100}
@@ -243,55 +264,55 @@ export function ObjectPropertyPanel({
               onChange={(opacity) =>
                 handleChange({ color: { ...object.color, opacity } })
               }
-              onBlur={() => onCommitHistory("透過度変更")}
+              onBlur={() => onCommitHistory(t("propertyPanel.opacityChanged"))}
             />
           </div>
         </PropertySection>
 
         {/* フラグ */}
-        <PropertySection title="状態">
+        <PropertySection title={t("propertyPanel.state")}>
           <div className="space-y-2.5">
             <Checkbox
-              label="表示"
+              label={t("propertyPanel.visible")}
               checked={object.flags.visible}
               onChange={(visible) =>
                 handleChangeAndCommit(
                   { flags: { ...object.flags, visible } },
-                  "表示状態変更"
+                  t("propertyPanel.visibilityChanged")
                 )
               }
             />
             {canFlipHorizontal && (
               <Checkbox
-                label="左右反転"
+                label={t("propertyPanel.flipHorizontal")}
                 checked={object.flags.flipHorizontal}
                 onChange={(flipHorizontal) =>
                   handleChangeAndCommit(
                     { flags: { ...object.flags, flipHorizontal } },
-                    "反転変更"
+                    t("propertyPanel.flipChanged")
                   )
                 }
               />
             )}
             {canFlipVertical && (
               <Checkbox
-                label="上下反転"
+                label={t("propertyPanel.flipVertical")}
                 checked={object.flags.flipVertical}
                 onChange={(flipVertical) =>
                   handleChangeAndCommit(
                     { flags: { ...object.flags, flipVertical } },
-                    "反転変更"
+                    t("propertyPanel.flipChanged")
                   )
                 }
               />
             )}
             <Checkbox
-              label="ロック"
+              label={t("propertyPanel.locked")}
               checked={object.flags.locked}
               onChange={(locked) =>
                 handleChangeAndCommit(
                   { flags: { ...object.flags, locked } },
-                  "ロック変更"
+                  t("propertyPanel.lockChanged")
                 )
               }
             />
@@ -300,28 +321,28 @@ export function ObjectPropertyPanel({
 
         {/* テキスト (テキストオブジェクトのみ) */}
         {isTextObject && (
-          <PropertySection title="テキスト">
+          <PropertySection title={t("propertyPanel.text")}>
             <Input
               type="text"
               value={object.text ?? ""}
               onChange={(e) => handleChange({ text: e.target.value })}
-              onBlur={() => onCommitHistory("テキスト変更")}
+              onBlur={() => onCommitHistory(t("propertyPanel.textChanged"))}
             />
           </PropertySection>
         )}
 
         {/* 固有パラメータ（動的生成） */}
         {additionalParams.length > 0 && (
-          <PropertySection title="固有パラメータ">
+          <PropertySection title={t("propertyPanel.specificParams")}>
             <div className="space-y-3">
               {additionalParams.map((paramId) => {
                 const paramDef = EDIT_PARAMS[paramId];
                 if (!paramDef) return null;
-                
+
                 // 各パラメータIDに対応するオブジェクトプロパティを決定
                 let value: number;
                 let onChange: (v: number) => void;
-                
+
                 if (paramId === EditParamIds.ConeAngle) {
                   value = object.param1 ?? paramDef.defaultValue;
                   onChange = (v) => handleChange({ param1: v });
@@ -360,28 +381,32 @@ export function ObjectPropertyPanel({
                 const unit = paramId === EditParamIds.ConeAngle ? "°" :
                              paramId === EditParamIds.DonutRange ? "%" : "";
 
+                // i18nキーを取得
+                const labelKey = EDIT_PARAM_I18N_KEYS[paramId];
+                const label = labelKey ? t(labelKey) : paramDef.name;
+
                 return paramDef.useSlider ? (
                   <SliderInput
                     key={paramId}
-                    label={paramDef.name}
+                    label={label}
                     value={value}
                     min={paramDef.min}
                     max={paramDef.max}
                     step={1}
                     unit={unit}
                     onChange={onChange}
-                    onBlur={() => onCommitHistory(`${paramDef.name}変更`)}
+                    onBlur={() => onCommitHistory(`${label}${t("batchProperty.changed")}`)}
                   />
                 ) : (
                   <NumberInput
                     key={paramId}
-                    label={paramDef.name}
+                    label={label}
                     value={value}
                     min={paramDef.min}
                     max={paramDef.max}
                     step={1}
                     onChange={onChange}
-                    onBlur={() => onCommitHistory(`${paramDef.name}変更`)}
+                    onBlur={() => onCommitHistory(`${label}${t("batchProperty.changed")}`)}
                   />
                 );
               })}

@@ -3,6 +3,7 @@
  */
 
 import type { DragEvent } from "react";
+import { useTranslation } from "react-i18next";
 import type { ObjectGroup } from "@/lib/editor/types";
 import {
 	GripVertical,
@@ -50,6 +51,7 @@ export function LayerGroupHeader({
 	onToggleVisibility,
 	onUngroup,
 }: LayerGroupHeaderProps) {
+	const { t } = useTranslation();
 	const firstIndex = Math.min(...group.objectIndices);
 	const isDropBeforeGroup =
 		dropTarget?.index === firstIndex && dropTarget?.position === "before";
@@ -97,7 +99,7 @@ export function LayerGroupHeader({
 				<span
 					className={`flex-1 text-xs truncate font-medium ${isAllHidden ? "text-purple-400/50" : "text-purple-400"}`}
 				>
-					グループ ({group.objectIndices.length})
+					{t("layerPanel.group")} ({group.objectIndices.length})
 				</span>
 
 				{/* グループ表示/非表示トグル */}
@@ -108,7 +110,7 @@ export function LayerGroupHeader({
 						onToggleVisibility(group);
 					}}
 					className={isAllVisible ? "text-purple-400" : "text-muted-foreground"}
-					title={isAllVisible ? "グループを非表示" : "グループを表示"}
+					title={isAllVisible ? t("layerPanel.hideGroup") : t("layerPanel.showGroup")}
 				>
 					{isAllVisible ? <Eye size={14} /> : <EyeOff size={14} />}
 				</button>
@@ -118,7 +120,7 @@ export function LayerGroupHeader({
 					type="button"
 					onClick={(e) => onUngroup(group.id, e)}
 					className="text-muted-foreground hover:text-foreground"
-					title="グループ解除"
+					title={t("layerPanel.ungroup")}
 				>
 					<X size={14} />
 				</button>

@@ -3,8 +3,8 @@
  */
 
 import type { DragEvent } from "react";
+import { useTranslation } from "react-i18next";
 import type { BoardObject } from "@/lib/stgy";
-import { ObjectNames } from "@/lib/stgy";
 import { GripVertical, Eye, EyeOff } from "lucide-react";
 import type { DropTarget } from "./types";
 
@@ -42,7 +42,8 @@ export function LayerObjectItem({
 	onSelect,
 	onToggleVisibility,
 }: LayerObjectItemProps) {
-	const name = ObjectNames[object.objectId] ?? `ID: ${object.objectId}`;
+	const { t } = useTranslation();
+	const name = t(`object.${object.objectId}`, { defaultValue: `ID: ${object.objectId}` });
 
 	// グループドラッグ中でグループ内アイテムの場合はグループヘッダーに任せる
 	const isDropBefore =
@@ -87,7 +88,7 @@ export function LayerObjectItem({
 					className={
 						object.flags.visible ? "text-foreground" : "text-muted-foreground"
 					}
-					title={object.flags.visible ? "非表示にする" : "表示する"}
+					title={object.flags.visible ? t("layerPanel.hideObject") : t("layerPanel.showObject")}
 				>
 					{object.flags.visible ? <Eye size={14} /> : <EyeOff size={14} />}
 				</button>

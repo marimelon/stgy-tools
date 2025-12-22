@@ -5,6 +5,7 @@
  */
 
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 import { Grid3x3 } from "lucide-react";
 import { GRID_SIZES, type GridSettings } from "@/lib/editor";
 import { DropdownMenu, DropdownDivider } from "./DropdownMenu";
@@ -26,6 +27,7 @@ export function GridSettingsMenu({
 	gridSettings,
 	onGridSettingsChange,
 }: GridSettingsMenuProps) {
+	const { t } = useTranslation();
 	const gridSizeId = useId();
 	return (
 		<DropdownMenu
@@ -37,7 +39,7 @@ export function GridSettingsMenu({
 					)}
 				</span>
 			}
-			title="グリッド設定"
+			title={t("toolbar.gridSettings")}
 		>
 			<div className="p-3 min-w-48">
 				{/* グリッドスナップ有効/無効 */}
@@ -48,7 +50,7 @@ export function GridSettingsMenu({
 						onChange={(e) => onGridSettingsChange({ enabled: e.target.checked })}
 						className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500"
 					/>
-					<span className="text-sm text-slate-200">グリッドスナップ</span>
+					<span className="text-sm text-slate-200">{t("moreMenu.gridSnap")}</span>
 				</label>
 
 				<DropdownDivider />
@@ -56,7 +58,7 @@ export function GridSettingsMenu({
 				{/* グリッドサイズ */}
 				<div className="mt-3 mb-3">
 					<label htmlFor={gridSizeId} className="block text-xs text-slate-400 mb-1">
-						グリッドサイズ
+						{t("toolbar.gridSize")}
 					</label>
 					<select
 						id={gridSizeId}
@@ -92,7 +94,7 @@ export function GridSettingsMenu({
 						disabled={!gridSettings.enabled}
 						className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500 disabled:opacity-50"
 					/>
-					<span className="text-sm text-slate-200">グリッドを表示</span>
+					<span className="text-sm text-slate-200">{t("moreMenu.showGrid")}</span>
 				</label>
 			</div>
 		</DropdownMenu>
