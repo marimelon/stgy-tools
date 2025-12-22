@@ -6,6 +6,19 @@
 		"generate": "Generate",
 		"error": "Error"
 	},
+	"contextMenu": {
+		"copy": "Copy",
+		"paste": "Paste",
+		"duplicate": "Duplicate",
+		"delete": "Delete",
+		"group": "Group",
+		"ungroup": "Ungroup",
+		"bringToFront": "Bring to Front",
+		"bringForward": "Bring Forward",
+		"sendBackward": "Send Backward",
+		"sendToBack": "Send to Back",
+		"selectAll": "Select All"
+	},
 	"nav": {
 		"viewer": "Viewer",
 		"editor": "Editor"

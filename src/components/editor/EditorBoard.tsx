@@ -4,7 +4,7 @@
  * BoardViewerを拡張し、ドラッグ/回転/リサイズのインタラクションを追加
  */
 
-import { useRef } from "react";
+import { useRef, useState, useCallback } from "react";
 import { BackgroundRenderer, ObjectRenderer, getObjectBoundingBox } from "@/components/board";
 import {
   useEditor,
@@ -15,6 +15,7 @@ import { ObjectIds } from "@/lib/stgy";
 import { SelectionHandles } from "./SelectionHandles";
 import { LineSelectionHandles } from "./LineSelectionHandles";
 import { GridOverlay, SelectionIndicator } from "./GridOverlay";
+import { ContextMenu, type ContextMenuState } from "./ContextMenu";
 
 /** キャンバスサイズ */
 const CANVAS_WIDTH = 512;
@@ -35,12 +36,70 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
     getGroupForObject,
     selectGroup,
     moveObjects,
+    copySelected,
+    paste,
+    duplicateSelected,
+    deleteSelected,
+    groupSelected,
+    ungroup,
+    moveLayer,
+    selectAll,
+    canGroup,
+    selectedGroup,
   } = useEditor();
 
-  const { board, selectedIndices, gridSettings } = state;
+  const { board, selectedIndices, gridSettings, clipboard } = state;
   const { backgroundId, objects } = board;
 
   const svgRef = useRef<SVGSVGElement>(null);
+
+  // コンテキストメニュー状態
+  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
+    isOpen: false,
+    x: 0,
+    y: 0,
+    targetIndex: null,
+  });
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu((prev) => ({ ...prev, isOpen: false }));
+  }, []);
+
+  // 背景での右クリック
+  const handleBackgroundContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setContextMenu({
+        isOpen: true,
+        x: e.clientX,
+        y: e.clientY,
+        targetIndex: null,
+      });
+    },
+    [],
+  );
+
+  // オブジェクト上での右クリック
+  const handleObjectContextMenu = useCallback(
+    (index: number, e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // 未選択のオブジェクトを右クリックした場合は選択する
+      if (!selectedIndices.includes(index)) {
+        selectObject(index);
+      }
+
+      setContextMenu({
+        isOpen: true,
+        x: e.clientX,
+        y: e.clientY,
+        targetIndex: index,
+      });
+    },
+    [selectedIndices, selectObject],
+  );
 
   // インタラクションフック
   const {
@@ -91,6 +150,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
     : null;
 
   return (
+    <>
     <svg
       ref={svgRef}
       width={CANVAS_WIDTH * scale}
@@ -101,6 +161,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
       onPointerDown={handleBackgroundPointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onContextMenu={handleBackgroundContextMenu}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       className="bg-slate-800"
@@ -130,6 +191,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
           key={index}
           onClick={(e) => handleObjectClick(index, e)}
           onPointerDown={(e) => handleObjectPointerDown(index, e)}
+          onContextMenu={(e) => handleObjectContextMenu(index, e)}
           style={{ cursor: "move" }}
         >
           <ObjectRenderer
@@ -243,6 +305,27 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
         />
       )}
     </svg>
+
+    {/* コンテキストメニュー */}
+    <ContextMenu
+      menuState={contextMenu}
+      onClose={closeContextMenu}
+      selectedIndices={selectedIndices}
+      hasClipboard={clipboard !== null}
+      canGroup={canGroup}
+      selectedGroup={selectedGroup}
+      actions={{
+        copy: copySelected,
+        paste: () => paste(),
+        duplicate: duplicateSelected,
+        delete: deleteSelected,
+        group: groupSelected,
+        ungroup: () => selectedGroup && ungroup(selectedGroup.id),
+        moveLayer,
+        selectAll,
+      }}
+    />
+    </>
   );
 }
 

@@ -93,6 +93,8 @@ export interface EditorContextValue {
 	setGridSettings: (settings: Partial<GridSettings>) => void;
 	/** 選択オブジェクトを整列 */
 	alignObjects: (alignment: AlignmentType) => void;
+	/** 全オブジェクトを選択 */
+	selectAll: () => void;
 
 	// 状態
 	/** Undoが可能か */
@@ -294,6 +296,11 @@ export function EditorProvider({
 		[state.selectedIndices],
 	);
 
+	const selectAll = useCallback(() => {
+		const allIndices = state.board.objects.map((_, i) => i);
+		dispatch({ type: "SELECT_OBJECTS", indices: allIndices });
+	}, [state.board.objects]);
+
 	// 計算済み状態
 	const canUndo = state.historyIndex > 0;
 	const canRedo = state.historyIndex < state.history.length - 1;
@@ -345,6 +352,7 @@ export function EditorProvider({
 			selectGroup,
 			setGridSettings,
 			alignObjects,
+			selectAll,
 			canUndo,
 			canRedo,
 			selectedObjects,
@@ -380,6 +388,7 @@ export function EditorProvider({
 			selectGroup,
 			setGridSettings,
 			alignObjects,
+			selectAll,
 			canUndo,
 			canRedo,
 			selectedObjects,
