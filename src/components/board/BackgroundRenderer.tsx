@@ -3,4 +3,4 @@
  * 共通コンポーネントを再エクスポート
  */
 
-export { BackgroundRenderer, CheckerPattern } from "@/lib/board";
+export { BackgroundRenderer } from "@/lib/board";

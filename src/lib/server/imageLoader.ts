@@ -15,6 +15,9 @@ export interface AssetsBinding {
 // 画像キャッシュ（メモリ効率のため）
 const imageCache = new Map<number, string>();
 
+// 背景画像キャッシュ
+const backgroundCache = new Map<number, string>();
+
 // フォントキャッシュ
 let fontCache: Uint8Array | null = null;
 
@@ -108,7 +111,9 @@ async function preloadImagesNode(objectIds: number[]): Promise<void> {
 					continue;
 				}
 			}
-			console.error(`[imageLoader] Icon ${objectId} not found in any directory`);
+			console.error(
+				`[imageLoader] Icon ${objectId} not found in any directory`,
+			);
 			return null;
 		}),
 	);
@@ -130,6 +135,97 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 		binary += String.fromCharCode(bytes[i]);
 	}
 	return btoa(binary);
+}
+
+/**
+ * 背景画像をBase64データURIとして取得
+ */
+export async function loadBackgroundImage(
+	backgroundId: number,
+): Promise<string | null> {
+	// 既にキャッシュにあれば返す
+	const cached = backgroundCache.get(backgroundId);
+	if (cached) return cached;
+
+	// 1-7 が有効範囲
+	if (backgroundId < 1 || backgroundId > 7) {
+		return null;
+	}
+
+	if (isCloudflareWorkers()) {
+		return loadBackgroundCloudflare(backgroundId);
+	}
+	return loadBackgroundNode(backgroundId);
+}
+
+/**
+ * Cloudflare Workers 用: 背景画像読み込み
+ */
+async function loadBackgroundCloudflare(
+	backgroundId: number,
+): Promise<string | null> {
+	const env = getGlobalEnv();
+	const assets = env?.ASSETS;
+
+	if (!assets) {
+		console.error("[imageLoader] ASSETS binding is not available");
+		return null;
+	}
+
+	try {
+		const assetUrl = new URL(
+			`/backgrounds/${backgroundId}.png`,
+			"https://assets.local",
+		);
+		const response = await assets.fetch(new Request(assetUrl));
+		if (!response.ok) {
+			console.error(
+				`[imageLoader] Failed to fetch background ${backgroundId}: ${response.status}`,
+			);
+			return null;
+		}
+		const arrayBuffer = await response.arrayBuffer();
+		const base64 = arrayBufferToBase64(arrayBuffer);
+		const dataUri = `data:image/png;base64,${base64}`;
+		backgroundCache.set(backgroundId, dataUri);
+		return dataUri;
+	} catch (error) {
+		console.error(
+			`[imageLoader] Error loading background ${backgroundId}:`,
+			error,
+		);
+		return null;
+	}
+}
+
+/**
+ * Node.js 用: 背景画像読み込み
+ */
+async function loadBackgroundNode(
+	backgroundId: number,
+): Promise<string | null> {
+	const possibleDirs = [
+		join(process.cwd(), ".output", "public", "backgrounds"),
+		join(process.cwd(), "public", "backgrounds"),
+	];
+
+	for (const dir of possibleDirs) {
+		try {
+			const filePath = join(dir, `${backgroundId}.png`);
+			const buffer = await readFile(filePath);
+			const base64 = buffer.toString("base64");
+			const dataUri = `data:image/png;base64,${base64}`;
+			backgroundCache.set(backgroundId, dataUri);
+			return dataUri;
+		} catch {
+			continue;
+		}
+	}
+
+	console.error(
+		`[imageLoader] Background ${backgroundId} not found in any directory`,
+	);
+	return null;
 }
 
 /**

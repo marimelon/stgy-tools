@@ -13,7 +13,11 @@ import {
 } from "@/lib/board";
 import type { BoardData, BoardObject, Color } from "@/lib/stgy/types";
 import { ObjectIds } from "@/lib/stgy/types";
-import { loadImageAsDataUri, preloadImagesAsync } from "./imageLoader";
+import {
+	loadBackgroundImage,
+	loadImageAsDataUri,
+	preloadImagesAsync,
+} from "./imageLoader";
 
 /**
  * SVGレンダリングオプション
@@ -655,7 +659,12 @@ export async function renderBoardToSVG(
 		)
 		.map((obj) => obj.objectId);
 	const uniqueObjectIds = [...new Set(objectIds)];
-	await preloadImagesAsync(uniqueObjectIds);
+
+	// オブジェクト画像と背景画像を並列で読み込み
+	const [, backgroundDataUri] = await Promise.all([
+		preloadImagesAsync(uniqueObjectIds),
+		loadBackgroundImage(backgroundId),
+	]);
 
 	// タイトル表示時は高さを拡張
 	const totalHeight = showTitle
@@ -686,11 +695,12 @@ export async function renderBoardToSVG(
 
 			{/* コンテンツ領域 */}
 			<g transform={`translate(0, ${contentOffsetY})`}>
-				{/* 背景パターン（共通コンポーネント使用） */}
+				{/* 背景画像（共通コンポーネント使用） */}
 				<BackgroundRenderer
 					backgroundId={backgroundId}
 					width={CANVAS_WIDTH}
 					height={CANVAS_HEIGHT}
+					imageDataUri={backgroundDataUri ?? undefined}
 				/>
 
 				{/* オブジェクト */}

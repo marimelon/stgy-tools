@@ -9,12 +9,6 @@ import { ObjectIds } from "@/lib/stgy/types";
 export const CANVAS_WIDTH = 512;
 export const CANVAS_HEIGHT = 384;
 
-/** 背景サイズ定数 */
-export const BACKGROUND_SIZES = {
-	SQUARE_GRAY_BASE: 100,
-	SQUARE_GRAY_MULTIPLIER: 3.5,
-} as const;
-
 /**
  * オブジェクトごとのバウンディングボックスサイズ定義
  * CSVの7,8カラム目（width, height）から取得
