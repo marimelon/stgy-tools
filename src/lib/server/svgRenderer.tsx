@@ -106,6 +106,104 @@ const COLOR_CHANGEABLE_OBJECT_IDS = new Set<number>([
 const DEFAULT_AOE_FILL = "rgba(255, 150, 0, 0.4)";
 
 /**
+ * 扇形の外接矩形を計算（中心を原点とした相対座標）
+ */
+function getConeBoundingBox(
+	angle: number,
+	radius: number,
+): { minX: number; minY: number; width: number; height: number } {
+	const startAngle = -90;
+	const endAngle = -90 + angle;
+
+	const points: { x: number; y: number }[] = [
+		{ x: 0, y: 0 },
+		{
+			x: Math.cos((startAngle * Math.PI) / 180) * radius,
+			y: Math.sin((startAngle * Math.PI) / 180) * radius,
+		},
+		{
+			x: Math.cos((endAngle * Math.PI) / 180) * radius,
+			y: Math.sin((endAngle * Math.PI) / 180) * radius,
+		},
+	];
+
+	for (const deg of [-90, 0, 90, 180, 270]) {
+		if (deg > startAngle && deg < endAngle) {
+			points.push({
+				x: Math.cos((deg * Math.PI) / 180) * radius,
+				y: Math.sin((deg * Math.PI) / 180) * radius,
+			});
+		}
+	}
+
+	const xs = points.map((p) => p.x);
+	const ys = points.map((p) => p.y);
+	const minX = Math.min(...xs);
+	const maxX = Math.max(...xs);
+	const minY = Math.min(...ys);
+	const maxY = Math.max(...ys);
+
+	return { minX, minY, width: maxX - minX, height: maxY - minY };
+}
+
+/**
+ * 扇形ドーナツの外接矩形を計算（中心を原点とした相対座標）
+ */
+function getDonutConeBoundingBox(
+	angle: number,
+	outerRadius: number,
+	innerRadius: number,
+): { minX: number; minY: number; width: number; height: number } {
+	const startAngle = -90;
+	const endAngle = -90 + angle;
+
+	const points: { x: number; y: number }[] = [];
+
+	// 外弧の開始点と終了点
+	points.push({
+		x: Math.cos((startAngle * Math.PI) / 180) * outerRadius,
+		y: Math.sin((startAngle * Math.PI) / 180) * outerRadius,
+	});
+	points.push({
+		x: Math.cos((endAngle * Math.PI) / 180) * outerRadius,
+		y: Math.sin((endAngle * Math.PI) / 180) * outerRadius,
+	});
+
+	// 内弧の開始点と終了点
+	points.push({
+		x: Math.cos((startAngle * Math.PI) / 180) * innerRadius,
+		y: Math.sin((startAngle * Math.PI) / 180) * innerRadius,
+	});
+	points.push({
+		x: Math.cos((endAngle * Math.PI) / 180) * innerRadius,
+		y: Math.sin((endAngle * Math.PI) / 180) * innerRadius,
+	});
+
+	// 基準角度が範囲内にあれば外弧と内弧の両方に追加
+	for (const deg of [-90, 0, 90, 180, 270]) {
+		if (deg > startAngle && deg < endAngle) {
+			points.push({
+				x: Math.cos((deg * Math.PI) / 180) * outerRadius,
+				y: Math.sin((deg * Math.PI) / 180) * outerRadius,
+			});
+			points.push({
+				x: Math.cos((deg * Math.PI) / 180) * innerRadius,
+				y: Math.sin((deg * Math.PI) / 180) * innerRadius,
+			});
+		}
+	}
+
+	const xs = points.map((p) => p.x);
+	const ys = points.map((p) => p.y);
+	const minX = Math.min(...xs);
+	const maxX = Math.max(...xs);
+	const minY = Math.min(...ys);
+	const maxY = Math.max(...ys);
+
+	return { minX, minY, width: maxX - minX, height: maxY - minY };
+}
+
+/**
  * パラメータまたは色が変更されたAoEオブジェクトをSVGでレンダリング
  */
 function renderColoredAoE(
@@ -229,30 +327,106 @@ function renderColoredAoE(
 			);
 		}
 		case ObjectIds.DonutAoE: {
-			// ドーナツ型AoE（中央に穴あき）
-			const outerRadius = 64;
+			// ドーナツ型AoE（中央に穴あき、角度対応）
+			const coneAngle = param1 ?? 360; // 範囲角度（10-360度）
+			const outerRadius = 256; // クライアント側と同じサイズ
 			const donutRange = param2 ?? 50; // 0-240: 0=穴なし, 240=最大
 			const innerRadius = outerRadius * (donutRange / 240);
 			const maskId = `donut-mask-${Math.random().toString(36).slice(2, 9)}`;
 
+			// オリジナル画像をBase64で取得
+			const imageDataUri = loadImageAsDataUri(ObjectIds.DonutAoE);
+
+			// 360度以上の場合は完全な円ドーナツ
+			if (coneAngle >= 360) {
+				return (
+					<g transform={transform} opacity={opacity}>
+						<defs>
+							<mask id={maskId}>
+								<rect
+									x={-outerRadius}
+									y={-outerRadius}
+									width={outerRadius * 2}
+									height={outerRadius * 2}
+									fill="white"
+								/>
+								<circle cx={0} cy={0} r={innerRadius} fill="black" />
+							</mask>
+						</defs>
+						{imageDataUri && (
+							<image
+								href={imageDataUri}
+								x={-outerRadius}
+								y={-outerRadius}
+								width={outerRadius * 2}
+								height={outerRadius * 2}
+								mask={`url(#${maskId})`}
+							/>
+						)}
+					</g>
+				);
+			}
+
+			// 360度未満の場合は扇形ドーナツを画像+maskで描画
+			// バウンディングボックスの中心がオブジェクト座標に来るようにオフセット計算
+			const bbox =
+				innerRadius <= 0
+					? getConeBoundingBox(coneAngle, outerRadius)
+					: getDonutConeBoundingBox(coneAngle, outerRadius, innerRadius);
+			const offsetX = -(bbox.minX + bbox.width / 2);
+			const offsetY = -(bbox.minY + bbox.height / 2);
+
+			const startRad = -Math.PI / 2;
+			const endRad = startRad + (coneAngle * Math.PI) / 180;
+
+			// 外弧の開始点と終了点（オフセット適用）
+			const outerX1 = offsetX + Math.cos(startRad) * outerRadius;
+			const outerY1 = offsetY + Math.sin(startRad) * outerRadius;
+			const outerX2 = offsetX + Math.cos(endRad) * outerRadius;
+			const outerY2 = offsetY + Math.sin(endRad) * outerRadius;
+
+			// 内弧の開始点と終了点（オフセット適用）
+			const innerX1 = offsetX + Math.cos(startRad) * innerRadius;
+			const innerY1 = offsetY + Math.sin(startRad) * innerRadius;
+			const innerX2 = offsetX + Math.cos(endRad) * innerRadius;
+			const innerY2 = offsetY + Math.sin(endRad) * innerRadius;
+
+			const largeArc = coneAngle > 180 ? 1 : 0;
+
+			// 内径が0の場合は扇形（内穴なし）
+			const maskPath =
+				innerRadius <= 0
+					? [
+							`M ${offsetX} ${offsetY}`,
+							`L ${outerX1} ${outerY1}`,
+							`A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`,
+							"Z",
+						].join(" ")
+					: [
+							`M ${outerX1} ${outerY1}`,
+							`A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`,
+							`L ${innerX2} ${innerY2}`,
+							`A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerX1} ${innerY1}`,
+							"Z",
+						].join(" ");
+
 			return (
-				<g transform={transform}>
+				<g transform={transform} opacity={opacity}>
 					<defs>
 						<mask id={maskId}>
-							<circle cx={0} cy={0} r={outerRadius} fill="white" />
-							<circle cx={0} cy={0} r={innerRadius} fill="black" />
+							<path d={maskPath} fill="white" />
 						</mask>
 					</defs>
-					<circle
-						cx={0}
-						cy={0}
-						r={outerRadius}
-						fill={fill}
-						stroke={strokeColor}
-						strokeWidth="2"
-						opacity={opacity}
-						mask={`url(#${maskId})`}
-					/>
+					{imageDataUri && (
+						<image
+							href={imageDataUri}
+							x={offsetX - outerRadius}
+							y={offsetY - outerRadius}
+							width={outerRadius * 2}
+							height={outerRadius * 2}
+							mask={`url(#${maskId})`}
+						/>
+					)}
 				</g>
 			);
 		}
@@ -330,11 +504,13 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 		);
 	}
 
-	// ConeAoE, LineAoEは常にSVGでレンダリング（画像はサイドバーアイコンのみ）
+	// ConeAoE, LineAoE, DonutAoEは常にSVGでレンダリング（画像はサイドバーアイコンのみ）
 	// 色変更可能なのは LineAoE, Text のみ（Lineは上で特別処理）
 	// その他のAoEオブジェクトはパラメータ変更時のみSVGでレンダリング（色変更は無視）
 	const alwaysSvgObjects =
-		objectId === ObjectIds.ConeAoE || objectId === ObjectIds.LineAoE;
+		objectId === ObjectIds.ConeAoE ||
+		objectId === ObjectIds.LineAoE ||
+		objectId === ObjectIds.DonutAoE;
 	const shouldRenderAsSvg =
 		alwaysSvgObjects ||
 		(AOE_OBJECT_IDS.has(objectId) &&

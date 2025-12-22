@@ -71,7 +71,8 @@ export function createDefaultObject(
 
     switch (paramId) {
       case EditParamIds.ConeAngle:
-        obj.param1 = paramDef.defaultValue;
+        // DonutAoEの場合は初期値360度（完全な円）
+        obj.param1 = objectId === ObjectIds.DonutAoE ? 360 : paramDef.defaultValue;
         break;
       case EditParamIds.DonutRange:
       case EditParamIds.Width:

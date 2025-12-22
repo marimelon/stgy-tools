@@ -1125,6 +1125,64 @@ function getConeBoundingBox(
 	return { minX, minY, width: maxX - minX, height: maxY - minY };
 }
 
+// 扇形ドーナツの外接矩形を計算（中心を原点とした相対座標）
+// 起点は12時方向（-90度）、そこから時計回りに範囲角度分広がる
+// 扇形と異なり中心(0,0)を含まず、外弧と内弧の点のみを考慮
+function getDonutConeBoundingBox(
+	angle: number,
+	outerRadius: number,
+	innerRadius: number,
+): { minX: number; minY: number; width: number; height: number } {
+	const startAngle = -90;
+	const endAngle = -90 + angle;
+
+	const points: { x: number; y: number }[] = [];
+
+	// 外弧の開始点と終了点
+	points.push({
+		x: Math.cos((startAngle * Math.PI) / 180) * outerRadius,
+		y: Math.sin((startAngle * Math.PI) / 180) * outerRadius,
+	});
+	points.push({
+		x: Math.cos((endAngle * Math.PI) / 180) * outerRadius,
+		y: Math.sin((endAngle * Math.PI) / 180) * outerRadius,
+	});
+
+	// 内弧の開始点と終了点
+	points.push({
+		x: Math.cos((startAngle * Math.PI) / 180) * innerRadius,
+		y: Math.sin((startAngle * Math.PI) / 180) * innerRadius,
+	});
+	points.push({
+		x: Math.cos((endAngle * Math.PI) / 180) * innerRadius,
+		y: Math.sin((endAngle * Math.PI) / 180) * innerRadius,
+	});
+
+	// 基準角度が範囲内にあれば外弧と内弧の両方に追加
+	const cardinalAngles = [-90, 0, 90, 180, 270];
+	for (const deg of cardinalAngles) {
+		if (deg > startAngle && deg < endAngle) {
+			points.push({
+				x: Math.cos((deg * Math.PI) / 180) * outerRadius,
+				y: Math.sin((deg * Math.PI) / 180) * outerRadius,
+			});
+			points.push({
+				x: Math.cos((deg * Math.PI) / 180) * innerRadius,
+				y: Math.sin((deg * Math.PI) / 180) * innerRadius,
+			});
+		}
+	}
+
+	const xs = points.map((p) => p.x);
+	const ys = points.map((p) => p.y);
+	const minX = Math.min(...xs);
+	const maxX = Math.max(...xs);
+	const minY = Math.min(...ys);
+	const maxY = Math.max(...ys);
+
+	return { minX, minY, width: maxX - minX, height: maxY - minY };
+}
+
 // オブジェクトのバウンディングボックスサイズとオフセットを取得
 export function getObjectBoundingBox(
 	objectId: number,
@@ -1141,6 +1199,44 @@ export function getObjectBoundingBox(
 		return {
 			width: cone.width,
 			height: cone.height,
+			offsetX: 0,
+			offsetY: 0,
+		};
+	}
+
+	// 輪形範囲攻撃（動的計算）
+	if (objectId === ObjectIds.DonutAoE) {
+		const angle = param1 ?? 360;
+		const donutRange = param2 ?? 50;
+		const outerRadius = 256; // 512 / 2
+		const innerRadius = outerRadius * (donutRange / 240);
+
+		// 360度以上の場合は完全な円
+		if (angle >= 360) {
+			return {
+				width: outerRadius * 2,
+				height: outerRadius * 2,
+				offsetX: 0,
+				offsetY: 0,
+			};
+		}
+
+		// 内径が0の場合は扇形と同じ
+		if (innerRadius <= 0) {
+			const cone = getConeBoundingBox(angle, outerRadius);
+			return {
+				width: cone.width,
+				height: cone.height,
+				offsetX: 0,
+				offsetY: 0,
+			};
+		}
+
+		// 扇形ドーナツ
+		const donut = getDonutConeBoundingBox(angle, outerRadius, innerRadius);
+		return {
+			width: donut.width,
+			height: donut.height,
 			offsetX: 0,
 			offsetY: 0,
 		};
@@ -1774,6 +1870,7 @@ function AoEObject({
 			return <Area4PIcon transform={transform} />;
 
 		case ObjectIds.DonutAoE: {
+			const coneAngle = param1 ?? 360; // 範囲角度（10-360度）
 			const donutRange = param2 ?? 50; // 0-240: 0=穴なし, 240=最大
 			const maskId = `donut-mask-${id}`;
 
@@ -1783,26 +1880,89 @@ function AoEObject({
 				// 画像サイズ基準で内径を計算
 				const imageOuterRadius = iconSize.width / 2;
 				const imageInnerRadius = imageOuterRadius * (donutRange / 240);
+
+				// 360度以上の場合は完全な円ドーナツ
+				if (coneAngle >= 360) {
+					return (
+						<g transform={transform}>
+							<defs>
+								<mask id={maskId}>
+									<rect
+										x={-iconSize.width / 2}
+										y={-iconSize.height / 2}
+										width={iconSize.width}
+										height={iconSize.height}
+										fill="white"
+									/>
+									<circle cx={0} cy={0} r={imageInnerRadius} fill="black" />
+								</mask>
+							</defs>
+							<image
+								href={`/icons/${objectId}.png`}
+								x={-iconSize.width / 2}
+								y={-iconSize.height / 2}
+								width={iconSize.width}
+								height={iconSize.height}
+								preserveAspectRatio="xMidYMid meet"
+								mask={`url(#${maskId})`}
+							/>
+						</g>
+					);
+				}
+
+				// 360度未満の場合は扇形ドーナツをmaskで適用
+				// バウンディングボックスの中心がオブジェクト座標に来るようにオフセット計算
+				const bbox =
+					imageInnerRadius <= 0
+						? getConeBoundingBox(coneAngle, imageOuterRadius)
+						: getDonutConeBoundingBox(coneAngle, imageOuterRadius, imageInnerRadius);
+				const offsetX = -(bbox.minX + bbox.width / 2);
+				const offsetY = -(bbox.minY + bbox.height / 2);
+
+				const startRad = -Math.PI / 2;
+				const endRad = startRad + (coneAngle * Math.PI) / 180;
+
+				const outerX1 = offsetX + Math.cos(startRad) * imageOuterRadius;
+				const outerY1 = offsetY + Math.sin(startRad) * imageOuterRadius;
+				const outerX2 = offsetX + Math.cos(endRad) * imageOuterRadius;
+				const outerY2 = offsetY + Math.sin(endRad) * imageOuterRadius;
+
+				const innerX1 = offsetX + Math.cos(startRad) * imageInnerRadius;
+				const innerY1 = offsetY + Math.sin(startRad) * imageInnerRadius;
+				const innerX2 = offsetX + Math.cos(endRad) * imageInnerRadius;
+				const innerY2 = offsetY + Math.sin(endRad) * imageInnerRadius;
+
+				const largeArc = coneAngle > 180 ? 1 : 0;
+
+				const maskPath =
+					imageInnerRadius <= 0
+						? [
+								`M ${offsetX} ${offsetY}`,
+								`L ${outerX1} ${outerY1}`,
+								`A ${imageOuterRadius} ${imageOuterRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`,
+								"Z",
+							].join(" ")
+						: [
+								`M ${outerX1} ${outerY1}`,
+								`A ${imageOuterRadius} ${imageOuterRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`,
+								`L ${innerX2} ${innerY2}`,
+								`A ${imageInnerRadius} ${imageInnerRadius} 0 ${largeArc} 0 ${innerX1} ${innerY1}`,
+								"Z",
+							].join(" ");
+
 				return (
 					<g transform={transform}>
 						<defs>
 							<mask id={maskId}>
-								<rect
-									x={-iconSize.width / 2}
-									y={-iconSize.height / 2}
-									width={iconSize.width}
-									height={iconSize.height}
-									fill="white"
-								/>
-								<circle cx={0} cy={0} r={imageInnerRadius} fill="black" />
+								<path d={maskPath} fill="white" />
 							</mask>
 						</defs>
 						<image
 							href={`/icons/${objectId}.png`}
-							x={-iconSize.width / 2}
-							y={-iconSize.height / 2}
-							width={iconSize.width}
-							height={iconSize.height}
+							x={offsetX - imageOuterRadius}
+							y={offsetY - imageOuterRadius}
+							width={imageOuterRadius * 2}
+							height={imageOuterRadius * 2}
 							preserveAspectRatio="xMidYMid meet"
 							mask={`url(#${maskId})`}
 						/>
@@ -1814,22 +1974,80 @@ function AoEObject({
 			const outerRadius = baseSize / 2;
 			const innerRadius = outerRadius * (donutRange / 240);
 
+			// 360度以上の場合は既存のmask方式（完全な円ドーナツ）
+			if (coneAngle >= 360) {
+				return (
+					<g transform={transform}>
+						<defs>
+							<mask id={maskId}>
+								<circle cx={0} cy={0} r={outerRadius} fill="white" />
+								<circle cx={0} cy={0} r={innerRadius} fill="black" />
+							</mask>
+						</defs>
+						<circle
+							cx={0}
+							cy={0}
+							r={outerRadius}
+							fill={fill}
+							stroke={COLORS.STROKE_AOE}
+							strokeWidth="2"
+							mask={`url(#${maskId})`}
+						/>
+					</g>
+				);
+			}
+
+			// 360度未満の場合は扇形ドーナツをパスで描画
+			// バウンディングボックスの中心がオブジェクト座標に来るようにオフセット計算
+			const bbox =
+				innerRadius <= 0
+					? getConeBoundingBox(coneAngle, outerRadius)
+					: getDonutConeBoundingBox(coneAngle, outerRadius, innerRadius);
+			const offsetX = -(bbox.minX + bbox.width / 2);
+			const offsetY = -(bbox.minY + bbox.height / 2);
+
+			// 起点: 12時方向（-90度）から時計回りに角度分
+			const startRad = -Math.PI / 2; // 12時方向（上）
+			const endRad = startRad + (coneAngle * Math.PI) / 180;
+
+			// 外弧の開始点と終了点（オフセット適用）
+			const outerX1 = offsetX + Math.cos(startRad) * outerRadius;
+			const outerY1 = offsetY + Math.sin(startRad) * outerRadius;
+			const outerX2 = offsetX + Math.cos(endRad) * outerRadius;
+			const outerY2 = offsetY + Math.sin(endRad) * outerRadius;
+
+			// 内弧の開始点と終了点（オフセット適用）
+			const innerX1 = offsetX + Math.cos(startRad) * innerRadius;
+			const innerY1 = offsetY + Math.sin(startRad) * innerRadius;
+			const innerX2 = offsetX + Math.cos(endRad) * innerRadius;
+			const innerY2 = offsetY + Math.sin(endRad) * innerRadius;
+
+			const largeArc = coneAngle > 180 ? 1 : 0;
+
+			// 内径が0の場合は扇形（内穴なし）
+			const d =
+				innerRadius <= 0
+					? [
+							`M ${offsetX} ${offsetY}`, // 中心（オフセット適用）
+							`L ${outerX1} ${outerY1}`, // 外弧開始点へ直線
+							`A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`, // 外弧（時計回り）
+							"Z",
+						].join(" ")
+					: [
+							`M ${outerX1} ${outerY1}`, // 外弧開始点
+							`A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`, // 外弧（時計回り）
+							`L ${innerX2} ${innerY2}`, // 内弧終了点へ直線
+							`A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerX1} ${innerY1}`, // 内弧（反時計回り）
+							"Z",
+						].join(" ");
+
 			return (
 				<g transform={transform}>
-					<defs>
-						<mask id={maskId}>
-							<circle cx={0} cy={0} r={outerRadius} fill="white" />
-							<circle cx={0} cy={0} r={innerRadius} fill="black" />
-						</mask>
-					</defs>
-					<circle
-						cx={0}
-						cy={0}
-						r={outerRadius}
+					<path
+						d={d}
 						fill={fill}
 						stroke={COLORS.STROKE_AOE}
 						strokeWidth="2"
-						mask={`url(#${maskId})`}
 					/>
 				</g>
 			);
