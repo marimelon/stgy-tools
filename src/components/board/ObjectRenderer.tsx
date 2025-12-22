@@ -1687,15 +1687,20 @@ function AoEObject({
 	param2?: number;
 	param3?: number;
 }) {
-	// オリジナル画像が有効な場合は画像を使用（色やパラメータが変更されている場合はSVGを使用）
-	const originalIcon = renderOriginalIconIfEnabled(
-		objectId,
-		transform,
-		color,
-		param1,
-		param2,
-	);
-	if (originalIcon) return originalIcon;
+	const id = useId();
+	const isOriginalIconMode = useOriginalIcons();
+
+	// DonutAoE以外はオリジナル画像を使用（DonutAoEはmask処理のため後で処理）
+	if (objectId !== ObjectIds.DonutAoE) {
+		const originalIcon = renderOriginalIconIfEnabled(
+			objectId,
+			transform,
+			color,
+			param1,
+			param2,
+		);
+		if (originalIcon) return originalIcon;
+	}
 
 	const fill = colorToRgba(color);
 	const baseSize = SIZES.AOE_BASE;
@@ -1769,18 +1774,63 @@ function AoEObject({
 			return <Area4PIcon transform={transform} />;
 
 		case ObjectIds.DonutAoE: {
-			const innerRadius = param2 ?? 20;
+			const donutRange = param2 ?? 50; // 0-240: 0=穴なし, 240=最大
+			const maskId = `donut-mask-${id}`;
+
+			// オリジナル画像モードの場合は画像にmaskを適用
+			const iconSize = OBJECT_BBOX_SIZES[objectId];
+			if (isOriginalIconMode && iconSize) {
+				// 画像サイズ基準で内径を計算
+				const imageOuterRadius = iconSize.width / 2;
+				const imageInnerRadius = imageOuterRadius * (donutRange / 240);
+				return (
+					<g transform={transform}>
+						<defs>
+							<mask id={maskId}>
+								<rect
+									x={-iconSize.width / 2}
+									y={-iconSize.height / 2}
+									width={iconSize.width}
+									height={iconSize.height}
+									fill="white"
+								/>
+								<circle cx={0} cy={0} r={imageInnerRadius} fill="black" />
+							</mask>
+						</defs>
+						<image
+							href={`/icons/${objectId}.png`}
+							x={-iconSize.width / 2}
+							y={-iconSize.height / 2}
+							width={iconSize.width}
+							height={iconSize.height}
+							preserveAspectRatio="xMidYMid meet"
+							mask={`url(#${maskId})`}
+						/>
+					</g>
+				);
+			}
+
+			// SVGモードの場合
+			const outerRadius = baseSize / 2;
+			const innerRadius = outerRadius * (donutRange / 240);
+
 			return (
 				<g transform={transform}>
+					<defs>
+						<mask id={maskId}>
+							<circle cx={0} cy={0} r={outerRadius} fill="white" />
+							<circle cx={0} cy={0} r={innerRadius} fill="black" />
+						</mask>
+					</defs>
 					<circle
 						cx={0}
 						cy={0}
-						r={baseSize / 2}
+						r={outerRadius}
 						fill={fill}
 						stroke={COLORS.STROKE_AOE}
 						strokeWidth="2"
+						mask={`url(#${maskId})`}
 					/>
-					<circle cx={0} cy={0} r={innerRadius / 2} fill="#1a1a1a" />
 				</g>
 			);
 		}

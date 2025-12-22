@@ -172,18 +172,26 @@ export function ObjectPropertyPanel({
               onChange={isLineObject ? handleLineRotationChange : (rotation) => handleChange({ rotation })}
               onBlur={() => onCommitHistory("回転変更")}
             />
-            {!isLineObject && (
-              <SliderInput
-                label="サイズ"
-                value={object.size}
-                min={50}
-                max={200}
-                step={1}
-                unit="%"
-                onChange={(size) => handleChange({ size })}
-                onBlur={() => onCommitHistory("サイズ変更")}
-              />
-            )}
+            {!isLineObject && (() => {
+              // オブジェクトタイプに応じたサイズパラメータを取得
+              const editParams = OBJECT_EDIT_PARAMS[object.objectId] ?? DEFAULT_EDIT_PARAMS;
+              const sizeParamId = editParams.includes(EditParamIds.SizeSmall)
+                ? EditParamIds.SizeSmall
+                : EditParamIds.Size;
+              const sizeParam = EDIT_PARAMS[sizeParamId];
+              return (
+                <SliderInput
+                  label="サイズ"
+                  value={object.size}
+                  min={sizeParam.min}
+                  max={sizeParam.max}
+                  step={1}
+                  unit="%"
+                  onChange={(size) => handleChange({ size })}
+                  onBlur={() => onCommitHistory("サイズ変更")}
+                />
+              );
+            })()}
           </div>
         </PropertySection>
 

@@ -3,7 +3,14 @@
  */
 
 import type { BoardData, BoardObject, Position } from "@/lib/stgy";
-import { BackgroundId, ObjectIds } from "@/lib/stgy";
+import {
+  BackgroundId,
+  ObjectIds,
+  OBJECT_EDIT_PARAMS,
+  DEFAULT_EDIT_PARAMS,
+  EDIT_PARAMS,
+  EditParamIds,
+} from "@/lib/stgy";
 
 /**
  * 空のボードを生成
@@ -17,6 +24,18 @@ export function createEmptyBoard(name = ""): BoardData {
     backgroundId: BackgroundId.None,
     objects: [],
   };
+}
+
+/**
+ * EDIT_PARAMSからオブジェクトのデフォルトサイズを取得
+ */
+function getDefaultSize(objectId: number): number {
+  const editParams = OBJECT_EDIT_PARAMS[objectId] ?? DEFAULT_EDIT_PARAMS;
+  // SizeSmallを使うオブジェクトはそのデフォルト値、それ以外はSizeのデフォルト値
+  const sizeParamId = editParams.includes(EditParamIds.SizeSmall)
+    ? EditParamIds.SizeSmall
+    : EditParamIds.Size;
+  return EDIT_PARAMS[sizeParamId].defaultValue;
 }
 
 /**
@@ -40,24 +59,33 @@ export function createDefaultObject(
     },
     position: defaultPosition,
     rotation: 0,
-    size: 100,
+    size: getDefaultSize(objectId),
     color: { r: 255, g: 100, b: 0, opacity: 0 },
   };
 
-  // オブジェクト固有のデフォルトパラメータ
-  switch (objectId) {
-    case ObjectIds.ConeAoE:
-      // 扇範囲攻撃のデフォルト角度
-      obj.param1 = 90;
-      break;
-    case ObjectIds.DonutAoE:
-      // ドーナツ範囲攻撃のデフォルト内径
-      obj.param2 = 50;
-      break;
-    case ObjectIds.Text:
-      // テキストオブジェクトのデフォルトテキスト
-      obj.text = "";
-      break;
+  // オブジェクト固有のデフォルトパラメータ（EDIT_PARAMSから自動取得）
+  const editParams = OBJECT_EDIT_PARAMS[objectId] ?? DEFAULT_EDIT_PARAMS;
+  for (const paramId of editParams) {
+    const paramDef = EDIT_PARAMS[paramId];
+    if (!paramDef) continue;
+
+    switch (paramId) {
+      case EditParamIds.ConeAngle:
+        obj.param1 = paramDef.defaultValue;
+        break;
+      case EditParamIds.DonutRange:
+      case EditParamIds.Width:
+        obj.param2 = paramDef.defaultValue;
+        break;
+      case EditParamIds.Height:
+        obj.param1 = paramDef.defaultValue;
+        break;
+    }
+  }
+
+  // テキストオブジェクトの特殊処理
+  if (objectId === ObjectIds.Text) {
+    obj.text = "";
   }
 
   return obj;

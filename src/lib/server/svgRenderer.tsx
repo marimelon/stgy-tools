@@ -228,30 +228,34 @@ function renderColoredAoE(
 				</g>
 			);
 		}
-		case ObjectIds.DonutAoE:
+		case ObjectIds.DonutAoE: {
 			// ドーナツ型AoE（中央に穴あき）
+			const outerRadius = 64;
+			const donutRange = param2 ?? 50; // 0-240: 0=穴なし, 240=最大
+			const innerRadius = outerRadius * (donutRange / 240);
+			const maskId = `donut-mask-${Math.random().toString(36).slice(2, 9)}`;
+
 			return (
 				<g transform={transform}>
+					<defs>
+						<mask id={maskId}>
+							<circle cx={0} cy={0} r={outerRadius} fill="white" />
+							<circle cx={0} cy={0} r={innerRadius} fill="black" />
+						</mask>
+					</defs>
 					<circle
 						cx={0}
 						cy={0}
-						r={64}
+						r={outerRadius}
 						fill={fill}
 						stroke={strokeColor}
 						strokeWidth="2"
 						opacity={opacity}
-					/>
-					<circle
-						cx={0}
-						cy={0}
-						r={32}
-						fill="#1a1a1a"
-						stroke={strokeColor}
-						strokeWidth="1"
-						opacity={opacity}
+						mask={`url(#${maskId})`}
 					/>
 				</g>
 			);
+		}
 		default:
 			return null;
 	}
