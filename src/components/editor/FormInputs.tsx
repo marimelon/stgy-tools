@@ -114,13 +114,44 @@ export function SliderInput({
   onChange,
   onBlur,
 }: SliderInputProps) {
+  // 入力値をmin/max範囲にクランプ
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    // 空文字や入力中の "-" を許容
+    if (inputValue === "" || inputValue === "-") {
+      return;
+    }
+    const numValue = Number(inputValue);
+    if (!Number.isNaN(numValue)) {
+      const clampedValue = Math.min(max, Math.max(min, numValue));
+      onChange(clampedValue);
+    }
+  };
+
+  // フォーカスが外れたときに値を正規化
+  const handleInputBlur = () => {
+    onBlur?.();
+  };
+
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label className="text-xs text-muted-foreground">{label}</Label>
-        <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-accent/20 text-accent font-mono">
-          {value}{unit}
-        </span>
+      <div className="flex items-center justify-between gap-2">
+        {label && <Label className="text-xs text-muted-foreground">{label}</Label>}
+        <div className="flex items-center gap-1">
+          <Input
+            type="number"
+            value={Math.round(value * 10) / 10}
+            min={min}
+            max={max}
+            step={step}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            className="w-16 h-7 text-xs font-mono text-right px-2"
+          />
+          {unit && (
+            <span className="text-xs text-muted-foreground w-4">{unit}</span>
+          )}
+        </div>
       </div>
       <Slider
         value={[value]}

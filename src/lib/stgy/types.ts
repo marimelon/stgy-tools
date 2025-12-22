@@ -553,7 +553,7 @@ export const EDIT_PARAMS: Record<number, EditParamDefinition> = {
   [EditParamIds.Opacity]: { name: "透過度", defaultValue: 0, min: 0, max: 100, useSlider: true },
   [EditParamIds.Height]: { name: "縦幅", defaultValue: 128, min: 16, max: 384, useSlider: false },
   [EditParamIds.Width]: { name: "横幅", defaultValue: 128, min: 16, max: 512, useSlider: false },
-  [EditParamIds.ConeAngle]: { name: "範囲角度", defaultValue: 90, min: 10, max: 360, useSlider: false },
+  [EditParamIds.ConeAngle]: { name: "範囲角度", defaultValue: 90, min: 10, max: 360, useSlider: true },
   [EditParamIds.DonutRange]: { name: "ドーナツ範囲", defaultValue: 50, min: 0, max: 240, useSlider: false },
   [EditParamIds.DisplayCount]: { name: "表示数", defaultValue: 1, min: 1, max: 5, useSlider: false },
   [EditParamIds.HeightCount]: { name: "縦幅数", defaultValue: 1, min: 1, max: 5, useSlider: false },
