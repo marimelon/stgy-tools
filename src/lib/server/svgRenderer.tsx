@@ -587,13 +587,13 @@ const BORDER_WIDTH = 2;
 function TitleBar({ title, width }: { title: string; width: number }) {
 	return (
 		<g>
-			{/* 白い背景バー */}
+			{/* 背景バー */}
 			<rect
 				x={BORDER_WIDTH}
 				y={BORDER_WIDTH}
 				width={width - BORDER_WIDTH * 2}
 				height={TITLE_BAR_HEIGHT}
-				fill="#ffffff"
+				fill="#D2D2D2"
 			/>
 			{/* 下線 */}
 			<line
@@ -604,11 +604,11 @@ function TitleBar({ title, width }: { title: string; width: number }) {
 				stroke="rgba(128, 128, 128, 0.3)"
 				strokeWidth={1}
 			/>
-			{/* タイトルテキスト（左上に配置、灰色） */}
+			{/* タイトルテキスト（左上に配置） */}
 			<text
 				x={BORDER_WIDTH + 12}
 				y={BORDER_WIDTH + TITLE_BAR_HEIGHT / 2}
-				fill="#555555"
+				fill="#646464"
 				fontSize="14"
 				fontFamily="sans-serif"
 				fontWeight="500"
