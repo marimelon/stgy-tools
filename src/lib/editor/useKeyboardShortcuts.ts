@@ -24,6 +24,7 @@ export function useKeyboardShortcuts() {
     copySelected,
     paste,
     deselectAll,
+    selectAll,
     moveObjects,
     commitHistory,
     groupSelected,
@@ -113,12 +114,12 @@ export function useKeyboardShortcuts() {
         return;
       }
 
-      // Ctrl/Cmd + A: 全選択（将来的に実装）
-      // if (isMod && e.key === "a") {
-      //   e.preventDefault();
-      //   selectAll();
-      //   return;
-      // }
+      // Ctrl/Cmd + A: 全選択
+      if (isMod && e.key === "a") {
+        e.preventDefault();
+        selectAll();
+        return;
+      }
 
       // Ctrl/Cmd + G: グループ化
       if (isMod && !isShift && e.key === "g") {
@@ -192,6 +193,7 @@ export function useKeyboardShortcuts() {
       copySelected,
       paste,
       duplicateSelected,
+      selectAll,
       groupSelected,
       ungroup,
       deleteSelected,
@@ -215,6 +217,7 @@ export const KEYBOARD_SHORTCUTS = [
   { key: "Ctrl+C", description: "コピー" },
   { key: "Ctrl+V", description: "貼り付け" },
   { key: "Ctrl+D", description: "複製" },
+  { key: "Ctrl+A", description: "全選択" },
   { key: "Ctrl+G", description: "グループ化" },
   { key: "Ctrl+Shift+G", description: "グループ解除" },
   { key: "Delete", description: "削除" },
