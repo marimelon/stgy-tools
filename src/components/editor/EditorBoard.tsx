@@ -272,7 +272,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
                 });
               }}
               onStartPointDragEnd={() => {
-                commitHistory();
+                commitHistory("ライン始点移動");
               }}
               onEndPointDrag={(x, y) => {
                 // 終点移動：param1, param2を更新、角度も再計算
@@ -286,7 +286,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
                 });
               }}
               onEndPointDragEnd={() => {
-                commitHistory();
+                commitHistory("ライン終点移動");
               }}
             />
           );
