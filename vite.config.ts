@@ -16,7 +16,11 @@ async function getPlugins() {
 		}),
 		tailwindcss(),
 		tanstackStart(),
-		viteReact(),
+		viteReact({
+			babel: {
+				plugins: ["babel-plugin-react-compiler"],
+			},
+		}),
 	];
 
 	if (buildTarget === "cloudflare") {
