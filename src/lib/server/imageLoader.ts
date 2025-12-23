@@ -108,7 +108,6 @@ async function preloadImagesNode(objectIds: number[]): Promise<void> {
 					return { objectId, dataUri: `data:image/png;base64,${base64}` };
 				} catch {
 					// このディレクトリでは見つからない、次を試す
-					continue;
 				}
 			}
 			console.error(
@@ -218,7 +217,7 @@ async function loadBackgroundNode(
 			backgroundCache.set(backgroundId, dataUri);
 			return dataUri;
 		} catch {
-			continue;
+			// このディレクトリでは見つからない、次を試す
 		}
 	}
 
@@ -271,7 +270,7 @@ async function loadFontCloudflare(): Promise<Uint8Array | null> {
 				return fontCache;
 			}
 		} catch {
-			continue;
+			// このベースURLでは見つからない、次を試す
 		}
 	}
 
@@ -298,7 +297,7 @@ async function loadFontNode(): Promise<Uint8Array | null> {
 				fontCache = new Uint8Array(buffer);
 				return fontCache;
 			} catch {
-				continue;
+				// このパスでは見つからない、次を試す
 			}
 		}
 	}

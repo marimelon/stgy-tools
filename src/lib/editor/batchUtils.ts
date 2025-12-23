@@ -4,7 +4,7 @@
  * 複数オブジェクト選択時の共通値計算とMixed値判定
  */
 
-import type { BoardObject, Color, ObjectFlags } from "@/lib/stgy";
+import type { BoardObject } from "@/lib/stgy";
 
 // ============================================
 // Mixed値のシンボルと型

@@ -4,7 +4,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect, useId, useCallback } from "react";
 import {
 	AlertCircle,
 	Eye,
@@ -62,7 +62,7 @@ function RenderDebugPage() {
 	})();
 
 	// サーバーからSVGを取得
-	const fetchServerSvg = async (code: string) => {
+	const fetchServerSvg = useCallback(async (code: string) => {
 		if (!code.trim()) {
 			setServerSvg(null);
 			setServerError(null);
@@ -96,7 +96,7 @@ function RenderDebugPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, []);
 
 	// コードが変わったらサーバーSVGを再取得
 	useEffect(() => {
@@ -104,7 +104,7 @@ function RenderDebugPage() {
 			fetchServerSvg(inputCode);
 		}, 500); // デバウンス
 		return () => clearTimeout(timer);
-	}, [inputCode]);
+	}, [inputCode, fetchServerSvg]);
 
 	// サンプルコードを適用
 	const applySampleCode = (code: string) => {

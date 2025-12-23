@@ -102,7 +102,7 @@ async function getFontPath(): Promise<string | null> {
 				cachedFontPath = fontPath;
 				return cachedFontPath;
 			} catch {
-				continue;
+				// このパスでは見つからない、次を試す
 			}
 		}
 	}

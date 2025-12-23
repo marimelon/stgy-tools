@@ -178,7 +178,7 @@ export function EditorProvider({
 			...actions,
 			...selectors,
 		}),
-		[state, dispatch, actions, selectors],
+		[state, actions, selectors],
 	);
 
 	return (

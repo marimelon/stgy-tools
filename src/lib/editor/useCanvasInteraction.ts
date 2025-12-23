@@ -140,8 +140,8 @@ export function useCanvasInteraction({
 
 	/**
 	 * 背景クリックで選択解除
-	 * Note: skipNextClickRef はRefなので依存配列に含めない
 	 */
+	// biome-ignore lint/correctness/useExhaustiveDependencies: skipNextClickRef はRefなので依存配列に含めない
 	const handleBackgroundClick = useCallback(() => {
 		if (skipNextClickRef.current) {
 			skipNextClickRef.current = false;

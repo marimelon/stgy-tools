@@ -280,6 +280,7 @@ export function ContextMenu({
 				if (isDivider(item)) {
 					return (
 						<div
+							// biome-ignore lint/suspicious/noArrayIndexKey: dividerは固定順序で識別子を持たないためindexを使用
 							key={`divider-${index}`}
 							className="border-t border-slate-600 my-1"
 						/>
