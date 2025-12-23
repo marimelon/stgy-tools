@@ -1,5 +1,6 @@
 import type { BoardObject } from "@/lib/stgy";
 import { ObjectIds } from "@/lib/stgy";
+import i18n from "@/lib/i18n";
 import { getObjectBoundingBox } from "./bounding-box";
 import { BoundingBox, DebugInfo, SelectionIndicator } from "./ui-components";
 import { buildTransform, colorToRgba, CustomIconImage } from "./utils";
@@ -125,8 +126,14 @@ export function ObjectRenderer({
 		content = <EnemyIcon objectId={objectId} transform={transform} />;
 	} else if (isMarker(objectId)) {
 		content = <MarkerIcon objectId={objectId} transform={transform} />;
-	} else if (objectId === ObjectIds.Text && text) {
-		content = <TextObject transform={transform} text={text} color={color} />;
+	} else if (objectId === ObjectIds.Text) {
+		content = (
+			<TextObject
+				transform={transform}
+				text={text || i18n.t("common.defaultText")}
+				color={color}
+			/>
+		);
 	} else if (objectId === ObjectIds.Group) {
 		// グループアイコン - オリジナル画像を使用
 		content = <CustomIconImage objectId={objectId} transform={transform} />;

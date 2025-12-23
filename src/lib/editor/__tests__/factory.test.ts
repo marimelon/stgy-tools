@@ -11,6 +11,7 @@ import {
 	recalculateBoardSize,
 } from "../factory";
 import { BackgroundId, ObjectIds } from "@/lib/stgy";
+import i18n from "@/lib/i18n";
 
 describe("factory", () => {
 	describe("createEmptyBoard", () => {
@@ -50,7 +51,7 @@ describe("factory", () => {
 
 		it("テキストオブジェクトはtextプロパティを持つ", () => {
 			const obj = createDefaultObject(ObjectIds.Text);
-			expect(obj.text).toBe("");
+			expect(obj.text).toBe(i18n.t("common.defaultText"));
 		});
 
 		it("ConeAoEはparam1（角度）を持つ", () => {

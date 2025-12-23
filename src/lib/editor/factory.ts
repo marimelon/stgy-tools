@@ -11,6 +11,7 @@ import {
 	EDIT_PARAMS,
 	EditParamIds,
 } from "@/lib/stgy";
+import i18n from "@/lib/i18n";
 
 /**
  * 空のボードを生成
@@ -87,7 +88,7 @@ export function createDefaultObject(
 
 	// テキストオブジェクトの特殊処理
 	if (objectId === ObjectIds.Text) {
-		obj.text = "";
+		obj.text = i18n.t("common.defaultText");
 	}
 
 	return obj;

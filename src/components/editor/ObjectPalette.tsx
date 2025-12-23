@@ -291,6 +291,7 @@ export function ObjectPalette() {
 const PALETTE_ICON_OBJECT_IDS: number[] = [
 	ObjectIds.ConeAoE, // 10: 扇範囲攻撃
 	ObjectIds.DonutAoE, // 17: 輪形範囲攻撃
+	ObjectIds.Text, // 100: テキスト
 ];
 
 /**

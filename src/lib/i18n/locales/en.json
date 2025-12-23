@@ -4,7 +4,8 @@
 		"copied": "Copied",
 		"preview": "Preview",
 		"generate": "Generate",
-		"error": "Error"
+		"error": "Error",
+		"defaultText": "Text"
 	},
 	"contextMenu": {
 		"copy": "Copy",

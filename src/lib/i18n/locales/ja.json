@@ -4,7 +4,8 @@
 		"copied": "コピー済み",
 		"preview": "プレビュー",
 		"generate": "生成",
-		"error": "エラー"
+		"error": "エラー",
+		"defaultText": "テキスト"
 	},
 	"contextMenu": {
 		"copy": "コピー",

@@ -343,7 +343,13 @@ export function ObjectPropertyPanel({
 							type="text"
 							value={object.text ?? ""}
 							onChange={(e) => handleChange({ text: e.target.value })}
-							onBlur={() => onCommitHistory(t("propertyPanel.textChanged"))}
+							onBlur={(e) => {
+								// 空文字の場合はデフォルトテキストに戻す
+								if (e.target.value.trim() === "") {
+									handleChange({ text: t("common.defaultText") });
+								}
+								onCommitHistory(t("propertyPanel.textChanged"));
+							}}
 						/>
 					</PropertySection>
 				)}

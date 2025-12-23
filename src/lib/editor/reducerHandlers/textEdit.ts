@@ -4,6 +4,7 @@
 
 import { ObjectIds } from "@/lib/stgy";
 import type { EditorState } from "../types";
+import i18n from "@/lib/i18n";
 
 /**
  * テキスト編集を開始
@@ -52,10 +53,12 @@ export function handleEndTextEdit(
 
 	// テキストが実際に変更された場合のみ更新
 	if (save && text !== undefined && text !== currentText) {
+		// 空文字の場合はデフォルトテキストに戻す
+		const finalText = text.trim() === "" ? i18n.t("common.defaultText") : text;
 		const newObjects = [...state.board.objects];
 		newObjects[editingIndex] = {
 			...newObjects[editingIndex],
-			text,
+			text: finalText,
 		};
 		newState = {
 			...newState,
