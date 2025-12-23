@@ -253,6 +253,30 @@
 		"allLeft": "All Left",
 		"allRight": "All Right"
 	},
+	"boardManager": {
+		"title": "Board Manager",
+		"search": "Search boards...",
+		"sortByUpdated": "Updated",
+		"sortByCreated": "Created",
+		"sortByName": "Name",
+		"newBoard": "New Board",
+		"open": "Open",
+		"rename": "Rename",
+		"duplicate": "Duplicate",
+		"delete": "Delete",
+		"currentBoard": "Currently editing",
+		"emptyState": {
+			"title": "No saved boards",
+			"description": "Create a new board to get started",
+			"noResults": "No boards found",
+			"noResultsDescription": "Try a different search term"
+		},
+		"undoDelete": "\"{{name}}\" deleted",
+		"undo": "Undo",
+		"boardCount": "{{count}} board(s)",
+		"boardCountFiltered": "{{count}} board(s) (filtered)",
+		"thumbnailError": "Load failed"
+	},
 	"object": {
 		"1": "Circle White Solid Field",
 		"2": "Circle White Tile Field",

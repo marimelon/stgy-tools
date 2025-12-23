@@ -9,10 +9,17 @@ import {
 	createEmptyBoard,
 	useKeyboardShortcuts,
 	useImportExport,
+	useEditor,
+	recalculateBoardSize,
 	type GridSettings,
 	type ObjectGroup,
 } from "@/lib/editor";
-import { decodeStgy, parseBoardData, type BoardData } from "@/lib/stgy";
+import {
+	decodeStgy,
+	parseBoardData,
+	encodeStgy,
+	type BoardData,
+} from "@/lib/stgy";
 import { PanelProvider } from "@/lib/panel";
 import { ResizableLayout } from "@/components/panel";
 import {
@@ -22,7 +29,8 @@ import {
 	ObjectPalette,
 	PropertyPanel,
 } from "@/components/editor";
-import { loadSession, useAutoSave } from "@/lib/persistence";
+import { BoardManagerModal } from "@/components/editor/BoardManager";
+import { useBoards } from "@/lib/boards";
 
 /** キャンバスの基本サイズ */
 const CANVAS_WIDTH = 512;
@@ -30,124 +38,210 @@ const CANVAS_HEIGHT = 384;
 
 export const Route = createFileRoute("/editor")({
 	component: EditorPage,
+	ssr: false, // TanStack DB (useLiveQuery) requires client-side only
 });
 
-/** セッション復元結果 */
-interface SessionRestoreResult {
-	board: BoardData;
-	groups: ObjectGroup[];
-	gridSettings?: GridSettings;
-	encodeKey: number;
-}
+/** Default grid settings */
+const DEFAULT_GRID_SETTINGS: GridSettings = {
+	enabled: false,
+	size: 16,
+	showGrid: false,
+};
 
 /**
- * localStorageからセッションを復元
+ * Decode board from stgyCode
  */
-function restoreSession(): SessionRestoreResult | null {
-	const session = loadSession();
-	if (!session) return null;
-
+function decodeBoardFromStgy(stgyCode: string): BoardData | null {
 	try {
-		const binary = decodeStgy(session.stgyCode);
-		const board = parseBoardData(binary);
-		return {
-			board,
-			groups: session.groups,
-			gridSettings: session.gridSettings,
-			encodeKey: session.encodeKey,
-		};
+		const binary = decodeStgy(stgyCode);
+		return parseBoardData(binary);
 	} catch (error) {
-		console.warn("Failed to restore session:", error);
+		console.warn("Failed to decode board:", error);
 		return null;
 	}
 }
 
 function EditorPage() {
-	const [isLoading, setIsLoading] = useState(true);
-	const [initialData, setInitialData] = useState<SessionRestoreResult | null>(
-		null,
+	// Board manager state
+	const [showBoardManager, setShowBoardManager] = useState(false);
+	const [currentBoardId, setCurrentBoardId] = useState<string | null>(null);
+
+	// Initial board state
+	const [initialBoard, setInitialBoard] = useState<BoardData>(() =>
+		createEmptyBoard("新規ボード"),
+	);
+	const [initialGroups, setInitialGroups] = useState<ObjectGroup[]>([]);
+	const [initialGridSettings, setInitialGridSettings] =
+		useState<GridSettings>(DEFAULT_GRID_SETTINGS);
+	const [initialEncodeKey, setInitialEncodeKey] = useState<number>(0);
+
+	// Key to force re-render EditorProvider when switching boards
+	const [editorKey, setEditorKey] = useState(0);
+
+	// Board operations from useBoards
+	const { createBoard, updateBoard, getBoard } = useBoards();
+
+	// Handle opening a board
+	const handleOpenBoard = useCallback(
+		(boardId: string) => {
+			const board = getBoard(boardId);
+			if (!board) return;
+
+			const decodedBoard = decodeBoardFromStgy(board.stgyCode);
+			if (!decodedBoard) return;
+
+			setCurrentBoardId(boardId);
+			// Use stored board name (may have been renamed) instead of decoded name
+			setInitialBoard({ ...decodedBoard, name: board.name });
+			setInitialGroups(board.groups);
+			setInitialGridSettings(board.gridSettings);
+			setInitialEncodeKey(board.encodeKey);
+			setEditorKey((prev) => prev + 1);
+		},
+		[getBoard],
 	);
 
-	// セッション復元
-	useEffect(() => {
-		const restored = restoreSession();
-		setInitialData(restored);
-		setIsLoading(false);
-	}, []);
+	// Handle creating a new board
+	const handleCreateNewBoard = useCallback(() => {
+		const newBoard = createEmptyBoard("新規ボード");
+		const { width, height } = recalculateBoardSize(newBoard);
+		const boardToSave = { ...newBoard, width, height };
+		const stgyCode = encodeStgy(boardToSave, 0);
 
-	// ローディング中
-	if (isLoading) {
-		return (
-			<div className="h-screen flex flex-col items-center justify-center gap-4 bg-background">
-				<div className="w-12 h-12 rounded-lg flex items-center justify-center animate-pulse bg-muted border border-border">
-					<svg
-						width="24"
-						height="24"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						className="text-foreground"
-						role="img"
-						aria-label="Loading indicator"
-					>
-						<rect x="3" y="3" width="18" height="18" rx="2" />
-						<circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-						<circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" />
-						<path d="M8.5 15.5h7M15.5 8.5v7" strokeLinecap="round" />
-					</svg>
-				</div>
-				<div className="text-muted-foreground font-display">読み込み中...</div>
-			</div>
+		const newBoardId = createBoard(
+			newBoard.name,
+			stgyCode,
+			0,
+			[],
+			DEFAULT_GRID_SETTINGS,
 		);
-	}
 
-	// 初期データ（復元データまたは新規ボード）
-	const board = initialData?.board ?? createEmptyBoard("新規ボード");
-	const groups = initialData?.groups;
-	const gridSettings = initialData?.gridSettings;
-	const encodeKey = initialData?.encodeKey ?? null;
+		setCurrentBoardId(newBoardId);
+		setInitialBoard(newBoard);
+		setInitialGroups([]);
+		setInitialGridSettings(DEFAULT_GRID_SETTINGS);
+		setInitialEncodeKey(0);
+		setEditorKey((prev) => prev + 1);
+	}, [createBoard]);
 
 	return (
 		<PanelProvider>
 			<EditorProvider
-				initialBoard={board}
-				initialGroups={groups}
-				initialGridSettings={gridSettings}
+				key={editorKey}
+				initialBoard={initialBoard}
+				initialGroups={initialGroups}
+				initialGridSettings={initialGridSettings}
 			>
-				<EditorContent initialEncodeKey={encodeKey} />
+				<EditorContent
+					initialEncodeKey={initialEncodeKey}
+					currentBoardId={currentBoardId}
+					onOpenBoardManager={() => setShowBoardManager(true)}
+					onSaveBoard={(name, stgyCode, encodeKey, groups, gridSettings) => {
+						if (currentBoardId) {
+							updateBoard(currentBoardId, {
+								name,
+								stgyCode,
+								encodeKey,
+								groups,
+								gridSettings,
+							});
+						}
+					}}
+				/>
 			</EditorProvider>
+
+			{/* Board Manager Modal */}
+			<BoardManagerModal
+				open={showBoardManager}
+				onClose={() => setShowBoardManager(false)}
+				currentBoardId={currentBoardId}
+				onOpenBoard={handleOpenBoard}
+				onCreateNewBoard={handleCreateNewBoard}
+			/>
 		</PanelProvider>
 	);
 }
 
 /** EditorContentのProps */
 interface EditorContentProps {
-	initialEncodeKey: number | null;
+	initialEncodeKey: number;
+	currentBoardId: string | null;
+	onOpenBoardManager: () => void;
+	onSaveBoard: (
+		name: string,
+		stgyCode: string,
+		encodeKey: number,
+		groups: ObjectGroup[],
+		gridSettings: GridSettings,
+	) => void;
 }
 
 /**
  * エディターコンテンツ（キーボードショートカット有効化）
  */
-function EditorContent({ initialEncodeKey }: EditorContentProps) {
+function EditorContent({
+	initialEncodeKey,
+	currentBoardId,
+	onOpenBoardManager,
+	onSaveBoard,
+}: EditorContentProps) {
 	// キーボードショートカットを有効化
 	useKeyboardShortcuts();
+
+	// Get editor state
+	const { state } = useEditor();
 
 	// インポート/エクスポートフック（encodeKeyの管理）
 	const { encodeKey, setEncodeKey } = useImportExport();
 
 	// 初期encodeKeyを設定
 	useEffect(() => {
-		if (initialEncodeKey !== null) {
-			setEncodeKey(initialEncodeKey);
-		}
+		setEncodeKey(initialEncodeKey);
 	}, [initialEncodeKey, setEncodeKey]);
 
-	// 自動保存を有効化
-	const { lastSavedAt } = useAutoSave({
-		encodeKey: encodeKey ?? initialEncodeKey,
-		debounceMs: 1000,
-	});
+	// Auto-save to IndexedDB
+	const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+	const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// Save current board when dirty
+	useEffect(() => {
+		if (!currentBoardId || !state.isDirty) return;
+
+		// Clear previous timeout
+		if (saveTimeoutRef.current) {
+			clearTimeout(saveTimeoutRef.current);
+		}
+
+		// Debounce save
+		saveTimeoutRef.current = setTimeout(() => {
+			const { width, height } = recalculateBoardSize(state.board);
+			const boardToSave = { ...state.board, width, height };
+			const stgyCode = encodeStgy(boardToSave, encodeKey ?? 0);
+
+			onSaveBoard(
+				state.board.name,
+				stgyCode,
+				encodeKey ?? 0,
+				state.groups,
+				state.gridSettings,
+			);
+			setLastSavedAt(new Date());
+		}, 1000);
+
+		return () => {
+			if (saveTimeoutRef.current) {
+				clearTimeout(saveTimeoutRef.current);
+			}
+		};
+	}, [
+		currentBoardId,
+		state.isDirty,
+		state.board,
+		state.groups,
+		state.gridSettings,
+		encodeKey,
+		onSaveBoard,
+	]);
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [scale, setScale] = useState(1);
@@ -231,7 +325,7 @@ function EditorContent({ initialEncodeKey }: EditorContentProps) {
 			</header>
 
 			{/* ツールバー */}
-			<EditorToolbar lastSavedAt={lastSavedAt} />
+			<EditorToolbar lastSavedAt={lastSavedAt} onOpenBoardManager={onOpenBoardManager} />
 
 			{/* メインエリア */}
 			<div className="flex-1 overflow-hidden h-full">

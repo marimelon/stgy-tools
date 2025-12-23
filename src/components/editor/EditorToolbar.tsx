@@ -25,6 +25,7 @@ import {
 	Copy,
 	CopyPlus,
 	Download,
+	FolderOpen,
 	Grid3x3,
 	Group,
 	Redo2,
@@ -54,6 +55,8 @@ const ICON_SIZE = 16;
 export interface EditorToolbarProps {
 	/** 最終保存時刻 */
 	lastSavedAt?: Date | null;
+	/** Board Manager を開くコールバック */
+	onOpenBoardManager?: () => void;
 }
 
 /**
@@ -76,7 +79,10 @@ function formatRelativeTime(date: Date, t: TFunction): string {
 /**
  * エディターツールバー
  */
-export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
+export function EditorToolbar({
+	lastSavedAt,
+	onOpenBoardManager,
+}: EditorToolbarProps = {}) {
 	const { t } = useTranslation();
 	const toolbarRef = useRef<HTMLDivElement>(null);
 	const toolbarSize = useToolbarSize(toolbarRef);
@@ -156,6 +162,14 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 			>
 				{/* ファイル操作 */}
 				<div className="flex items-center gap-1 flex-shrink-0">
+					{onOpenBoardManager && (
+						<ToolbarButton
+							onClick={onOpenBoardManager}
+							title={t("boardManager.title")}
+						>
+							<FolderOpen size={ICON_SIZE} />
+						</ToolbarButton>
+					)}
 					<ToolbarButton onClick={openImportModal} title={t("toolbar.import")}>
 						<Download size={ICON_SIZE} />
 					</ToolbarButton>

@@ -33,6 +33,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "@resvg/resvg-wasm": "^2.6.2",
     "@tailwindcss/vite": "^4.0.6",
+    "@tanstack/react-db": "^0.1.59",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-router": "^1.132.0",
     "@tanstack/react-router-devtools": "^1.132.0",
@@ -51,7 +52,9 @@
     "react-resizable-panels": "^4.0.13",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.0.6",
-    "vite-tsconfig-paths": "^5.1.4"
+    "tanstack-dexie-db-collection": "^0.1.4",
+    "vite-tsconfig-paths": "^5.1.4",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.4",

@@ -1,0 +1,43 @@
+/**
+ * Board thumbnail component
+ * Renders a small preview of the board using BoardViewer
+ */
+
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { BoardViewer } from "@/components/board";
+import { decodeStgy, parseBoardData } from "@/lib/stgy";
+
+export interface BoardThumbnailProps {
+	stgyCode: string;
+	className?: string;
+}
+
+export function BoardThumbnail({ stgyCode, className }: BoardThumbnailProps) {
+	const { t } = useTranslation();
+
+	const boardData = useMemo(() => {
+		try {
+			const binary = decodeStgy(stgyCode);
+			return parseBoardData(binary);
+		} catch {
+			return null;
+		}
+	}, [stgyCode]);
+
+	if (!boardData) {
+		return (
+			<div
+				className={`bg-muted flex items-center justify-center text-muted-foreground text-xs ${className ?? ""}`}
+			>
+				{t("boardManager.thumbnailError")}
+			</div>
+		);
+	}
+
+	return (
+		<div className={`overflow-hidden ${className ?? ""}`}>
+			<BoardViewer boardData={boardData} scale={0.25} />
+		</div>
+	);
+}

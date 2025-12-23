@@ -253,6 +253,30 @@
 		"allLeft": "全て左",
 		"allRight": "全て右"
 	},
+	"boardManager": {
+		"title": "ボード管理",
+		"search": "ボードを検索...",
+		"sortByUpdated": "更新日",
+		"sortByCreated": "作成日",
+		"sortByName": "名前",
+		"newBoard": "新規作成",
+		"open": "開く",
+		"rename": "名前変更",
+		"duplicate": "複製",
+		"delete": "削除",
+		"currentBoard": "現在編集中",
+		"emptyState": {
+			"title": "保存されたボードがありません",
+			"description": "新規作成ボタンでボードを作成してください",
+			"noResults": "ボードが見つかりません",
+			"noResultsDescription": "別のキーワードで検索してください"
+		},
+		"undoDelete": "「{{name}}」を削除しました",
+		"undo": "元に戻す",
+		"boardCount": "{{count}}件のボード",
+		"boardCountFiltered": "{{count}}件のボード (フィルタ済み)",
+		"thumbnailError": "読込失敗"
+	},
 	"object": {
 		"1": "円形白無地フィールド",
 		"2": "円形白タイルフィールド",
