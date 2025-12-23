@@ -277,7 +277,24 @@
 		"undo": "Undo",
 		"boardCount": "{{count}} board(s)",
 		"boardCountFiltered": "{{count}} board(s) (filtered)",
-		"thumbnailError": "Load failed"
+		"thumbnailError": "Load failed",
+		"error": {
+			"loadFailed": {
+				"title": "Failed to load data",
+				"description": "Could not access browser storage.",
+				"privateMode": "Data cannot be saved in private browsing mode."
+			},
+			"decodeFailed": {
+				"title": "Failed to load board",
+				"description": "The data for \"{{name}}\" may be corrupted."
+			},
+			"startNew": "Start with new board",
+			"retry": "Retry",
+			"deleteAndContinue": "Delete and continue",
+			"openAnother": "Open another board",
+			"continueWithoutSaving": "Continue without saving",
+			"warningNoSave": "* Changes will not be saved"
+		}
 	},
 	"object": {
 		"1": "Circle White Solid Field",

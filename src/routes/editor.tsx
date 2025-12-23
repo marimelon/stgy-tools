@@ -29,7 +29,11 @@ import {
 	ObjectPalette,
 	PropertyPanel,
 } from "@/components/editor";
-import { BoardManagerModal } from "@/components/editor/BoardManager";
+import {
+	BoardManagerModal,
+	LoadErrorScreen,
+	DecodeErrorDialog,
+} from "@/components/editor/BoardManager";
 import { useBoards } from "@/lib/boards";
 import { useTranslation } from "react-i18next";
 
@@ -70,6 +74,15 @@ function EditorPage() {
 	const [currentBoardId, setCurrentBoardId] = useState<string | null>(null);
 	const [isInitialized, setIsInitialized] = useState(false);
 
+	// Memory-only mode (when IndexedDB is unavailable)
+	const [isMemoryOnlyMode, setIsMemoryOnlyMode] = useState(false);
+
+	// Decode error state
+	const [decodeError, setDecodeError] = useState<{
+		boardId: string;
+		boardName: string;
+	} | null>(null);
+
 	// Initial board state
 	const [initialBoard, setInitialBoard] = useState<BoardData>(() =>
 		createEmptyBoard(),
@@ -84,17 +97,31 @@ function EditorPage() {
 	const [editorKey, setEditorKey] = useState(0);
 
 	// Board operations from useBoards
-	const { boards, isLoading, createBoard, updateBoard, getBoard } = useBoards();
+	const {
+		boards,
+		isLoading,
+		error: storageError,
+		clearError,
+		createBoard,
+		updateBoard,
+		deleteBoard,
+		getBoard,
+	} = useBoards();
 
 	// Handle opening a board
 	const handleOpenBoard = useCallback(
-		(boardId: string) => {
+		(boardId: string): boolean => {
 			const board = getBoard(boardId);
-			if (!board) return;
+			if (!board) return false;
 
 			const decodedBoard = decodeBoardFromStgy(board.stgyCode);
-			if (!decodedBoard) return;
+			if (!decodedBoard) {
+				// Show decode error dialog
+				setDecodeError({ boardId: board.id, boardName: board.name });
+				return false;
+			}
 
+			setDecodeError(null);
 			setCurrentBoardId(boardId);
 			// Use stored board name (may have been renamed) instead of decoded name
 			setInitialBoard({ ...decodedBoard, name: board.name });
@@ -102,38 +129,85 @@ function EditorPage() {
 			setInitialGridSettings(board.gridSettings);
 			setInitialEncodeKey(board.encodeKey);
 			setEditorKey((prev) => prev + 1);
+			return true;
 		},
 		[getBoard],
 	);
 
-	// Handle creating a new board
-	const handleCreateNewBoard = useCallback(() => {
-		const defaultName = t("boardManager.defaultBoardName");
-		const newBoard = createEmptyBoard(defaultName);
-		const { width, height } = recalculateBoardSize(newBoard);
-		const boardToSave = { ...newBoard, width, height };
-		const stgyCode = encodeStgy(boardToSave, 0);
+	// Handle creating a new board (or starting in memory-only mode)
+	const handleCreateNewBoard = useCallback(
+		(memoryOnly = false) => {
+			const defaultName = t("boardManager.defaultBoardName");
+			const newBoard = createEmptyBoard(defaultName);
 
-		const newBoardId = createBoard(
-			newBoard.name,
-			stgyCode,
-			0,
-			[],
-			DEFAULT_GRID_SETTINGS,
-		);
+			if (!memoryOnly && !isMemoryOnlyMode) {
+				const { width, height } = recalculateBoardSize(newBoard);
+				const boardToSave = { ...newBoard, width, height };
+				const stgyCode = encodeStgy(boardToSave, 0);
 
-		setCurrentBoardId(newBoardId);
-		setInitialBoard(newBoard);
-		setInitialGroups([]);
-		setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-		setInitialEncodeKey(0);
-		setEditorKey((prev) => prev + 1);
-	}, [createBoard, t]);
+				const newBoardId = createBoard(
+					newBoard.name,
+					stgyCode,
+					0,
+					[],
+					DEFAULT_GRID_SETTINGS,
+				);
+
+				setCurrentBoardId(newBoardId);
+			} else {
+				// Memory-only mode: don't save to IndexedDB
+				setCurrentBoardId(null);
+			}
+
+			setInitialBoard(newBoard);
+			setInitialGroups([]);
+			setInitialGridSettings(DEFAULT_GRID_SETTINGS);
+			setInitialEncodeKey(0);
+			setEditorKey((prev) => prev + 1);
+		},
+		[createBoard, t, isMemoryOnlyMode],
+	);
+
+	// Handle decode error: open board manager
+	const handleOpenAnotherBoard = useCallback(() => {
+		setDecodeError(null);
+		setShowBoardManager(true);
+	}, []);
+
+	// Handle decode error: delete corrupted board
+	const handleDeleteCorruptedBoard = useCallback(() => {
+		if (!decodeError) return;
+
+		deleteBoard(decodeError.boardId);
+		setDecodeError(null);
+
+		// Open another board or create new one
+		const remainingBoards = boards.filter((b) => b.id !== decodeError.boardId);
+		if (remainingBoards.length > 0) {
+			handleOpenBoard(remainingBoards[0].id);
+		} else {
+			handleCreateNewBoard();
+		}
+	}, [decodeError, deleteBoard, boards, handleOpenBoard, handleCreateNewBoard]);
+
+	// Handle storage error: retry
+	const handleRetryStorage = useCallback(() => {
+		clearError();
+		window.location.reload();
+	}, [clearError]);
+
+	// Handle storage error: continue without saving
+	const handleContinueWithoutSaving = useCallback(() => {
+		clearError();
+		setIsMemoryOnlyMode(true);
+		handleCreateNewBoard(true);
+		setIsInitialized(true);
+	}, [clearError, handleCreateNewBoard]);
 
 	// Auto-initialize: create first board or open last edited board
 	useEffect(() => {
-		// Wait for loading to complete
-		if (isLoading || isInitialized) return;
+		// Wait for loading to complete, skip if error or memory-only mode
+		if (isLoading || isInitialized || storageError || isMemoryOnlyMode) return;
 
 		if (boards.length === 0) {
 			// First time: auto-create a new board
@@ -145,7 +219,27 @@ function EditorPage() {
 			handleOpenBoard(mostRecentBoard.id);
 			setIsInitialized(true);
 		}
-	}, [isLoading, isInitialized, boards, currentBoardId, handleCreateNewBoard, handleOpenBoard]);
+	}, [
+		isLoading,
+		isInitialized,
+		boards,
+		currentBoardId,
+		storageError,
+		isMemoryOnlyMode,
+		handleCreateNewBoard,
+		handleOpenBoard,
+	]);
+
+	// Show storage error screen
+	if (storageError) {
+		return (
+			<LoadErrorScreen
+				error={storageError}
+				onRetry={handleRetryStorage}
+				onStartWithoutSaving={handleContinueWithoutSaving}
+			/>
+		);
+	}
 
 	// Show loading state while initializing
 	if (isLoading || !isInitialized) {
@@ -167,9 +261,10 @@ function EditorPage() {
 				<EditorContent
 					initialEncodeKey={initialEncodeKey}
 					currentBoardId={currentBoardId}
+					isMemoryOnlyMode={isMemoryOnlyMode}
 					onOpenBoardManager={() => setShowBoardManager(true)}
 					onSaveBoard={(name, stgyCode, encodeKey, groups, gridSettings) => {
-						if (currentBoardId) {
+						if (currentBoardId && !isMemoryOnlyMode) {
 							updateBoard(currentBoardId, {
 								name,
 								stgyCode,
@@ -183,12 +278,23 @@ function EditorPage() {
 			</EditorProvider>
 
 			{/* Board Manager Modal */}
-			<BoardManagerModal
-				open={showBoardManager}
-				onClose={() => setShowBoardManager(false)}
-				currentBoardId={currentBoardId}
-				onOpenBoard={handleOpenBoard}
-				onCreateNewBoard={handleCreateNewBoard}
+			{!isMemoryOnlyMode && (
+				<BoardManagerModal
+					open={showBoardManager}
+					onClose={() => setShowBoardManager(false)}
+					currentBoardId={currentBoardId}
+					onOpenBoard={handleOpenBoard}
+					onCreateNewBoard={handleCreateNewBoard}
+				/>
+			)}
+
+			{/* Decode Error Dialog */}
+			<DecodeErrorDialog
+				open={decodeError !== null}
+				boardName={decodeError?.boardName ?? ""}
+				onClose={() => setDecodeError(null)}
+				onDelete={handleDeleteCorruptedBoard}
+				onOpenAnother={handleOpenAnotherBoard}
 			/>
 		</PanelProvider>
 	);
@@ -198,6 +304,7 @@ function EditorPage() {
 interface EditorContentProps {
 	initialEncodeKey: number;
 	currentBoardId: string | null;
+	isMemoryOnlyMode: boolean;
 	onOpenBoardManager: () => void;
 	onSaveBoard: (
 		name: string,
@@ -214,6 +321,7 @@ interface EditorContentProps {
 function EditorContent({
 	initialEncodeKey,
 	currentBoardId,
+	isMemoryOnlyMode,
 	onOpenBoardManager,
 	onSaveBoard,
 }: EditorContentProps) {
@@ -235,9 +343,9 @@ function EditorContent({
 	const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 	const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	// Save current board when dirty
+	// Save current board when dirty (skip in memory-only mode)
 	useEffect(() => {
-		if (!currentBoardId || !state.isDirty) return;
+		if (!currentBoardId || !state.isDirty || isMemoryOnlyMode) return;
 
 		// Clear previous timeout
 		if (saveTimeoutRef.current) {
@@ -272,6 +380,7 @@ function EditorContent({
 		state.groups,
 		state.gridSettings,
 		encodeKey,
+		isMemoryOnlyMode,
 		onSaveBoard,
 	]);
 
@@ -358,8 +467,8 @@ function EditorContent({
 
 			{/* ツールバー */}
 			<EditorToolbar
-				lastSavedAt={lastSavedAt}
-				onOpenBoardManager={onOpenBoardManager}
+				lastSavedAt={isMemoryOnlyMode ? null : lastSavedAt}
+				onOpenBoardManager={isMemoryOnlyMode ? undefined : onOpenBoardManager}
 			/>
 
 			{/* メインエリア */}

@@ -10,4 +10,6 @@ export {
 	type UseBoardsOptions,
 	type BoardSortOption,
 	type SortDirection,
+	type BoardsError,
+	type BoardsErrorType,
 } from "./hooks";

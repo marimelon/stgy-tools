@@ -24,6 +24,18 @@ export interface UseBoardsOptions {
 /** Undo timeout in milliseconds */
 const UNDO_TIMEOUT_MS = 5000;
 
+/** Error types for board operations */
+export type BoardsErrorType =
+	| "indexeddb_unavailable"
+	| "load_failed"
+	| "unknown";
+
+export interface BoardsError {
+	type: BoardsErrorType;
+	message: string;
+	originalError?: unknown;
+}
+
 /**
  * Main hook for board CRUD operations with live query
  */
@@ -34,10 +46,45 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		searchQuery = "",
 	} = options;
 
+	// Error state
+	const [error, setError] = useState<BoardsError | null>(null);
+
 	// Live Query: Get all boards
-	const { data, isLoading } = useLiveQuery((q) =>
-		q.from({ board: boardsCollection }),
-	);
+	const {
+		data,
+		isLoading,
+		error: queryError,
+	} = useLiveQuery((q) => q.from({ board: boardsCollection }));
+
+	// Handle query errors
+	useEffect(() => {
+		if (queryError) {
+			const errorMessage =
+				queryError instanceof Error ? queryError.message : String(queryError);
+
+			// Detect IndexedDB unavailability (common in private browsing)
+			if (
+				errorMessage.includes("IndexedDB") ||
+				errorMessage.includes("IDBDatabase") ||
+				errorMessage.includes("access denied") ||
+				errorMessage.includes("QuotaExceededError")
+			) {
+				setError({
+					type: "indexeddb_unavailable",
+					message: errorMessage,
+					originalError: queryError,
+				});
+			} else {
+				setError({
+					type: "load_failed",
+					message: errorMessage,
+					originalError: queryError,
+				});
+			}
+		} else {
+			setError(null);
+		}
+	}, [queryError]);
 
 	// Client-side filtering and sorting
 	const boards = (data ?? [])
@@ -203,9 +250,16 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		[boards],
 	);
 
+	// Clear error
+	const clearError = useCallback(() => {
+		setError(null);
+	}, []);
+
 	return {
 		boards,
 		isLoading,
+		error,
+		clearError,
 		createBoard,
 		updateBoard,
 		deleteBoard,

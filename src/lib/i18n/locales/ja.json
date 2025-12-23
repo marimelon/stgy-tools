@@ -277,7 +277,24 @@
 		"undo": "元に戻す",
 		"boardCount": "{{count}}件のボード",
 		"boardCountFiltered": "{{count}}件のボード (フィルタ済み)",
-		"thumbnailError": "読込失敗"
+		"thumbnailError": "読込失敗",
+		"error": {
+			"loadFailed": {
+				"title": "データの読み込みに失敗しました",
+				"description": "ブラウザのストレージにアクセスできませんでした。",
+				"privateMode": "プライベートブラウジングモードでは、データの保存ができない場合があります。"
+			},
+			"decodeFailed": {
+				"title": "ボードの読み込みに失敗しました",
+				"description": "「{{name}}」のデータが破損している可能性があります。"
+			},
+			"startNew": "新規ボードで開始",
+			"retry": "再試行",
+			"deleteAndContinue": "削除して続行",
+			"openAnother": "別のボードを開く",
+			"continueWithoutSaving": "保存なしで続行",
+			"warningNoSave": "※ 変更内容は保存されません"
+		}
 	},
 	"object": {
 		"1": "円形白無地フィールド",
