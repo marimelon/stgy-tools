@@ -156,13 +156,13 @@
 		"sizeNote": "* Automatically calculated on export"
 	},
 	"background": {
-		"0": "None",
-		"1": "Full Checkered",
-		"2": "Circle Checkered",
-		"3": "Square Checkered",
-		"4": "Full Gray",
-		"5": "Circle Gray",
-		"6": "Square Gray"
+		"1": "None",
+		"2": "Full Checkered",
+		"3": "Circle Checkered",
+		"4": "Square Checkered",
+		"5": "Full Gray",
+		"6": "Circle Gray",
+		"7": "Square Gray"
 	},
 	"toolbar": {
 		"import": "Import",

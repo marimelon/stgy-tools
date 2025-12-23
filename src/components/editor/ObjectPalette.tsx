@@ -9,6 +9,7 @@ import { Bug, ChevronRight } from "lucide-react";
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ObjectRenderer } from "@/components/board";
+import { DEFAULT_BBOX_SIZE, OBJECT_BBOX_SIZES } from "@/lib/board";
 import { createDefaultObject, useDebugMode, useEditor } from "@/lib/editor";
 import { ObjectIds } from "@/lib/stgy";
 
@@ -236,7 +237,7 @@ export function ObjectPalette() {
 
 						{/* カテゴリ内オブジェクト */}
 						{expandedCategories.has(key) && (
-							<div className="grid grid-cols-4 gap-1.5 mt-1.5 px-1 animate-slideIn">
+							<div className="palette-grid mt-1.5 px-1 animate-slideIn">
 								{ids.map((objectId) => (
 									<ObjectPaletteItem
 										key={objectId}
@@ -268,7 +269,7 @@ export function ObjectPalette() {
 						</button>
 
 						{expandedCategories.has("_debug") && (
-							<div className="grid grid-cols-4 gap-1.5 mt-1.5 px-1 animate-slideIn">
+							<div className="palette-grid mt-1.5 px-1 animate-slideIn">
 								{HIDDEN_OBJECT_IDS.map((objectId) => (
 									<ObjectPaletteItem
 										key={objectId}
@@ -286,15 +287,21 @@ export function ObjectPalette() {
 	);
 }
 
-/** フィールドオブジェクトのID一覧 (表示用viewBox調整に使用) */
-const FIELD_OBJECT_IDS = [
-	// 注意: CircleWhiteSolid, CircleWhiteTile, CircleGraySolid,
-	// SquareWhiteSolid, SquareWhiteTile, SquareGraySolid は未使用 (CSV: False)
-	ObjectIds.CircleCheck,
-	ObjectIds.CircleGray,
-	ObjectIds.SquareCheck,
-	ObjectIds.SquareGray,
+/** パレット専用アイコンがあるオブジェクトID一覧 */
+const PALETTE_ICON_OBJECT_IDS: number[] = [
+	ObjectIds.ConeAoE, // 10: 扇範囲攻撃
+	ObjectIds.DonutAoE, // 17: 輪形範囲攻撃
 ];
+
+/**
+ * オブジェクトのviewBoxサイズを取得（実サイズ + 余白）
+ */
+function getViewBoxSize(objectId: number): number {
+	const size = OBJECT_BBOX_SIZES[objectId] ?? DEFAULT_BBOX_SIZE;
+	const maxDimension = Math.max(size.width, size.height);
+	// 余白を追加してオブジェクトが見切れないようにする
+	return Math.ceil(maxDimension * 1.1);
+}
 
 /**
  * パレットアイテムコンポーネント
@@ -314,30 +321,15 @@ function ObjectPaletteItem({
 	const tooltipRef = useRef<HTMLDivElement>(null);
 	const [tooltipStyle, setTooltipStyle] = useState<CSSProperties>({});
 
-	// フィールドオブジェクトかどうかでviewBoxを調整
-	const isFieldObject = (FIELD_OBJECT_IDS as number[]).includes(objectId);
-
-	// 256pxサイズの範囲攻撃オブジェクト
-	const isLargeAoE = (
-		[
-			ObjectIds.CircleAoE,
-			ObjectIds.KnockbackRadial,
-			ObjectIds.KnockbackLine,
-		] as number[]
-	).includes(objectId);
-
-	// 134pxサイズの範囲攻撃オブジェクト
-	const isMediumAoE = (
-		[ObjectIds.CircleAoEMoving, ObjectIds.StackChain] as number[]
-	).includes(objectId);
-
-	// viewBoxサイズを決定（オブジェクトサイズに合わせて調整）
-	const viewBoxSize =
-		isFieldObject || isLargeAoE ? 280 : isMediumAoE ? 150 : 40;
+	// オブジェクトサイズに基づいてviewBoxサイズを計算
+	const viewBoxSize = getViewBoxSize(objectId);
 	const objectPos = viewBoxSize / 2;
 
 	const object = createDefaultObject(objectId, { x: objectPos, y: objectPos });
 	const name = t(`object.${objectId}`, { defaultValue: `ID: ${objectId}` });
+
+	// パレット専用アイコンがあるかどうか
+	const hasPaletteIcon = PALETTE_ICON_OBJECT_IDS.includes(objectId);
 
 	const handleDragStart = (e: React.DragEvent) => {
 		e.dataTransfer.setData("application/x-object-id", String(objectId));
@@ -383,28 +375,46 @@ function ObjectPaletteItem({
 				onMouseLeave={() => setIsHovered(false)}
 				onFocus={() => setIsHovered(true)}
 				onBlur={() => setIsHovered(false)}
-				className="palette-item w-full"
+				className="palette-item"
 				aria-label={name}
 			>
-				<svg
-					width={40}
-					height={40}
-					viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
-					aria-hidden="true"
-					style={{
-						background: "var(--color-bg-deep)",
-						borderRadius: "var(--radius-sm)",
-						pointerEvents: "none",
-						border: isDebug ? "2px solid #f59e0b" : undefined,
-					}}
-				>
-					<ObjectRenderer
-						object={object}
-						index={0}
-						showBoundingBox={false}
-						selected={false}
+				{hasPaletteIcon ? (
+					<img
+						src={`/palette-icons/${objectId}.png`}
+						alt=""
+						aria-hidden="true"
+						style={{
+							width: "40px",
+							height: "40px",
+							display: "block",
+							background: "var(--color-bg-deep)",
+							borderRadius: "var(--radius-sm)",
+							pointerEvents: "none",
+							border: isDebug ? "2px solid #f59e0b" : undefined,
+							objectFit: "contain",
+						}}
 					/>
-				</svg>
+				) : (
+					<svg
+						width={40}
+						height={40}
+						viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+						aria-hidden="true"
+						style={{
+							background: "var(--color-bg-deep)",
+							borderRadius: "var(--radius-sm)",
+							pointerEvents: "none",
+							border: isDebug ? "2px solid #f59e0b" : undefined,
+						}}
+					>
+						<ObjectRenderer
+							object={object}
+							index={0}
+							showBoundingBox={false}
+							selected={false}
+						/>
+					</svg>
+				)}
 			</button>
 			{/* カスタムツールチップ */}
 			{isHovered && (
