@@ -6,10 +6,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useCallback, useEffect, useId, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { BoardViewer } from "@/components/board/BoardViewer";
 import { decodeStgy } from "@/lib/stgy/decoder";
 import { parseBoardData } from "@/lib/stgy/parser";
 import type { BoardData } from "@/lib/stgy/types";
-import { BoardViewer } from "@/components/board/BoardViewer";
 
 /** デバウンス遅延時間 (ms) */
 const DEBOUNCE_DELAY = 300;
@@ -160,9 +160,11 @@ function ImageGeneratePage() {
 	const [error, setError] = useState("");
 	const [boardName, setBoardName] = useState("");
 	const [boardData, setBoardData] = useState<BoardData | null>(null);
-	const [previewMode, setPreviewMode] = useState<"preview" | "actual">("preview");
+	const [previewMode, setPreviewMode] = useState<"preview" | "actual">(
+		"preview",
+	);
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	
+
 	// Accessible IDs
 	const stgyCodeId = useId();
 	const formatGroupId = useId();
@@ -300,7 +302,9 @@ function ImageGeneratePage() {
 				<p style={styles.description}>{t("imageGenerator.description")}</p>
 
 				<div style={styles.inputGroup}>
-					<label htmlFor={stgyCodeId} style={styles.label}>{t("imageGenerator.stgyCode")}</label>
+					<label htmlFor={stgyCodeId} style={styles.label}>
+						{t("imageGenerator.stgyCode")}
+					</label>
 					<textarea
 						id={stgyCodeId}
 						style={styles.textarea}
@@ -312,27 +316,45 @@ function ImageGeneratePage() {
 				</div>
 
 				<div style={styles.inputGroup}>
-					<span id={formatGroupId} style={styles.label}>{t("imageGenerator.outputFormat")}</span>
-					<div style={styles.radioGroup} role="radiogroup" aria-labelledby={formatGroupId}>
-						<label style={styles.radioLabel}>
+					<span id={formatGroupId} style={styles.label}>
+						{t("imageGenerator.outputFormat")}
+					</span>
+					<div
+						style={styles.segmentControl}
+						role="radiogroup"
+						aria-labelledby={formatGroupId}
+					>
+						<label
+							style={{
+								...styles.segmentItem,
+								...styles.segmentItemFirst,
+								...(format === "png" ? styles.segmentItemSelected : {}),
+							}}
+						>
 							<input
 								type="radio"
 								name="format"
 								value="png"
 								checked={format === "png"}
 								onChange={() => setFormat("png")}
-								style={styles.radio}
+								style={styles.radioHidden}
 							/>
 							PNG
 						</label>
-						<label style={styles.radioLabel}>
+						<label
+							style={{
+								...styles.segmentItem,
+								...styles.segmentItemLast,
+								...(format === "svg" ? styles.segmentItemSelected : {}),
+							}}
+						>
 							<input
 								type="radio"
 								name="format"
 								value="svg"
 								checked={format === "svg"}
 								onChange={() => setFormat("svg")}
-								style={styles.radio}
+								style={styles.radioHidden}
 							/>
 							SVG
 						</label>
@@ -341,17 +363,35 @@ function ImageGeneratePage() {
 
 				{format === "png" && (
 					<div style={styles.inputGroup}>
-						<span id={sizeGroupId} style={styles.label}>{t("imageGenerator.outputSize")}</span>
-						<div style={styles.radioGroup} role="radiogroup" aria-labelledby={sizeGroupId}>
-							{SCALE_OPTIONS.map((option) => (
-								<label key={option.value} style={styles.radioLabel}>
+						<span id={sizeGroupId} style={styles.label}>
+							{t("imageGenerator.outputSize")}
+						</span>
+						<div
+							style={styles.segmentControl}
+							role="radiogroup"
+							aria-labelledby={sizeGroupId}
+						>
+							{SCALE_OPTIONS.map((option, index) => (
+								<label
+									key={option.value}
+									style={{
+										...styles.segmentItem,
+										...(index === 0 ? styles.segmentItemFirst : {}),
+										...(index === SCALE_OPTIONS.length - 1
+											? styles.segmentItemLast
+											: {}),
+										...(scale === option.value
+											? styles.segmentItemSelected
+											: {}),
+									}}
+								>
 									<input
 										type="radio"
 										name="scale"
 										value={option.value}
 										checked={scale === option.value}
 										onChange={() => setScale(option.value)}
-										style={styles.radio}
+										style={styles.radioHidden}
 									/>
 									{option.label}
 								</label>
@@ -398,9 +438,7 @@ function ImageGeneratePage() {
 									style={styles.copyButton}
 									onClick={copyToClipboard}
 								>
-									{copied
-										? `✓ ${t("common.copied")}`
-										: t("common.copy")}
+									{copied ? `✓ ${t("common.copied")}` : t("common.copy")}
 								</button>
 							</div>
 						</div>
@@ -411,7 +449,9 @@ function ImageGeneratePage() {
 									type="button"
 									style={{
 										...styles.previewTab,
-										...(previewMode === "preview" ? styles.previewTabActive : {}),
+										...(previewMode === "preview"
+											? styles.previewTabActive
+											: {}),
 									}}
 									onClick={() => setPreviewMode("preview")}
 								>
@@ -421,7 +461,9 @@ function ImageGeneratePage() {
 									type="button"
 									style={{
 										...styles.previewTab,
-										...(previewMode === "actual" ? styles.previewTabActive : {}),
+										...(previewMode === "actual"
+											? styles.previewTabActive
+											: {}),
 									}}
 									onClick={() => setPreviewMode("actual")}
 								>
@@ -551,19 +593,45 @@ const styles: Record<string, React.CSSProperties> = {
 		resize: "vertical",
 		boxSizing: "border-box",
 	},
-	radioGroup: {
-		display: "flex",
-		gap: "1rem",
+	segmentControl: {
+		display: "inline-flex",
+		backgroundColor: "#1a1a1a",
+		borderRadius: "6px",
+		padding: "3px",
+		gap: "2px",
 	},
-	radioLabel: {
-		color: "#ccc",
-		display: "flex",
+	segmentItem: {
+		color: "#888",
+		display: "inline-flex",
 		alignItems: "center",
-		gap: "0.5rem",
+		justifyContent: "center",
+		padding: "0.5rem 1rem",
+		backgroundColor: "transparent",
+		border: "none",
+		borderRadius: "4px",
 		cursor: "pointer",
+		fontSize: "0.8125rem",
+		fontWeight: 500,
+		transition: "background-color 0.15s ease, color 0.15s ease",
+		userSelect: "none",
+		whiteSpace: "nowrap",
 	},
-	radio: {
-		accentColor: "#3b82f6",
+	segmentItemFirst: {
+		// 左端の角丸（実際にはコンテナのpaddingで処理）
+	},
+	segmentItemLast: {
+		// 右端の角丸（実際にはコンテナのpaddingで処理）
+	},
+	segmentItemSelected: {
+		backgroundColor: "#333",
+		color: "#fff",
+	},
+	radioHidden: {
+		position: "absolute",
+		opacity: 0,
+		width: 0,
+		height: 0,
+		pointerEvents: "none",
 	},
 	checkboxLabel: {
 		color: "#ccc",
