@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useEditor, useImportExport, GRID_SIZES } from "@/lib/editor";
+import { GRID_SIZES, useEditor, useImportExport } from "@/lib/editor";
 import { ExportModal } from "./ExportModal";
 import { ImportModal } from "./ImportModal";
 import { PanelSettingsDropdown } from "./PanelSettingsDropdown";
