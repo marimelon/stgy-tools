@@ -154,12 +154,12 @@ export function BoardManagerModal({
 						/>
 					</div>
 
-				{/* Board count */}
-				<div className="text-xs text-muted-foreground pt-2 border-t">
-					{searchQuery
-						? t("boardManager.boardCountFiltered", { count: boards.length })
-						: t("boardManager.boardCount", { count: boards.length })}
-				</div>
+					{/* Board count */}
+					<div className="text-xs text-muted-foreground pt-2 border-t">
+						{searchQuery
+							? t("boardManager.boardCountFiltered", { count: boards.length })
+							: t("boardManager.boardCount", { count: boards.length })}
+					</div>
 				</DialogContent>
 			</Dialog>
 

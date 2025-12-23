@@ -71,8 +71,9 @@ function EditorPage() {
 		createEmptyBoard("新規ボード"),
 	);
 	const [initialGroups, setInitialGroups] = useState<ObjectGroup[]>([]);
-	const [initialGridSettings, setInitialGridSettings] =
-		useState<GridSettings>(DEFAULT_GRID_SETTINGS);
+	const [initialGridSettings, setInitialGridSettings] = useState<GridSettings>(
+		DEFAULT_GRID_SETTINGS,
+	);
 	const [initialEncodeKey, setInitialEncodeKey] = useState<number>(0);
 
 	// Key to force re-render EditorProvider when switching boards
@@ -325,7 +326,10 @@ function EditorContent({
 			</header>
 
 			{/* ツールバー */}
-			<EditorToolbar lastSavedAt={lastSavedAt} onOpenBoardManager={onOpenBoardManager} />
+			<EditorToolbar
+				lastSavedAt={lastSavedAt}
+				onOpenBoardManager={onOpenBoardManager}
+			/>
 
 			{/* メインエリア */}
 			<div className="flex-1 overflow-hidden h-full">
