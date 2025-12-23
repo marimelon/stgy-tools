@@ -9,9 +9,9 @@ import {
 	CANVAS_HEIGHT,
 	CANVAS_WIDTH,
 	DEFAULT_BBOX_SIZE,
-	OBJECT_BBOX_SIZES,
 	getConeBoundingBox,
 	getDonutConeBoundingBox,
+	OBJECT_BBOX_SIZES,
 } from "@/lib/board";
 import type { BoardData, BoardObject, Color } from "@/lib/stgy/types";
 import { ObjectIds } from "@/lib/stgy/types";
@@ -227,8 +227,6 @@ function renderColoredAoE(
 						width={length}
 						height={thickness}
 						fill={fill}
-						stroke={strokeColor}
-						strokeWidth="2"
 						opacity={opacity}
 					/>
 				</g>

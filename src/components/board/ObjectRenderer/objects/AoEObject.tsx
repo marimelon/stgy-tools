@@ -184,8 +184,6 @@ export function AoEObject({
 					width={length}
 					height={thickness}
 					fill={fill}
-					stroke={COLORS.STROKE_AOE}
-					strokeWidth="2"
 					transform={transform}
 				/>
 			);
