@@ -1,3 +1,9 @@
 # https://www.robotstxt.org/robotstxt.html
+
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /debug-stgy
+Disallow: /debug-render
+Disallow: /debug
+
+Sitemap: https://stgy-tools.marime.net/sitemap.xml
