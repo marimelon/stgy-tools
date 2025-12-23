@@ -38,7 +38,9 @@
 		"markdownCode": "Markdown Code",
 		"strategyBoard": "Strategy Board",
 		"parseError": "Failed to parse stgy code: {{message}}",
-		"unknownError": "Unknown error"
+		"unknownError": "Unknown error",
+		"previewTab": "Preview",
+		"actualImageTab": "Actual Image"
 	},
 	"language": {
 		"label": "Language",

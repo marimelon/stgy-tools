@@ -14,6 +14,118 @@ import { BoardViewer } from "@/components/board/BoardViewer";
 /** デバウンス遅延時間 (ms) */
 const DEBOUNCE_DELAY = 300;
 
+/** キャンバスサイズ */
+const CANVAS_WIDTH = 512;
+const CANVAS_HEIGHT = 384;
+
+/** タイトルバーの高さ */
+const TITLE_BAR_HEIGHT = 32;
+
+/** 枠線の太さ */
+const BORDER_WIDTH = 2;
+
+/** タイトルバーコンポーネント */
+function TitleBar({ title, width }: { title: string; width: number }) {
+	return (
+		<g>
+			{/* 背景バー */}
+			<rect
+				x={BORDER_WIDTH}
+				y={BORDER_WIDTH}
+				width={width - BORDER_WIDTH * 2}
+				height={TITLE_BAR_HEIGHT}
+				fill="#D2D2D2"
+			/>
+			{/* 下線 */}
+			<line
+				x1={BORDER_WIDTH}
+				y1={TITLE_BAR_HEIGHT + BORDER_WIDTH}
+				x2={width - BORDER_WIDTH}
+				y2={TITLE_BAR_HEIGHT + BORDER_WIDTH}
+				stroke="rgba(128, 128, 128, 0.3)"
+				strokeWidth={1}
+			/>
+			{/* タイトルテキスト */}
+			<text
+				x={BORDER_WIDTH + 12}
+				y={BORDER_WIDTH + TITLE_BAR_HEIGHT / 2}
+				fill="#646464"
+				fontSize="14"
+				fontFamily="sans-serif"
+				fontWeight="500"
+				textAnchor="start"
+				dominantBaseline="central"
+			>
+				{title}
+			</text>
+		</g>
+	);
+}
+
+/** 枠線コンポーネント */
+function BorderFrame({ width, height }: { width: number; height: number }) {
+	return (
+		<rect
+			x={BORDER_WIDTH / 2}
+			y={BORDER_WIDTH / 2}
+			width={width - BORDER_WIDTH}
+			height={height - BORDER_WIDTH}
+			fill="none"
+			stroke="rgba(255, 255, 255, 0.8)"
+			strokeWidth={BORDER_WIDTH}
+		/>
+	);
+}
+
+/** プレビュー用のボードビューワー（タイトルバー対応） */
+function BoardPreview({
+	boardData,
+	showTitle,
+}: {
+	boardData: BoardData;
+	showTitle: boolean;
+}) {
+	const totalHeight = showTitle
+		? CANVAS_HEIGHT + TITLE_BAR_HEIGHT
+		: CANVAS_HEIGHT;
+	const contentOffsetY = showTitle ? TITLE_BAR_HEIGHT : 0;
+
+	return (
+		<svg
+			width={CANVAS_WIDTH}
+			height={totalHeight}
+			viewBox={`0 0 ${CANVAS_WIDTH} ${totalHeight}`}
+			style={{ backgroundColor: "#1a1a1a" }}
+			role="img"
+			aria-label={boardData.name || "Strategy Board"}
+		>
+			{/* 全体背景色 */}
+			<rect width={CANVAS_WIDTH} height={totalHeight} fill="#1a1a1a" />
+
+			{/* タイトルバー */}
+			{showTitle && <TitleBar title={boardData.name} width={CANVAS_WIDTH} />}
+
+			{/* コンテンツ領域 */}
+			<foreignObject
+				x={0}
+				y={contentOffsetY}
+				width={CANVAS_WIDTH}
+				height={CANVAS_HEIGHT}
+			>
+				<div
+					// @ts-expect-error xmlns is valid for foreignObject content
+					xmlns="http://www.w3.org/1999/xhtml"
+				>
+					<BoardViewer boardData={boardData} />
+				</div>
+			</foreignObject>
+
+			{/* 枠線 */}
+			{showTitle && <BorderFrame width={CANVAS_WIDTH} height={totalHeight} />}
+		</svg>
+	);
+}
+
 export const Route = createFileRoute("/image/generate")({
 	component: ImageGeneratePage,
 	validateSearch: (search: Record<string, unknown>) => {
@@ -48,6 +160,7 @@ function ImageGeneratePage() {
 	const [error, setError] = useState("");
 	const [boardName, setBoardName] = useState("");
 	const [boardData, setBoardData] = useState<BoardData | null>(null);
+	const [previewMode, setPreviewMode] = useState<"preview" | "actual">("preview");
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	
 	// Accessible IDs
@@ -293,9 +406,43 @@ function ImageGeneratePage() {
 						</div>
 
 						<div style={styles.inputGroup}>
-							<span style={styles.label}>{t("common.preview")}</span>
+							<div style={styles.previewTabs}>
+								<button
+									type="button"
+									style={{
+										...styles.previewTab,
+										...(previewMode === "preview" ? styles.previewTabActive : {}),
+									}}
+									onClick={() => setPreviewMode("preview")}
+								>
+									{t("imageGenerator.previewTab")}
+								</button>
+								<button
+									type="button"
+									style={{
+										...styles.previewTab,
+										...(previewMode === "actual" ? styles.previewTabActive : {}),
+									}}
+									onClick={() => setPreviewMode("actual")}
+								>
+									{t("imageGenerator.actualImageTab")}
+								</button>
+							</div>
 							<div style={styles.previewContainer}>
-								{boardData && <BoardViewer boardData={boardData} />}
+								{previewMode === "preview" ? (
+									boardData && (
+										<BoardPreview boardData={boardData} showTitle={showTitle} />
+									)
+								) : (
+									<img
+										src={generatedUrl}
+										alt={strategyBoardAlt}
+										style={styles.previewImage}
+										onError={(e) => {
+											(e.target as HTMLImageElement).style.display = "none";
+										}}
+									/>
+								)}
 							</div>
 						</div>
 
@@ -460,6 +607,25 @@ const styles: Record<string, React.CSSProperties> = {
 		cursor: "pointer",
 		whiteSpace: "nowrap",
 	},
+	previewTabs: {
+		display: "flex",
+		gap: "0.25rem",
+		marginBottom: "0.5rem",
+	},
+	previewTab: {
+		backgroundColor: "transparent",
+		color: "#888",
+		border: "none",
+		borderBottom: "2px solid transparent",
+		padding: "0.5rem 1rem",
+		fontSize: "0.875rem",
+		cursor: "pointer",
+		transition: "color 0.2s, border-color 0.2s",
+	},
+	previewTabActive: {
+		color: "#fff",
+		borderBottomColor: "#3b82f6",
+	},
 	previewContainer: {
 		backgroundColor: "#2a2a2a",
 		borderRadius: "6px",
@@ -468,6 +634,11 @@ const styles: Record<string, React.CSSProperties> = {
 		justifyContent: "center",
 		alignItems: "center",
 		minHeight: "200px",
+	},
+	previewImage: {
+		maxWidth: "100%",
+		maxHeight: "400px",
+		borderRadius: "4px",
 	},
 	codeBlock: {
 		display: "block",

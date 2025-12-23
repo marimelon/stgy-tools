@@ -38,7 +38,9 @@
 		"markdownCode": "Markdownコード",
 		"strategyBoard": "戦略ボード",
 		"parseError": "stgyコードの解析に失敗しました: {{message}}",
-		"unknownError": "不明なエラー"
+		"unknownError": "不明なエラー",
+		"previewTab": "プレビュー",
+		"actualImageTab": "実際の画像"
 	},
 	"language": {
 		"label": "言語",
