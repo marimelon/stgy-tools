@@ -2,7 +2,7 @@
  * エディター用キーボードショートカットフック
  */
 
-import { useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useEditor } from "./EditorContext";
 
 /** 移動量 */
@@ -39,173 +39,149 @@ export function useKeyboardShortcuts() {
 	/**
 	 * オブジェクトを移動
 	 */
-	const handleMove = useCallback(
-		(deltaX: number, deltaY: number) => {
-			if (selectedIndices.length === 0) return;
-			moveObjects(selectedIndices, deltaX, deltaY);
-			commitHistory("オブジェクト移動");
-		},
-		[selectedIndices, moveObjects, commitHistory],
-	);
+	const handleMove = (deltaX: number, deltaY: number) => {
+		if (selectedIndices.length === 0) return;
+		moveObjects(selectedIndices, deltaX, deltaY);
+		commitHistory("オブジェクト移動");
+	};
 
 	/**
 	 * キーダウンイベントハンドラー
 	 */
-	const handleKeyDown = useCallback(
-		(e: KeyboardEvent) => {
-			// テキスト編集中は無視
-			if (state.editingTextIndex !== null) {
-				return;
-			}
+	const handleKeyDown = (e: KeyboardEvent) => {
+		// テキスト編集中は無視
+		if (state.editingTextIndex !== null) {
+			return;
+		}
 
-			// 入力フィールドにフォーカス中は無視
-			const target = e.target as HTMLElement;
-			if (
-				target.tagName === "INPUT" ||
-				target.tagName === "TEXTAREA" ||
-				target.isContentEditable
-			) {
-				return;
-			}
+		// 入力フィールドにフォーカス中は無視
+		const target = e.target as HTMLElement;
+		if (
+			target.tagName === "INPUT" ||
+			target.tagName === "TEXTAREA" ||
+			target.isContentEditable
+		) {
+			return;
+		}
 
-			const isMod = e.ctrlKey || e.metaKey;
-			const isShift = e.shiftKey;
+		const isMod = e.ctrlKey || e.metaKey;
+		const isShift = e.shiftKey;
 
-			// Ctrl/Cmd + Z: 元に戻す
-			if (isMod && !isShift && e.key === "z") {
-				if (canUndo) {
-					e.preventDefault();
-					undo();
-				}
-				return;
-			}
-
-			// Ctrl/Cmd + Y または Ctrl/Cmd + Shift + Z: やり直す
-			if ((isMod && e.key === "y") || (isMod && isShift && e.key === "z")) {
-				if (canRedo) {
-					e.preventDefault();
-					redo();
-				}
-				return;
-			}
-
-			// Ctrl/Cmd + C: コピー
-			if (isMod && e.key === "c") {
-				if (hasSelection) {
-					e.preventDefault();
-					copySelected();
-				}
-				return;
-			}
-
-			// Ctrl/Cmd + V: 貼り付け
-			if (isMod && e.key === "v") {
+		// Ctrl/Cmd + Z: 元に戻す
+		if (isMod && !isShift && e.key === "z") {
+			if (canUndo) {
 				e.preventDefault();
-				paste();
-				return;
+				undo();
 			}
+			return;
+		}
 
-			// Ctrl/Cmd + D: 複製
-			if (isMod && e.key === "d") {
-				if (hasSelection) {
-					e.preventDefault();
-					duplicateSelected();
-				}
-				return;
-			}
-
-			// Ctrl/Cmd + A: 全選択
-			if (isMod && e.key === "a") {
+		// Ctrl/Cmd + Y または Ctrl/Cmd + Shift + Z: やり直す
+		if ((isMod && e.key === "y") || (isMod && isShift && e.key === "z")) {
+			if (canRedo) {
 				e.preventDefault();
-				selectAll();
-				return;
+				redo();
 			}
+			return;
+		}
 
-			// Ctrl/Cmd + G: グループ化
-			if (isMod && !isShift && e.key === "g") {
-				if (canGroup) {
-					e.preventDefault();
-					groupSelected();
-				}
-				return;
-			}
-
-			// Ctrl/Cmd + Shift + G: グループ解除
-			if (isMod && isShift && e.key === "g") {
-				if (selectedGroup) {
-					e.preventDefault();
-					ungroup(selectedGroup.id);
-				}
-				return;
-			}
-
-			// Delete / Backspace: 削除
-			if (e.key === "Delete" || e.key === "Backspace") {
-				if (hasSelection) {
-					e.preventDefault();
-					deleteSelected();
-				}
-				return;
-			}
-
-			// Escape: 選択解除
-			if (e.key === "Escape") {
-				if (hasSelection) {
-					e.preventDefault();
-					deselectAll();
-				}
-				return;
-			}
-
-			// 矢印キー: 移動
+		// Ctrl/Cmd + C: コピー
+		if (isMod && e.key === "c") {
 			if (hasSelection) {
-				const step = isShift ? MOVE_STEP_LARGE : MOVE_STEP;
-
-				switch (e.key) {
-					case "ArrowUp":
-						e.preventDefault();
-						handleMove(0, -step);
-						break;
-					case "ArrowDown":
-						e.preventDefault();
-						handleMove(0, step);
-						break;
-					case "ArrowLeft":
-						e.preventDefault();
-						handleMove(-step, 0);
-						break;
-					case "ArrowRight":
-						e.preventDefault();
-						handleMove(step, 0);
-						break;
-				}
+				e.preventDefault();
+				copySelected();
 			}
-		},
-		[
-			state.editingTextIndex,
-			canUndo,
-			canRedo,
-			hasSelection,
-			canGroup,
-			selectedGroup,
-			undo,
-			redo,
-			copySelected,
-			paste,
-			duplicateSelected,
-			selectAll,
-			groupSelected,
-			ungroup,
-			deleteSelected,
-			deselectAll,
-			handleMove,
-		],
-	);
+			return;
+		}
+
+		// Ctrl/Cmd + V: 貼り付け
+		if (isMod && e.key === "v") {
+			e.preventDefault();
+			paste();
+			return;
+		}
+
+		// Ctrl/Cmd + D: 複製
+		if (isMod && e.key === "d") {
+			if (hasSelection) {
+				e.preventDefault();
+				duplicateSelected();
+			}
+			return;
+		}
+
+		// Ctrl/Cmd + A: 全選択
+		if (isMod && e.key === "a") {
+			e.preventDefault();
+			selectAll();
+			return;
+		}
+
+		// Ctrl/Cmd + G: グループ化
+		if (isMod && !isShift && e.key === "g") {
+			if (canGroup) {
+				e.preventDefault();
+				groupSelected();
+			}
+			return;
+		}
+
+		// Ctrl/Cmd + Shift + G: グループ解除
+		if (isMod && isShift && e.key === "g") {
+			if (selectedGroup) {
+				e.preventDefault();
+				ungroup(selectedGroup.id);
+			}
+			return;
+		}
+
+		// Delete / Backspace: 削除
+		if (e.key === "Delete" || e.key === "Backspace") {
+			if (hasSelection) {
+				e.preventDefault();
+				deleteSelected();
+			}
+			return;
+		}
+
+		// Escape: 選択解除
+		if (e.key === "Escape") {
+			if (hasSelection) {
+				e.preventDefault();
+				deselectAll();
+			}
+			return;
+		}
+
+		// 矢印キー: 移動
+		if (hasSelection) {
+			const step = isShift ? MOVE_STEP_LARGE : MOVE_STEP;
+
+			switch (e.key) {
+				case "ArrowUp":
+					e.preventDefault();
+					handleMove(0, -step);
+					break;
+				case "ArrowDown":
+					e.preventDefault();
+					handleMove(0, step);
+					break;
+				case "ArrowLeft":
+					e.preventDefault();
+					handleMove(-step, 0);
+					break;
+				case "ArrowRight":
+					e.preventDefault();
+					handleMove(step, 0);
+					break;
+			}
+		}
+	};
 
 	useEffect(() => {
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [handleKeyDown]);
+	});
 }
 
 /**

@@ -5,7 +5,7 @@
  * カスタムイベントを使用して複数コンポーネント間で同期
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
 const STORAGE_KEY = "debugObjectPalette";
 const DEBUG_MODE_CHANGE_EVENT = "debugModeChange";
@@ -62,16 +62,16 @@ export function useDebugMode() {
 		};
 	}, []);
 
-	const toggleDebugMode = useCallback(() => {
+	const toggleDebugMode = () => {
 		const newValue = !debugMode;
 		setDebugModeState(newValue);
 		setDebugMode(newValue);
-	}, [debugMode]);
+	};
 
-	const setMode = useCallback((enabled: boolean) => {
+	const setMode = (enabled: boolean) => {
 		setDebugModeState(enabled);
 		setDebugMode(enabled);
-	}, []);
+	};
 
 	return {
 		debugMode,

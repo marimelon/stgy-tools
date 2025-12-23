@@ -4,7 +4,7 @@
  * 始点・終点を直接操作できるハンドルを表示
  */
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 
 interface LineSelectionHandlesProps {
 	/** 始点X座標 */
@@ -48,69 +48,57 @@ export function LineSelectionHandles({
 	const [draggingEnd, setDraggingEnd] = useState(false);
 
 	// 始点ドラッグ開始
-	const handleStartPointerDown = useCallback(
-		(e: React.PointerEvent) => {
-			e.stopPropagation();
-			e.preventDefault();
-			setDraggingStart(true);
-			(e.target as SVGElement).setPointerCapture(e.pointerId);
-			onStartPointDragStart?.();
-		},
-		[onStartPointDragStart],
-	);
+	const handleStartPointerDown = (e: React.PointerEvent) => {
+		e.stopPropagation();
+		e.preventDefault();
+		setDraggingStart(true);
+		(e.target as SVGElement).setPointerCapture(e.pointerId);
+		onStartPointDragStart?.();
+	};
 
 	// 終点ドラッグ開始
-	const handleEndPointerDown = useCallback(
-		(e: React.PointerEvent) => {
-			e.stopPropagation();
-			e.preventDefault();
-			setDraggingEnd(true);
-			(e.target as SVGElement).setPointerCapture(e.pointerId);
-			onEndPointDragStart?.();
-		},
-		[onEndPointDragStart],
-	);
+	const handleEndPointerDown = (e: React.PointerEvent) => {
+		e.stopPropagation();
+		e.preventDefault();
+		setDraggingEnd(true);
+		(e.target as SVGElement).setPointerCapture(e.pointerId);
+		onEndPointDragStart?.();
+	};
 
 	// ポインター移動
-	const handlePointerMove = useCallback(
-		(e: React.PointerEvent) => {
-			if (!draggingStart && !draggingEnd) return;
+	const handlePointerMove = (e: React.PointerEvent) => {
+		if (!draggingStart && !draggingEnd) return;
 
-			const svg = (e.target as SVGElement).ownerSVGElement;
-			if (!svg) return;
+		const svg = (e.target as SVGElement).ownerSVGElement;
+		if (!svg) return;
 
-			const point = svg.createSVGPoint();
-			point.x = e.clientX;
-			point.y = e.clientY;
-			const ctm = svg.getScreenCTM()?.inverse();
-			if (!ctm) return;
+		const point = svg.createSVGPoint();
+		point.x = e.clientX;
+		point.y = e.clientY;
+		const ctm = svg.getScreenCTM()?.inverse();
+		if (!ctm) return;
 
-			const svgPoint = point.matrixTransform(ctm);
+		const svgPoint = point.matrixTransform(ctm);
 
-			if (draggingStart) {
-				onStartPointDrag?.(svgPoint.x, svgPoint.y);
-			} else if (draggingEnd) {
-				onEndPointDrag?.(svgPoint.x, svgPoint.y);
-			}
-		},
-		[draggingStart, draggingEnd, onStartPointDrag, onEndPointDrag],
-	);
+		if (draggingStart) {
+			onStartPointDrag?.(svgPoint.x, svgPoint.y);
+		} else if (draggingEnd) {
+			onEndPointDrag?.(svgPoint.x, svgPoint.y);
+		}
+	};
 
 	// ドラッグ終了
-	const handlePointerUp = useCallback(
-		(e: React.PointerEvent) => {
-			if (draggingStart) {
-				setDraggingStart(false);
-				onStartPointDragEnd?.();
-			}
-			if (draggingEnd) {
-				setDraggingEnd(false);
-				onEndPointDragEnd?.();
-			}
-			(e.target as SVGElement).releasePointerCapture(e.pointerId);
-		},
-		[draggingStart, draggingEnd, onStartPointDragEnd, onEndPointDragEnd],
-	);
+	const handlePointerUp = (e: React.PointerEvent) => {
+		if (draggingStart) {
+			setDraggingStart(false);
+			onStartPointDragEnd?.();
+		}
+		if (draggingEnd) {
+			setDraggingEnd(false);
+			onEndPointDragEnd?.();
+		}
+		(e.target as SVGElement).releasePointerCapture(e.pointerId);
+	};
 
 	return (
 		<g>

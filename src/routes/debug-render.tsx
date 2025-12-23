@@ -4,7 +4,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo, useEffect, useCallback, useId } from "react";
+import { useState, useEffect, useId } from "react";
 import {
 	AlertCircle,
 	Eye,
@@ -49,7 +49,7 @@ function RenderDebugPage() {
 	const inputCodeId = useId();
 
 	// stgyコードをパース
-	const parseResult = useMemo(() => {
+	const parseResult = (() => {
 		if (!inputCode.trim()) return null;
 		try {
 			const binary = decodeStgy(inputCode.trim());
@@ -59,10 +59,10 @@ function RenderDebugPage() {
 			const message = e instanceof Error ? e.message : "不明なエラー";
 			return { boardData: null, error: message };
 		}
-	}, [inputCode]);
+	})();
 
 	// サーバーからSVGを取得
-	const fetchServerSvg = useCallback(async (code: string) => {
+	const fetchServerSvg = async (code: string) => {
 		if (!code.trim()) {
 			setServerSvg(null);
 			setServerError(null);
@@ -96,7 +96,7 @@ function RenderDebugPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	}, []);
+	};
 
 	// コードが変わったらサーバーSVGを再取得
 	useEffect(() => {
@@ -104,7 +104,7 @@ function RenderDebugPage() {
 			fetchServerSvg(inputCode);
 		}, 500); // デバウンス
 		return () => clearTimeout(timer);
-	}, [inputCode, fetchServerSvg]);
+	}, [inputCode]);
 
 	// サンプルコードを適用
 	const applySampleCode = (code: string) => {

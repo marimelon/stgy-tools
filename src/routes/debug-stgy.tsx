@@ -3,7 +3,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo, useId, type ReactNode } from "react";
+import { useState, useId, type ReactNode } from "react";
 import { ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
 import {
 	decodeStgyDebug,
@@ -33,7 +33,7 @@ function StgyDebugPage() {
 	const inputCodeId = useId();
 	const compareCodeId = useId();
 
-	const debugInfo = useMemo((): DecodeDebugInfo | null => {
+	const debugInfo = ((): DecodeDebugInfo | null => {
 		if (!inputCode.trim()) return null;
 		try {
 			return decodeStgyDebug(inputCode.trim());
@@ -41,9 +41,9 @@ function StgyDebugPage() {
 			console.error("Decode error:", e);
 			return null;
 		}
-	}, [inputCode]);
+	})();
 
-	const boardData = useMemo(() => {
+	const boardData = ((): ReturnType<typeof parseBoardData> | null => {
 		if (!debugInfo) return null;
 		try {
 			return parseBoardData(debugInfo.decompressedData);
@@ -51,9 +51,9 @@ function StgyDebugPage() {
 			console.error("Parse error:", e);
 			return null;
 		}
-	}, [debugInfo]);
+	})();
 
-	const reEncodedCode = useMemo(() => {
+	const reEncodedCode = ((): string | null => {
 		if (!boardData) return null;
 		try {
 			const key = extractKeyFromStgy(inputCode.trim());
@@ -64,17 +64,17 @@ function StgyDebugPage() {
 			console.error("Encode error:", e);
 			return null;
 		}
-	}, [boardData, inputCode]);
+	})();
 
-	const roundTripResult = useMemo((): CompareResult | null => {
+	const roundTripResult = ((): CompareResult | null => {
 		if (!inputCode.trim() || !reEncodedCode) return null;
 		return compareStgy(inputCode.trim(), reEncodedCode);
-	}, [inputCode, reEncodedCode]);
+	})();
 
-	const manualCompareResult = useMemo((): CompareResult | null => {
+	const manualCompareResult = ((): CompareResult | null => {
 		if (!inputCode.trim() || !compareCode.trim()) return null;
 		return compareStgy(inputCode.trim(), compareCode.trim());
-	}, [inputCode, compareCode]);
+	})();
 
 	return (
 		<div className="min-h-screen bg-background text-foreground">

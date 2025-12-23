@@ -4,7 +4,6 @@
  * 56色のプリセットカラーパレットを表示し、クリックで色を選択
  */
 
-import { useCallback } from "react";
 import { COLOR_PALETTE, rgbToHex } from "@/lib/editor";
 
 export interface ColorPaletteProps {
@@ -21,17 +20,14 @@ export function ColorPalette({
 	currentColor,
 	onColorSelect,
 }: ColorPaletteProps) {
-	const isCurrentColor = useCallback(
-		(color: { r: number; g: number; b: number }) => {
-			if (!currentColor) return false;
-			return (
-				currentColor.r === color.r &&
-				currentColor.g === color.g &&
-				currentColor.b === color.b
-			);
-		},
-		[currentColor],
-	);
+	const isCurrentColor = (color: { r: number; g: number; b: number }) => {
+		if (!currentColor) return false;
+		return (
+			currentColor.r === color.r &&
+			currentColor.g === color.g &&
+			currentColor.b === color.b
+		);
+	};
 
 	return (
 		<div className="grid grid-cols-8 gap-0.5">

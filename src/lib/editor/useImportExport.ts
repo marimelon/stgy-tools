@@ -2,7 +2,7 @@
  * インポート/エクスポート機能のカスタムフック
  */
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import type { BoardData } from "@/lib/stgy";
 import {
 	encodeStgy,
@@ -75,21 +75,21 @@ export function useImportExport(): UseImportExportReturn {
 	const [encodeKey, setEncodeKey] = useState<number | null>(null);
 
 	// インポートモーダル操作
-	const openImportModal = useCallback(() => {
+	const openImportModal = () => {
 		setShowImportModal(true);
-	}, []);
+	};
 
-	const closeImportModal = useCallback(() => {
+	const closeImportModal = () => {
 		setShowImportModal(false);
-	}, []);
+	};
 
-	const resetImport = useCallback(() => {
+	const resetImport = () => {
 		setImportText("");
 		setImportError(null);
-	}, []);
+	};
 
 	// インポート実行
-	const executeImport = useCallback((): ImportResult => {
+	const executeImport = (): ImportResult => {
 		try {
 			setImportError(null);
 			const trimmedText = importText.trim();
@@ -115,36 +115,33 @@ export function useImportExport(): UseImportExportReturn {
 				error: errorMessage,
 			};
 		}
-	}, [importText]);
+	};
 
 	// エクスポートモーダル操作
-	const openExportModal = useCallback(() => {
+	const openExportModal = () => {
 		setShowExportModal(true);
-	}, []);
+	};
 
-	const closeExportModal = useCallback(() => {
+	const closeExportModal = () => {
 		setShowExportModal(false);
-	}, []);
+	};
 
 	// エクスポートコード生成
-	const generateExportCode = useCallback(
-		(board: BoardData): string => {
-			const { width, height } = recalculateBoardSize(board);
-			const exportBoard = {
-				...board,
-				width,
-				height,
-			};
-			return encodeStgy(
-				exportBoard,
-				encodeKey !== null ? { key: encodeKey } : undefined,
-			);
-		},
-		[encodeKey],
-	);
+	const generateExportCode = (board: BoardData): string => {
+		const { width, height } = recalculateBoardSize(board);
+		const exportBoard = {
+			...board,
+			width,
+			height,
+		};
+		return encodeStgy(
+			exportBoard,
+			encodeKey !== null ? { key: encodeKey } : undefined,
+		);
+	};
 
 	// クリップボードにコピー
-	const copyToClipboard = useCallback(async (text: string): Promise<void> => {
+	const copyToClipboard = async (text: string): Promise<void> => {
 		try {
 			await navigator.clipboard.writeText(text);
 		} catch {
@@ -156,7 +153,7 @@ export function useImportExport(): UseImportExportReturn {
 			document.execCommand("copy");
 			document.body.removeChild(textarea);
 		}
-	}, []);
+	};
 
 	return {
 		// インポート
