@@ -4,7 +4,7 @@
  */
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useCallback, useEffect, useId, useRef } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board/BoardViewer";
 import { decodeStgy } from "@/lib/stgy/decoder";
@@ -13,6 +13,9 @@ import type { BoardData } from "@/lib/stgy/types";
 
 /** デバウンス遅延時間 (ms) */
 const DEBOUNCE_DELAY = 300;
+
+/** コピー成功フィードバック表示時間 (ms) */
+const COPY_FEEDBACK_DURATION = 2000;
 
 /** キャンバスサイズ */
 const CANVAS_WIDTH = 512;
@@ -95,7 +98,7 @@ function BoardPreview({
 			width={CANVAS_WIDTH}
 			height={totalHeight}
 			viewBox={`0 0 ${CANVAS_WIDTH} ${totalHeight}`}
-			style={{ backgroundColor: "#1a1a1a" }}
+			className="bg-[#1a1a1a] max-w-full h-auto"
 			role="img"
 			aria-label={boardData.name || "Strategy Board"}
 		>
@@ -163,6 +166,7 @@ function ImageGeneratePage() {
 	const [previewMode, setPreviewMode] = useState<"preview" | "actual">(
 		"preview",
 	);
+	const [imageLoadError, setImageLoadError] = useState(false);
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	// Accessible IDs
@@ -218,11 +222,14 @@ function ImageGeneratePage() {
 			const url = `${baseUrl}/image?${params.toString()}`;
 			setGeneratedUrl(url);
 			setCopied(false);
+			setImageLoadError(false);
 		},
 		[format, scale, showTitle, t],
 	);
 
 	// コード、フォーマット、スケール、タイトル表示が変更されたら自動的にURL生成
+	// generateUrl は format, scale, showTitle に依存しているため、
+	// これらが変わると generateUrl も変わり、useEffect が再実行される
 	useEffect(() => {
 		// デバウンスタイマーをクリア
 		if (debounceTimerRef.current) {
@@ -239,16 +246,16 @@ function ImageGeneratePage() {
 				clearTimeout(debounceTimerRef.current);
 			}
 		};
-	}, [code, format, scale, showTitle, generateUrl]);
+	}, [code, generateUrl]);
 
 	const copyToClipboard = useCallback(async () => {
 		if (!generatedUrl) return;
 		try {
 			await navigator.clipboard.writeText(generatedUrl);
 			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
+			setTimeout(() => setCopied(false), COPY_FEEDBACK_DURATION);
 		} catch {
-			// フォールバック
+			// フォールバック: execCommand は非推奨だが、古いブラウザ対応のため残す
 			const textarea = document.createElement("textarea");
 			textarea.value = generatedUrl;
 			document.body.appendChild(textarea);
@@ -256,7 +263,7 @@ function ImageGeneratePage() {
 			document.execCommand("copy");
 			document.body.removeChild(textarea);
 			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
+			setTimeout(() => setCopied(false), COPY_FEEDBACK_DURATION);
 		}
 	}, [generatedUrl]);
 
@@ -270,20 +277,27 @@ function ImageGeneratePage() {
 	const strategyBoardAlt = boardName || t("imageGenerator.strategyBoard");
 
 	return (
-		<div style={styles.container}>
+		<div className="min-h-screen bg-[#0a0a0a] p-4 md:p-6 lg:p-8 flex flex-col items-center gap-4 md:gap-6">
 			{/* ヘッダー */}
-			<header style={styles.header}>
-				<h1 style={styles.headerTitle}>{t("imageGenerator.pageTitle")}</h1>
-				<nav style={styles.nav}>
-					<Link to="/" style={styles.navLink}>
+			<header className="w-full max-w-[800px] lg:max-w-[1200px] flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0">
+				<h1 className="text-white text-base md:text-lg lg:text-xl font-bold">
+					{t("imageGenerator.pageTitle")}
+				</h1>
+				<nav className="flex flex-wrap items-center gap-3 md:gap-4">
+					<Link
+						to="/"
+						className="text-gray-400 text-sm font-medium hover:text-white transition-colors"
+					>
 						{t("nav.viewer")}
 					</Link>
-					<Link to="/editor" style={styles.navLink}>
+					<Link
+						to="/editor"
+						className="text-gray-400 text-sm font-medium hover:text-white transition-colors"
+					>
 						{t("nav.editor")}
 					</Link>
-					{/* 言語セレクター */}
 					<select
-						style={styles.languageSelect}
+						className="bg-[#2a2a2a] text-white border border-[#444] rounded px-2 py-1.5 text-xs cursor-pointer"
 						value={i18n.language.split("-")[0]}
 						onChange={(e) => changeLanguage(e.target.value)}
 						aria-label={t("language.label")}
@@ -297,444 +311,275 @@ function ImageGeneratePage() {
 				</nav>
 			</header>
 
-			<div style={styles.card}>
-				<h2 style={styles.title}>{t("imageGenerator.title")}</h2>
-				<p style={styles.description}>{t("imageGenerator.description")}</p>
-
-				<div style={styles.inputGroup}>
-					<label htmlFor={stgyCodeId} style={styles.label}>
-						{t("imageGenerator.stgyCode")}
-					</label>
-					<textarea
-						id={stgyCodeId}
-						style={styles.textarea}
-						value={code}
-						onChange={(e) => setCode(e.target.value)}
-						placeholder={t("imageGenerator.stgyCodePlaceholder")}
-						rows={4}
-					/>
+			{/* メインカード */}
+			<div className="bg-[#1a1a1a] rounded-lg lg:rounded-xl p-4 md:p-5 lg:p-6 max-w-[800px] lg:max-w-[1200px] w-full shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
+				{/* カードヘッダー */}
+				<div className="mb-4 lg:mb-6">
+					<h2 className="text-white text-base lg:text-xl font-bold mb-2">
+						{t("imageGenerator.title")}
+					</h2>
+					<p className="text-gray-400 text-sm">
+						{t("imageGenerator.description")}
+					</p>
 				</div>
 
-				<div style={styles.inputGroup}>
-					<span id={formatGroupId} style={styles.label}>
-						{t("imageGenerator.outputFormat")}
-					</span>
-					<div
-						style={styles.segmentControl}
-						role="radiogroup"
-						aria-labelledby={formatGroupId}
-					>
-						<label
-							style={{
-								...styles.segmentItem,
-								...styles.segmentItemFirst,
-								...(format === "png" ? styles.segmentItemSelected : {}),
-							}}
-						>
-							<input
-								type="radio"
-								name="format"
-								value="png"
-								checked={format === "png"}
-								onChange={() => setFormat("png")}
-								style={styles.radioHidden}
+				{/* 2カラムレイアウト */}
+				<div className="flex flex-col lg:grid lg:grid-cols-[minmax(300px,1fr)_minmax(400px,1.5fr)] lg:gap-8">
+					{/* 左カラム: 入力フォーム */}
+					<div className="flex flex-col gap-1">
+						{/* stgyコード入力 */}
+						<div className="mb-4">
+							<label
+								htmlFor={stgyCodeId}
+								className="block text-gray-300 text-sm mb-2"
+							>
+								{t("imageGenerator.stgyCode")}
+							</label>
+							<textarea
+								id={stgyCodeId}
+								className="w-full p-3 bg-[#2a2a2a] border border-[#444] rounded-md text-white text-sm font-mono resize-y min-h-[100px] lg:min-h-[140px]"
+								value={code}
+								onChange={(e) => setCode(e.target.value)}
+								placeholder={t("imageGenerator.stgyCodePlaceholder")}
+								rows={4}
 							/>
-							PNG
-						</label>
-						<label
-							style={{
-								...styles.segmentItem,
-								...styles.segmentItemLast,
-								...(format === "svg" ? styles.segmentItemSelected : {}),
-							}}
-						>
-							<input
-								type="radio"
-								name="format"
-								value="svg"
-								checked={format === "svg"}
-								onChange={() => setFormat("svg")}
-								style={styles.radioHidden}
-							/>
-							SVG
-						</label>
-					</div>
-				</div>
+						</div>
 
-				{format === "png" && (
-					<div style={styles.inputGroup}>
-						<span id={sizeGroupId} style={styles.label}>
-							{t("imageGenerator.outputSize")}
-						</span>
-						<div
-							style={styles.segmentControl}
-							role="radiogroup"
-							aria-labelledby={sizeGroupId}
-						>
-							{SCALE_OPTIONS.map((option, index) => (
+						{/* 出力フォーマット */}
+						<div className="mb-4">
+							<span
+								id={formatGroupId}
+								className="block text-gray-300 text-sm mb-2"
+							>
+								{t("imageGenerator.outputFormat")}
+							</span>
+							<div
+								className="flex flex-col md:inline-flex md:flex-row bg-[#1a1a1a] rounded-md p-0.5 gap-0.5"
+								role="radiogroup"
+								aria-labelledby={formatGroupId}
+							>
 								<label
-									key={option.value}
-									style={{
-										...styles.segmentItem,
-										...(index === 0 ? styles.segmentItemFirst : {}),
-										...(index === SCALE_OPTIONS.length - 1
-											? styles.segmentItemLast
-											: {}),
-										...(scale === option.value
-											? styles.segmentItemSelected
-											: {}),
-									}}
+									className={`flex-1 md:flex-none inline-flex items-center justify-center py-3 md:py-2 px-4 rounded cursor-pointer text-sm font-medium transition-colors select-none ${
+										format === "png"
+											? "bg-[#333] text-white"
+											: "text-gray-400 hover:text-gray-200"
+									}`}
 								>
 									<input
 										type="radio"
-										name="scale"
-										value={option.value}
-										checked={scale === option.value}
-										onChange={() => setScale(option.value)}
-										style={styles.radioHidden}
+										name="format"
+										value="png"
+										checked={format === "png"}
+										onChange={() => setFormat("png")}
+										className="sr-only"
 									/>
-									{option.label}
+									PNG
 								</label>
-							))}
-						</div>
-					</div>
-				)}
-
-				<div style={styles.inputGroup}>
-					<label style={styles.checkboxLabel}>
-						<input
-							type="checkbox"
-							checked={showTitle}
-							onChange={(e) => setShowTitle(e.target.checked)}
-							style={styles.checkbox}
-						/>
-						{t("imageGenerator.showBoardName")}
-					</label>
-				</div>
-
-				{error && (
-					<div style={styles.errorContainer}>
-						<span style={styles.errorIcon}>⚠️</span>
-						<span style={styles.errorText}>{error}</span>
-					</div>
-				)}
-
-				{generatedUrl && (
-					<div style={styles.resultSection}>
-						<div style={styles.inputGroup}>
-							<label htmlFor={generatedUrlId} style={styles.label}>
-								{t("imageGenerator.generatedUrl")}
-							</label>
-							<div style={styles.urlContainer}>
-								<input
-									id={generatedUrlId}
-									type="text"
-									style={styles.urlInput}
-									value={generatedUrl}
-									readOnly
-								/>
-								<button
-									type="button"
-									style={styles.copyButton}
-									onClick={copyToClipboard}
+								<label
+									className={`flex-1 md:flex-none inline-flex items-center justify-center py-3 md:py-2 px-4 rounded cursor-pointer text-sm font-medium transition-colors select-none ${
+										format === "svg"
+											? "bg-[#333] text-white"
+											: "text-gray-400 hover:text-gray-200"
+									}`}
 								>
-									{copied ? `✓ ${t("common.copied")}` : t("common.copy")}
-								</button>
-							</div>
-						</div>
-
-						<div style={styles.inputGroup}>
-							<div style={styles.previewTabs}>
-								<button
-									type="button"
-									style={{
-										...styles.previewTab,
-										...(previewMode === "preview"
-											? styles.previewTabActive
-											: {}),
-									}}
-									onClick={() => setPreviewMode("preview")}
-								>
-									{t("imageGenerator.previewTab")}
-								</button>
-								<button
-									type="button"
-									style={{
-										...styles.previewTab,
-										...(previewMode === "actual"
-											? styles.previewTabActive
-											: {}),
-									}}
-									onClick={() => setPreviewMode("actual")}
-								>
-									{t("imageGenerator.actualImageTab")}
-								</button>
-							</div>
-							<div style={styles.previewContainer}>
-								{previewMode === "preview" ? (
-									boardData && (
-										<BoardPreview boardData={boardData} showTitle={showTitle} />
-									)
-								) : (
-									<img
-										src={generatedUrl}
-										alt={strategyBoardAlt}
-										style={styles.previewImage}
-										onError={(e) => {
-											(e.target as HTMLImageElement).style.display = "none";
-										}}
+									<input
+										type="radio"
+										name="format"
+										value="svg"
+										checked={format === "svg"}
+										onChange={() => setFormat("svg")}
+										className="sr-only"
 									/>
-								)}
+									SVG
+								</label>
 							</div>
 						</div>
 
-						<div style={styles.inputGroup}>
-							<span style={styles.label}>{t("imageGenerator.htmlCode")}</span>
-							<code style={styles.codeBlock}>
-								{`<img src="${generatedUrl}" alt="${strategyBoardAlt}" />`}
-							</code>
+						{/* 出力サイズ（PNGのみ） */}
+						{format === "png" && (
+							<div className="mb-4">
+								<span
+									id={sizeGroupId}
+									className="block text-gray-300 text-sm mb-2"
+								>
+									{t("imageGenerator.outputSize")}
+								</span>
+								<div
+									className="flex flex-col md:inline-flex md:flex-row bg-[#1a1a1a] rounded-md p-0.5 gap-0.5"
+									role="radiogroup"
+									aria-labelledby={sizeGroupId}
+								>
+									{SCALE_OPTIONS.map((option) => (
+										<label
+											key={option.value}
+											className={`flex-1 md:flex-none inline-flex items-center justify-center py-3 md:py-2 px-4 rounded cursor-pointer text-sm font-medium transition-colors select-none whitespace-nowrap ${
+												scale === option.value
+													? "bg-[#333] text-white"
+													: "text-gray-400 hover:text-gray-200"
+											}`}
+										>
+											<input
+												type="radio"
+												name="scale"
+												value={option.value}
+												checked={scale === option.value}
+												onChange={() => setScale(option.value)}
+												className="sr-only"
+											/>
+											{option.label}
+										</label>
+									))}
+								</div>
+							</div>
+						)}
+
+						{/* ボード名表示チェックボックス */}
+						<div className="mb-4">
+							<label className="flex items-center gap-2 text-gray-300 text-sm cursor-pointer">
+								<input
+									type="checkbox"
+									checked={showTitle}
+									onChange={(e) => setShowTitle(e.target.checked)}
+									className="w-4 h-4 accent-blue-500"
+								/>
+								{t("imageGenerator.showBoardName")}
+							</label>
 						</div>
 
-						<div style={styles.inputGroup}>
-							<span style={styles.label}>
-								{t("imageGenerator.markdownCode")}
-							</span>
-							<code style={styles.codeBlock}>
-								{`![${strategyBoardAlt}](${generatedUrl})`}
-							</code>
-						</div>
+						{/* エラー表示 */}
+						{error && (
+							<div className="mt-2 p-3 bg-red-500/10 border border-red-500 rounded-md flex items-center gap-2">
+								<span className="text-base">⚠️</span>
+								<span className="text-red-500 text-sm">{error}</span>
+							</div>
+						)}
 					</div>
-				)}
+
+					{/* 右カラム: プレビュー・結果 */}
+					<div className="flex flex-col gap-2 border-t lg:border-t-0 lg:border-l border-[#333] pt-6 mt-4 lg:pt-0 lg:mt-0 lg:pl-8">
+						{generatedUrl ? (
+							<>
+								{/* プレビュー */}
+								<div className="mb-4">
+									<div className="flex gap-1 mb-2">
+										<button
+											type="button"
+											className={`px-3 md:px-4 py-2 text-xs md:text-sm border-b-2 transition-colors ${
+												previewMode === "preview"
+													? "text-white border-blue-500"
+													: "text-gray-400 border-transparent hover:text-gray-200"
+											}`}
+											onClick={() => setPreviewMode("preview")}
+										>
+											{t("imageGenerator.previewTab")}
+										</button>
+										<button
+											type="button"
+											className={`px-3 md:px-4 py-2 text-xs md:text-sm border-b-2 transition-colors ${
+												previewMode === "actual"
+													? "text-white border-blue-500"
+													: "text-gray-400 border-transparent hover:text-gray-200"
+											}`}
+											onClick={() => setPreviewMode("actual")}
+										>
+											{t("imageGenerator.actualImageTab")}
+										</button>
+									</div>
+									<div className="bg-[#2a2a2a] rounded-md p-2 md:p-4 flex justify-center items-center min-h-[150px] md:min-h-[200px] lg:min-h-[280px] overflow-auto">
+										{previewMode === "preview" ? (
+											boardData && (
+												<BoardPreview
+													boardData={boardData}
+													showTitle={showTitle}
+												/>
+											)
+										) : imageLoadError ? (
+											<div className="flex flex-col items-center justify-center p-8 text-gray-400">
+												<span className="text-4xl mb-3">⚠️</span>
+												<p className="text-sm text-center mb-4">
+													{t("imageGenerator.imageLoadError")}
+												</p>
+												<button
+													type="button"
+													className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm transition-colors"
+													onClick={() => setImageLoadError(false)}
+												>
+													{t("imageGenerator.retry")}
+												</button>
+											</div>
+										) : (
+											<img
+												src={generatedUrl}
+												alt={strategyBoardAlt}
+												className="max-w-full max-h-[400px] rounded"
+												onError={() => setImageLoadError(true)}
+												onLoad={() => setImageLoadError(false)}
+											/>
+										)}
+									</div>
+								</div>
+
+								{/* 生成されたURL */}
+								<div className="mb-4">
+									<label
+										htmlFor={generatedUrlId}
+										className="block text-gray-300 text-sm mb-2"
+									>
+										{t("imageGenerator.generatedUrl")}
+									</label>
+									<div className="flex flex-col md:flex-row gap-2">
+										<input
+											id={generatedUrlId}
+											type="text"
+											className="flex-1 p-3 bg-[#2a2a2a] border border-[#444] rounded-md text-white text-xs font-mono"
+											value={generatedUrl}
+											readOnly
+										/>
+										<button
+											type="button"
+											className="bg-[#444] hover:bg-[#555] text-white px-4 py-3 rounded-md text-sm whitespace-nowrap transition-colors"
+											onClick={copyToClipboard}
+										>
+											{copied ? `✓ ${t("common.copied")}` : t("common.copy")}
+										</button>
+									</div>
+								</div>
+
+								{/* HTMLコード */}
+								<div className="mb-4">
+									<span className="block text-gray-300 text-sm mb-2">
+										{t("imageGenerator.htmlCode")}
+									</span>
+									<code className="block p-3 bg-[#2a2a2a] border border-[#444] rounded-md text-emerald-400 text-xs font-mono overflow-x-auto break-all">
+										{`<img src="${generatedUrl}" alt="${strategyBoardAlt}" />`}
+									</code>
+								</div>
+
+								{/* Markdownコード */}
+								<div className="mb-4">
+									<span className="block text-gray-300 text-sm mb-2">
+										{t("imageGenerator.markdownCode")}
+									</span>
+									<code className="block p-3 bg-[#2a2a2a] border border-[#444] rounded-md text-emerald-400 text-xs font-mono overflow-x-auto break-all">
+										{`![${strategyBoardAlt}](${generatedUrl})`}
+									</code>
+								</div>
+							</>
+						) : (
+							<div className="flex flex-col items-center justify-center bg-[#2a2a2a] rounded-md p-8 md:p-12 min-h-[200px] lg:min-h-[300px] text-gray-500">
+								<img
+									src="/favicon.svg"
+									alt="STGY Tools"
+									className="w-16 h-16 mb-4 opacity-30"
+								/>
+								<p className="text-sm text-center">
+									{t("imageGenerator.enterCodeToPreview")}
+								</p>
+							</div>
+						)}
+					</div>
+				</div>
 			</div>
 		</div>
 	);
 }
-
-const styles: Record<string, React.CSSProperties> = {
-	container: {
-		minHeight: "100vh",
-		backgroundColor: "#0a0a0a",
-		padding: "2rem",
-		display: "flex",
-		flexDirection: "column",
-		alignItems: "center",
-		gap: "1.5rem",
-	},
-	header: {
-		width: "100%",
-		maxWidth: "800px",
-		display: "flex",
-		justifyContent: "space-between",
-		alignItems: "center",
-	},
-	headerTitle: {
-		color: "#fff",
-		fontSize: "1.25rem",
-		fontWeight: "bold",
-		margin: 0,
-	},
-	nav: {
-		display: "flex",
-		gap: "1.5rem",
-		alignItems: "center",
-	},
-	navLink: {
-		color: "#888",
-		fontSize: "0.875rem",
-		fontWeight: 500,
-		textDecoration: "none",
-		transition: "color 0.2s",
-	},
-	languageSelect: {
-		backgroundColor: "#2a2a2a",
-		color: "#fff",
-		border: "1px solid #444",
-		borderRadius: "4px",
-		padding: "0.375rem 0.5rem",
-		fontSize: "0.75rem",
-		cursor: "pointer",
-	},
-	card: {
-		backgroundColor: "#1a1a1a",
-		borderRadius: "12px",
-		padding: "2rem",
-		maxWidth: "800px",
-		width: "100%",
-		boxShadow: "0 4px 24px rgba(0, 0, 0, 0.5)",
-	},
-	title: {
-		color: "#fff",
-		fontSize: "1.25rem",
-		fontWeight: "bold",
-		marginBottom: "0.5rem",
-	},
-	description: {
-		color: "#888",
-		marginBottom: "1.5rem",
-	},
-	inputGroup: {
-		marginBottom: "1rem",
-	},
-	label: {
-		display: "block",
-		color: "#ccc",
-		fontSize: "0.875rem",
-		marginBottom: "0.5rem",
-	},
-	textarea: {
-		width: "100%",
-		padding: "0.75rem",
-		backgroundColor: "#2a2a2a",
-		border: "1px solid #444",
-		borderRadius: "6px",
-		color: "#fff",
-		fontSize: "0.875rem",
-		fontFamily: "monospace",
-		resize: "vertical",
-		boxSizing: "border-box",
-	},
-	segmentControl: {
-		display: "inline-flex",
-		backgroundColor: "#1a1a1a",
-		borderRadius: "6px",
-		padding: "3px",
-		gap: "2px",
-	},
-	segmentItem: {
-		color: "#888",
-		display: "inline-flex",
-		alignItems: "center",
-		justifyContent: "center",
-		padding: "0.5rem 1rem",
-		backgroundColor: "transparent",
-		border: "none",
-		borderRadius: "4px",
-		cursor: "pointer",
-		fontSize: "0.8125rem",
-		fontWeight: 500,
-		transition: "background-color 0.15s ease, color 0.15s ease",
-		userSelect: "none",
-		whiteSpace: "nowrap",
-	},
-	segmentItemFirst: {
-		// 左端の角丸（実際にはコンテナのpaddingで処理）
-	},
-	segmentItemLast: {
-		// 右端の角丸（実際にはコンテナのpaddingで処理）
-	},
-	segmentItemSelected: {
-		backgroundColor: "#333",
-		color: "#fff",
-	},
-	radioHidden: {
-		position: "absolute",
-		opacity: 0,
-		width: 0,
-		height: 0,
-		pointerEvents: "none",
-	},
-	checkboxLabel: {
-		color: "#ccc",
-		display: "flex",
-		alignItems: "center",
-		gap: "0.5rem",
-		cursor: "pointer",
-		fontSize: "0.875rem",
-	},
-	checkbox: {
-		accentColor: "#3b82f6",
-		width: "16px",
-		height: "16px",
-	},
-	resultSection: {
-		marginTop: "2rem",
-		paddingTop: "2rem",
-		borderTop: "1px solid #333",
-	},
-	urlContainer: {
-		display: "flex",
-		gap: "0.5rem",
-	},
-	urlInput: {
-		flex: 1,
-		padding: "0.75rem",
-		backgroundColor: "#2a2a2a",
-		border: "1px solid #444",
-		borderRadius: "6px",
-		color: "#fff",
-		fontSize: "0.75rem",
-		fontFamily: "monospace",
-	},
-	copyButton: {
-		backgroundColor: "#444",
-		color: "#fff",
-		border: "none",
-		borderRadius: "6px",
-		padding: "0.75rem 1rem",
-		fontSize: "0.875rem",
-		cursor: "pointer",
-		whiteSpace: "nowrap",
-	},
-	previewTabs: {
-		display: "flex",
-		gap: "0.25rem",
-		marginBottom: "0.5rem",
-	},
-	previewTab: {
-		backgroundColor: "transparent",
-		color: "#888",
-		border: "none",
-		borderBottom: "2px solid transparent",
-		padding: "0.5rem 1rem",
-		fontSize: "0.875rem",
-		cursor: "pointer",
-		transition: "color 0.2s, border-color 0.2s",
-	},
-	previewTabActive: {
-		color: "#fff",
-		borderBottomColor: "#3b82f6",
-	},
-	previewContainer: {
-		backgroundColor: "#2a2a2a",
-		borderRadius: "6px",
-		padding: "1rem",
-		display: "flex",
-		justifyContent: "center",
-		alignItems: "center",
-		minHeight: "200px",
-	},
-	previewImage: {
-		maxWidth: "100%",
-		maxHeight: "400px",
-		borderRadius: "4px",
-	},
-	codeBlock: {
-		display: "block",
-		padding: "0.75rem",
-		backgroundColor: "#2a2a2a",
-		border: "1px solid #444",
-		borderRadius: "6px",
-		color: "#10b981",
-		fontSize: "0.75rem",
-		fontFamily: "monospace",
-		overflowX: "auto",
-		wordBreak: "break-all",
-	},
-	errorContainer: {
-		marginTop: "1rem",
-		padding: "0.75rem 1rem",
-		backgroundColor: "rgba(239, 68, 68, 0.1)",
-		border: "1px solid #ef4444",
-		borderRadius: "6px",
-		display: "flex",
-		alignItems: "center",
-		gap: "0.5rem",
-	},
-	errorIcon: {
-		fontSize: "1rem",
-	},
-	errorText: {
-		color: "#ef4444",
-		fontSize: "0.875rem",
-	},
-};

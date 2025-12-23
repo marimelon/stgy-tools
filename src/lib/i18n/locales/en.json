@@ -26,7 +26,7 @@
 	"imageGenerator": {
 		"pageTitle": "STGY Tools Image Generator",
 		"title": "Generate Image URL",
-		"description": "Enter a stgy code to generate an image URL.",
+		"description": "Generate an image URL from an FFXIV Strategy Board share code (stgy code).",
 		"stgyCode": "stgy Code",
 		"stgyCodePlaceholder": "[stgy:a...]",
 		"outputFormat": "Output Format",
@@ -40,7 +40,10 @@
 		"parseError": "Failed to parse stgy code: {{message}}",
 		"unknownError": "Unknown error",
 		"previewTab": "Preview",
-		"actualImageTab": "Actual Image"
+		"actualImageTab": "Actual Image",
+		"enterCodeToPreview": "Enter a stgy code to see the preview",
+		"imageLoadError": "Failed to load image",
+		"retry": "Retry"
 	},
 	"language": {
 		"label": "Language",
