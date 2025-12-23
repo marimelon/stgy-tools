@@ -31,6 +31,7 @@ import {
 } from "@/components/editor";
 import { BoardManagerModal } from "@/components/editor/BoardManager";
 import { useBoards } from "@/lib/boards";
+import { useTranslation } from "react-i18next";
 
 /** キャンバスの基本サイズ */
 const CANVAS_WIDTH = 512;
@@ -62,13 +63,16 @@ function decodeBoardFromStgy(stgyCode: string): BoardData | null {
 }
 
 function EditorPage() {
+	const { t } = useTranslation();
+
 	// Board manager state
 	const [showBoardManager, setShowBoardManager] = useState(false);
 	const [currentBoardId, setCurrentBoardId] = useState<string | null>(null);
+	const [isInitialized, setIsInitialized] = useState(false);
 
 	// Initial board state
 	const [initialBoard, setInitialBoard] = useState<BoardData>(() =>
-		createEmptyBoard("新規ボード"),
+		createEmptyBoard(),
 	);
 	const [initialGroups, setInitialGroups] = useState<ObjectGroup[]>([]);
 	const [initialGridSettings, setInitialGridSettings] = useState<GridSettings>(
@@ -80,7 +84,7 @@ function EditorPage() {
 	const [editorKey, setEditorKey] = useState(0);
 
 	// Board operations from useBoards
-	const { createBoard, updateBoard, getBoard } = useBoards();
+	const { boards, isLoading, createBoard, updateBoard, getBoard } = useBoards();
 
 	// Handle opening a board
 	const handleOpenBoard = useCallback(
@@ -104,7 +108,8 @@ function EditorPage() {
 
 	// Handle creating a new board
 	const handleCreateNewBoard = useCallback(() => {
-		const newBoard = createEmptyBoard("新規ボード");
+		const defaultName = t("boardManager.defaultBoardName");
+		const newBoard = createEmptyBoard(defaultName);
 		const { width, height } = recalculateBoardSize(newBoard);
 		const boardToSave = { ...newBoard, width, height };
 		const stgyCode = encodeStgy(boardToSave, 0);
@@ -123,7 +128,33 @@ function EditorPage() {
 		setInitialGridSettings(DEFAULT_GRID_SETTINGS);
 		setInitialEncodeKey(0);
 		setEditorKey((prev) => prev + 1);
-	}, [createBoard]);
+	}, [createBoard, t]);
+
+	// Auto-initialize: create first board or open last edited board
+	useEffect(() => {
+		// Wait for loading to complete
+		if (isLoading || isInitialized) return;
+
+		if (boards.length === 0) {
+			// First time: auto-create a new board
+			handleCreateNewBoard();
+			setIsInitialized(true);
+		} else if (!currentBoardId) {
+			// Revisit: open the most recently updated board
+			const mostRecentBoard = boards[0]; // Already sorted by updatedAt desc
+			handleOpenBoard(mostRecentBoard.id);
+			setIsInitialized(true);
+		}
+	}, [isLoading, isInitialized, boards, currentBoardId, handleCreateNewBoard, handleOpenBoard]);
+
+	// Show loading state while initializing
+	if (isLoading || !isInitialized) {
+		return (
+			<div className="h-screen flex items-center justify-center bg-background">
+				<div className="size-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+			</div>
+		);
+	}
 
 	return (
 		<PanelProvider>

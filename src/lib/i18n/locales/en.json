@@ -257,6 +257,7 @@
 	"boardManager": {
 		"title": "Board Manager",
 		"search": "Search boards...",
+		"defaultBoardName": "New Board",
 		"sortByUpdated": "Updated",
 		"sortByCreated": "Created",
 		"sortByName": "Name",

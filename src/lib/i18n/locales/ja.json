@@ -257,6 +257,7 @@
 	"boardManager": {
 		"title": "ボード管理",
 		"search": "ボードを検索...",
+		"defaultBoardName": "新規ボード",
 		"sortByUpdated": "更新日",
 		"sortByCreated": "作成日",
 		"sortByName": "名前",
