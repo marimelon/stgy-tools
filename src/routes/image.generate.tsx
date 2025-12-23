@@ -136,54 +136,82 @@ export const Route = createFileRoute("/image/generate")({
 			code: typeof search.code === "string" ? search.code : undefined,
 		};
 	},
-	head: () => ({
-		meta: [
-			{
-				title: "FFXIV Strategy Board Image Generator | STGY Tools",
-			},
-			{
-				name: "description",
-				content:
-					"Generate shareable images from FFXIV Strategy Board codes (stgy codes). Create PNG or SVG images for Discord, Twitter, and other platforms.",
-			},
-			{
-				name: "keywords",
-				content:
-					"FFXIV, Final Fantasy XIV, Strategy Board, stgy, image generator, raid strategy, FF14",
-			},
-			// Open Graph
-			{
-				property: "og:title",
-				content: "FFXIV Strategy Board Image Generator",
-			},
-			{
-				property: "og:description",
-				content:
-					"Generate shareable images from FFXIV Strategy Board codes. Perfect for Discord and social media sharing.",
-			},
-			{
-				property: "og:type",
-				content: "website",
-			},
-			{
-				property: "og:image",
-				content: "/logo512.png",
-			},
-			// Twitter Card
-			{
-				name: "twitter:card",
-				content: "summary",
-			},
-			{
-				name: "twitter:title",
-				content: "FFXIV Strategy Board Image Generator",
-			},
-			{
-				name: "twitter:description",
-				content: "Generate shareable images from FFXIV Strategy Board codes.",
-			},
-		],
-	}),
+	head: ({ match }) => {
+		const { code } = match.search;
+		const hasCode = Boolean(code);
+
+		// 動的OGイメージ: stgyコードがある場合は生成画像を使用
+		const ogImage = hasCode
+			? `/image?code=${encodeURIComponent(code as string)}`
+			: "/favicon.svg";
+
+		// Twitter Cardタイプ: 画像がある場合はsummary_large_image
+		const twitterCard = hasCode ? "summary_large_image" : "summary";
+
+		return {
+			meta: [
+				{
+					title: "FFXIV Strategy Board Image Generator | STGY Tools",
+				},
+				{
+					name: "description",
+					content:
+						"Generate shareable images from FFXIV Strategy Board codes (stgy codes). Create PNG or SVG images for Discord, Twitter, and other platforms.",
+				},
+				{
+					name: "keywords",
+					content:
+						"FFXIV, Final Fantasy XIV, Strategy Board, stgy, image generator, raid strategy, FF14",
+				},
+				// Open Graph
+				{
+					property: "og:title",
+					content: "FFXIV Strategy Board Image Generator",
+				},
+				{
+					property: "og:description",
+					content: hasCode
+						? "View this FFXIV Strategy Board diagram"
+						: "Generate shareable images from FFXIV Strategy Board codes. Perfect for Discord and social media sharing.",
+				},
+				{
+					property: "og:type",
+					content: "website",
+				},
+				{
+					property: "og:image",
+					content: ogImage,
+				},
+				{
+					property: "og:image:width",
+					content: "512",
+				},
+				{
+					property: "og:image:height",
+					content: "384",
+				},
+				// Twitter Card
+				{
+					name: "twitter:card",
+					content: twitterCard,
+				},
+				{
+					name: "twitter:title",
+					content: "FFXIV Strategy Board Image Generator",
+				},
+				{
+					name: "twitter:description",
+					content: hasCode
+						? "View this FFXIV Strategy Board diagram"
+						: "Generate shareable images from FFXIV Strategy Board codes.",
+				},
+				{
+					name: "twitter:image",
+					content: ogImage,
+				},
+			],
+		};
+	},
 });
 
 /** スケールオプション */
