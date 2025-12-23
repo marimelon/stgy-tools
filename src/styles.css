@@ -1,6 +1,4 @@
-/* Google Fonts - must be first */
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-
+/* Google Fonts are loaded via <link> in __root.tsx for better FOUC prevention */
 @import "tailwindcss";
 @import "tw-animate-css";
 

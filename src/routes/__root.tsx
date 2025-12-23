@@ -22,6 +22,21 @@ export const Route = createRootRoute({
       },
     ],
     links: [
+      // Google Fonts preconnect
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
+      },
+      // Google Fonts - load before main CSS
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap',
+      },
       {
         rel: 'stylesheet',
         href: appCss,
@@ -37,13 +52,19 @@ export const Route = createRootRoute({
   component: RootDocument,
 })
 
+// Initial background color to prevent FOUC
+const initialStyle = {
+  backgroundColor: 'oklch(0.12 0.01 250)',
+  color: 'oklch(0.93 0.01 250)',
+}
+
 function RootDocument() {
   return (
-    <html lang="ja">
+    <html lang="ja" style={initialStyle}>
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body style={initialStyle}>
         <Outlet />
         <TanStackDevtools
           config={{
