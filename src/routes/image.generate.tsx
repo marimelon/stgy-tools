@@ -136,6 +136,54 @@ export const Route = createFileRoute("/image/generate")({
 			code: typeof search.code === "string" ? search.code : undefined,
 		};
 	},
+	head: () => ({
+		meta: [
+			{
+				title: "FFXIV Strategy Board Image Generator | STGY Tools",
+			},
+			{
+				name: "description",
+				content:
+					"Generate shareable images from FFXIV Strategy Board codes (stgy codes). Create PNG or SVG images for Discord, Twitter, and other platforms.",
+			},
+			{
+				name: "keywords",
+				content:
+					"FFXIV, Final Fantasy XIV, Strategy Board, stgy, image generator, raid strategy, FF14",
+			},
+			// Open Graph
+			{
+				property: "og:title",
+				content: "FFXIV Strategy Board Image Generator",
+			},
+			{
+				property: "og:description",
+				content:
+					"Generate shareable images from FFXIV Strategy Board codes. Perfect for Discord and social media sharing.",
+			},
+			{
+				property: "og:type",
+				content: "website",
+			},
+			{
+				property: "og:image",
+				content: "/logo512.png",
+			},
+			// Twitter Card
+			{
+				name: "twitter:card",
+				content: "summary",
+			},
+			{
+				name: "twitter:title",
+				content: "FFXIV Strategy Board Image Generator",
+			},
+			{
+				name: "twitter:description",
+				content: "Generate shareable images from FFXIV Strategy Board codes.",
+			},
+		],
+	}),
 });
 
 /** スケールオプション */
