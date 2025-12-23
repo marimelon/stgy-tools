@@ -555,7 +555,12 @@ export const JOB_ROLE_COLORS: Record<string, string> = {
 };
 
 /** デフォルトの色（この色の場合はオリジナル画像を使用） */
-export const DEFAULT_OBJECT_COLOR = { r: 255, g: 100, b: 0, opacity: 0 } as const;
+export const DEFAULT_OBJECT_COLOR = {
+	r: 255,
+	g: 100,
+	b: 0,
+	opacity: 0,
+} as const;
 
 /**
  * 色変更が有効なオブジェクトID

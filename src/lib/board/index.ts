@@ -16,4 +16,3 @@ export {
 } from "./geometry";
 
 export { BackgroundRenderer } from "./BackgroundRenderer";
-

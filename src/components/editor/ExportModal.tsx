@@ -71,7 +71,9 @@ export function ExportModal({
 		<Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle className="font-display">{t("exportModal.title")}</DialogTitle>
+					<DialogTitle className="font-display">
+						{t("exportModal.title")}
+					</DialogTitle>
 				</DialogHeader>
 
 				<div className="space-y-4">
@@ -94,7 +96,8 @@ export function ExportModal({
 							<span className="text-xs text-muted-foreground px-2 py-1 rounded bg-muted">
 								{encodeKey !== null ? (
 									<>
-										{t("exportModal.usingKey")} <span className="text-primary">{encodeKey}</span>{" "}
+										{t("exportModal.usingKey")}{" "}
+										<span className="text-primary">{encodeKey}</span>{" "}
 										{t("exportModal.useKey")}
 									</>
 								) : (
@@ -105,7 +108,9 @@ export function ExportModal({
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor={codeTextareaId}>{t("exportModal.generatedCode")}</Label>
+						<Label htmlFor={codeTextareaId}>
+							{t("exportModal.generatedCode")}
+						</Label>
 						<Textarea
 							id={codeTextareaId}
 							value={exportedCode}

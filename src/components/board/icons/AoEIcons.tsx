@@ -111,7 +111,12 @@ export function BlockIcon({ transform }: IconProps) {
 				strokeWidth="2"
 			/>
 			<circle cx={0} cy={0} r={innerRadius} fill={`url(#${innerGradientId})`} />
-			<circle cx={0} cy={0} r={centerRadius + 8} fill={`url(#${centerGlowId})`} />
+			<circle
+				cx={0}
+				cy={0}
+				r={centerRadius + 8}
+				fill={`url(#${centerGlowId})`}
+			/>
 			<circle
 				cx={0}
 				cy={0}
@@ -140,7 +145,12 @@ export function StackIcon({ transform }: IconProps) {
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
 					<feGaussianBlur stdDeviation={12 * baseScale} result="blur" />
 					<feFlood floodColor="#ff4800" result="color" />
-					<feComposite in="color" in2="blur" operator="in" result="coloredBlur" />
+					<feComposite
+						in="color"
+						in2="blur"
+						operator="in"
+						result="coloredBlur"
+					/>
 					<feMerge>
 						<feMergeNode in="coloredBlur" />
 						<feMergeNode in="SourceGraphic" />
@@ -152,12 +162,30 @@ export function StackIcon({ transform }: IconProps) {
 				<g fill="#ff4800" opacity="0.8" filter={`url(#${glowId})`}>
 					<use href={`#stackChevron-${id}`} transform="translate(0, -110)" />
 					<use href={`#stackChevron-${id}`} transform="translate(0, -70)" />
-					<use href={`#stackChevron-${id}`} transform="rotate(180) translate(0, -110)" />
-					<use href={`#stackChevron-${id}`} transform="rotate(180) translate(0, -70)" />
-					<use href={`#stackChevron-${id}`} transform="rotate(90) translate(0, -110)" />
-					<use href={`#stackChevron-${id}`} transform="rotate(90) translate(0, -70)" />
-					<use href={`#stackChevron-${id}`} transform="rotate(-90) translate(0, -110)" />
-					<use href={`#stackChevron-${id}`} transform="rotate(-90) translate(0, -70)" />
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(180) translate(0, -110)"
+					/>
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(180) translate(0, -70)"
+					/>
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(90) translate(0, -110)"
+					/>
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(90) translate(0, -70)"
+					/>
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(-90) translate(0, -110)"
+					/>
+					<use
+						href={`#stackChevron-${id}`}
+						transform="rotate(-90) translate(0, -70)"
+					/>
 					<path d={centerPiecePath} transform="translate(0, -10) scale(1.2)" />
 					<path d={centerPiecePath} transform="translate(0, 10) scale(1.2)" />
 				</g>
@@ -179,8 +207,16 @@ export function StackIcon({ transform }: IconProps) {
 					<path d={chevronPath} fill="#ffffff" transform="translate(0, -70)" />
 				</g>
 				<g>
-					<path d={centerPiecePath} fill="#fedc57" transform="translate(0, -10)" />
-					<path d={centerPiecePath} fill="#fedc57" transform="translate(0, 10)" />
+					<path
+						d={centerPiecePath}
+						fill="#fedc57"
+						transform="translate(0, -10)"
+					/>
+					<path
+						d={centerPiecePath}
+						fill="#fedc57"
+						transform="translate(0, 10)"
+					/>
 				</g>
 			</g>
 		</g>
@@ -200,7 +236,11 @@ export function StackLineIcon({ transform }: IconProps) {
 			<rect x={-30} y={-30} width={60} height={60} fill="transparent" />
 			<defs>
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
-					<feGaussianBlur in="SourceAlpha" stdDeviation={8 * baseScale} result="blur" />
+					<feGaussianBlur
+						in="SourceAlpha"
+						stdDeviation={8 * baseScale}
+						result="blur"
+					/>
 					<feFlood floodColor="#FF3D00" result="color" />
 					<feComposite in="color" in2="blur" operator="in" result="glow" />
 					<feMerge>
@@ -211,7 +251,10 @@ export function StackLineIcon({ transform }: IconProps) {
 				</filter>
 			</defs>
 
-			<g transform={`scale(${baseScale}) translate(-250, -250)`} filter={`url(#${glowId})`}>
+			<g
+				transform={`scale(${baseScale}) translate(-250, -250)`}
+				filter={`url(#${glowId})`}
+			>
 				<g transform="translate(60, 50)">
 					<g>
 						<path d={chevronPath} fill="#FFD54F" x="0" y="0" />
@@ -269,7 +312,12 @@ export function StackChainIcon({ transform }: IconProps) {
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
 					<feGaussianBlur stdDeviation={12 * baseScale} result="blur" />
 					<feFlood floodColor="#ff4800" result="color" />
-					<feComposite in="color" in2="blur" operator="in" result="coloredBlur" />
+					<feComposite
+						in="color"
+						in2="blur"
+						operator="in"
+						result="coloredBlur"
+					/>
 					<feMerge>
 						<feMergeNode in="coloredBlur" />
 						<feMergeNode in="SourceGraphic" />
@@ -312,8 +360,16 @@ export function StackChainIcon({ transform }: IconProps) {
 					<path d={chevronPath} fill="#ffffff" transform="translate(0, -70)" />
 				</g>
 				<g>
-					<path d={centerPiecePath} fill="#fedc57" transform="translate(0, -10)" />
-					<path d={centerPiecePath} fill="#fedc57" transform="translate(0, 10)" />
+					<path
+						d={centerPiecePath}
+						fill="#fedc57"
+						transform="translate(0, -10)"
+					/>
+					<path
+						d={centerPiecePath}
+						fill="#fedc57"
+						transform="translate(0, 10)"
+					/>
 				</g>
 			</g>
 		</g>
@@ -333,7 +389,11 @@ export function KnockbackRadialIcon({ transform }: IconProps) {
 			<rect x={-128} y={-128} width={256} height={256} fill="transparent" />
 			<defs>
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
-					<feGaussianBlur in="SourceGraphic" stdDeviation={12 * baseScale} result="blur" />
+					<feGaussianBlur
+						in="SourceGraphic"
+						stdDeviation={12 * baseScale}
+						result="blur"
+					/>
 				</filter>
 			</defs>
 
@@ -342,13 +402,31 @@ export function KnockbackRadialIcon({ transform }: IconProps) {
 					{[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
 						<g key={`bg-${angle}`} transform={`rotate(${angle})`}>
 							<g transform="translate(0, -60) scale(0.6)">
-								<path d={chevronShape} stroke="#FF7F00" strokeWidth="25" fill="#FF7F00" strokeLinejoin="round" />
+								<path
+									d={chevronShape}
+									stroke="#FF7F00"
+									strokeWidth="25"
+									fill="#FF7F00"
+									strokeLinejoin="round"
+								/>
 							</g>
 							<g transform="translate(0, -110) scale(0.8)">
-								<path d={chevronShape} stroke="#FF7F00" strokeWidth="25" fill="#FF7F00" strokeLinejoin="round" />
+								<path
+									d={chevronShape}
+									stroke="#FF7F00"
+									strokeWidth="25"
+									fill="#FF7F00"
+									strokeLinejoin="round"
+								/>
 							</g>
 							<g transform="translate(0, -170) scale(1.0)">
-								<path d={chevronShape} stroke="#FF7F00" strokeWidth="25" fill="#FF7F00" strokeLinejoin="round" />
+								<path
+									d={chevronShape}
+									stroke="#FF7F00"
+									strokeWidth="25"
+									fill="#FF7F00"
+									strokeLinejoin="round"
+								/>
 							</g>
 						</g>
 					))}
@@ -358,21 +436,40 @@ export function KnockbackRadialIcon({ transform }: IconProps) {
 				{[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
 					<g key={`fg-${angle}`} transform={`rotate(${angle})`}>
 						<g transform="translate(0, -60) scale(0.6)">
-							<path d={chevronShape} fill="#FDD875" transform="translate(0, 10)" />
+							<path
+								d={chevronShape}
+								fill="#FDD875"
+								transform="translate(0, 10)"
+							/>
 							<path d={chevronShape} fill="#FFFFFF" />
 						</g>
 						<g transform="translate(0, -110) scale(0.8)">
-							<path d={chevronShape} fill="#FDD875" transform="translate(0, 10)" />
+							<path
+								d={chevronShape}
+								fill="#FDD875"
+								transform="translate(0, 10)"
+							/>
 							<path d={chevronShape} fill="#FFFFFF" />
 						</g>
 						<g transform="translate(0, -170) scale(1.0)">
-							<path d={chevronShape} fill="#FDD875" transform="translate(0, 10)" />
+							<path
+								d={chevronShape}
+								fill="#FDD875"
+								transform="translate(0, 10)"
+							/>
 							<path d={chevronShape} fill="#FFFFFF" />
 						</g>
 					</g>
 				))}
 
-				<circle cx={0} cy={0} r={40} fill="#FFFFFF" filter={`url(#${glowId})`} opacity="0.8" />
+				<circle
+					cx={0}
+					cy={0}
+					r={40}
+					fill="#FFFFFF"
+					filter={`url(#${glowId})`}
+					opacity="0.8"
+				/>
 				<circle cx={0} cy={0} r={35} fill="#FFFFFF" />
 			</g>
 		</g>
@@ -390,19 +487,64 @@ export function KnockbackLineIcon({ transform }: IconProps) {
 	const renderChevronRow = (yOffset: number) => (
 		<>
 			<g filter={`url(#${glowId})`}>
-				<path d={chevronPath} fill="#FF8C00" stroke="#FF8C00" strokeWidth="4" opacity="0.8" transform={`translate(0, ${yOffset})`} />
-				<path d={chevronPath} fill="#FFA726" transform={`translate(0, ${yOffset})`} />
-				<path d={chevronPath} fill="#FFF8E1" transform={`translate(0, ${yOffset})`} />
+				<path
+					d={chevronPath}
+					fill="#FF8C00"
+					stroke="#FF8C00"
+					strokeWidth="4"
+					opacity="0.8"
+					transform={`translate(0, ${yOffset})`}
+				/>
+				<path
+					d={chevronPath}
+					fill="#FFA726"
+					transform={`translate(0, ${yOffset})`}
+				/>
+				<path
+					d={chevronPath}
+					fill="#FFF8E1"
+					transform={`translate(0, ${yOffset})`}
+				/>
 			</g>
 			<g filter={`url(#${glowId})`}>
-				<path d={chevronPath} fill="#FF8C00" stroke="#FF8C00" strokeWidth="4" opacity="0.8" transform={`translate(100, ${yOffset})`} />
-				<path d={chevronPath} fill="#FFA726" transform={`translate(100, ${yOffset})`} />
-				<path d={chevronPath} fill="#FFF8E1" transform={`translate(100, ${yOffset})`} />
+				<path
+					d={chevronPath}
+					fill="#FF8C00"
+					stroke="#FF8C00"
+					strokeWidth="4"
+					opacity="0.8"
+					transform={`translate(100, ${yOffset})`}
+				/>
+				<path
+					d={chevronPath}
+					fill="#FFA726"
+					transform={`translate(100, ${yOffset})`}
+				/>
+				<path
+					d={chevronPath}
+					fill="#FFF8E1"
+					transform={`translate(100, ${yOffset})`}
+				/>
 			</g>
 			<g filter={`url(#${glowId})`}>
-				<path d={chevronPath} fill="#FF8C00" stroke="#FF8C00" strokeWidth="4" opacity="0.8" transform={`translate(200, ${yOffset})`} />
-				<path d={chevronPath} fill="#FFA726" transform={`translate(200, ${yOffset})`} />
-				<path d={chevronPath} fill="#FFF8E1" transform={`translate(200, ${yOffset})`} />
+				<path
+					d={chevronPath}
+					fill="#FF8C00"
+					stroke="#FF8C00"
+					strokeWidth="4"
+					opacity="0.8"
+					transform={`translate(200, ${yOffset})`}
+				/>
+				<path
+					d={chevronPath}
+					fill="#FFA726"
+					transform={`translate(200, ${yOffset})`}
+				/>
+				<path
+					d={chevronPath}
+					fill="#FFF8E1"
+					transform={`translate(200, ${yOffset})`}
+				/>
 			</g>
 		</>
 	);
@@ -446,7 +588,12 @@ export function Area1PIcon({ transform }: IconProps) {
 	for (let i = 0; i < spikeCount; i++) {
 		const angle = (i * 360) / spikeCount;
 		spikes.push(
-			<path key={i} d="M0 -31 L-1.5 -34 L1.5 -34 Z" fill="#ffffff" transform={`rotate(${angle})`} />,
+			<path
+				key={i}
+				d="M0 -31 L-1.5 -34 L1.5 -34 Z"
+				fill="#ffffff"
+				transform={`rotate(${angle})`}
+			/>,
 		);
 	}
 
@@ -464,11 +611,38 @@ export function Area1PIcon({ transform }: IconProps) {
 				</radialGradient>
 			</defs>
 			<circle cx={0} cy={0} r={outerRadius + 6} fill={`url(#${bgAuraId})`} />
-			<circle cx={0} cy={0} r={outerRadius} fill="none" stroke="#ffffff" strokeWidth="1" />
-			<circle cx={0} cy={0} r={outerRadius} fill="none" stroke="#ffccff" strokeWidth="2" opacity="0.5" />
+			<circle
+				cx={0}
+				cy={0}
+				r={outerRadius}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1"
+			/>
+			<circle
+				cx={0}
+				cy={0}
+				r={outerRadius}
+				fill="none"
+				stroke="#ffccff"
+				strokeWidth="2"
+				opacity="0.5"
+			/>
 			<g>{spikes}</g>
-			<circle cx={0} cy={0} r={centerRadius + 2} fill="none" stroke="#ffffff" strokeWidth="1.5" />
-			<circle cx={0} cy={0} r={centerRadius} fill={`url(#${centerGradientId})`} />
+			<circle
+				cx={0}
+				cy={0}
+				r={centerRadius + 2}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle
+				cx={0}
+				cy={0}
+				r={centerRadius}
+				fill={`url(#${centerGradientId})`}
+			/>
 		</g>
 	);
 }
@@ -489,7 +663,12 @@ export function Area2PIcon({ transform }: IconProps) {
 	for (let i = 0; i < spikeCount; i++) {
 		const angle = (i * 360) / spikeCount;
 		spikes.push(
-			<path key={i} d="M0 -31 L-1.5 -34 L1.5 -34 Z" fill="#ffffff" transform={`rotate(${angle})`} />,
+			<path
+				key={i}
+				d="M0 -31 L-1.5 -34 L1.5 -34 Z"
+				fill="#ffffff"
+				transform={`rotate(${angle})`}
+			/>,
 		);
 	}
 
@@ -505,26 +684,79 @@ export function Area2PIcon({ transform }: IconProps) {
 					<stop offset="50%" stopColor="#ffaa80" stopOpacity="1" />
 					<stop offset="100%" stopColor="#ff66cc" stopOpacity="1" />
 				</radialGradient>
-				<linearGradient id={bridgeGradientId} x1="0%" y1="50%" x2="100%" y2="50%">
+				<linearGradient
+					id={bridgeGradientId}
+					x1="0%"
+					y1="50%"
+					x2="100%"
+					y2="50%"
+				>
 					<stop offset="0%" stopColor="#ff66cc" stopOpacity="1" />
 					<stop offset="50%" stopColor="#ffeeb0" stopOpacity="1" />
 					<stop offset="100%" stopColor="#ff66cc" stopOpacity="1" />
 				</linearGradient>
 			</defs>
 			<circle cx={0} cy={0} r={outerRadius + 8} fill={`url(#${bgAuraId})`} />
-			<circle cx={0} cy={0} r={outerRadius} fill="none" stroke="#ffffff" strokeWidth="1" />
+			<circle
+				cx={0}
+				cy={0}
+				r={outerRadius}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1"
+			/>
 			<g>{spikes}</g>
 			<g fill="none" stroke="#ffffff" strokeWidth="0.8" strokeLinecap="round">
 				<path d="M-30 -13 L-25 -13 Q-20 -13 -17 -16 Q-14 -19 -10 -19 L10 -19 Q14 -19 17 -16 Q20 -13 25 -13 L30 -13" />
-				<path d="M-30 -10 L-24 -10 Q-20 -10 -17 -12 Q-14 -14 -10 -14 L10 -14 Q14 -14 17 -12 Q20 -10 24 -10 L30 -10" opacity="0.7" />
+				<path
+					d="M-30 -10 L-24 -10 Q-20 -10 -17 -12 Q-14 -14 -10 -14 L10 -14 Q14 -14 17 -12 Q20 -10 24 -10 L30 -10"
+					opacity="0.7"
+				/>
 				<path d="M-30 13 L-25 13 Q-20 13 -17 16 Q-14 19 -10 19 L10 19 Q14 19 17 16 Q20 13 25 13 L30 13" />
-				<path d="M-30 10 L-24 10 Q-20 10 -17 12 Q-14 14 -10 14 L10 14 Q14 14 17 12 Q20 10 24 10 L30 10" opacity="0.7" />
+				<path
+					d="M-30 10 L-24 10 Q-20 10 -17 12 Q-14 14 -10 14 L10 14 Q14 14 17 12 Q20 10 24 10 L30 10"
+					opacity="0.7"
+				/>
 			</g>
-			<rect x={-10} y={-3} width={20} height={6} rx={1} ry={1} fill={`url(#${bridgeGradientId})`} stroke="#ffffff" strokeWidth="0.8" />
-			<circle cx={-eyeOffset} cy={0} r={eyeRadius + 1.5} fill="none" stroke="#ffffff" strokeWidth="1.5" />
-			<circle cx={-eyeOffset} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
-			<circle cx={eyeOffset} cy={0} r={eyeRadius + 1.5} fill="none" stroke="#ffffff" strokeWidth="1.5" />
-			<circle cx={eyeOffset} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
+			<rect
+				x={-10}
+				y={-3}
+				width={20}
+				height={6}
+				rx={1}
+				ry={1}
+				fill={`url(#${bridgeGradientId})`}
+				stroke="#ffffff"
+				strokeWidth="0.8"
+			/>
+			<circle
+				cx={-eyeOffset}
+				cy={0}
+				r={eyeRadius + 1.5}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle
+				cx={-eyeOffset}
+				cy={0}
+				r={eyeRadius}
+				fill={`url(#${eyeGradientId})`}
+			/>
+			<circle
+				cx={eyeOffset}
+				cy={0}
+				r={eyeRadius + 1.5}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle
+				cx={eyeOffset}
+				cy={0}
+				r={eyeRadius}
+				fill={`url(#${eyeGradientId})`}
+			/>
 		</g>
 	);
 }
@@ -544,7 +776,12 @@ export function Area3PIcon({ transform }: IconProps) {
 	for (let i = 0; i < spikeCount; i++) {
 		const angle = (i * 360) / spikeCount;
 		spikes.push(
-			<path key={i} d="M0 -31 L-1.5 -34 L1.5 -34 Z" fill="#ffffff" transform={`rotate(${angle})`} />,
+			<path
+				key={i}
+				d="M0 -31 L-1.5 -34 L1.5 -34 Z"
+				fill="#ffffff"
+				transform={`rotate(${angle})`}
+			/>,
 		);
 	}
 
@@ -562,20 +799,66 @@ export function Area3PIcon({ transform }: IconProps) {
 				</radialGradient>
 			</defs>
 			<circle cx={0} cy={0} r={outerRadius + 8} fill={`url(#${bgAuraId})`} />
-			<circle cx={0} cy={0} r={outerRadius} fill="none" stroke="#ffffff" strokeWidth="1" />
+			<circle
+				cx={0}
+				cy={0}
+				r={outerRadius}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1"
+			/>
 			<g>{spikes}</g>
 			<g fill="none" stroke="#ffffff" strokeWidth="0.8" strokeLinecap="round">
 				<path d="M-34 -10 Q-24 -20 -14 -10 Q0 -20 14 -10 Q24 -20 34 -10" />
-				<path d="M-34 -7 Q-24 -17 -14 -7 Q0 -17 14 -7 Q24 -17 34 -7" opacity="0.6" strokeWidth="0.6" />
+				<path
+					d="M-34 -7 Q-24 -17 -14 -7 Q0 -17 14 -7 Q24 -17 34 -7"
+					opacity="0.6"
+					strokeWidth="0.6"
+				/>
 				<path d="M-34 10 Q-24 20 -14 10 Q0 20 14 10 Q24 20 34 10" />
-				<path d="M-34 7 Q-24 17 -14 7 Q0 17 14 7 Q24 17 34 7" opacity="0.6" strokeWidth="0.6" />
+				<path
+					d="M-34 7 Q-24 17 -14 7 Q0 17 14 7 Q24 17 34 7"
+					opacity="0.6"
+					strokeWidth="0.6"
+				/>
 			</g>
-			<circle cx={-eyeSpacing} cy={0} r={eyeRadius + 1.5} fill="none" stroke="#ffffff" strokeWidth="1.5" />
-			<circle cx={-eyeSpacing} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
-			<circle cx={0} cy={0} r={eyeRadius + 1.5} fill="none" stroke="#ffffff" strokeWidth="1.5" />
+			<circle
+				cx={-eyeSpacing}
+				cy={0}
+				r={eyeRadius + 1.5}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle
+				cx={-eyeSpacing}
+				cy={0}
+				r={eyeRadius}
+				fill={`url(#${eyeGradientId})`}
+			/>
+			<circle
+				cx={0}
+				cy={0}
+				r={eyeRadius + 1.5}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
 			<circle cx={0} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
-			<circle cx={eyeSpacing} cy={0} r={eyeRadius + 1.5} fill="none" stroke="#ffffff" strokeWidth="1.5" />
-			<circle cx={eyeSpacing} cy={0} r={eyeRadius} fill={`url(#${eyeGradientId})`} />
+			<circle
+				cx={eyeSpacing}
+				cy={0}
+				r={eyeRadius + 1.5}
+				fill="none"
+				stroke="#ffffff"
+				strokeWidth="1.5"
+			/>
+			<circle
+				cx={eyeSpacing}
+				cy={0}
+				r={eyeRadius}
+				fill={`url(#${eyeGradientId})`}
+			/>
 		</g>
 	);
 }
@@ -634,16 +917,60 @@ export function Area4PIcon({ transform }: IconProps) {
 				</radialGradient>
 			</defs>
 			<circle cx={0} cy={0} r={outerRadius + 10} fill={`url(#${bgGlowId})`} />
-			<path d={notchPath.join(" ")} fill="rgba(255, 150, 200, 0.4)" stroke="#ffccee" strokeWidth="1.5" />
-			<circle cx={0} cy={0} r={outerRadius - 6} fill="none" stroke="rgba(255, 200, 230, 0.5)" strokeWidth="1" />
-			<path d={`M ${-orbOffset} 0 Q 0 ${-orbOffset * 0.5} ${orbOffset} 0`} fill="none" stroke="rgba(255, 180, 220, 0.6)" strokeWidth="1.5" />
-			<path d={`M ${-orbOffset} 0 Q 0 ${orbOffset * 0.5} ${orbOffset} 0`} fill="none" stroke="rgba(255, 180, 220, 0.6)" strokeWidth="1.5" />
-			<path d={`M 0 ${-orbOffset} Q ${-orbOffset * 0.5} 0 0 ${orbOffset}`} fill="none" stroke="rgba(255, 180, 220, 0.6)" strokeWidth="1.5" />
-			<path d={`M 0 ${-orbOffset} Q ${orbOffset * 0.5} 0 0 ${orbOffset}`} fill="none" stroke="rgba(255, 180, 220, 0.6)" strokeWidth="1.5" />
+			<path
+				d={notchPath.join(" ")}
+				fill="rgba(255, 150, 200, 0.4)"
+				stroke="#ffccee"
+				strokeWidth="1.5"
+			/>
+			<circle
+				cx={0}
+				cy={0}
+				r={outerRadius - 6}
+				fill="none"
+				stroke="rgba(255, 200, 230, 0.5)"
+				strokeWidth="1"
+			/>
+			<path
+				d={`M ${-orbOffset} 0 Q 0 ${-orbOffset * 0.5} ${orbOffset} 0`}
+				fill="none"
+				stroke="rgba(255, 180, 220, 0.6)"
+				strokeWidth="1.5"
+			/>
+			<path
+				d={`M ${-orbOffset} 0 Q 0 ${orbOffset * 0.5} ${orbOffset} 0`}
+				fill="none"
+				stroke="rgba(255, 180, 220, 0.6)"
+				strokeWidth="1.5"
+			/>
+			<path
+				d={`M 0 ${-orbOffset} Q ${-orbOffset * 0.5} 0 0 ${orbOffset}`}
+				fill="none"
+				stroke="rgba(255, 180, 220, 0.6)"
+				strokeWidth="1.5"
+			/>
+			<path
+				d={`M 0 ${-orbOffset} Q ${orbOffset * 0.5} 0 0 ${orbOffset}`}
+				fill="none"
+				stroke="rgba(255, 180, 220, 0.6)"
+				strokeWidth="1.5"
+			/>
 			{orbPositions.map((pos) => (
 				<g key={`${pos.x}-${pos.y}`}>
-					<circle cx={pos.x} cy={pos.y} r={orbRadius + 3} fill={`url(#${orbGlowId})`} />
-					<circle cx={pos.x} cy={pos.y} r={orbRadius} fill="rgba(255, 220, 180, 0.8)" stroke="#ffcc88" strokeWidth="1" />
+					<circle
+						cx={pos.x}
+						cy={pos.y}
+						r={orbRadius + 3}
+						fill={`url(#${orbGlowId})`}
+					/>
+					<circle
+						cx={pos.x}
+						cy={pos.y}
+						r={orbRadius}
+						fill="rgba(255, 220, 180, 0.8)"
+						stroke="#ffcc88"
+						strokeWidth="1"
+					/>
 					<circle cx={pos.x} cy={pos.y} r={orbRadius * 0.4} fill="#ff9988" />
 				</g>
 			))}
@@ -665,12 +992,26 @@ export function CircleAoEMovingIcon({ transform }: IconProps) {
 		<g transform={transform}>
 			<rect x={-67} y={-67} width={134} height={134} fill="transparent" />
 			<defs>
-				<radialGradient id={outerGlowId} cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+				<radialGradient
+					id={outerGlowId}
+					cx="50%"
+					cy="50%"
+					r="50%"
+					fx="50%"
+					fy="50%"
+				>
 					<stop offset="60%" stopColor="#ff6b6b" stopOpacity="0.7" />
 					<stop offset="92%" stopColor="#ff8a8a" stopOpacity="0.5" />
 					<stop offset="100%" stopColor="#ffcccc" stopOpacity="0.3" />
 				</radialGradient>
-				<radialGradient id={innerButtonId} cx="50%" cy="40%" r="50%" fx="50%" fy="40%">
+				<radialGradient
+					id={innerButtonId}
+					cx="50%"
+					cy="40%"
+					r="50%"
+					fx="50%"
+					fy="40%"
+				>
 					<stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
 					<stop offset="40%" stopColor="#ffe0b2" stopOpacity="1" />
 					<stop offset="100%" stopColor="#ffcc80" stopOpacity="1" />
@@ -681,23 +1022,61 @@ export function CircleAoEMovingIcon({ transform }: IconProps) {
 			</defs>
 
 			<g transform={`scale(${baseScale}) translate(-200, -200)`}>
-				<circle cx={200} cy={200} r={190} fill={`url(#${outerGlowId})`} stroke="#ffb3b3" strokeWidth="3" />
-				<circle cx={200} cy={200} r={100} fill={`url(#${innerButtonId})`} stroke="#ff8a65" strokeWidth="2" />
+				<circle
+					cx={200}
+					cy={200}
+					r={190}
+					fill={`url(#${outerGlowId})`}
+					stroke="#ffb3b3"
+					strokeWidth="3"
+				/>
+				<circle
+					cx={200}
+					cy={200}
+					r={100}
+					fill={`url(#${innerButtonId})`}
+					stroke="#ff8a65"
+					strokeWidth="2"
+				/>
 
 				<g transform="translate(0, 140)">
-					<g stroke="#ff3333" strokeWidth="26" filter={`url(#${glowBlurId})`} opacity="0.8" fill="none" strokeLinecap="butt" strokeLinejoin="miter">
+					<g
+						stroke="#ff3333"
+						strokeWidth="26"
+						filter={`url(#${glowBlurId})`}
+						opacity="0.8"
+						fill="none"
+						strokeLinecap="butt"
+						strokeLinejoin="miter"
+					>
 						<path d={chevronPath} transform="translate(0, 0)" />
 						<path d={chevronPath} transform="translate(0, 45)" />
 						<path d={chevronPath} transform="translate(0, 90)" />
 					</g>
-					<g fill="none" strokeWidth="14" strokeLinecap="butt" strokeLinejoin="miter">
-						<path d={chevronPath} stroke="#ffa000" transform="translate(0, 0)" />
-						<path d={chevronPath} stroke="#fdd835" transform="translate(0, 45)" />
-						<path d={chevronPath} stroke="#ffffff" transform="translate(0, 90)" />
+					<g
+						fill="none"
+						strokeWidth="14"
+						strokeLinecap="butt"
+						strokeLinejoin="miter"
+					>
+						<path
+							d={chevronPath}
+							stroke="#ffa000"
+							transform="translate(0, 0)"
+						/>
+						<path
+							d={chevronPath}
+							stroke="#fdd835"
+							transform="translate(0, 45)"
+						/>
+						<path
+							d={chevronPath}
+							stroke="#ffffff"
+							transform="translate(0, 90)"
+						/>
 					</g>
 				</g>
 			</g>
 		</g>
 	);
 }
-

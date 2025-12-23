@@ -76,25 +76,25 @@ export const Route = createFileRoute("/image")({
 						showTitle,
 					});
 
-				// 4. フォーマットに応じて返す
-				if (format === "svg") {
-					return new Response(svg, {
-						headers: {
-							"Content-Type": "image/svg+xml",
-							"Cache-Control": "public, max-age=86400",
+					// 4. フォーマットに応じて返す
+					if (format === "svg") {
+						return new Response(svg, {
+							headers: {
+								"Content-Type": "image/svg+xml",
+								"Cache-Control": "public, max-age=86400",
+							},
+						});
+					}
+
+					// PNG変換（環境に応じて適切な resvg を使用）
+					// フォントはresvgWrapper内でファイルパスから直接読み込み（最適化）
+					const pngBuffer = await renderSvgToPng(svg, {
+						background: "#1a1a1a",
+						fitTo: {
+							mode: "width",
+							value: outputWidth,
 						},
 					});
-				}
-
-				// PNG変換（環境に応じて適切な resvg を使用）
-				// フォントはresvgWrapper内でファイルパスから直接読み込み（最適化）
-				const pngBuffer = await renderSvgToPng(svg, {
-					background: "#1a1a1a",
-					fitTo: {
-						mode: "width",
-						value: outputWidth,
-					},
-				});
 
 					return new Response(pngBuffer, {
 						headers: {

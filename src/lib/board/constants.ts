@@ -196,4 +196,3 @@ export const OBJECT_BBOX_SIZES: Record<
 
 /** デフォルトサイズ */
 export const DEFAULT_BBOX_SIZE = { width: 32, height: 32 };
-

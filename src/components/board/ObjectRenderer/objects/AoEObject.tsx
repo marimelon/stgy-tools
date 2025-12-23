@@ -382,12 +382,7 @@ export function AoEObject({
 
 			return (
 				<g transform={transform}>
-					<path
-						d={d}
-						fill={fill}
-						stroke={COLORS.STROKE_AOE}
-						strokeWidth="2"
-					/>
+					<path d={d} fill={fill} stroke={COLORS.STROKE_AOE} strokeWidth="2" />
 				</g>
 			);
 		}

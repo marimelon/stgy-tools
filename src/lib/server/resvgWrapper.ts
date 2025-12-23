@@ -16,10 +16,11 @@ import { loadFont } from "./imageLoader";
 
 export interface ResvgOptions {
 	background?: string;
-	fitTo?: {
-		mode: "width" | "height" | "zoom" | "original";
-		value?: number;
-	};
+	fitTo?:
+		| { mode: "original" }
+		| { mode: "width"; value: number }
+		| { mode: "height"; value: number }
+		| { mode: "zoom"; value: number };
 	font?: {
 		fontBuffers?: Uint8Array[];
 		defaultFontFamily?: string;
@@ -122,7 +123,6 @@ async function renderWithNodeResvg(
 ): Promise<Uint8Array> {
 	// Resvgクラスをキャッシュ
 	if (!cachedNodeResvg) {
-		// @ts-expect-error 動的インポート - Cloudflare ビルド時は外部化されているため解決されない
 		const module = await import("@resvg/resvg-js");
 		cachedNodeResvg = module.Resvg;
 	}

@@ -6,7 +6,12 @@
 
 import { useCallback, type RefObject } from "react";
 import type { BoardObject, Position } from "@/lib/stgy";
-import type { DragState, ResizeHandle, GridSettings, MarqueeState } from "./types";
+import type {
+	DragState,
+	ResizeHandle,
+	GridSettings,
+	MarqueeState,
+} from "./types";
 import { screenToSVG } from "./coordinates";
 import { useMarqueeSelection } from "./hooks/useMarqueeSelection";
 import { useDragInteraction } from "./hooks/useDragInteraction";

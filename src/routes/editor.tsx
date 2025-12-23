@@ -80,13 +80,13 @@ function EditorPage() {
 		return (
 			<div className="h-screen flex flex-col items-center justify-center gap-4 bg-background">
 				<div className="w-12 h-12 rounded-lg flex items-center justify-center animate-pulse bg-muted border border-border">
-					<svg 
-						width="24" 
-						height="24" 
-						viewBox="0 0 24 24" 
-						fill="none" 
-						stroke="currentColor" 
-						strokeWidth="2" 
+					<svg
+						width="24"
+						height="24"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="2"
 						className="text-foreground"
 						role="img"
 						aria-label="Loading indicator"
@@ -97,9 +97,7 @@ function EditorPage() {
 						<path d="M8.5 15.5h7M15.5 8.5v7" strokeLinecap="round" />
 					</svg>
 				</div>
-				<div className="text-muted-foreground font-display">
-					読み込み中...
-				</div>
+				<div className="text-muted-foreground font-display">読み込み中...</div>
 			</div>
 		);
 	}
@@ -196,7 +194,17 @@ function EditorContent({ initialEncodeKey }: EditorContentProps) {
 				<div className="flex items-center gap-3">
 					{/* ロゴアイコン */}
 					<div className="w-8 h-8 rounded-md flex items-center justify-center bg-muted border border-border">
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-foreground" role="img" aria-label="STGY Tools logo">
+						<svg
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							className="text-foreground"
+							role="img"
+							aria-label="STGY Tools logo"
+						>
 							<rect x="3" y="3" width="18" height="18" rx="2" />
 							<circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
 							<circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" />
@@ -243,7 +251,6 @@ function EditorContent({ initialEncodeKey }: EditorContentProps) {
 					</div>
 				</ResizableLayout>
 			</div>
-
 		</div>
 	);
 }

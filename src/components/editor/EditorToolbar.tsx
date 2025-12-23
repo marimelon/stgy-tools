@@ -7,43 +7,44 @@
  * - small (<800px): 主要機能のみ、その他はドロップダウン
  */
 
-import { useMemo, useRef } from "react";
-import { useTranslation, type TFunction } from "react-i18next";
+import type { TFunction } from "i18next";
 import {
-	Download,
-	Upload,
-	Undo2,
-	Redo2,
-	Copy,
-	ClipboardPaste,
-	CopyPlus,
-	Trash2,
-	ArrowUpToLine,
-	ArrowUp,
+	AlignCenterHorizontal,
+	AlignCenterVertical,
+	AlignEndHorizontal,
+	AlignEndVertical,
+	AlignHorizontalSpaceAround,
+	AlignStartHorizontal,
+	AlignStartVertical,
+	AlignVerticalSpaceAround,
 	ArrowDown,
 	ArrowDownToLine,
-	Group,
-	Ungroup,
-	AlignStartVertical,
-	AlignCenterVertical,
-	AlignEndVertical,
-	AlignStartHorizontal,
-	AlignCenterHorizontal,
-	AlignEndHorizontal,
-	AlignHorizontalSpaceAround,
-	AlignVerticalSpaceAround,
+	ArrowUp,
+	ArrowUpToLine,
+	ClipboardPaste,
+	Copy,
+	CopyPlus,
+	Download,
 	Grid3x3,
+	Group,
+	Redo2,
+	Trash2,
+	Undo2,
+	Ungroup,
+	Upload,
 } from "lucide-react";
+import { useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useEditor, useImportExport, GRID_SIZES } from "@/lib/editor";
-import { ToolbarButton, Divider } from "./ToolbarButton";
-import { ImportModal } from "./ImportModal";
 import { ExportModal } from "./ExportModal";
+import { ImportModal } from "./ImportModal";
 import { PanelSettingsDropdown } from "./PanelSettingsDropdown";
+import { Divider, ToolbarButton } from "./ToolbarButton";
 import {
-	useToolbarSize,
 	AlignmentMenu,
 	GridSettingsMenu,
 	MoreMenu,
+	useToolbarSize,
 } from "./toolbar";
 
 /** アイコンサイズ */
@@ -443,7 +444,10 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 				{/* 状態表示 */}
 				<div className="ml-auto text-right text-xs flex-shrink-0 whitespace-nowrap flex items-center gap-3 text-muted-foreground font-mono">
 					{state.isDirty && (
-						<span className="status-dot dirty" title={t("toolbar.unsavedChanges")} />
+						<span
+							className="status-dot dirty"
+							title={t("toolbar.unsavedChanges")}
+						/>
 					)}
 					{lastSavedAt && (
 						<span title={`${lastSavedAt.toLocaleString()}`}>
@@ -452,10 +456,14 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 					)}
 					{toolbarSize === "large" ? (
 						<span>
-							{t("toolbar.objectCount")}<span className="text-primary">{state.board.objects.length}</span>
+							{t("toolbar.objectCount")}
+							<span className="text-primary">{state.board.objects.length}</span>
 							{hasSelection && (
 								<>
-									{t("toolbar.selected")}<span className="text-accent">{state.selectedIndices.length}</span>
+									{t("toolbar.selected")}
+									<span className="text-accent">
+										{state.selectedIndices.length}
+									</span>
 								</>
 							)}
 						</span>
@@ -463,7 +471,10 @@ export function EditorToolbar({ lastSavedAt }: EditorToolbarProps = {}) {
 						<span>
 							<span className="text-primary">{state.board.objects.length}</span>
 							{hasSelection && (
-								<span className="text-accent"> / {state.selectedIndices.length}</span>
+								<span className="text-accent">
+									{" "}
+									/ {state.selectedIndices.length}
+								</span>
 							)}
 						</span>
 					)}

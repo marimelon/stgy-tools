@@ -110,7 +110,9 @@ export function LayerGroupHeader({
 						onToggleVisibility(group);
 					}}
 					className={isAllVisible ? "text-purple-400" : "text-muted-foreground"}
-					title={isAllVisible ? t("layerPanel.hideGroup") : t("layerPanel.showGroup")}
+					title={
+						isAllVisible ? t("layerPanel.hideGroup") : t("layerPanel.showGroup")
+					}
 				>
 					{isAllVisible ? <Eye size={14} /> : <EyeOff size={14} />}
 				</button>

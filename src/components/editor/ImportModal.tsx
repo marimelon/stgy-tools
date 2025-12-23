@@ -50,7 +50,9 @@ export function ImportModal({
 		<Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle className="font-display">{t("importModal.title")}</DialogTitle>
+					<DialogTitle className="font-display">
+						{t("importModal.title")}
+					</DialogTitle>
 				</DialogHeader>
 
 				<div className="space-y-4">

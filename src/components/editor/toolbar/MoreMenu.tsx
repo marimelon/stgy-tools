@@ -22,7 +22,11 @@ import {
 	AlignHorizontalSpaceAround,
 	AlignVerticalSpaceAround,
 } from "lucide-react";
-import { GRID_SIZES, type GridSettings, type AlignmentType } from "@/lib/editor";
+import {
+	GRID_SIZES,
+	type GridSettings,
+	type AlignmentType,
+} from "@/lib/editor";
 import { DropdownMenu, DropdownItem, DropdownDivider } from "./DropdownMenu";
 
 /** アイコンサイズ */
@@ -203,10 +207,14 @@ export function MoreMenu({
 					<input
 						type="checkbox"
 						checked={gridSettings.enabled}
-						onChange={(e) => onGridSettingsChange({ enabled: e.target.checked })}
+						onChange={(e) =>
+							onGridSettingsChange({ enabled: e.target.checked })
+						}
 						className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500"
 					/>
-					<span className="text-sm text-slate-200">{t("moreMenu.gridSnap")}</span>
+					<span className="text-sm text-slate-200">
+						{t("moreMenu.gridSnap")}
+					</span>
 				</label>
 
 				<div className="flex items-center gap-2 mb-2">
@@ -240,7 +248,9 @@ export function MoreMenu({
 						disabled={!gridSettings.enabled}
 						className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500 disabled:opacity-50"
 					/>
-					<span className="text-sm text-slate-200">{t("moreMenu.showGrid")}</span>
+					<span className="text-sm text-slate-200">
+						{t("moreMenu.showGrid")}
+					</span>
 				</label>
 			</div>
 		</DropdownMenu>

@@ -59,7 +59,11 @@ export function SidebarGroup({
 					{index > 0 && (
 						<PanelResizeHandle className="h-1 bg-slate-700 hover:bg-cyan-500 transition-colors cursor-row-resize" />
 					)}
-					<Panel defaultSize={`${100 / panels.length}%`} minSize="50px" id={panelId}>
+					<Panel
+						defaultSize={`${100 / panels.length}%`}
+						minSize="50px"
+						id={panelId}
+					>
 						<div className="h-full overflow-hidden">
 							{panelComponents[panelId]}
 						</div>

@@ -47,17 +47,24 @@ export function GridSettingsMenu({
 					<input
 						type="checkbox"
 						checked={gridSettings.enabled}
-						onChange={(e) => onGridSettingsChange({ enabled: e.target.checked })}
+						onChange={(e) =>
+							onGridSettingsChange({ enabled: e.target.checked })
+						}
 						className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500"
 					/>
-					<span className="text-sm text-slate-200">{t("moreMenu.gridSnap")}</span>
+					<span className="text-sm text-slate-200">
+						{t("moreMenu.gridSnap")}
+					</span>
 				</label>
 
 				<DropdownDivider />
 
 				{/* グリッドサイズ */}
 				<div className="mt-3 mb-3">
-					<label htmlFor={gridSizeId} className="block text-xs text-slate-400 mb-1">
+					<label
+						htmlFor={gridSizeId}
+						className="block text-xs text-slate-400 mb-1"
+					>
 						{t("toolbar.gridSize")}
 					</label>
 					<select
@@ -94,7 +101,9 @@ export function GridSettingsMenu({
 						disabled={!gridSettings.enabled}
 						className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500 disabled:opacity-50"
 					/>
-					<span className="text-sm text-slate-200">{t("moreMenu.showGrid")}</span>
+					<span className="text-sm text-slate-200">
+						{t("moreMenu.showGrid")}
+					</span>
 				</label>
 			</div>
 		</DropdownMenu>

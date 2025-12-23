@@ -5,7 +5,14 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, useCallback, useId } from "react";
-import { AlertCircle, Eye, EyeOff, Layers, SplitSquareHorizontal, Download } from "lucide-react";
+import {
+	AlertCircle,
+	Eye,
+	EyeOff,
+	Layers,
+	SplitSquareHorizontal,
+	Download,
+} from "lucide-react";
 import { decodeStgy, parseBoardData, ObjectNames } from "@/lib/stgy";
 import type { BoardData, BoardObject } from "@/lib/stgy";
 import { BoardViewer } from "@/components/board";
@@ -25,8 +32,9 @@ type ViewMode = "side-by-side" | "overlay" | "diff";
 
 /** デフォルトのサンプルコード */
 const SAMPLE_CODES = {
-	"基本 (ウェイマーク)": "[stgy:a0OcAwAYAfwgAFYAFBAAZYTLdYTLdYTLdYTLdYTLdYTLdYTLd]",
-	"AoE攻撃": "[stgy:a0ScAwAYAfwJAAAHAGQAAMgA+g==]",
+	"基本 (ウェイマーク)":
+		"[stgy:a0OcAwAYAfwgAFYAFBAAZYTLdYTLdYTLdYTLdYTLdYTLdYTLd]",
+	AoE攻撃: "[stgy:a0ScAwAYAfwJAAAHAGQAAMgA+g==]",
 };
 
 function RenderDebugPage() {
@@ -63,18 +71,22 @@ function RenderDebugPage() {
 
 		setIsLoading(true);
 		setServerError(null);
-		
+
 		try {
 			const encodedCode = encodeURIComponent(code.trim());
 			// キャッシュバスティング用のタイムスタンプを追加
 			const timestamp = Date.now();
-			const response = await fetch(`/image?code=${encodedCode}&format=svg&_t=${timestamp}`);
-			
+			const response = await fetch(
+				`/image?code=${encodedCode}&format=svg&_t=${timestamp}`,
+			);
+
 			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+				const errorData = await response
+					.json()
+					.catch(() => ({ error: "Unknown error" }));
 				throw new Error(errorData.error || `HTTP ${response.status}`);
 			}
-			
+
 			const svgText = await response.text();
 			setServerSvg(svgText);
 		} catch (e) {
@@ -184,7 +196,11 @@ function RenderDebugPage() {
 								size="sm"
 								onClick={() => setShowClient(!showClient)}
 							>
-								{showClient ? <Eye className="size-4 mr-1" /> : <EyeOff className="size-4 mr-1" />}
+								{showClient ? (
+									<Eye className="size-4 mr-1" />
+								) : (
+									<EyeOff className="size-4 mr-1" />
+								)}
 								Client
 							</Button>
 							<Button
@@ -192,7 +208,11 @@ function RenderDebugPage() {
 								size="sm"
 								onClick={() => setShowServer(!showServer)}
 							>
-								{showServer ? <Eye className="size-4 mr-1" /> : <EyeOff className="size-4 mr-1" />}
+								{showServer ? (
+									<Eye className="size-4 mr-1" />
+								) : (
+									<EyeOff className="size-4 mr-1" />
+								)}
 								Server
 							</Button>
 						</div>
@@ -211,7 +231,9 @@ function RenderDebugPage() {
 									step={1}
 									className="flex-1"
 								/>
-								<span className="text-sm font-mono w-10">{overlayOpacity}%</span>
+								<span className="text-sm font-mono w-10">
+									{overlayOpacity}%
+								</span>
 							</div>
 						)}
 					</div>
@@ -246,7 +268,10 @@ function RenderDebugPage() {
 										loading={false}
 									>
 										{parseResult?.boardData ? (
-											<BoardViewer boardData={parseResult.boardData} scale={1} />
+											<BoardViewer
+												boardData={parseResult.boardData}
+												scale={1}
+											/>
 										) : (
 											<EmptyState message="有効なstgyコードを入力してください" />
 										)}
@@ -259,7 +284,11 @@ function RenderDebugPage() {
 										title="Server (SVG)"
 										subtitle="svgRenderer.tsx"
 										loading={isLoading}
-										onDownload={serverSvg ? () => downloadSvg(serverSvg, "server-render.svg") : undefined}
+										onDownload={
+											serverSvg
+												? () => downloadSvg(serverSvg, "server-render.svg")
+												: undefined
+										}
 									>
 										{serverSvg ? (
 											<div
@@ -268,7 +297,13 @@ function RenderDebugPage() {
 												dangerouslySetInnerHTML={{ __html: serverSvg }}
 											/>
 										) : (
-											<EmptyState message={isLoading ? "読み込み中..." : "有効なstgyコードを入力してください"} />
+											<EmptyState
+												message={
+													isLoading
+														? "読み込み中..."
+														: "有効なstgyコードを入力してください"
+												}
+											/>
 										)}
 									</RenderPanel>
 								)}
@@ -288,7 +323,10 @@ function RenderDebugPage() {
 											className="absolute inset-0"
 											style={{ opacity: (100 - overlayOpacity) / 100 }}
 										>
-											<BoardViewer boardData={parseResult.boardData} scale={1} />
+											<BoardViewer
+												boardData={parseResult.boardData}
+												scale={1}
+											/>
 										</div>
 									)}
 									{/* サーバー側（上レイヤー） */}
@@ -361,9 +399,7 @@ function RenderPanel({
 					<p className="text-xs text-muted-foreground">{subtitle}</p>
 				</div>
 				<div className="flex items-center gap-2">
-					{loading && (
-						<Badge variant="secondary">Loading...</Badge>
-					)}
+					{loading && <Badge variant="secondary">Loading...</Badge>}
 					{onDownload && (
 						<Button variant="ghost" size="sm" onClick={onDownload}>
 							<Download className="size-4" />
@@ -399,13 +435,15 @@ function DiffView({
 	return (
 		<div className="space-y-4">
 			<p className="text-sm text-muted-foreground">
-				差分ハイライト: <span className="text-green-500">緑=クライアントのみ</span>, <span className="text-red-500">赤=サーバーのみ</span>, 一致部分は通常色
+				差分ハイライト:{" "}
+				<span className="text-green-500">緑=クライアントのみ</span>,{" "}
+				<span className="text-red-500">赤=サーバーのみ</span>, 一致部分は通常色
 			</p>
 			<div className="relative" style={{ width: 512, height: 384 }}>
 				{/* サーバー側（赤フィルター） */}
 				<div
 					className="absolute inset-0 flex justify-center"
-					style={{ 
+					style={{
 						mixBlendMode: "multiply",
 						filter: "hue-rotate(0deg) saturate(200%)",
 					}}
@@ -415,7 +453,7 @@ function DiffView({
 				{/* クライアント側（緑フィルター） */}
 				<div
 					className="absolute inset-0"
-					style={{ 
+					style={{
 						mixBlendMode: "screen",
 						filter: "hue-rotate(90deg) saturate(150%)",
 						opacity: 0.7,
@@ -425,7 +463,8 @@ function DiffView({
 				</div>
 			</div>
 			<p className="text-xs text-muted-foreground">
-				※ 差分表示はブレンドモードを使用した近似表示です。完全に一致している場合は色の変化がありません。
+				※
+				差分表示はブレンドモードを使用した近似表示です。完全に一致している場合は色の変化がありません。
 			</p>
 		</div>
 	);
@@ -450,7 +489,10 @@ function ObjectTable({ objects }: { objects: BoardObject[] }) {
 			</thead>
 			<tbody>
 				{objects.map((obj, idx) => (
-					<tr key={`${obj.objectId}-${obj.position.x}-${obj.position.y}-${idx}`} className="border-b border-border/50 hover:bg-muted/50">
+					<tr
+						key={`${obj.objectId}-${obj.position.x}-${obj.position.y}-${idx}`}
+						className="border-b border-border/50 hover:bg-muted/50"
+					>
 						<td className="px-2 py-1 font-mono text-muted-foreground">{idx}</td>
 						<td className="px-2 py-1 font-mono">{obj.objectId}</td>
 						<td className="px-2 py-1">{ObjectNames[obj.objectId] ?? "不明"}</td>
@@ -474,10 +516,26 @@ function ObjectTable({ objects }: { objects: BoardObject[] }) {
 						</td>
 						<td className="px-2 py-1">
 							<div className="flex flex-wrap gap-1">
-								{!obj.flags.visible && <Badge variant="outline" className="text-xs">非表示</Badge>}
-								{obj.flags.flipHorizontal && <Badge variant="outline" className="text-xs">左右反転</Badge>}
-								{obj.flags.flipVertical && <Badge variant="outline" className="text-xs">上下反転</Badge>}
-								{obj.flags.locked && <Badge variant="outline" className="text-xs">ロック</Badge>}
+								{!obj.flags.visible && (
+									<Badge variant="outline" className="text-xs">
+										非表示
+									</Badge>
+								)}
+								{obj.flags.flipHorizontal && (
+									<Badge variant="outline" className="text-xs">
+										左右反転
+									</Badge>
+								)}
+								{obj.flags.flipVertical && (
+									<Badge variant="outline" className="text-xs">
+										上下反転
+									</Badge>
+								)}
+								{obj.flags.locked && (
+									<Badge variant="outline" className="text-xs">
+										ロック
+									</Badge>
+								)}
 							</div>
 						</td>
 						<td className="px-2 py-1 font-mono text-xs">
@@ -485,7 +543,11 @@ function ObjectTable({ objects }: { objects: BoardObject[] }) {
 								.filter((p) => p !== undefined)
 								.map((p, i) => `p${i + 1}=${p}`)
 								.join(", ") || "-"}
-							{obj.text && <span className="ml-1 text-muted-foreground">text="{obj.text}"</span>}
+							{obj.text && (
+								<span className="ml-1 text-muted-foreground">
+									text="{obj.text}"
+								</span>
+							)}
 						</td>
 					</tr>
 				))}
@@ -493,4 +555,3 @@ function ObjectTable({ objects }: { objects: BoardObject[] }) {
 		</table>
 	);
 }
-

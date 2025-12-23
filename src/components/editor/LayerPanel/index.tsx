@@ -206,11 +206,13 @@ export function LayerPanel() {
 			{/* レイヤー数表示 */}
 			<div className="px-3 py-2 text-xs flex justify-between flex-shrink-0 border-t border-border text-muted-foreground font-mono">
 				<span>
-					<span className="text-primary">{objects.length}</span> {t("layerPanel.objectCount")}
+					<span className="text-primary">{objects.length}</span>{" "}
+					{t("layerPanel.objectCount")}
 				</span>
 				{groups.length > 0 && (
 					<span>
-						<span className="text-purple-400">{groups.length}</span> {t("layerPanel.groupCount")}
+						<span className="text-purple-400">{groups.length}</span>{" "}
+						{t("layerPanel.groupCount")}
 					</span>
 				)}
 			</div>

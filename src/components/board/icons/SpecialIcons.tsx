@@ -50,7 +50,12 @@ export function LockOnRedIcon({ transform }: IconProps) {
 				</linearGradient>
 			</defs>
 			<ellipse cx={0} cy={28} rx={24} ry={10} fill={`url(#${glowId})`} />
-			<path d={markerPath} fill={`url(#${markerGradId})`} stroke="#ff8844" strokeWidth="1.5" />
+			<path
+				d={markerPath}
+				fill={`url(#${markerGradId})`}
+				stroke="#ff8844"
+				strokeWidth="1.5"
+			/>
 			<path
 				d={`M 0 -22 C 3 -18, 5 -14, 6 -10 C 7 -6, 6 -2, 4 2 L 0 4 L -4 2 C -6 -2, -7 -6, -6 -10 C -5 -14, -3 -18, 0 -22 Z`}
 				fill="rgba(255, 255, 255, 0.15)"
@@ -93,7 +98,13 @@ export function LockOnBlueIcon({ transform }: IconProps) {
 		const innerY2 = Math.sin(nextRad) * innerRadius;
 
 		spikes.push(
-			<path key={i} d={`M ${innerX1} ${innerY1} L ${outerX} ${outerY} L ${innerX2} ${innerY2} Z`} fill={`url(#${spikeGradId})`} stroke="#00ccff" strokeWidth="1" />,
+			<path
+				key={i}
+				d={`M ${innerX1} ${innerY1} L ${outerX} ${outerY} L ${innerX2} ${innerY2} Z`}
+				fill={`url(#${spikeGradId})`}
+				stroke="#00ccff"
+				strokeWidth="1"
+			/>,
 		);
 	}
 
@@ -119,10 +130,24 @@ export function LockOnBlueIcon({ transform }: IconProps) {
 			</defs>
 			<circle cx={0} cy={0} r={outerRadius + 8} fill={`url(#${outerGlowId})`} />
 			{spikes}
-			<circle cx={0} cy={0} r={innerRadius} fill="none" stroke="#00ccff" strokeWidth="2" />
+			<circle
+				cx={0}
+				cy={0}
+				r={innerRadius}
+				fill="none"
+				stroke="#00ccff"
+				strokeWidth="2"
+			/>
 			<circle cx={0} cy={0} r={orbRadius} fill={`url(#${orbGradId})`} />
 			<ellipse cx={-2} cy={-3} rx={4} ry={3} fill="rgba(255, 255, 255, 0.5)" />
-			<circle cx={0} cy={0} r={orbRadius} fill="none" stroke="#00aaaa" strokeWidth="1" />
+			<circle
+				cx={0}
+				cy={0}
+				r={orbRadius}
+				fill="none"
+				stroke="#00aaaa"
+				strokeWidth="1"
+			/>
 		</g>
 	);
 }
@@ -167,7 +192,12 @@ export function LockOnPurpleIcon({ transform }: IconProps) {
 				</linearGradient>
 			</defs>
 			<ellipse cx={0} cy={30} rx={24} ry={10} fill={`url(#${glowId})`} />
-			<path d={markerPath} fill={`url(#${markerGradId})`} stroke="#aa66ff" strokeWidth="1.5" />
+			<path
+				d={markerPath}
+				fill={`url(#${markerGradId})`}
+				stroke="#aa66ff"
+				strokeWidth="1.5"
+			/>
 			<path
 				d={`M 0 -24 C 2 -20, 4 -16, 5 -10 C 6 -4, 5 0, 3 4 L 0 6 L -3 4 C -5 0, -6 -4, -5 -10 C -4 -16, -2 -20, 0 -24 Z`}
 				fill="rgba(255, 255, 255, 0.15)"
@@ -209,7 +239,12 @@ export function LockOnGreenIcon({ transform }: IconProps) {
 				</linearGradient>
 			</defs>
 			<ellipse cx={0} cy={28} rx={24} ry={10} fill={`url(#${glowId})`} />
-			<path d={gemPath} fill={`url(#${gemGradId})`} stroke="#66ff88" strokeWidth="1.5" />
+			<path
+				d={gemPath}
+				fill={`url(#${gemGradId})`}
+				stroke="#66ff88"
+				strokeWidth="1.5"
+			/>
 			<path
 				d={`M -4 -18 C 8 -16, 14 -8, 12 0 C 10 6, 4 8, -2 6 C -8 4, -12 -4, -10 -10 C -8 -14, -4 -18, -4 -18 Z`}
 				fill="rgba(255, 255, 255, 0.25)"
@@ -242,8 +277,16 @@ export function EmphasisCircleIcon({ transform }: IconProps) {
 				</linearGradient>
 			</defs>
 			<circle cx={0} cy={0} r={28} fill={`url(#${glowId})`} />
-			<path d={spiralPath} fill={`url(#${gradId})`} stroke="#ffaabb" strokeWidth="2" />
-			<path d={`M 16 -4 A 16 16 0 0 0 -4 16 L -4 10 A 10 10 0 0 1 10 -4 Z`} fill="rgba(255, 255, 255, 0.2)" />
+			<path
+				d={spiralPath}
+				fill={`url(#${gradId})`}
+				stroke="#ffaabb"
+				strokeWidth="2"
+			/>
+			<path
+				d={`M 16 -4 A 16 16 0 0 0 -4 16 L -4 10 A 10 10 0 0 1 10 -4 Z`}
+				fill="rgba(255, 255, 255, 0.2)"
+			/>
 		</g>
 	);
 }
@@ -289,7 +332,12 @@ export function EmphasisCrossIcon({ transform }: IconProps) {
 			</defs>
 			<circle cx={0} cy={0} r={30} fill={`url(#${glowId})`} />
 			<g transform="rotate(45)">
-				<path d={crossPath} fill={`url(#${gradId})`} stroke="#ffaabb" strokeWidth="2" />
+				<path
+					d={crossPath}
+					fill={`url(#${gradId})`}
+					stroke="#ffaabb"
+					strokeWidth="2"
+				/>
 			</g>
 		</g>
 	);
@@ -320,8 +368,24 @@ export function EmphasisSquareIcon({ transform }: IconProps) {
 			</defs>
 			<circle cx={0} cy={0} r={32} fill={`url(#${glowId})`} />
 			<g transform="rotate(45)">
-				<rect x={-size} y={-size} width={size * 2} height={size * 2} fill={`url(#${gradId})`} stroke="#ffaabb" strokeWidth="2" />
-				<rect x={-innerSize} y={-innerSize} width={innerSize * 2} height={innerSize * 2} fill="none" stroke="rgba(255, 255, 255, 0.3)" strokeWidth="2" />
+				<rect
+					x={-size}
+					y={-size}
+					width={size * 2}
+					height={size * 2}
+					fill={`url(#${gradId})`}
+					stroke="#ffaabb"
+					strokeWidth="2"
+				/>
+				<rect
+					x={-innerSize}
+					y={-innerSize}
+					width={innerSize * 2}
+					height={innerSize * 2}
+					fill="none"
+					stroke="rgba(255, 255, 255, 0.3)"
+					strokeWidth="2"
+				/>
 			</g>
 		</g>
 	);
@@ -354,8 +418,18 @@ export function EmphasisTriangleIcon({ transform }: IconProps) {
 				</linearGradient>
 			</defs>
 			<circle cx={0} cy={0} r={32} fill={`url(#${glowId})`} />
-			<path d={outerPath} fill={`url(#${gradId})`} stroke="#ffaabb" strokeWidth="2" />
-			<path d={innerPath} fill="none" stroke="rgba(255, 255, 255, 0.3)" strokeWidth="2" />
+			<path
+				d={outerPath}
+				fill={`url(#${gradId})`}
+				stroke="#ffaabb"
+				strokeWidth="2"
+			/>
+			<path
+				d={innerPath}
+				fill="none"
+				stroke="rgba(255, 255, 255, 0.3)"
+				strokeWidth="2"
+			/>
 		</g>
 	);
 }
@@ -381,7 +455,12 @@ export function ClockwiseIcon({ transform }: IconProps) {
 				</linearGradient>
 			</defs>
 			<ellipse cx={0} cy={0} rx={36} ry={20} fill={`url(#${glowId})`} />
-			<path d="M -28 0 L -18 -12 L -18 -4 L 18 -4 L 18 -12 L 28 0 L 18 12 L 18 4 L -18 4 L -18 12 Z" fill={`url(#${arrowGradId})`} stroke="#ffcc88" strokeWidth="1.5" />
+			<path
+				d="M -28 0 L -18 -12 L -18 -4 L 18 -4 L 18 -12 L 28 0 L 18 12 L 18 4 L -18 4 L -18 12 Z"
+				fill={`url(#${arrowGradId})`}
+				stroke="#ffcc88"
+				strokeWidth="1.5"
+			/>
 		</g>
 	);
 }
@@ -407,7 +486,12 @@ export function CounterClockwiseIcon({ transform }: IconProps) {
 				</linearGradient>
 			</defs>
 			<ellipse cx={0} cy={0} rx={36} ry={20} fill={`url(#${glowId})`} />
-			<path d="M 28 0 L 18 -12 L 18 -4 L -18 -4 L -18 -12 L -28 0 L -18 12 L -18 4 L 18 4 L 18 12 Z" fill={`url(#${arrowGradId})`} stroke="#88ccff" strokeWidth="1.5" />
+			<path
+				d="M 28 0 L 18 -12 L 18 -4 L -18 -4 L -18 -12 L -28 0 L -18 12 L -18 4 L 18 4 L 18 12 Z"
+				fill={`url(#${arrowGradId})`}
+				stroke="#88ccff"
+				strokeWidth="1.5"
+			/>
 		</g>
 	);
 }
@@ -433,7 +517,12 @@ export function BuffIcon({ transform }: IconProps) {
 				</linearGradient>
 			</defs>
 			<circle cx={0} cy={0} r={16} fill={`url(#${glowId})`} />
-			<path d="M 0 -12 L 4 -4 L 12 -4 L 6 2 L 8 10 L 0 6 L -8 10 L -6 2 L -12 -4 L -4 -4 Z" fill={`url(#${gradId})`} stroke="#88ffaa" strokeWidth="1" />
+			<path
+				d="M 0 -12 L 4 -4 L 12 -4 L 6 2 L 8 10 L 0 6 L -8 10 L -6 2 L -12 -4 L -4 -4 Z"
+				fill={`url(#${gradId})`}
+				stroke="#88ffaa"
+				strokeWidth="1"
+			/>
 		</g>
 	);
 }
@@ -459,8 +548,12 @@ export function DebuffIcon({ transform }: IconProps) {
 				</linearGradient>
 			</defs>
 			<circle cx={0} cy={0} r={16} fill={`url(#${glowId})`} />
-			<path d="M 0 12 L 4 4 L 12 4 L 6 -2 L 8 -10 L 0 -6 L -8 -10 L -6 -2 L -12 4 L -4 4 Z" fill={`url(#${gradId})`} stroke="#ff88aa" strokeWidth="1" />
+			<path
+				d="M 0 12 L 4 4 L 12 4 L 6 -2 L 8 -10 L 0 -6 L -8 -10 L -6 -2 L -12 4 L -4 4 Z"
+				fill={`url(#${gradId})`}
+				stroke="#ff88aa"
+				strokeWidth="1"
+			/>
 		</g>
 	);
 }
-

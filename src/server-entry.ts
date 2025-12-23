@@ -2,7 +2,10 @@
  * カスタムサーバーエントリポイント
  * Cloudflare Workers の env を保存してから TanStack Start のハンドラーを呼び出す
  */
-import { setGlobalEnv, type CloudflareEnv } from "./lib/server/cloudflareContext";
+import {
+	setGlobalEnv,
+	type CloudflareEnv,
+} from "./lib/server/cloudflareContext";
 
 // TanStack Start のデフォルトエントリをインポート
 // @ts-expect-error TanStack Start のエントリポイント
@@ -29,4 +32,3 @@ export default {
 		return tanstackEntry.fetch(request, env, ctx);
 	},
 };
-

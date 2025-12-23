@@ -2,7 +2,6 @@
  * パネルレイアウト設定の型定義
  */
 
-
 /** パネル識別子 */
 export type PanelId = "objectPalette" | "layerPanel" | "propertyPanel";
 

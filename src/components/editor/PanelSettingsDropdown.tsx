@@ -9,11 +9,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { LayoutPanelLeft, ChevronDown, ChevronUp } from "lucide-react";
-import {
-	type PanelId,
-	type PanelPreset,
-	usePanelLayout,
-} from "@/lib/panel";
+import { type PanelId, type PanelPreset, usePanelLayout } from "@/lib/panel";
 
 /** アイコンサイズ */
 const ICON_SIZE = 16;
@@ -133,7 +129,9 @@ export function PanelSettingsDropdown() {
 					>
 						{/* パネル表示/非表示 */}
 						<div className="p-2 border-b border-slate-700">
-							<div className="text-xs text-slate-400 mb-2">{t("panelSettings.panelVisibility")}</div>
+							<div className="text-xs text-slate-400 mb-2">
+								{t("panelSettings.panelVisibility")}
+							</div>
 							{panelIds.map((panelId) => (
 								<label
 									key={panelId}
@@ -149,7 +147,9 @@ export function PanelSettingsDropdown() {
 										{t(`panelSettings.${panelId}`)}
 									</span>
 									<span className="text-xs text-slate-500 ml-auto">
-										{config.panels[panelId].slot === "left" ? t("panelSettings.left") : t("panelSettings.right")}
+										{config.panels[panelId].slot === "left"
+											? t("panelSettings.left")
+											: t("panelSettings.right")}
 									</span>
 								</label>
 							))}
@@ -157,7 +157,9 @@ export function PanelSettingsDropdown() {
 
 						{/* パネル配置 */}
 						<div className="p-2 border-b border-slate-700">
-							<div className="text-xs text-slate-400 mb-2">{t("panelSettings.panelPosition")}</div>
+							<div className="text-xs text-slate-400 mb-2">
+								{t("panelSettings.panelPosition")}
+							</div>
 							{panelIds.map((panelId) => (
 								<div
 									key={panelId}
@@ -196,7 +198,9 @@ export function PanelSettingsDropdown() {
 
 						{/* プリセット */}
 						<div className="p-2">
-							<div className="text-xs text-slate-400 mb-2">{t("panelSettings.presets")}</div>
+							<div className="text-xs text-slate-400 mb-2">
+								{t("panelSettings.presets")}
+							</div>
 							<div className="grid grid-cols-2 gap-1">
 								{presetIds.map((preset) => (
 									<button

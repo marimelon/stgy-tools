@@ -76,10 +76,7 @@ function ObjectPreview({ objectId }: { objectId: number }) {
 				<div className="text-xs font-mono text-muted-foreground">
 					ID: {objectId}
 				</div>
-				<div
-					className="text-xs truncate max-w-[80px]"
-					title={name}
-				>
+				<div className="text-xs truncate max-w-[80px]" title={name}>
 					{name}
 				</div>
 			</div>

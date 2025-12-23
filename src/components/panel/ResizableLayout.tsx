@@ -50,7 +50,12 @@ export function ResizableLayout({
 			{hasLeftSidebar && (
 				<>
 					{/* biome-ignore lint/correctness/useUniqueElementIds: Panel IDs must be static for layout persistence */}
-					<Panel defaultSize="20%" minSize="150px" maxSize="50%" id="left-sidebar">
+					<Panel
+						defaultSize="20%"
+						minSize="150px"
+						maxSize="50%"
+						id="left-sidebar"
+					>
 						<SidebarGroup
 							panels={leftPanels}
 							panelComponents={panelComponents}
@@ -72,7 +77,12 @@ export function ResizableLayout({
 				<>
 					<PanelResizeHandle className="w-1 bg-slate-700 hover:bg-cyan-500 transition-colors cursor-col-resize" />
 					{/* biome-ignore lint/correctness/useUniqueElementIds: Panel IDs must be static for layout persistence */}
-					<Panel defaultSize="22%" minSize="200px" maxSize="50%" id="right-sidebar">
+					<Panel
+						defaultSize="22%"
+						minSize="200px"
+						maxSize="50%"
+						id="right-sidebar"
+					>
 						<SidebarGroup
 							panels={rightPanels}
 							panelComponents={panelComponents}

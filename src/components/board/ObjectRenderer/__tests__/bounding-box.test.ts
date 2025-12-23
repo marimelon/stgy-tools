@@ -99,7 +99,13 @@ describe("bounding-box", () => {
 		});
 
 		it("Text", () => {
-			const bbox = getObjectBoundingBox(ObjectIds.Text, undefined, undefined, undefined, "Hello");
+			const bbox = getObjectBoundingBox(
+				ObjectIds.Text,
+				undefined,
+				undefined,
+				undefined,
+				"Hello",
+			);
 			expect(bbox.width).toBeGreaterThan(0);
 			expect(bbox.height).toBeGreaterThan(0);
 		});

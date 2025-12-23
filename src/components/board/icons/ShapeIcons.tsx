@@ -24,7 +24,13 @@ export function ShapeCircleIcon({ transform }: IconProps) {
 
 	return (
 		<g transform={transform}>
-			<path d={donutPath} fill={fillColor} stroke={strokeColor} strokeWidth="2" fillRule="evenodd" />
+			<path
+				d={donutPath}
+				fill={fillColor}
+				stroke={strokeColor}
+				strokeWidth="2"
+				fillRule="evenodd"
+			/>
 		</g>
 	);
 }
@@ -54,7 +60,13 @@ export function ShapeCrossIcon({ transform }: IconProps) {
 
 	return (
 		<g transform={transform}>
-			<path d={crossPath} fill={fillColor} stroke={strokeColor} strokeWidth="2" strokeLinejoin="round" />
+			<path
+				d={crossPath}
+				fill={fillColor}
+				stroke={strokeColor}
+				strokeWidth="2"
+				strokeLinejoin="round"
+			/>
 		</g>
 	);
 }
@@ -81,7 +93,14 @@ export function ShapeSquareIcon({ transform }: IconProps) {
 
 	return (
 		<g transform={transform}>
-			<path d={doublePath} fill={fillColor} stroke={strokeColor} strokeWidth="2" strokeLinejoin="round" fillRule="evenodd" />
+			<path
+				d={doublePath}
+				fill={fillColor}
+				stroke={strokeColor}
+				strokeWidth="2"
+				strokeLinejoin="round"
+				fillRule="evenodd"
+			/>
 		</g>
 	);
 }
@@ -104,7 +123,14 @@ export function ShapeTriangleIcon({ transform }: IconProps) {
 
 	return (
 		<g transform={transform}>
-			<path d={doublePath} fill={fillColor} stroke={strokeColor} strokeWidth="2" strokeLinejoin="round" fillRule="evenodd" />
+			<path
+				d={doublePath}
+				fill={fillColor}
+				stroke={strokeColor}
+				strokeWidth="2"
+				strokeLinejoin="round"
+				fillRule="evenodd"
+			/>
 		</g>
 	);
 }
@@ -127,7 +153,13 @@ export function ShapeArrowIcon({ transform }: IconProps) {
 
 	return (
 		<g transform={transform}>
-			<path d={arrowPath} fill={fillColor} stroke={strokeColor} strokeWidth="2" strokeLinejoin="round" />
+			<path
+				d={arrowPath}
+				fill={fillColor}
+				stroke={strokeColor}
+				strokeWidth="2"
+				strokeLinejoin="round"
+			/>
 		</g>
 	);
 }
@@ -169,8 +201,13 @@ export function ShapeRotationIcon({ transform }: IconProps) {
 
 	return (
 		<g transform={transform}>
-			<path d={arcPath} fill={fillColor} stroke={strokeColor} strokeWidth="2" strokeLinejoin="round" />
+			<path
+				d={arcPath}
+				fill={fillColor}
+				stroke={strokeColor}
+				strokeWidth="2"
+				strokeLinejoin="round"
+			/>
 		</g>
 	);
 }
-

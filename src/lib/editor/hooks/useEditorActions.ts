@@ -70,9 +70,12 @@ export function useEditorActions({
 	state,
 	dispatch,
 }: UseEditorActionsParams): UseEditorActionsReturn {
-	const setBoard = useCallback((board: BoardData) => {
-		dispatch({ type: "SET_BOARD", board });
-	}, [dispatch]);
+	const setBoard = useCallback(
+		(board: BoardData) => {
+			dispatch({ type: "SET_BOARD", board });
+		},
+		[dispatch],
+	);
 
 	const selectObject = useCallback(
 		(index: number, additive?: boolean) => {

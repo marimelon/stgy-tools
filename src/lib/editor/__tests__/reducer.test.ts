@@ -239,7 +239,9 @@ describe("reducer", () => {
 			let state = editorReducer(initialState, {
 				type: "UPDATE_OBJECT",
 				index: 0,
-				updates: { flags: { ...initialState.board.objects[0].flags, locked: true } },
+				updates: {
+					flags: { ...initialState.board.objects[0].flags, locked: true },
+				},
 			});
 			// 移動を試行 - reducerレベルではlockedは無視される
 			state = editorReducer(state, {

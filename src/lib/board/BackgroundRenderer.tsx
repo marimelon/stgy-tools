@@ -32,13 +32,5 @@ export function BackgroundRenderer({
 
 	const href = imageDataUri ?? `/backgrounds/${backgroundId}.png`;
 
-	return (
-		<image
-			href={href}
-			x={0}
-			y={0}
-			width={width}
-			height={height}
-		/>
-	);
+	return <image href={href} x={0} y={0} width={width} height={height} />;
 }

@@ -31,15 +31,15 @@ export type { GridOverlayProps, SelectionIndicatorProps } from "./GridOverlay";
 
 // フォーム入力コンポーネント
 export {
-  PropertySection,
-  NumberInput,
-  SliderInput,
-  Checkbox,
+	PropertySection,
+	NumberInput,
+	SliderInput,
+	Checkbox,
 } from "./FormInputs";
 export type {
-  NumberInputProps,
-  SliderInputProps,
-  CheckboxProps,
+	NumberInputProps,
+	SliderInputProps,
+	CheckboxProps,
 } from "./FormInputs";
 
 // カラーパレット

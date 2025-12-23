@@ -26,10 +26,9 @@ export function CompactFooter({ className = "" }: { className?: string }) {
 			className={`text-center text-[10px] text-muted-foreground/70 py-1.5 px-2 ${className}`}
 		>
 			<p>
-				FINAL FANTASY XIV ©2010 - 2025 SQUARE ENIX CO., LTD. | STGY Tools is
-				not affiliated with SQUARE ENIX CO., LTD.
+				FINAL FANTASY XIV ©2010 - 2025 SQUARE ENIX CO., LTD. | STGY Tools is not
+				affiliated with SQUARE ENIX CO., LTD.
 			</p>
 		</footer>
 	);
 }
-

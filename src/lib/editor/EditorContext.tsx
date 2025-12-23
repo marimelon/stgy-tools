@@ -11,7 +11,12 @@ import {
 	useMemo,
 	type ReactNode,
 } from "react";
-import type { BoardData, BoardObject, Position, BackgroundId } from "@/lib/stgy";
+import type {
+	BoardData,
+	BoardObject,
+	Position,
+	BackgroundId,
+} from "@/lib/stgy";
 import type {
 	EditorState,
 	EditorAction,

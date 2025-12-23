@@ -157,7 +157,10 @@ function StgyDebugPage() {
 								label="Version"
 								value={debugInfo.header.version.toString()}
 							/>
-							<InfoRow label="Width" value={debugInfo.header.width.toString()} />
+							<InfoRow
+								label="Width"
+								value={debugInfo.header.width.toString()}
+							/>
 							<InfoRow
 								label="Height"
 								value={debugInfo.header.height.toString()}
@@ -168,7 +171,10 @@ function StgyDebugPage() {
 						<Section title="Fields">
 							<div className="space-y-2 max-h-96 overflow-y-auto">
 								{debugInfo.fields.map((field) => (
-									<FieldRow key={`${field.offset}-${field.fieldId}`} field={field} />
+									<FieldRow
+										key={`${field.offset}-${field.fieldId}`}
+										field={field}
+									/>
 								))}
 							</div>
 						</Section>
@@ -207,16 +213,13 @@ function StgyDebugPage() {
 												):
 											</div>
 											<div className="text-xs font-mono bg-muted p-2 rounded max-h-32 overflow-y-auto">
-												{roundTripResult.binaryDiff
-													.slice(0, 20)
-													.map((d) => (
-														<div key={d.offset}>
-															offset{" "}
-															{d.offset.toString(16).padStart(4, "0")}:{" "}
-															{d.original.toString(16).padStart(2, "0")} {"->"}{" "}
-															{d.reEncoded.toString(16).padStart(2, "0")}
-														</div>
-													))}
+												{roundTripResult.binaryDiff.slice(0, 20).map((d) => (
+													<div key={d.offset}>
+														offset {d.offset.toString(16).padStart(4, "0")}:{" "}
+														{d.original.toString(16).padStart(2, "0")} {"->"}{" "}
+														{d.reEncoded.toString(16).padStart(2, "0")}
+													</div>
+												))}
 												{roundTripResult.binaryDiff.length > 20 && (
 													<div>
 														... and {roundTripResult.binaryDiff.length - 20}{" "}
@@ -330,9 +333,7 @@ function StgyDebugPage() {
 				{!debugInfo && inputCode.trim() && (
 					<div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
 						<AlertCircle className="size-5" />
-						<p>
-							Failed to decode the stgy string. Please check the format.
-						</p>
+						<p>Failed to decode the stgy string. Please check the format.</p>
 					</div>
 				)}
 			</main>
@@ -340,13 +341,7 @@ function StgyDebugPage() {
 	);
 }
 
-function Section({
-	title,
-	children,
-}: {
-	title: string;
-	children: ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
 	return (
 		<section className="bg-card border border-border rounded-lg p-4">
 			<h2 className="text-lg font-semibold mb-3 font-display">{title}</h2>

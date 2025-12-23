@@ -59,4 +59,3 @@ export function setGlobalEnv(env: CloudflareEnv): void {
 export function getGlobalEnv(): CloudflareEnv | undefined {
 	return globalEnv;
 }
-

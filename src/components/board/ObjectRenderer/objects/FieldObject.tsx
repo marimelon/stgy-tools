@@ -1,12 +1,7 @@
 import { useId } from "react";
 import type { Color } from "@/lib/stgy";
 import { ObjectIds } from "@/lib/stgy";
-import {
-	CIRCLE_FIELD_IDS,
-	COLORS,
-	LARGE_FIELD_IDS,
-	SIZES,
-} from "../constants";
+import { CIRCLE_FIELD_IDS, COLORS, LARGE_FIELD_IDS, SIZES } from "../constants";
 import { colorToRgba, renderOriginalIconIfEnabled } from "../utils";
 
 export function FieldObject({

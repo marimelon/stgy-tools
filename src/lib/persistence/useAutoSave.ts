@@ -110,13 +110,7 @@ export function useAutoSave(
 				timerRef.current = null;
 			}
 		};
-	}, [
-		state.isDirty, 
-		debounceMs, 
-		enabled, 
-		performSave, 
-		lastSavedAt
-	]);
+	}, [state.isDirty, debounceMs, enabled, performSave, lastSavedAt]);
 
 	// アンマウント時に保存
 	useEffect(() => {

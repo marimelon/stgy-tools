@@ -2,11 +2,7 @@
  * セッション永続化のストレージ操作
  */
 
-import {
-	STORAGE_KEY,
-	PERSISTENCE_VERSION,
-	type SessionData,
-} from "./types";
+import { STORAGE_KEY, PERSISTENCE_VERSION, type SessionData } from "./types";
 import type { ObjectGroup, GridSettings } from "@/lib/editor/types";
 import { GRID_SIZES } from "@/lib/editor/types";
 

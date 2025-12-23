@@ -191,7 +191,10 @@ function App() {
 function SelectedObjectInfo({
 	index,
 	object,
-}: { index: number; object: BoardObject }) {
+}: {
+	index: number;
+	object: BoardObject;
+}) {
 	const objectName = ObjectNames[object.objectId] ?? "不明";
 
 	return (

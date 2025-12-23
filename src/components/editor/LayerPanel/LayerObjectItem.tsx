@@ -43,7 +43,9 @@ export function LayerObjectItem({
 	onToggleVisibility,
 }: LayerObjectItemProps) {
 	const { t } = useTranslation();
-	const name = t(`object.${object.objectId}`, { defaultValue: `ID: ${object.objectId}` });
+	const name = t(`object.${object.objectId}`, {
+		defaultValue: `ID: ${object.objectId}`,
+	});
 
 	// グループドラッグ中でグループ内アイテムの場合はグループヘッダーに任せる
 	const isDropBefore =
@@ -88,7 +90,11 @@ export function LayerObjectItem({
 					className={
 						object.flags.visible ? "text-foreground" : "text-muted-foreground"
 					}
-					title={object.flags.visible ? t("layerPanel.hideObject") : t("layerPanel.showObject")}
+					title={
+						object.flags.visible
+							? t("layerPanel.hideObject")
+							: t("layerPanel.showObject")
+					}
 				>
 					{object.flags.visible ? <Eye size={14} /> : <EyeOff size={14} />}
 				</button>

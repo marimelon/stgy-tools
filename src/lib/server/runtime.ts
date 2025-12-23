@@ -41,4 +41,3 @@ export function isCloudflareWorkers(): boolean {
 export function isNodeEnvironment(): boolean {
 	return getRuntimeEnvironment() === "node";
 }
-

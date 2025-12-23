@@ -233,8 +233,13 @@ export function useDragInteraction({
 		(currentPointer: Position) => {
 			if (!dragState) return;
 
-			const { mode, startPointer, startObjectState, startPositions, objectIndex } =
-				dragState;
+			const {
+				mode,
+				startPointer,
+				startObjectState,
+				startPositions,
+				objectIndex,
+			} = dragState;
 
 			if (mode === "drag") {
 				const deltaX = currentPointer.x - startPointer.x;
