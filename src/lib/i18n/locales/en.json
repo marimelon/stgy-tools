@@ -165,15 +165,11 @@
 		"textChanged": "Text changed"
 	},
 	"category": {
-		"fields": "Field",
 		"attacks": "Attack Types",
-		"roles": "Roles",
-		"jobs": "Jobs",
-		"enemies": "Enemies",
-		"markers": "Markers",
-		"waymarks": "Waymarks",
+		"jobs": "Classes/Jobs",
+		"markers": "Icons/Markers",
 		"shapes": "Signs/Symbols",
-		"other": "Other",
+		"fields": "Field",
 		"debug": "Debug (Hidden)"
 	},
 	"editParam": {

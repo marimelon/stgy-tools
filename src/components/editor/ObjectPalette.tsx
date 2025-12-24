@@ -40,45 +40,28 @@ const HIDDEN_OBJECT_IDS: number[] = [
 ];
 
 /** オブジェクトカテゴリ（キーはi18nのcategory.*に対応） */
+/** オブジェクトカテゴリ（CSVの表示順序に準拠）
+ * TofuObjectCategory.ja.csv カラム1でソート:
+ * 1. クラス/ジョブ (カテゴリ2, カラム1: 1)
+ * 2. 攻撃範囲 (カテゴリ6, カラム1: 2)
+ * 3. アイコン/マーカー (カテゴリ3, カラム1: 3)
+ * 4. 図形/記号 (カテゴリ4, カラム1: 4)
+ * 5. フィールド (カテゴリ1, カラム1: 5)
+ *
+ * 各カテゴリ内はTofuObject.ja.csv カラム4でソート
+ */
 const OBJECT_CATEGORIES: Record<string, number[]> = {
-	fields: [
-		// 注意: CircleWhiteSolid, CircleWhiteTile, CircleGraySolid,
-		// SquareWhiteSolid, SquareWhiteTile, SquareGraySolid は未使用 (CSV: False)
-		ObjectIds.CircleCheck,
-		ObjectIds.CircleGray,
-		ObjectIds.SquareCheck,
-		ObjectIds.SquareGray,
-	],
-	attacks: [
-		ObjectIds.CircleAoE,
-		ObjectIds.ConeAoE,
-		ObjectIds.LineAoE,
-		ObjectIds.Line,
-		ObjectIds.DonutAoE,
-		ObjectIds.Stack,
-		ObjectIds.StackLine,
-		ObjectIds.StackChain,
-		ObjectIds.Proximity,
-		ObjectIds.ProximityTarget,
-		ObjectIds.Tankbuster,
-		ObjectIds.KnockbackRadial,
-		ObjectIds.KnockbackLine,
-		ObjectIds.Block,
-		ObjectIds.Gaze,
-		ObjectIds.TargetMarker,
-		ObjectIds.CircleAoEMoving,
-		ObjectIds.Area1P,
-		ObjectIds.Area2P,
-		ObjectIds.Area3P,
-		ObjectIds.Area4P,
-	],
-	roles: [
+	// カテゴリ2: クラス/ジョブ (カラム1: 1)
+	jobs: [
+		// ロール
 		ObjectIds.Tank,
 		ObjectIds.Tank1,
 		ObjectIds.Tank2,
 		ObjectIds.Healer,
 		ObjectIds.Healer1,
 		ObjectIds.Healer2,
+		ObjectIds.PureHealer,
+		ObjectIds.BarrierHealer,
 		ObjectIds.DPS,
 		ObjectIds.DPS1,
 		ObjectIds.DPS2,
@@ -88,10 +71,6 @@ const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.RangedDPS,
 		ObjectIds.PhysicalRangedDPS,
 		ObjectIds.MagicalRangedDPS,
-		ObjectIds.PureHealer,
-		ObjectIds.BarrierHealer,
-	],
-	jobs: [
 		// タンク
 		ObjectIds.Paladin,
 		ObjectIds.Warrior,
@@ -120,8 +99,39 @@ const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.Pictomancer,
 		ObjectIds.BlueMage,
 	],
-	enemies: [ObjectIds.EnemySmall, ObjectIds.EnemyMedium, ObjectIds.EnemyLarge],
+	// カテゴリ6: 攻撃範囲 (カラム1: 2) - カラム4でソート
+	attacks: [
+		ObjectIds.CircleAoE, // 101
+		ObjectIds.ConeAoE, // 102
+		ObjectIds.LineAoE, // 103
+		ObjectIds.Gaze, // 105
+		ObjectIds.Stack, // 106
+		ObjectIds.StackLine, // 107
+		ObjectIds.Proximity, // 108
+		ObjectIds.DonutAoE, // 109
+		ObjectIds.StackChain, // 110
+		ObjectIds.ProximityTarget, // 111
+		ObjectIds.Tankbuster, // 112
+		ObjectIds.KnockbackRadial, // 113
+		ObjectIds.KnockbackLine, // 114
+		ObjectIds.Block, // 115
+		ObjectIds.TargetMarker, // 116
+		ObjectIds.CircleAoEMoving, // 117
+		ObjectIds.Area1P, // 118
+		ObjectIds.Area2P, // 119
+		ObjectIds.Area3P, // 120
+		ObjectIds.Area4P, // 121
+	],
+	// カテゴリ3: アイコン/マーカー (カラム1: 3)
 	markers: [
+		// エネミー
+		ObjectIds.EnemySmall,
+		ObjectIds.EnemyMedium,
+		ObjectIds.EnemyLarge,
+		// バフ/デバフ
+		ObjectIds.Buff,
+		ObjectIds.Debuff,
+		// 攻撃マーカー
 		ObjectIds.Attack1,
 		ObjectIds.Attack2,
 		ObjectIds.Attack3,
@@ -130,17 +140,18 @@ const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.Attack6,
 		ObjectIds.Attack7,
 		ObjectIds.Attack8,
+		// 足止め/禁止
 		ObjectIds.Bind1,
 		ObjectIds.Bind2,
 		ObjectIds.Bind3,
 		ObjectIds.Ignore1,
 		ObjectIds.Ignore2,
+		// 汎用マーカー
 		ObjectIds.Square,
 		ObjectIds.Circle,
 		ObjectIds.Plus,
 		ObjectIds.Triangle,
-	],
-	waymarks: [
+		// フィールドマーカー
 		ObjectIds.WaymarkA,
 		ObjectIds.WaymarkB,
 		ObjectIds.WaymarkC,
@@ -149,8 +160,15 @@ const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.Waymark2,
 		ObjectIds.Waymark3,
 		ObjectIds.Waymark4,
+		// ロックオンマーカー
+		ObjectIds.LockOnRed,
+		ObjectIds.LockOnBlue,
+		ObjectIds.LockOnPurple,
+		ObjectIds.LockOnGreen,
 	],
+	// カテゴリ4: 図形/記号 (カラム1: 4)
 	shapes: [
+		ObjectIds.Text,
 		ObjectIds.ShapeCircle,
 		ObjectIds.ShapeCross,
 		ObjectIds.ShapeTriangle,
@@ -163,15 +181,16 @@ const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.EmphasisTriangle,
 		ObjectIds.Clockwise,
 		ObjectIds.CounterClockwise,
+		ObjectIds.Line,
 	],
-	other: [
-		ObjectIds.Text,
-		ObjectIds.Buff,
-		ObjectIds.Debuff,
-		ObjectIds.LockOnRed,
-		ObjectIds.LockOnBlue,
-		ObjectIds.LockOnPurple,
-		ObjectIds.LockOnGreen,
+	// カテゴリ1: フィールド (カラム1: 5)
+	fields: [
+		// 注意: CircleWhiteSolid, CircleWhiteTile, CircleGraySolid,
+		// SquareWhiteSolid, SquareWhiteTile, SquareGraySolid は未使用 (CSV: False)
+		ObjectIds.CircleCheck,
+		ObjectIds.SquareCheck,
+		ObjectIds.CircleGray,
+		ObjectIds.SquareGray,
 	],
 };
 

@@ -7,7 +7,7 @@
 import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "objectPaletteExpandedCategories";
-const DEFAULT_EXPANDED = ["roles", "attacks"];
+const DEFAULT_EXPANDED = ["attacks", "jobs"];
 
 /**
  * オブジェクトパレットのカテゴリ展開状態を管理するフック

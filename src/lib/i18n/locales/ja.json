@@ -165,15 +165,11 @@
 		"textChanged": "テキスト変更"
 	},
 	"category": {
-		"fields": "フィールド",
 		"attacks": "攻撃範囲",
-		"roles": "ロール",
-		"jobs": "ジョブ",
-		"enemies": "エネミー",
-		"markers": "マーカー",
-		"waymarks": "フィールドマーカー",
-		"shapes": "図形",
-		"other": "その他",
+		"jobs": "クラス/ジョブ",
+		"markers": "アイコン/マーカー",
+		"shapes": "図形/記号",
+		"fields": "フィールド",
 		"debug": "デバッグ（非表示）"
 	},
 	"editParam": {
