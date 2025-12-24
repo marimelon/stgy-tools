@@ -228,6 +228,17 @@ export function AoEObject({
 
 				// 360度以上の場合は完全な円ドーナツ
 				if (coneAngle >= 360) {
+					// クリック検知用のドーナツパス（外側時計回り、内側反時計回り）
+					const donutPath = [
+						`M ${imageOuterRadius} 0`,
+						`A ${imageOuterRadius} ${imageOuterRadius} 0 1 1 ${-imageOuterRadius} 0`,
+						`A ${imageOuterRadius} ${imageOuterRadius} 0 1 1 ${imageOuterRadius} 0`,
+						`M ${imageInnerRadius} 0`,
+						`A ${imageInnerRadius} ${imageInnerRadius} 0 1 0 ${-imageInnerRadius} 0`,
+						`A ${imageInnerRadius} ${imageInnerRadius} 0 1 0 ${imageInnerRadius} 0`,
+						"Z",
+					].join(" ");
+
 					return (
 						<g transform={transform}>
 							<defs>
@@ -250,7 +261,10 @@ export function AoEObject({
 								height={iconSize.height}
 								preserveAspectRatio="xMidYMid meet"
 								mask={`url(#${maskId})`}
+								pointerEvents="none"
 							/>
+							{/* クリック検知用の透明なドーナツパス */}
+							<path d={donutPath} fill="transparent" fillRule="evenodd" />
 						</g>
 					);
 				}
@@ -314,7 +328,10 @@ export function AoEObject({
 							height={imageOuterRadius * 2}
 							preserveAspectRatio="xMidYMid meet"
 							mask={`url(#${maskId})`}
+							pointerEvents="none"
 						/>
+						{/* クリック検知用の透明なパス（maskは視覚的なクリップのみでヒットテストに影響しないため） */}
+						<path d={maskPath} fill="transparent" />
 					</g>
 				);
 			}
