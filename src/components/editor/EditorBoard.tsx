@@ -235,14 +235,24 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 					selectedIndices.map((index) => {
 						const obj = objects[index];
 						if (!obj) return null;
-						const size = 48 * (obj.size / 100);
+						const bbox = getObjectBoundingBox(
+							obj.objectId,
+							obj.param1,
+							obj.param2,
+							obj.param3,
+							obj.text,
+							obj.position,
+						);
+						const objScale = obj.size / 100;
 						return (
 							<SelectionIndicator
 								key={`selection-${index}`}
 								x={obj.position.x}
 								y={obj.position.y}
-								width={size}
-								height={size}
+								width={bbox.width * objScale}
+								height={bbox.height * objScale}
+								offsetX={(bbox.offsetX ?? 0) * objScale}
+								offsetY={(bbox.offsetY ?? 0) * objScale}
 								rotation={obj.rotation}
 							/>
 						);

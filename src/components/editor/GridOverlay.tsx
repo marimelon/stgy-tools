@@ -71,6 +71,10 @@ export interface SelectionIndicatorProps {
 	width: number;
 	/** 高さ */
 	height: number;
+	/** X方向オフセット */
+	offsetX?: number;
+	/** Y方向オフセット */
+	offsetY?: number;
 	/** 回転角度 */
 	rotation: number;
 }
@@ -85,11 +89,17 @@ export function SelectionIndicator({
 	y,
 	width,
 	height,
+	offsetX = 0,
+	offsetY = 0,
 	rotation,
 }: SelectionIndicatorProps) {
 	const padding = 4;
 	const boxWidth = width + padding * 2;
 	const boxHeight = height + padding * 2;
+
+	// ボックスの中心位置（offsetを考慮）
+	const boxCenterX = offsetX;
+	const boxCenterY = offsetY;
 
 	return (
 		<g
@@ -97,8 +107,8 @@ export function SelectionIndicator({
 			pointerEvents="none"
 		>
 			<rect
-				x={-boxWidth / 2}
-				y={-boxHeight / 2}
+				x={boxCenterX - boxWidth / 2}
+				y={boxCenterY - boxHeight / 2}
 				width={boxWidth}
 				height={boxHeight}
 				fill="none"
