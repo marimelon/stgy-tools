@@ -97,9 +97,10 @@ export function logResponse(
 		duration: Date.now() - context.startTime,
 		userAgent: context.userAgent ?? undefined,
 		referer: context.referer ?? undefined,
-		contentLength: response.headers.get("content-length")
-			? Number.parseInt(response.headers.get("content-length")!, 10)
-			: undefined,
+		contentLength: (() => {
+			const cl = response.headers.get("content-length");
+			return cl ? Number.parseInt(cl, 10) : undefined;
+		})(),
 		requestId: context.requestId,
 	};
 

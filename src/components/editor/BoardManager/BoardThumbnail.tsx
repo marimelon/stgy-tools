@@ -36,8 +36,10 @@ export function BoardThumbnail({ stgyCode, className }: BoardThumbnailProps) {
 	}
 
 	return (
-		<div className={`overflow-hidden ${className ?? ""}`}>
-			<BoardViewer boardData={boardData} scale={0.25} />
+		<div
+			className={`overflow-hidden [&>svg]:w-full [&>svg]:h-full ${className ?? ""}`}
+		>
+			<BoardViewer boardData={boardData} />
 		</div>
 	);
 }
