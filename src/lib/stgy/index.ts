@@ -22,8 +22,10 @@ export {
 	DISABLED_OBJECT_IDS,
 	EDIT_PARAMS,
 	EditParamIds,
+	MAX_TOTAL_OBJECTS,
 	OBJECT_EDIT_PARAMS,
 	OBJECT_FLIP_FLAGS,
+	OBJECT_LIMITS,
 	ObjectIds,
 	ObjectNames,
 } from "./types";

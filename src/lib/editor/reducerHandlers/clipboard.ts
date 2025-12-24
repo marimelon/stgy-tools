@@ -3,6 +3,7 @@
  */
 
 import type { EditorState } from "../types";
+import { canAddObjects } from "../validation";
 import { cloneBoard, pushHistory } from "./utils";
 
 /**
@@ -30,6 +31,18 @@ export function handlePasteObjects(
 ): EditorState {
 	if (!state.clipboard || state.clipboard.length === 0) return state;
 
+	// バリデーション
+	const validation = canAddObjects(state.board, state.clipboard);
+	if (!validation.canAdd) {
+		return {
+			...state,
+			lastError: {
+				key: validation.errorKey ?? "editor.errors.unknown",
+				params: validation.errorParams,
+			},
+		};
+	}
+
 	const newBoard = cloneBoard(state.board);
 	const newIndices: number[] = [];
 
@@ -50,6 +63,7 @@ export function handlePasteObjects(
 		...state,
 		board: newBoard,
 		selectedIndices: newIndices,
+		lastError: null,
 		...pushHistory(state, "オブジェクト貼り付け"),
 	};
 }

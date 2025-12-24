@@ -175,6 +175,9 @@ export function editorReducer(
 		case "CLEAR_HISTORY":
 			return handleClearHistory(state);
 
+		case "CLEAR_ERROR":
+			return { ...state, lastError: null };
+
 		default:
 			return state;
 	}
@@ -232,5 +235,6 @@ export function createInitialStateWithOptions(
 		historyIndex: 0,
 		isDirty: false,
 		editingTextIndex: null,
+		lastError: null,
 	};
 }

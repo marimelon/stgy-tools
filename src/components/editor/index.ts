@@ -11,6 +11,7 @@ export type { ColorPaletteProps } from "./ColorPalette";
 export { ColorPalette } from "./ColorPalette";
 export { EditorBoard } from "./EditorBoard";
 export { EditorToolbar } from "./EditorToolbar";
+export { ErrorToast } from "./ErrorToast";
 export type { ExportModalProps } from "./ExportModal";
 export { ExportModal } from "./ExportModal";
 export type {

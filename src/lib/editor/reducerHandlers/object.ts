@@ -5,6 +5,7 @@
 import { type BoardObject, ObjectIds } from "@/lib/stgy";
 import { duplicateObject } from "../factory";
 import type { BatchUpdatePayload, EditorState } from "../types";
+import { canAddObject, canAddObjects } from "../validation";
 import {
 	cloneBoard,
 	pushHistory,
@@ -39,6 +40,18 @@ export function handleAddObject(
 	state: EditorState,
 	payload: { object: BoardObject },
 ): EditorState {
+	// バリデーション
+	const validation = canAddObject(state.board, payload.object.objectId);
+	if (!validation.canAdd) {
+		return {
+			...state,
+			lastError: {
+				key: validation.errorKey ?? "editor.errors.unknown",
+				params: validation.errorParams,
+			},
+		};
+	}
+
 	const newBoard = cloneBoard(state.board);
 	newBoard.objects.unshift(payload.object);
 	// グループのインデックスを更新（先頭に追加するので全て+1）
@@ -48,6 +61,7 @@ export function handleAddObject(
 		board: newBoard,
 		groups: updatedGroups,
 		selectedIndices: [0],
+		lastError: null,
 		...pushHistory({ ...state, groups: updatedGroups }, "オブジェクト追加"),
 	};
 }
@@ -89,6 +103,26 @@ export function handleDuplicateObjects(
 ): EditorState {
 	if (payload.indices.length === 0) return state;
 
+	// 複製対象のオブジェクトを収集
+	const objectsToDuplicate: BoardObject[] = [];
+	for (const index of payload.indices) {
+		if (index >= 0 && index < state.board.objects.length) {
+			objectsToDuplicate.push(state.board.objects[index]);
+		}
+	}
+
+	// バリデーション
+	const validation = canAddObjects(state.board, objectsToDuplicate);
+	if (!validation.canAdd) {
+		return {
+			...state,
+			lastError: {
+				key: validation.errorKey ?? "editor.errors.unknown",
+				params: validation.errorParams,
+			},
+		};
+	}
+
 	const newBoard = cloneBoard(state.board);
 	const newIndices: number[] = [];
 
@@ -105,6 +139,7 @@ export function handleDuplicateObjects(
 		...state,
 		board: newBoard,
 		selectedIndices: newIndices,
+		lastError: null,
 		...pushHistory(state, "オブジェクト複製"),
 	};
 }

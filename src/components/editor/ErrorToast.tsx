@@ -1,0 +1,49 @@
+/**
+ * エディターエラートースト
+ */
+
+import { AlertCircle, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useEditor } from "@/lib/editor";
+import type { EditorError } from "@/lib/editor/types";
+
+/** トースト表示時間 (ms) */
+const TOAST_DURATION = 3000;
+
+export function ErrorToast() {
+	const { t } = useTranslation();
+	const { state, dispatch } = useEditor();
+	const [visibleError, setVisibleError] = useState<EditorError | null>(null);
+
+	useEffect(() => {
+		if (state.lastError) {
+			setVisibleError(state.lastError);
+			dispatch({ type: "CLEAR_ERROR" });
+
+			const timer = setTimeout(() => {
+				setVisibleError(null);
+			}, TOAST_DURATION);
+
+			return () => clearTimeout(timer);
+		}
+	}, [state.lastError, dispatch]);
+
+	if (!visibleError) return null;
+
+	const message = t(visibleError.key, visibleError.params);
+
+	return (
+		<div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-lg bg-destructive text-destructive-foreground shadow-lg animate-in slide-in-from-bottom-4 fade-in duration-200">
+			<AlertCircle className="size-5 shrink-0" />
+			<span className="text-sm">{message}</span>
+			<button
+				type="button"
+				onClick={() => setVisibleError(null)}
+				className="text-destructive-foreground/70 hover:text-destructive-foreground transition-colors"
+			>
+				<X className="size-4" />
+			</button>
+		</div>
+	);
+}

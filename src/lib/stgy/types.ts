@@ -785,3 +785,15 @@ export const DEFAULT_EDIT_PARAMS: readonly number[] = [
 	EditParamIds.Rotation,
 	EditParamIds.Opacity,
 ];
+
+/**
+ * オブジェクト配置数制限 (CSV カラム22から)
+ * -1: 制限なし, 0: テキスト用, その他: 最大配置数
+ */
+export const OBJECT_LIMITS: Partial<Record<number, number>> = {
+	[ObjectIds.LineAoE]: 10, // 直線範囲攻撃: 10個まで
+	[ObjectIds.Line]: 10, // ライン: 10個まで
+};
+
+/** 全オブジェクトの最大配置数 */
+export const MAX_TOTAL_OBJECTS = 50;

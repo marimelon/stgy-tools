@@ -234,6 +234,14 @@
 		"lineStartMoved": "ライン始点移動",
 		"lineEndMoved": "ライン終点移動"
 	},
+	"editor": {
+		"errors": {
+			"unknown": "不明なエラーが発生しました",
+			"maxTotalObjects": "オブジェクトは最大{{max}}個までです",
+			"maxTotalObjectsExceeded": "オブジェクトは最大{{max}}個までです（現在{{current}}個、追加{{adding}}個）",
+			"maxObjectType": "{{name}}は最大{{max}}個までです"
+		}
+	},
 	"alignment": {
 		"title": "整列・配置",
 		"alignLeft": "左揃え",

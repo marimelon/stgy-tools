@@ -234,6 +234,14 @@
 		"lineStartMoved": "Line start moved",
 		"lineEndMoved": "Line end moved"
 	},
+	"editor": {
+		"errors": {
+			"unknown": "An unknown error occurred",
+			"maxTotalObjects": "Maximum {{max}} objects allowed",
+			"maxTotalObjectsExceeded": "Maximum {{max}} objects allowed (current: {{current}}, adding: {{adding}})",
+			"maxObjectType": "Maximum {{max}} {{name}} allowed"
+		}
+	},
 	"alignment": {
 		"title": "Align & Distribute",
 		"alignLeft": "Align Left",

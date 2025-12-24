@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import {
 	EditorBoard,
 	EditorToolbar,
+	ErrorToast,
 	HistoryPanel,
 	LayerPanel,
 	ObjectPalette,
@@ -519,6 +520,9 @@ function EditorContent({
 					</div>
 				</ResizableLayout>
 			</div>
+
+			{/* エラートースト */}
+			<ErrorToast />
 		</div>
 	);
 }

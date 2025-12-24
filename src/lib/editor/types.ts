@@ -139,6 +139,16 @@ export type AlignmentType =
 	| "distribute-v";
 
 /**
+ * エラー情報
+ */
+export interface EditorError {
+	/** 翻訳キー */
+	key: string;
+	/** 翻訳パラメータ */
+	params?: Record<string, string | number>;
+}
+
+/**
  * エディター状態
  */
 export interface EditorState {
@@ -160,6 +170,8 @@ export interface EditorState {
 	isDirty: boolean;
 	/** インライン編集中のテキストオブジェクトのインデックス（null = 編集なし） */
 	editingTextIndex: number | null;
+	/** 最後のエラー（UIで表示後クリア） */
+	lastError: EditorError | null;
 }
 
 /**
@@ -205,7 +217,8 @@ export type EditorAction =
 	| { type: "START_TEXT_EDIT"; index: number }
 	| { type: "END_TEXT_EDIT"; save: boolean; text?: string }
 	| { type: "JUMP_TO_HISTORY"; index: number }
-	| { type: "CLEAR_HISTORY" };
+	| { type: "CLEAR_HISTORY" }
+	| { type: "CLEAR_ERROR" };
 
 /**
  * ボードメタデータ更新用の部分型
