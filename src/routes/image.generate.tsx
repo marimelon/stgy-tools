@@ -231,10 +231,10 @@ export const Route = createFileRoute("/image/generate")({
 
 /** スケールオプション */
 const SCALE_OPTIONS = [
-	{ value: "1", label: "1x (512×384)", width: 512 },
-	{ value: "2", label: "2x (1024×768)", width: 1024 },
-	{ value: "3", label: "3x (1536×1152)", width: 1536 },
-	{ value: "4", label: "4x (2048×1536)", width: 2048 },
+	{ value: "1", label: "1x", size: "512×384" },
+	{ value: "2", label: "2x", size: "1024×768" },
+	{ value: "3", label: "3x", size: "1536×1152" },
+	{ value: "4", label: "4x", size: "2048×1536" },
 ] as const;
 
 function ImageGeneratePage() {
@@ -466,30 +466,44 @@ function ImageGeneratePage() {
 										{t("imageGenerator.outputSize")}
 									</span>
 									<div
-										className="flex flex-col md:inline-flex md:flex-row bg-secondary/30 rounded-lg p-1 gap-1"
+										className="grid grid-cols-2 md:grid-cols-4 gap-2"
 										role="radiogroup"
 										aria-labelledby={sizeGroupId}
 									>
-										{SCALE_OPTIONS.map((option) => (
-											<label
-												key={option.value}
-												className={`flex-1 md:flex-none inline-flex items-center justify-center py-2.5 md:py-2 px-4 rounded-md cursor-pointer text-sm font-medium transition-all select-none whitespace-nowrap ${
-													scale === option.value
-														? "bg-primary/20 text-primary border border-primary/40 shadow-sm shadow-primary/10"
-														: "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-												}`}
-											>
-												<input
-													type="radio"
-													name="scale"
-													value={option.value}
-													checked={scale === option.value}
-													onChange={() => setScale(option.value)}
-													className="sr-only"
-												/>
-												{option.label}
-											</label>
-										))}
+										{SCALE_OPTIONS.map((option, index) => {
+											const isHighRes = index >= 2;
+											return (
+												<label
+													key={option.value}
+													className={`flex flex-col items-center justify-center py-2.5 px-3 rounded-lg cursor-pointer transition-all select-none ${
+														scale === option.value
+															? "bg-primary/20 text-primary border border-primary/50"
+															: isHighRes
+																? "bg-secondary/20 text-muted-foreground hover:bg-secondary/40 hover:text-foreground/80 border border-transparent"
+																: "bg-secondary/40 text-foreground/90 hover:bg-secondary/60 hover:text-foreground border border-transparent"
+													}`}
+												>
+													<input
+														type="radio"
+														name="scale"
+														value={option.value}
+														checked={scale === option.value}
+														onChange={() => setScale(option.value)}
+														className="sr-only"
+													/>
+													<span
+														className={`font-semibold ${isHighRes ? "text-sm" : "text-base"}`}
+													>
+														{option.label}
+													</span>
+													<span
+														className={`text-muted-foreground mt-0.5 ${isHighRes ? "text-[10px]" : "text-xs"}`}
+													>
+														{option.size}
+													</span>
+												</label>
+											);
+										})}
 									</div>
 								</div>
 							)}

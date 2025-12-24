@@ -23,6 +23,58 @@ const MAX_WIDTH = 2048;
 /** 最大スケール（HR素材画像は2倍解像度） */
 const MAX_SCALE = 4;
 
+/** デフォルトのファイル名 */
+const DEFAULT_FILENAME = "strategy-board";
+
+/**
+ * ファイル名として安全な文字列に変換
+ * 制御文字やファイルシステムで問題になる文字を除去
+ *
+ * Note: Content-Dispositionヘッダー用のため、実際のファイル書き込みはなく
+ * ブラウザが最終的にファイル名を検証する。最低限のサニタイズで十分。
+ */
+function sanitizeFilename(name: string): string {
+	// 空白のみの場合はデフォルト名を使用
+	const trimmed = name.trim();
+	if (!trimmed) return DEFAULT_FILENAME;
+
+	// サニタイズ処理
+	const sanitized = trimmed
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: ファイル名から制御文字を除去するため意図的に使用
+		.replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g, "")
+		// Unicode制御文字を除去（RTLマーカーなど）
+		.replace(/[\u200B-\u200D\u2028-\u202E\uFEFF]/g, "")
+		// パストラバーサル対策
+		.replace(/\.{2,}/g, ".")
+		// 連続する空白を1つに
+		.replace(/\s+/g, " ")
+		.trim();
+
+	return sanitized || DEFAULT_FILENAME;
+}
+
+/**
+ * Content-Dispositionヘッダー値を生成
+ * RFC 5987に従いUTF-8エンコードしたファイル名を含める
+ */
+function createContentDisposition(filename: string, extension: string): string {
+	const safeFilename = sanitizeFilename(filename);
+	const fullFilename = `${safeFilename}.${extension}`;
+
+	// ASCII文字のみの場合はシンプルな形式
+	// 非ASCII文字が含まれる場合はUTF-8エンコード形式を追加
+	const hasNonAscii = /[^\x20-\x7e]/.test(fullFilename);
+	const asciiFilename = hasNonAscii
+		? fullFilename.replace(/[^\x20-\x7e]/g, "_")
+		: fullFilename;
+	const encodedFilename = encodeURIComponent(fullFilename);
+
+	if (hasNonAscii) {
+		return `inline; filename="${asciiFilename}"; filename*=UTF-8''${encodedFilename}`;
+	}
+	return `inline; filename="${fullFilename}"`;
+}
+
 export const Route = createFileRoute("/image")({
 	server: {
 		handlers: {
@@ -77,10 +129,16 @@ export const Route = createFileRoute("/image")({
 					});
 
 					// 4. フォーマットに応じて返す
+					const contentDisposition = createContentDisposition(
+						boardData.name,
+						format === "svg" ? "svg" : "png",
+					);
+
 					if (format === "svg") {
 						return new Response(svg, {
 							headers: {
 								"Content-Type": "image/svg+xml",
+								"Content-Disposition": contentDisposition,
 								"Cache-Control": "public, max-age=86400",
 							},
 						});
@@ -99,6 +157,7 @@ export const Route = createFileRoute("/image")({
 					return new Response(pngBuffer, {
 						headers: {
 							"Content-Type": "image/png",
+							"Content-Disposition": contentDisposition,
 							"Cache-Control": "public, max-age=86400",
 						},
 					});
