@@ -1,9 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertCircle, Eye } from "lucide-react";
-import { useId, useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { AlertCircle } from "lucide-react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { BoardViewer } from "@/components/board";
+import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Footer } from "@/components/ui/Footer";
 import { Label } from "@/components/ui/label";
@@ -35,6 +35,9 @@ function getBackgroundName(id: number): string {
 const SAMPLE_STGY =
 	"[stgy:a7AIxEt68bIksM7YvDMlkmKJL8iH2Eq-2vDUI+1PGMl9+UVD4FhAcsxS5tImN8GsSsHqSfbiqbA-P+yOUQ9unhordXjeMGL9gogzDY+BIgOtPiufNvO85+QJQtQ0HoGATs4AS6KNbAfZ0mBO0j7Xyr7DzEG8fCafOqcmj1p4mq-RTUxIVf5RqM+0GuS+XSB9CIBbHIKJoW3OvB8GEo0Z9+6TbKxdVBGwL5FY53igor8+TrbL7P2mEZwElDFDgDrmoxRYo-tH36+ipeUTp]";
 
+/** デバウンス遅延時間 (ms) */
+const DEBOUNCE_DELAY = 300;
+
 function App() {
 	const [stgyInput, setStgyInput] = useState(SAMPLE_STGY);
 	const [boardData, setBoardData] = useState<BoardData | null>(null);
@@ -46,11 +49,21 @@ function App() {
 	);
 	const stgyInputId = useId();
 	const showBboxId = useId();
+	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	const handleDecode = () => {
+	// 自動デコード関数
+	const decodeBoardData = useCallback((input: string) => {
+		if (!input.trim()) {
+			setBoardData(null);
+			setError(null);
+			setSelectedIndex(null);
+			setSelectedObject(null);
+			return;
+		}
+
 		try {
 			setError(null);
-			const binary = decodeStgy(stgyInput.trim());
+			const binary = decodeStgy(input.trim());
 			const data = parseBoardData(binary);
 			setBoardData(data);
 			setSelectedIndex(null);
@@ -59,7 +72,24 @@ function App() {
 			setError(e instanceof Error ? e.message : "Unknown error");
 			setBoardData(null);
 		}
-	};
+	}, []);
+
+	// 入力変更時の自動デコード（デバウンス付き）
+	useEffect(() => {
+		if (debounceTimerRef.current) {
+			clearTimeout(debounceTimerRef.current);
+		}
+
+		debounceTimerRef.current = setTimeout(() => {
+			decodeBoardData(stgyInput);
+		}, DEBOUNCE_DELAY);
+
+		return () => {
+			if (debounceTimerRef.current) {
+				clearTimeout(debounceTimerRef.current);
+			}
+		};
+	}, [stgyInput, decodeBoardData]);
 
 	const handleSelectObject = (
 		index: number | null,
@@ -71,25 +101,7 @@ function App() {
 
 	return (
 		<div className="min-h-screen bg-background text-foreground">
-			<header className="app-header p-4">
-				<div className="flex items-center justify-between max-w-6xl mx-auto">
-					<h1 className="app-logo text-2xl">STGY Tools Viewer</h1>
-					<nav className="flex items-center gap-4">
-						<Link
-							to="/editor"
-							className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-						>
-							Editor
-						</Link>
-						<Link
-							to="/image/generate"
-							className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-						>
-							Image Generator
-						</Link>
-					</nav>
-				</div>
-			</header>
+			<AppHeader currentPage="viewer" title="STGY Tools Viewer" />
 
 			<main className="p-4 max-w-6xl mx-auto">
 				<div className="mb-6 space-y-3">
@@ -101,10 +113,6 @@ function App() {
 						className="h-24 font-mono text-sm"
 						placeholder="[stgy:a...]"
 					/>
-					<Button onClick={handleDecode}>
-						<Eye className="size-4" />
-						表示
-					</Button>
 				</div>
 
 				{error && (

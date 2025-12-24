@@ -3,10 +3,11 @@
  * stgyコードを入力して画像URLを生成する
  */
 
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board/BoardViewer";
+import { AppHeader } from "@/components/ui/AppHeader";
 import {
 	generateCanonicalLink,
 	generateHreflangLinks,
@@ -235,14 +236,8 @@ const SCALE_OPTIONS = [
 	{ value: "2", label: "2x (1024×768)", width: 1024 },
 ] as const;
 
-/** 言語オプション */
-const LANGUAGE_OPTIONS = [
-	{ value: "ja", label: "日本語" },
-	{ value: "en", label: "English" },
-] as const;
-
 function ImageGeneratePage() {
-	const { t, i18n } = useTranslation();
+	const { t } = useTranslation();
 	const { code: initialCode } = Route.useSearch();
 	const [code, setCode] = useState(initialCode ?? "");
 	const [format, setFormat] = useState<"png" | "svg">("png");
@@ -357,316 +352,292 @@ function ImageGeneratePage() {
 		}
 	}, [generatedUrl]);
 
-	const changeLanguage = useCallback(
-		(lang: string) => {
-			i18n.changeLanguage(lang);
-		},
-		[i18n],
-	);
-
 	const strategyBoardAlt = boardName || t("imageGenerator.strategyBoard");
 
 	return (
-		<div className="min-h-screen bg-[#0a0a0a] p-4 md:p-6 lg:p-8 flex flex-col items-center gap-4 md:gap-6">
-			{/* ヘッダー */}
-			<header className="w-full max-w-[800px] lg:max-w-[1200px] flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0">
-				<h1 className="text-white text-base md:text-lg lg:text-xl font-bold">
-					{t("imageGenerator.pageTitle")}
-				</h1>
-				<nav className="flex flex-wrap items-center gap-3 md:gap-4">
-					<Link
-						to="/"
-						className="text-gray-400 text-sm font-medium hover:text-white transition-colors"
-					>
-						{t("nav.viewer")}
-					</Link>
-					<Link
-						to="/editor"
-						className="text-gray-400 text-sm font-medium hover:text-white transition-colors"
-					>
-						{t("nav.editor")}
-					</Link>
-					<select
-						className="bg-[#2a2a2a] text-white border border-[#444] rounded px-2 py-1.5 text-xs cursor-pointer"
-						value={i18n.language.split("-")[0]}
-						onChange={(e) => changeLanguage(e.target.value)}
-						aria-label={t("language.label")}
-					>
-						{LANGUAGE_OPTIONS.map((option) => (
-							<option key={option.value} value={option.value}>
-								{option.label}
-							</option>
-						))}
-					</select>
-				</nav>
-			</header>
+		<div className="min-h-screen bg-background flex flex-col">
+			{/* 共通ヘッダー */}
+			<AppHeader currentPage="image" title={t("imageGenerator.pageTitle")} />
 
-			{/* メインカード */}
-			<div className="bg-[#1a1a1a] rounded-lg lg:rounded-xl p-4 md:p-5 lg:p-6 max-w-[800px] lg:max-w-[1200px] w-full shadow-[0_4px_24px_rgba(0,0,0,0.5)]">
-				{/* カードヘッダー */}
-				<div className="mb-4 lg:mb-6">
-					<h2 className="text-white text-base lg:text-xl font-bold mb-2">
-						{t("imageGenerator.title")}
-					</h2>
-					<p className="text-gray-400 text-sm">
-						{t("imageGenerator.description")}
-					</p>
-				</div>
-
-				{/* 2カラムレイアウト */}
-				<div className="flex flex-col lg:grid lg:grid-cols-[minmax(300px,1fr)_minmax(400px,1.5fr)] lg:gap-8">
-					{/* 左カラム: 入力フォーム */}
-					<div className="flex flex-col gap-1">
-						{/* stgyコード入力 */}
-						<div className="mb-4">
-							<label
-								htmlFor={stgyCodeId}
-								className="block text-gray-300 text-sm mb-2"
-							>
-								{t("imageGenerator.stgyCode")}
-							</label>
-							<textarea
-								id={stgyCodeId}
-								className="w-full p-3 bg-[#2a2a2a] border border-[#444] rounded-md text-white text-sm font-mono resize-y min-h-[100px] lg:min-h-[140px]"
-								value={code}
-								onChange={(e) => setCode(e.target.value)}
-								placeholder={t("imageGenerator.stgyCodePlaceholder")}
-								rows={4}
-							/>
-						</div>
-
-						{/* 出力フォーマット */}
-						<div className="mb-4">
-							<span
-								id={formatGroupId}
-								className="block text-gray-300 text-sm mb-2"
-							>
-								{t("imageGenerator.outputFormat")}
-							</span>
-							<div
-								className="flex flex-col md:inline-flex md:flex-row bg-[#1a1a1a] rounded-md p-0.5 gap-0.5"
-								role="radiogroup"
-								aria-labelledby={formatGroupId}
-							>
-								<label
-									className={`flex-1 md:flex-none inline-flex items-center justify-center py-3 md:py-2 px-4 rounded cursor-pointer text-sm font-medium transition-colors select-none ${
-										format === "png"
-											? "bg-[#333] text-white"
-											: "text-gray-400 hover:text-gray-200"
-									}`}
-								>
-									<input
-										type="radio"
-										name="format"
-										value="png"
-										checked={format === "png"}
-										onChange={() => setFormat("png")}
-										className="sr-only"
-									/>
-									PNG
-								</label>
-								<label
-									className={`flex-1 md:flex-none inline-flex items-center justify-center py-3 md:py-2 px-4 rounded cursor-pointer text-sm font-medium transition-colors select-none ${
-										format === "svg"
-											? "bg-[#333] text-white"
-											: "text-gray-400 hover:text-gray-200"
-									}`}
-								>
-									<input
-										type="radio"
-										name="format"
-										value="svg"
-										checked={format === "svg"}
-										onChange={() => setFormat("svg")}
-										className="sr-only"
-									/>
-									SVG
-								</label>
-							</div>
-						</div>
-
-						{/* 出力サイズ（PNGのみ） */}
-						{format === "png" && (
-							<div className="mb-4">
-								<span
-									id={sizeGroupId}
-									className="block text-gray-300 text-sm mb-2"
-								>
-									{t("imageGenerator.outputSize")}
-								</span>
-								<div
-									className="flex flex-col md:inline-flex md:flex-row bg-[#1a1a1a] rounded-md p-0.5 gap-0.5"
-									role="radiogroup"
-									aria-labelledby={sizeGroupId}
-								>
-									{SCALE_OPTIONS.map((option) => (
-										<label
-											key={option.value}
-											className={`flex-1 md:flex-none inline-flex items-center justify-center py-3 md:py-2 px-4 rounded cursor-pointer text-sm font-medium transition-colors select-none whitespace-nowrap ${
-												scale === option.value
-													? "bg-[#333] text-white"
-													: "text-gray-400 hover:text-gray-200"
-											}`}
-										>
-											<input
-												type="radio"
-												name="scale"
-												value={option.value}
-												checked={scale === option.value}
-												onChange={() => setScale(option.value)}
-												className="sr-only"
-											/>
-											{option.label}
-										</label>
-									))}
-								</div>
-							</div>
-						)}
-
-						{/* ボード名表示チェックボックス */}
-						<div className="mb-4">
-							<label className="flex items-center gap-2 text-gray-300 text-sm cursor-pointer">
-								<input
-									type="checkbox"
-									checked={showTitle}
-									onChange={(e) => setShowTitle(e.target.checked)}
-									className="w-4 h-4 accent-blue-500"
-								/>
-								{t("imageGenerator.showBoardName")}
-							</label>
-						</div>
-
-						{/* エラー表示 */}
-						{error && (
-							<div className="mt-2 p-3 bg-red-500/10 border border-red-500 rounded-md flex items-center gap-2">
-								<span className="text-base">⚠️</span>
-								<span className="text-red-500 text-sm">{error}</span>
-							</div>
-						)}
+			{/* メインコンテンツ */}
+			<div className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col items-center gap-4 md:gap-6">
+				{/* メインカード */}
+				<div className="bg-card rounded-lg lg:rounded-xl p-4 md:p-5 lg:p-6 max-w-[800px] lg:max-w-[1200px] w-full shadow-lg border border-border/50">
+					{/* カードヘッダー */}
+					<div className="mb-4 lg:mb-6">
+						<h2 className="text-foreground text-base lg:text-xl font-bold mb-2 font-display">
+							{t("imageGenerator.title")}
+						</h2>
+						<p className="text-muted-foreground text-sm">
+							{t("imageGenerator.description")}
+						</p>
 					</div>
 
-					{/* 右カラム: プレビュー・結果 */}
-					<div className="flex flex-col gap-2 border-t lg:border-t-0 lg:border-l border-[#333] pt-6 mt-4 lg:pt-0 lg:mt-0 lg:pl-8">
-						{generatedUrl ? (
-							<>
-								{/* プレビュー */}
-								<div className="mb-4">
-									<div className="flex gap-1 mb-2">
-										<button
-											type="button"
-											className={`px-3 md:px-4 py-2 text-xs md:text-sm border-b-2 transition-colors ${
-												previewMode === "preview"
-													? "text-white border-blue-500"
-													: "text-gray-400 border-transparent hover:text-gray-200"
-											}`}
-											onClick={() => setPreviewMode("preview")}
-										>
-											{t("imageGenerator.previewTab")}
-										</button>
-										<button
-											type="button"
-											className={`px-3 md:px-4 py-2 text-xs md:text-sm border-b-2 transition-colors ${
-												previewMode === "actual"
-													? "text-white border-blue-500"
-													: "text-gray-400 border-transparent hover:text-gray-200"
-											}`}
-											onClick={() => setPreviewMode("actual")}
-										>
-											{t("imageGenerator.actualImageTab")}
-										</button>
-									</div>
-									<div className="bg-[#2a2a2a] rounded-md p-2 md:p-4 flex justify-center items-center min-h-[150px] md:min-h-[200px] lg:min-h-[280px] overflow-auto">
-										{previewMode === "preview" ? (
-											boardData && (
-												<BoardPreview
-													boardData={boardData}
-													showTitle={showTitle}
-												/>
-											)
-										) : imageLoadError ? (
-											<div className="flex flex-col items-center justify-center p-8 text-gray-400">
-												<span className="text-4xl mb-3">⚠️</span>
-												<p className="text-sm text-center mb-4">
-													{t("imageGenerator.imageLoadError")}
-												</p>
-												<button
-													type="button"
-													className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm transition-colors"
-													onClick={() => setImageLoadError(false)}
-												>
-													{t("imageGenerator.retry")}
-												</button>
-											</div>
-										) : (
-											<img
-												src={generatedUrl}
-												alt={strategyBoardAlt}
-												className="max-w-full max-h-[400px] rounded"
-												onError={() => setImageLoadError(true)}
-												onLoad={() => setImageLoadError(false)}
-											/>
-										)}
-									</div>
-								</div>
-
-								{/* 生成されたURL */}
-								<div className="mb-4">
-									<label
-										htmlFor={generatedUrlId}
-										className="block text-gray-300 text-sm mb-2"
-									>
-										{t("imageGenerator.generatedUrl")}
-									</label>
-									<div className="flex flex-col md:flex-row gap-2">
-										<input
-											id={generatedUrlId}
-											type="text"
-											className="flex-1 p-3 bg-[#2a2a2a] border border-[#444] rounded-md text-white text-xs font-mono"
-											value={generatedUrl}
-											readOnly
-										/>
-										<button
-											type="button"
-											className="bg-[#444] hover:bg-[#555] text-white px-4 py-3 rounded-md text-sm whitespace-nowrap transition-colors"
-											onClick={copyToClipboard}
-										>
-											{copied ? `✓ ${t("common.copied")}` : t("common.copy")}
-										</button>
-									</div>
-								</div>
-
-								{/* HTMLコード */}
-								<div className="mb-4">
-									<span className="block text-gray-300 text-sm mb-2">
-										{t("imageGenerator.htmlCode")}
-									</span>
-									<code className="block p-3 bg-[#2a2a2a] border border-[#444] rounded-md text-emerald-400 text-xs font-mono overflow-x-auto break-all">
-										{`<img src="${generatedUrl}" alt="${strategyBoardAlt}" />`}
-									</code>
-								</div>
-
-								{/* Markdownコード */}
-								<div className="mb-4">
-									<span className="block text-gray-300 text-sm mb-2">
-										{t("imageGenerator.markdownCode")}
-									</span>
-									<code className="block p-3 bg-[#2a2a2a] border border-[#444] rounded-md text-emerald-400 text-xs font-mono overflow-x-auto break-all">
-										{`![${strategyBoardAlt}](${generatedUrl})`}
-									</code>
-								</div>
-							</>
-						) : (
-							<div className="flex flex-col items-center justify-center bg-[#2a2a2a] rounded-md p-8 md:p-12 min-h-[200px] lg:min-h-[300px] text-gray-500">
-								<img
-									src="/favicon.svg"
-									alt="STGY Tools"
-									className="w-16 h-16 mb-4 opacity-30"
+					{/* 2カラムレイアウト */}
+					<div className="flex flex-col lg:grid lg:grid-cols-[minmax(300px,1fr)_minmax(400px,1.5fr)] lg:gap-8">
+						{/* 左カラム: 入力フォーム */}
+						<div className="flex flex-col gap-1">
+							{/* stgyコード入力 */}
+							<div className="mb-4">
+								<label
+									htmlFor={stgyCodeId}
+									className="block text-muted-foreground text-sm mb-2"
+								>
+									{t("imageGenerator.stgyCode")}
+								</label>
+								<textarea
+									id={stgyCodeId}
+									className="w-full p-3 bg-secondary/30 border border-border rounded-lg text-foreground text-sm font-mono resize-y min-h-[100px] lg:min-h-[140px] focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all placeholder:text-muted-foreground/50"
+									value={code}
+									onChange={(e) => setCode(e.target.value)}
+									placeholder={t("imageGenerator.stgyCodePlaceholder")}
+									rows={4}
 								/>
-								<p className="text-sm text-center">
-									{t("imageGenerator.enterCodeToPreview")}
-								</p>
 							</div>
-						)}
+
+							{/* 出力フォーマット */}
+							<div className="mb-4">
+								<span
+									id={formatGroupId}
+									className="block text-muted-foreground text-sm mb-2"
+								>
+									{t("imageGenerator.outputFormat")}
+								</span>
+								<div
+									className="flex flex-col md:inline-flex md:flex-row bg-secondary/30 rounded-lg p-1 gap-1"
+									role="radiogroup"
+									aria-labelledby={formatGroupId}
+								>
+									<label
+										className={`flex-1 md:flex-none inline-flex items-center justify-center py-2.5 md:py-2 px-5 rounded-md cursor-pointer text-sm font-medium transition-all select-none ${
+											format === "png"
+												? "bg-primary/20 text-primary border border-primary/40 shadow-sm shadow-primary/10"
+												: "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+										}`}
+									>
+										<input
+											type="radio"
+											name="format"
+											value="png"
+											checked={format === "png"}
+											onChange={() => setFormat("png")}
+											className="sr-only"
+										/>
+										PNG
+									</label>
+									<label
+										className={`flex-1 md:flex-none inline-flex items-center justify-center py-2.5 md:py-2 px-5 rounded-md cursor-pointer text-sm font-medium transition-all select-none ${
+											format === "svg"
+												? "bg-primary/20 text-primary border border-primary/40 shadow-sm shadow-primary/10"
+												: "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+										}`}
+									>
+										<input
+											type="radio"
+											name="format"
+											value="svg"
+											checked={format === "svg"}
+											onChange={() => setFormat("svg")}
+											className="sr-only"
+										/>
+										SVG
+									</label>
+								</div>
+							</div>
+
+							{/* 出力サイズ（PNGのみ） */}
+							{format === "png" && (
+								<div className="mb-4">
+									<span
+										id={sizeGroupId}
+										className="block text-muted-foreground text-sm mb-2"
+									>
+										{t("imageGenerator.outputSize")}
+									</span>
+									<div
+										className="flex flex-col md:inline-flex md:flex-row bg-secondary/30 rounded-lg p-1 gap-1"
+										role="radiogroup"
+										aria-labelledby={sizeGroupId}
+									>
+										{SCALE_OPTIONS.map((option) => (
+											<label
+												key={option.value}
+												className={`flex-1 md:flex-none inline-flex items-center justify-center py-2.5 md:py-2 px-4 rounded-md cursor-pointer text-sm font-medium transition-all select-none whitespace-nowrap ${
+													scale === option.value
+														? "bg-primary/20 text-primary border border-primary/40 shadow-sm shadow-primary/10"
+														: "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+												}`}
+											>
+												<input
+													type="radio"
+													name="scale"
+													value={option.value}
+													checked={scale === option.value}
+													onChange={() => setScale(option.value)}
+													className="sr-only"
+												/>
+												{option.label}
+											</label>
+										))}
+									</div>
+								</div>
+							)}
+
+							{/* ボード名表示チェックボックス */}
+							<div className="mb-4">
+								<label className="flex items-center gap-2.5 text-muted-foreground text-sm cursor-pointer hover:text-foreground transition-colors">
+									<input
+										type="checkbox"
+										checked={showTitle}
+										onChange={(e) => setShowTitle(e.target.checked)}
+										className="w-4 h-4 rounded border-border accent-primary"
+									/>
+									{t("imageGenerator.showBoardName")}
+								</label>
+							</div>
+
+							{/* エラー表示 */}
+							{error && (
+								<div className="mt-2 p-3 bg-destructive/10 border border-destructive/40 rounded-lg flex items-center gap-2">
+									<span className="text-base">⚠️</span>
+									<span className="text-destructive text-sm">{error}</span>
+								</div>
+							)}
+						</div>
+
+						{/* 右カラム: プレビュー・結果 */}
+						<div className="flex flex-col gap-2 border-t lg:border-t-0 lg:border-l border-border pt-6 mt-4 lg:pt-0 lg:mt-0 lg:pl-8">
+							{generatedUrl ? (
+								<>
+									{/* プレビュー */}
+									<div className="mb-4">
+										<div className="flex gap-1 mb-3 border-b border-border">
+											<button
+												type="button"
+												className={`px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium transition-colors relative ${
+													previewMode === "preview"
+														? "text-primary"
+														: "text-muted-foreground hover:text-foreground"
+												}`}
+												onClick={() => setPreviewMode("preview")}
+											>
+												{t("imageGenerator.previewTab")}
+												{previewMode === "preview" && (
+													<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+												)}
+											</button>
+											<button
+												type="button"
+												className={`px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium transition-colors relative ${
+													previewMode === "actual"
+														? "text-primary"
+														: "text-muted-foreground hover:text-foreground"
+												}`}
+												onClick={() => setPreviewMode("actual")}
+											>
+												{t("imageGenerator.actualImageTab")}
+												{previewMode === "actual" && (
+													<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+												)}
+											</button>
+										</div>
+										<div className="bg-secondary/30 rounded-lg p-2 md:p-4 flex justify-center items-center min-h-[150px] md:min-h-[200px] lg:min-h-[280px] overflow-auto border border-border/50">
+											{previewMode === "preview" ? (
+												boardData && (
+													<BoardPreview
+														boardData={boardData}
+														showTitle={showTitle}
+													/>
+												)
+											) : imageLoadError ? (
+												<div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
+													<span className="text-4xl mb-3">⚠️</span>
+													<p className="text-sm text-center mb-4">
+														{t("imageGenerator.imageLoadError")}
+													</p>
+													<button
+														type="button"
+														className="bg-primary/20 hover:bg-primary/30 text-primary border border-primary/40 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+														onClick={() => setImageLoadError(false)}
+													>
+														{t("imageGenerator.retry")}
+													</button>
+												</div>
+											) : (
+												<img
+													src={generatedUrl}
+													alt={strategyBoardAlt}
+													className="max-w-full max-h-[400px] rounded"
+													onError={() => setImageLoadError(true)}
+													onLoad={() => setImageLoadError(false)}
+												/>
+											)}
+										</div>
+									</div>
+
+									{/* 生成されたURL */}
+									<div className="mb-4">
+										<label
+											htmlFor={generatedUrlId}
+											className="block text-muted-foreground text-sm mb-2"
+										>
+											{t("imageGenerator.generatedUrl")}
+										</label>
+										<div className="flex flex-col md:flex-row gap-2">
+											<input
+												id={generatedUrlId}
+												type="text"
+												className="flex-1 p-3 bg-secondary/30 border border-border rounded-lg text-foreground text-xs font-mono focus:outline-none"
+												value={generatedUrl}
+												readOnly
+											/>
+											<button
+												type="button"
+												className={`px-4 py-3 rounded-lg text-sm whitespace-nowrap transition-all font-medium ${
+													copied
+														? "bg-green-500/20 text-green-400 border border-green-500/40"
+														: "bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30"
+												}`}
+												onClick={copyToClipboard}
+											>
+												{copied ? `✓ ${t("common.copied")}` : t("common.copy")}
+											</button>
+										</div>
+									</div>
+
+									{/* HTMLコード */}
+									<div className="mb-4">
+										<span className="block text-muted-foreground text-sm mb-2">
+											{t("imageGenerator.htmlCode")}
+										</span>
+										<code className="block p-3 bg-secondary/30 border border-border rounded-lg text-accent text-xs font-mono overflow-x-auto break-all">
+											{`<img src="${generatedUrl}" alt="${strategyBoardAlt}" />`}
+										</code>
+									</div>
+
+									{/* Markdownコード */}
+									<div className="mb-4">
+										<span className="block text-muted-foreground text-sm mb-2">
+											{t("imageGenerator.markdownCode")}
+										</span>
+										<code className="block p-3 bg-secondary/30 border border-border rounded-lg text-accent text-xs font-mono overflow-x-auto break-all">
+											{`![${strategyBoardAlt}](${generatedUrl})`}
+										</code>
+									</div>
+								</>
+							) : (
+								<div className="flex flex-col items-center justify-center bg-secondary/20 border border-border/50 rounded-lg p-8 md:p-12 min-h-[200px] lg:min-h-[300px] text-muted-foreground">
+									<img
+										src="/favicon.svg"
+										alt="STGY Tools"
+										className="w-16 h-16 mb-4 opacity-30"
+									/>
+									<p className="text-sm text-center">
+										{t("imageGenerator.enterCodeToPreview")}
+									</p>
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>

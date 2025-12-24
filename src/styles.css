@@ -10,72 +10,76 @@
 
 :root {
   /* === shadcn/ui Dark Theme (Default) === */
+  /* Color palette with subtle blue tint for depth - avoiding generic AI aesthetic */
   --radius: 0.5rem;
-  --background: oklch(0.12 0.01 250);
-  --foreground: oklch(0.93 0.01 250);
-  --card: oklch(0.15 0.01 250);
-  --card-foreground: oklch(0.93 0.01 250);
-  --popover: oklch(0.13 0.015 250);
-  --popover-foreground: oklch(0.93 0.01 250);
-  --primary: oklch(0.75 0.18 55);
-  --primary-foreground: oklch(0.15 0.01 250);
-  --secondary: oklch(0.22 0.015 250);
-  --secondary-foreground: oklch(0.93 0.01 250);
-  --muted: oklch(0.22 0.015 250);
-  --muted-foreground: oklch(0.60 0.01 250);
-  --accent: oklch(0.75 0.15 195);
-  --accent-foreground: oklch(0.15 0.01 250);
-  --destructive: oklch(0.65 0.2 25);
-  --border: oklch(0.25 0.015 250);
-  --input: oklch(0.20 0.015 250);
-  --ring: oklch(0.75 0.15 195);
-  --chart-1: oklch(0.75 0.18 55);
-  --chart-2: oklch(0.75 0.15 195);
-  --chart-3: oklch(0.70 0.15 280);
-  --chart-4: oklch(0.70 0.18 140);
-  --chart-5: oklch(0.65 0.2 25);
-  --sidebar: oklch(0.13 0.01 250);
-  --sidebar-foreground: oklch(0.93 0.01 250);
-  --sidebar-primary: oklch(0.75 0.18 55);
-  --sidebar-primary-foreground: oklch(0.15 0.01 250);
-  --sidebar-accent: oklch(0.22 0.015 250);
-  --sidebar-accent-foreground: oklch(0.93 0.01 250);
-  --sidebar-border: oklch(0.25 0.015 250);
-  --sidebar-ring: oklch(0.75 0.15 195);
+  --background: oklch(0.11 0.012 235);
+  --foreground: oklch(0.93 0.008 235);
+  --card: oklch(0.14 0.010 235);
+  --card-foreground: oklch(0.93 0.008 235);
+  --popover: oklch(0.12 0.012 235);
+  --popover-foreground: oklch(0.93 0.008 235);
+  --primary: oklch(0.78 0.19 50);
+  --primary-foreground: oklch(0.13 0.01 235);
+  --secondary: oklch(0.20 0.012 235);
+  --secondary-foreground: oklch(0.93 0.008 235);
+  --muted: oklch(0.20 0.012 235);
+  --muted-foreground: oklch(0.62 0.008 235);
+  --accent: oklch(0.72 0.16 190);
+  --accent-foreground: oklch(0.13 0.01 235);
+  --destructive: oklch(0.62 0.22 25);
+  --border: oklch(0.24 0.012 235);
+  --input: oklch(0.18 0.012 235);
+  --ring: oklch(0.72 0.16 190);
+  --chart-1: oklch(0.78 0.19 50);
+  --chart-2: oklch(0.72 0.16 190);
+  --chart-3: oklch(0.68 0.16 280);
+  --chart-4: oklch(0.68 0.18 140);
+  --chart-5: oklch(0.62 0.22 25);
+  --sidebar: oklch(0.12 0.012 235);
+  --sidebar-foreground: oklch(0.93 0.008 235);
+  --sidebar-primary: oklch(0.78 0.19 50);
+  --sidebar-primary-foreground: oklch(0.13 0.01 235);
+  --sidebar-accent: oklch(0.20 0.012 235);
+  --sidebar-accent-foreground: oklch(0.93 0.008 235);
+  --sidebar-border: oklch(0.24 0.012 235);
+  --sidebar-ring: oklch(0.72 0.16 190);
 
   /* === Custom Theme Variables === */
-  --color-bg-deepest: oklch(0.10 0.01 250);
-  --color-bg-deep: oklch(0.12 0.01 250);
-  --color-bg-base: oklch(0.15 0.01 250);
-  --color-bg-elevated: oklch(0.18 0.01 250);
-  --color-bg-surface: oklch(0.22 0.015 250);
-  --color-bg-hover: oklch(0.26 0.015 250);
+  /* Subtle blue-tinted grays for depth without being generic */
+  --color-bg-deepest: oklch(0.08 0.012 235);
+  --color-bg-deep: oklch(0.11 0.012 235);
+  --color-bg-base: oklch(0.14 0.010 235);
+  --color-bg-elevated: oklch(0.17 0.010 235);
+  --color-bg-surface: oklch(0.20 0.012 235);
+  --color-bg-hover: oklch(0.24 0.012 235);
 
-  --color-border-subtle: oklch(0.20 0.01 250);
-  --color-border-default: oklch(0.25 0.015 250);
-  --color-border-strong: oklch(0.32 0.015 250);
+  --color-border-subtle: oklch(0.18 0.010 235);
+  --color-border-default: oklch(0.24 0.012 235);
+  --color-border-strong: oklch(0.30 0.012 235);
 
-  --color-text-primary: oklch(0.93 0.01 250);
-  --color-text-secondary: oklch(0.72 0.01 250);
-  --color-text-muted: oklch(0.50 0.01 250);
-  --color-text-disabled: oklch(0.35 0.01 250);
+  --color-text-primary: oklch(0.93 0.008 235);
+  --color-text-secondary: oklch(0.72 0.008 235);
+  --color-text-muted: oklch(0.52 0.008 235);
+  --color-text-disabled: oklch(0.36 0.008 235);
 
-  --color-accent-primary: oklch(0.75 0.18 55);
-  --color-accent-primary-hover: oklch(0.80 0.18 55);
-  --color-accent-primary-muted: oklch(0.75 0.18 55 / 0.15);
+  /* Primary accent: warm amber/gold for FF14 aesthetic */
+  --color-accent-primary: oklch(0.78 0.19 50);
+  --color-accent-primary-hover: oklch(0.82 0.19 50);
+  --color-accent-primary-muted: oklch(0.78 0.19 50 / 0.18);
 
-  --color-accent-secondary: oklch(0.75 0.15 195);
-  --color-accent-secondary-hover: oklch(0.80 0.15 195);
-  --color-accent-secondary-muted: oklch(0.75 0.15 195 / 0.15);
+  /* Secondary accent: cool cyan for contrast */
+  --color-accent-secondary: oklch(0.72 0.16 190);
+  --color-accent-secondary-hover: oklch(0.76 0.16 190);
+  --color-accent-secondary-muted: oklch(0.72 0.16 190 / 0.18);
 
-  --color-success: oklch(0.70 0.18 145);
-  --color-warning: oklch(0.75 0.18 55);
-  --color-error: oklch(0.65 0.2 25);
+  --color-success: oklch(0.68 0.18 145);
+  --color-warning: oklch(0.78 0.19 50);
+  --color-error: oklch(0.62 0.22 25);
 
-  --color-selection-bg: oklch(0.75 0.15 195 / 0.2);
-  --color-selection-border: oklch(0.75 0.15 195);
-  --color-group-bg: oklch(0.65 0.2 300 / 0.15);
-  --color-group-border: oklch(0.65 0.2 300);
+  --color-selection-bg: oklch(0.72 0.16 190 / 0.22);
+  --color-selection-border: oklch(0.72 0.16 190);
+  --color-group-bg: oklch(0.62 0.2 300 / 0.18);
+  --color-group-border: oklch(0.62 0.2 300);
 
   --font-display: 'Rajdhani', 'Noto Sans JP', sans-serif;
   --font-body: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;

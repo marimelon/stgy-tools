@@ -105,8 +105,8 @@ export const Route = createRootRoute({
 
 // Initial background color to prevent FOUC
 const initialStyle = {
-	backgroundColor: "oklch(0.12 0.01 250)",
-	color: "oklch(0.93 0.01 250)",
+	backgroundColor: "oklch(0.11 0.012 235)",
+	color: "oklch(0.93 0.008 235)",
 };
 
 function RootDocument() {

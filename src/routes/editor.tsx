@@ -2,7 +2,7 @@
  * エディターページ
  */
 
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -18,6 +18,7 @@ import {
 	LoadErrorScreen,
 } from "@/components/editor/BoardManager";
 import { ResizableLayout } from "@/components/panel";
+import { CompactAppHeader } from "@/components/ui/AppHeader";
 import { useBoards } from "@/lib/boards";
 import {
 	createEmptyBoard,
@@ -426,48 +427,37 @@ function EditorContent({
 		};
 	}, [calculateScale]);
 
+	// ロゴアイコン
+	const logoIcon = (
+		<div className="w-8 h-8 rounded-md flex items-center justify-center bg-muted border border-border">
+			<svg
+				width="18"
+				height="18"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				strokeWidth="2"
+				className="text-foreground"
+				role="img"
+				aria-label="STGY Tools logo"
+			>
+				<rect x="3" y="3" width="18" height="18" rx="2" />
+				<circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+				<circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" />
+				<path d="M8.5 15.5h7M15.5 8.5v7" strokeLinecap="round" />
+			</svg>
+		</div>
+	);
+
 	return (
 		<div className="h-screen flex flex-col bg-background">
-			{/* ヘッダー */}
-			<header className="app-header flex items-center justify-between px-4 py-2.5">
-				<div className="flex items-center gap-3">
-					{/* ロゴアイコン */}
-					<div className="w-8 h-8 rounded-md flex items-center justify-center bg-muted border border-border">
-						<svg
-							width="18"
-							height="18"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="2"
-							className="text-foreground"
-							role="img"
-							aria-label="STGY Tools logo"
-						>
-							<rect x="3" y="3" width="18" height="18" rx="2" />
-							<circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
-							<circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" />
-							<path d="M8.5 15.5h7M15.5 8.5v7" strokeLinecap="round" />
-						</svg>
-					</div>
-					<h1 className="app-logo">STGY Tools Editor</h1>
-				</div>
-				<nav className="flex items-center gap-4">
-					<Link
-						to="/"
-						className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-					>
-						Viewer
-					</Link>
-					<Link
-						to="/image/generate"
-						target="_blank"
-						className="text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-					>
-						Image Generator
-					</Link>
-				</nav>
-			</header>
+			{/* 共通ヘッダー */}
+			<CompactAppHeader
+				currentPage="editor"
+				title="STGY Tools Editor"
+				logo={logoIcon}
+				showLanguageSelector
+			/>
 
 			{/* ツールバー */}
 			<EditorToolbar

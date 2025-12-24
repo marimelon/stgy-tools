@@ -22,7 +22,8 @@
 	},
 	"nav": {
 		"viewer": "Viewer",
-		"editor": "Editor"
+		"editor": "Editor",
+		"imageGenerator": "Image"
 	},
 	"imageGenerator": {
 		"pageTitle": "STGY Tools Image Generator",
