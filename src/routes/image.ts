@@ -9,8 +9,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { renderSvgToPng } from "@/lib/server/resvgWrapper";
-import { renderBoardToSVG } from "@/lib/server/svgRenderer";
+import { renderImage } from "@/lib/server/imageRenderer";
 import { decodeStgy } from "@/lib/stgy/decoder";
 import { parseBoardData } from "@/lib/stgy/parser";
 
@@ -123,40 +122,25 @@ export const Route = createFileRoute("/image")({
 					// 2. バイナリをパース
 					const boardData = parseBoardData(binary);
 
-					// 3. SVG を生成
-					const svg = await renderBoardToSVG(boardData, {
+					// 3. 画像をレンダリング（環境に応じて自動的にローカル/外部を選択）
+					const result = await renderImage({
+						boardData,
+						format: format === "svg" ? "svg" : "png",
+						width: outputWidth,
 						showTitle,
+						stgyCode: code,
 					});
 
-					// 4. フォーマットに応じて返す
+					// 4. Content-Dispositionヘッダーを生成
 					const contentDisposition = createContentDisposition(
 						boardData.name,
 						format === "svg" ? "svg" : "png",
 					);
 
-					if (format === "svg") {
-						return new Response(svg, {
-							headers: {
-								"Content-Type": "image/svg+xml",
-								"Content-Disposition": contentDisposition,
-								"Cache-Control": "public, max-age=86400",
-							},
-						});
-					}
-
-					// PNG変換（環境に応じて適切な resvg を使用）
-					// フォントはresvgWrapper内でファイルパスから直接読み込み（最適化）
-					const pngBuffer = await renderSvgToPng(svg, {
-						background: "#1a1a1a",
-						fitTo: {
-							mode: "width",
-							value: outputWidth,
-						},
-					});
-
-					return new Response(pngBuffer, {
+					// 5. レスポンスを返す
+					return new Response(result.data, {
 						headers: {
-							"Content-Type": "image/png",
+							"Content-Type": result.contentType,
 							"Content-Disposition": contentDisposition,
 							"Cache-Control": "public, max-age=86400",
 						},

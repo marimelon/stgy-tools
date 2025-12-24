@@ -7,6 +7,12 @@ import type { AssetsBinding } from "./imageLoader";
 
 export interface CloudflareEnv {
 	ASSETS?: AssetsBinding;
+	/**
+	 * 外部画像レンダラーのURL
+	 * 設定されている場合、PNG生成を外部サーバーに委譲する
+	 * 例: "https://render.example.com/image"
+	 */
+	EXTERNAL_IMAGE_RENDERER_URL?: string;
 	[key: string]: unknown;
 }
 

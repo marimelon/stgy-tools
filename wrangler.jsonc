@@ -7,6 +7,9 @@
   "assets": {
     "binding": "ASSETS"
   },
+  "vars": {
+    "EXTERNAL_IMAGE_RENDERER_URL": "https://stgy.m4e.dev/image"
+  },
   "observability": {
     "logs": {
       "enabled": true,
