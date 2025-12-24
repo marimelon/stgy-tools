@@ -321,9 +321,19 @@ function ImageGeneratePage() {
 			clearTimeout(debounceTimerRef.current);
 		}
 
-		// デバウンス後にURL生成
+		// デバウンス後にURL生成とブラウザURL更新
 		debounceTimerRef.current = setTimeout(() => {
 			generateUrl(code);
+
+			// ブラウザのURLを更新（履歴に残さない）
+			const trimmedCode = code.trim();
+			const url = new URL(window.location.href);
+			if (trimmedCode) {
+				url.searchParams.set("code", trimmedCode);
+			} else {
+				url.searchParams.delete("code");
+			}
+			window.history.replaceState(null, "", url.toString());
 		}, DEBOUNCE_DELAY);
 
 		return () => {
