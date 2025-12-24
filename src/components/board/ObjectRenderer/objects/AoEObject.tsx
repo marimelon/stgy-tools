@@ -209,12 +209,22 @@ export function AoEObject({
 			const donutRange = param2 ?? 50; // 0-240: 0=穴なし, 240=最大
 			const maskId = `donut-mask-${id}`;
 
+			// Line param3=8 と同じ太さを最小として残す
+			// donutRange=240のとき、残る太さが Line strokeWidth=8 と同じになるように
+			const LINE_THICKNESS = 8;
+
 			// オリジナル画像モードの場合は画像にmaskを適用
 			const iconSize = OBJECT_BBOX_SIZES[objectId];
 			if (isOriginalIconMode && iconSize) {
 				// 画像サイズ基準で内径を計算
 				const imageOuterRadius = iconSize.width / 2;
-				const imageInnerRadius = imageOuterRadius * (donutRange / 240);
+				// 残る太さを外径の比率で計算
+				// Line strokeWidth=8, DonutAoE size=50 のとき同じ太さになるように
+				// 画像内の円が外枠より小さいことを考慮して比率で計算
+				const MIN_THICKNESS_RATIO = 1 / 10; // 調整値
+				const imageMinThickness = imageOuterRadius * MIN_THICKNESS_RATIO;
+				const imageMaxInnerRadius = imageOuterRadius - imageMinThickness;
+				const imageInnerRadius = imageMaxInnerRadius * (donutRange / 240);
 
 				// 360度以上の場合は完全な円ドーナツ
 				if (coneAngle >= 360) {
@@ -311,7 +321,9 @@ export function AoEObject({
 
 			// SVGモードの場合
 			const outerRadius = baseSize / 2;
-			const innerRadius = outerRadius * (donutRange / 240);
+			// size=100のとき、残る太さが8pxになるように
+			const maxInnerRadius = outerRadius - LINE_THICKNESS;
+			const innerRadius = maxInnerRadius * (donutRange / 240);
 
 			// 360度以上の場合は既存のmask方式（完全な円ドーナツ）
 			if (coneAngle >= 360) {
