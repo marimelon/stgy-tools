@@ -3,8 +3,8 @@
  * 全ページで統一されたナビゲーションを提供
  */
 
-import { Link } from "@tanstack/react-router";
-import { useCallback } from "react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
@@ -32,20 +32,32 @@ interface AppHeaderProps {
 }
 
 /**
+ * stgyパラメータを引き継ぐべきページかどうか
+ * viewer (/) と image (/image/generate) 間では stgy を引き継ぐ
+ */
+const STGY_PRESERVE_PATHS = ["/", "/image/generate"];
+
+/**
  * ナビゲーションリンク
  */
 function NavLink({
 	to,
 	active,
+	stgy,
 	children,
 }: {
 	to: string;
 	active: boolean;
+	stgy?: string;
 	children: React.ReactNode;
 }) {
+	// stgyを引き継ぐべきパスの場合のみsearchパラメータを付与
+	const shouldPreserveStgy = stgy && STGY_PRESERVE_PATHS.includes(to);
+
 	return (
 		<Link
 			to={to}
+			search={shouldPreserveStgy ? { stgy } : undefined}
 			className={cn(
 				"text-sm font-medium transition-colors",
 				active
@@ -88,6 +100,18 @@ function LanguageSelector() {
 }
 
 /**
+ * 現在のURLからstgyパラメータを取得するフック
+ */
+function useCurrentStgy(): string | undefined {
+	const location = useLocation();
+
+	return useMemo(() => {
+		const searchParams = new URLSearchParams(location.search);
+		return searchParams.get("stgy") ?? undefined;
+	}, [location.search]);
+}
+
+/**
  * 共通ヘッダー
  */
 export function AppHeader({
@@ -99,6 +123,7 @@ export function AppHeader({
 	className,
 }: AppHeaderProps) {
 	const { t } = useTranslation();
+	const stgy = useCurrentStgy();
 
 	return (
 		<header className={cn("app-header p-4", className)}>
@@ -113,13 +138,17 @@ export function AppHeader({
 
 				{/* ナビゲーション */}
 				<nav className="flex items-center gap-3 md:gap-4">
-					<NavLink to="/" active={currentPage === "viewer"}>
+					<NavLink to="/" active={currentPage === "viewer"} stgy={stgy}>
 						{t("nav.viewer")}
 					</NavLink>
-					<NavLink to="/editor" active={currentPage === "editor"}>
+					<NavLink to="/editor" active={currentPage === "editor"} stgy={stgy}>
 						{t("nav.editor")}
 					</NavLink>
-					<NavLink to="/image/generate" active={currentPage === "image"}>
+					<NavLink
+						to="/image/generate"
+						active={currentPage === "image"}
+						stgy={stgy}
+					>
 						{t("nav.imageGenerator")}
 					</NavLink>
 					{showLanguageSelector && <LanguageSelector />}
@@ -140,6 +169,7 @@ export function CompactAppHeader({
 	className,
 }: AppHeaderProps) {
 	const { t } = useTranslation();
+	const stgy = useCurrentStgy();
 
 	return (
 		<header
@@ -156,13 +186,17 @@ export function CompactAppHeader({
 
 			{/* ナビゲーション */}
 			<nav className="flex items-center gap-3 md:gap-4">
-				<NavLink to="/" active={currentPage === "viewer"}>
+				<NavLink to="/" active={currentPage === "viewer"} stgy={stgy}>
 					{t("nav.viewer")}
 				</NavLink>
-				<NavLink to="/editor" active={currentPage === "editor"}>
+				<NavLink to="/editor" active={currentPage === "editor"} stgy={stgy}>
 					{t("nav.editor")}
 				</NavLink>
-				<NavLink to="/image/generate" active={currentPage === "image"}>
+				<NavLink
+					to="/image/generate"
+					active={currentPage === "image"}
+					stgy={stgy}
+				>
 					{t("nav.imageGenerator")}
 				</NavLink>
 				{showLanguageSelector && (
