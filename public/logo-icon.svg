@@ -1,0 +1,71 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="iconBoardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e2536"/>
+      <stop offset="50%" stop-color="#151a24"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    
+    <linearGradient id="iconCyanGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#6dd5dc"/>
+      <stop offset="100%" stop-color="#48b8c0"/>
+    </linearGradient>
+    
+    <linearGradient id="iconAmberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0c050"/>
+      <stop offset="100%" stop-color="#c4963d"/>
+    </linearGradient>
+    
+    <filter id="cyanGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#56c5cc" flood-opacity="0.35"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Main board -->
+  <rect x="8" y="8" width="112" height="112" rx="16" fill="url(#iconBoardGrad)" stroke="#2d3548" stroke-width="2"/>
+  
+  <!-- Inner subtle border -->
+  <rect x="14" y="14" width="100" height="100" rx="12" fill="none" stroke="#252d3d" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Grid lines - main -->
+  <g stroke="#2a3345" stroke-width="1.5">
+    <line x1="48" y1="16" x2="48" y2="112"/>
+    <line x1="80" y1="16" x2="80" y2="112"/>
+    <line x1="16" y1="48" x2="112" y2="48"/>
+    <line x1="16" y1="80" x2="112" y2="80"/>
+  </g>
+  
+  <!-- Center target marker - main ring -->
+  <circle cx="64" cy="64" r="20" fill="none" stroke="url(#iconCyanGrad)" stroke-width="4" filter="url(#cyanGlow)"/>
+  
+  <!-- Center dot -->
+  <circle cx="64" cy="64" r="5" fill="url(#iconCyanGrad)"/>
+  
+  <!-- Crosshair targeting lines -->
+  <g stroke="#56c5cc" stroke-width="3" stroke-linecap="round" opacity="0.85">
+    <line x1="64" y1="32" x2="64" y2="48"/>
+    <line x1="64" y1="80" x2="64" y2="96"/>
+    <line x1="32" y1="64" x2="48" y2="64"/>
+    <line x1="80" y1="64" x2="96" y2="64"/>
+  </g>
+  
+  <!-- Corner accents - amber squares -->
+  <g fill="url(#iconAmberGrad)">
+    <rect x="20" y="20" width="10" height="10" rx="2"/>
+    <rect x="98" y="98" width="10" height="10" rx="2"/>
+  </g>
+  
+  <!-- Grid intersection dots -->
+  <g fill="#3a4560">
+    <circle cx="48" cy="48" r="3"/>
+    <circle cx="80" cy="48" r="3"/>
+    <circle cx="48" cy="80" r="3"/>
+    <circle cx="80" cy="80" r="3"/>
+  </g>
+</svg>
