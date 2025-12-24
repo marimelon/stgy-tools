@@ -101,38 +101,49 @@ function BoardPreview({
 	const contentOffsetY = showTitle ? TITLE_BAR_HEIGHT : 0;
 
 	return (
-		<svg
-			width={CANVAS_WIDTH}
-			height={totalHeight}
-			viewBox={`0 0 ${CANVAS_WIDTH} ${totalHeight}`}
-			className="bg-[#1a1a1a] max-w-full h-auto"
-			role="img"
-			aria-label={boardData.name || "Strategy Board"}
-		>
-			{/* 全体背景色 */}
-			<rect width={CANVAS_WIDTH} height={totalHeight} fill="#1a1a1a" />
-
-			{/* タイトルバー */}
-			{showTitle && <TitleBar title={boardData.name} width={CANVAS_WIDTH} />}
-
-			{/* コンテンツ領域 */}
-			<foreignObject
-				x={0}
-				y={contentOffsetY}
+		// 相対配置のコンテナで、透明オーバーレイを重ねる
+		<div className="relative inline-block">
+			<svg
 				width={CANVAS_WIDTH}
-				height={CANVAS_HEIGHT}
+				height={totalHeight}
+				viewBox={`0 0 ${CANVAS_WIDTH} ${totalHeight}`}
+				className="bg-[#1a1a1a] max-w-full h-auto block"
+				role="img"
+				aria-label={boardData.name || "Strategy Board"}
 			>
-				<div
-					// @ts-expect-error xmlns is valid for foreignObject content
-					xmlns="http://www.w3.org/1999/xhtml"
-				>
-					<BoardViewer boardData={boardData} />
-				</div>
-			</foreignObject>
+				{/* 全体背景色 */}
+				<rect width={CANVAS_WIDTH} height={totalHeight} fill="#1a1a1a" />
 
-			{/* 枠線 */}
-			{showTitle && <BorderFrame width={CANVAS_WIDTH} height={totalHeight} />}
-		</svg>
+				{/* タイトルバー */}
+				{showTitle && <TitleBar title={boardData.name} width={CANVAS_WIDTH} />}
+
+				{/* コンテンツ領域 */}
+				<foreignObject
+					x={0}
+					y={contentOffsetY}
+					width={CANVAS_WIDTH}
+					height={CANVAS_HEIGHT}
+				>
+					<div
+						// @ts-expect-error xmlns is valid for foreignObject content
+						xmlns="http://www.w3.org/1999/xhtml"
+					>
+						<BoardViewer boardData={boardData} />
+					</div>
+				</foreignObject>
+
+				{/* 枠線 */}
+				{showTitle && <BorderFrame width={CANVAS_WIDTH} height={totalHeight} />}
+			</svg>
+			{/* 透明オーバーレイ: 内部要素への右クリックを防ぐ */}
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: プレビュー内部要素への右クリック防止用オーバーレイ */}
+			<div
+				className="absolute inset-0"
+				onContextMenu={(e) => {
+					e.preventDefault();
+				}}
+			/>
+		</div>
 	);
 }
 
