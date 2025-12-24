@@ -92,18 +92,6 @@ export function BoardPropertyPanel({
 						</SelectContent>
 					</Select>
 				</PropertySection>
-
-				{/* ボードサイズ（参考情報） */}
-				<PropertySection title={t("boardPanel.size")}>
-					<div className="text-sm font-medium font-mono">
-						<span className="text-primary">{board.width}</span>
-						<span className="text-muted-foreground"> × </span>
-						<span className="text-primary">{board.height}</span>
-					</div>
-					<div className="text-xs mt-1.5 text-muted-foreground">
-						{t("boardPanel.sizeNote")}
-					</div>
-				</PropertySection>
 			</div>
 		</div>
 	);
