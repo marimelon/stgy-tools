@@ -128,7 +128,13 @@
 		"showGroup": "Show group",
 		"ungroup": "Ungroup",
 		"visibilityChanged": "Visibility changed",
-		"groupVisibilityChanged": "Group visibility changed"
+		"groupVisibilityChanged": "Group visibility changed",
+		"lockObject": "Lock",
+		"unlockObject": "Unlock",
+		"lockGroup": "Lock group",
+		"unlockGroup": "Unlock group",
+		"lockChanged": "Lock changed",
+		"groupLockChanged": "Group lock changed"
 	},
 	"historyPanel": {
 		"title": "History",

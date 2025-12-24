@@ -2,7 +2,7 @@
  * レイヤーオブジェクトアイテムコンポーネント
  */
 
-import { Eye, EyeOff, GripVertical } from "lucide-react";
+import { Eye, EyeOff, GripVertical, Lock, LockOpen } from "lucide-react";
 import type { DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { BoardObject } from "@/lib/stgy";
@@ -22,6 +22,7 @@ interface LayerObjectItemProps {
 	onDrop: (e: DragEvent<HTMLDivElement>) => void;
 	onSelect: (index: number, e: React.MouseEvent) => void;
 	onToggleVisibility: (index: number) => void;
+	onToggleLock: (index: number) => void;
 }
 
 /**
@@ -41,6 +42,7 @@ export function LayerObjectItem({
 	onDrop,
 	onSelect,
 	onToggleVisibility,
+	onToggleLock,
 }: LayerObjectItemProps) {
 	const { t } = useTranslation();
 	const name = t(`object.${object.objectId}`, {
@@ -97,6 +99,25 @@ export function LayerObjectItem({
 					}
 				>
 					{object.flags.visible ? <Eye size={14} /> : <EyeOff size={14} />}
+				</button>
+
+				{/* ロック/ロック解除トグル */}
+				<button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation();
+						onToggleLock(index);
+					}}
+					className={
+						object.flags.locked ? "text-foreground" : "text-muted-foreground"
+					}
+					title={
+						object.flags.locked
+							? t("layerPanel.unlockObject")
+							: t("layerPanel.lockObject")
+					}
+				>
+					{object.flags.locked ? <Lock size={14} /> : <LockOpen size={14} />}
 				</button>
 
 				{/* オブジェクト名 */}

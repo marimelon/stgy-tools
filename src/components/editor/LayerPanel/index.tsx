@@ -36,8 +36,14 @@ export function LayerPanel() {
 	const { board, selectedIndices, groups } = state;
 	const { objects } = board;
 
-	// レイヤーアイテムと可視性ヘルパー
-	const { layerItems, isGroupAllVisible, isGroupAllHidden } = useLayerItems({
+	// レイヤーアイテムと可視性・ロック状態ヘルパー
+	const {
+		layerItems,
+		isGroupAllVisible,
+		isGroupAllHidden,
+		isGroupAllLocked,
+		isGroupAllUnlocked,
+	} = useLayerItems({
 		objects,
 		getGroupForObject,
 	});
@@ -87,6 +93,36 @@ export function LayerPanel() {
 				updates: { flags: { visible: newVisible } },
 			});
 			commitHistory(t("layerPanel.groupVisibilityChanged"));
+		},
+		[objects, dispatch, commitHistory, t],
+	);
+
+	// オブジェクトのロック/ロック解除トグル
+	const handleToggleLock = useCallback(
+		(index: number) => {
+			const obj = objects[index];
+			updateObject(index, {
+				flags: { ...obj.flags, locked: !obj.flags.locked },
+			});
+			commitHistory(t("layerPanel.lockChanged"));
+		},
+		[objects, updateObject, commitHistory, t],
+	);
+
+	// グループのロック/ロック解除トグル
+	const handleToggleGroupLock = useCallback(
+		(group: ObjectGroup) => {
+			const allLocked = group.objectIndices.every(
+				(i) => objects[i]?.flags.locked,
+			);
+			const newLocked = !allLocked;
+
+			dispatch({
+				type: "UPDATE_OBJECTS_BATCH",
+				indices: group.objectIndices,
+				updates: { flags: { locked: newLocked } },
+			});
+			commitHistory(t("layerPanel.groupLockChanged"));
 		},
 		[objects, dispatch, commitHistory, t],
 	);
@@ -160,6 +196,8 @@ export function LayerPanel() {
 										isDragging={draggedGroupId === group.id}
 										isAllVisible={isGroupAllVisible(group)}
 										isAllHidden={isGroupAllHidden(group)}
+										isAllLocked={isGroupAllLocked(group)}
+										isAllUnlocked={isGroupAllUnlocked(group)}
 										dropTarget={dropTarget}
 										onDragStart={handleGroupDragStart}
 										onDragOver={handleDragOver}
@@ -168,6 +206,7 @@ export function LayerPanel() {
 										onSelect={handleSelectGroup}
 										onToggleCollapse={handleToggleCollapse}
 										onToggleVisibility={handleToggleGroupVisibility}
+										onToggleLock={handleToggleGroupLock}
 										onUngroup={handleUngroupClick}
 									/>
 								);
@@ -193,6 +232,7 @@ export function LayerPanel() {
 										onDrop={handleDrop}
 										onSelect={handleSelectObject}
 										onToggleVisibility={handleToggleVisibility}
+										onToggleLock={handleToggleLock}
 									/>
 								);
 							}

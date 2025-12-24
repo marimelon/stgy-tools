@@ -8,6 +8,8 @@ import {
 	Eye,
 	EyeOff,
 	GripVertical,
+	Lock,
+	LockOpen,
 	X,
 } from "lucide-react";
 import type { DragEvent } from "react";
@@ -21,6 +23,8 @@ interface LayerGroupHeaderProps {
 	isDragging: boolean;
 	isAllVisible: boolean;
 	isAllHidden: boolean;
+	isAllLocked: boolean;
+	isAllUnlocked: boolean;
 	dropTarget: DropTarget | null;
 	onDragStart: (e: DragEvent<HTMLDivElement>, groupId: string) => void;
 	onDragOver: (e: DragEvent<HTMLDivElement>, index: number) => void;
@@ -29,6 +33,7 @@ interface LayerGroupHeaderProps {
 	onSelect: (groupId: string, e: React.MouseEvent) => void;
 	onToggleCollapse: (groupId: string, e: React.MouseEvent) => void;
 	onToggleVisibility: (group: ObjectGroup) => void;
+	onToggleLock: (group: ObjectGroup) => void;
 	onUngroup: (groupId: string, e: React.MouseEvent) => void;
 }
 
@@ -41,6 +46,8 @@ export function LayerGroupHeader({
 	isDragging,
 	isAllVisible,
 	isAllHidden,
+	isAllLocked,
+	isAllUnlocked,
 	dropTarget,
 	onDragStart,
 	onDragOver,
@@ -49,6 +56,7 @@ export function LayerGroupHeader({
 	onSelect,
 	onToggleCollapse,
 	onToggleVisibility,
+	onToggleLock,
 	onUngroup,
 }: LayerGroupHeaderProps) {
 	const { t } = useTranslation();
@@ -115,6 +123,29 @@ export function LayerGroupHeader({
 					}
 				>
 					{isAllVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+				</button>
+
+				{/* グループロック/ロック解除トグル */}
+				<button
+					type="button"
+					onClick={(e) => {
+						e.stopPropagation();
+						onToggleLock(group);
+					}}
+					className={
+						isAllLocked
+							? "text-purple-400"
+							: isAllUnlocked
+								? "text-muted-foreground"
+								: "text-purple-400/50"
+					}
+					title={
+						isAllLocked
+							? t("layerPanel.unlockGroup")
+							: t("layerPanel.lockGroup")
+					}
+				>
+					{isAllLocked ? <Lock size={14} /> : <LockOpen size={14} />}
 				</button>
 
 				{/* グループ解除ボタン */}

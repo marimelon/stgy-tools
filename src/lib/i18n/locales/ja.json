@@ -128,7 +128,13 @@
 		"showGroup": "グループを表示",
 		"ungroup": "グループ解除",
 		"visibilityChanged": "表示状態変更",
-		"groupVisibilityChanged": "グループ表示状態変更"
+		"groupVisibilityChanged": "グループ表示状態変更",
+		"lockObject": "ロックする",
+		"unlockObject": "ロック解除する",
+		"lockGroup": "グループをロック",
+		"unlockGroup": "グループのロック解除",
+		"lockChanged": "ロック状態変更",
+		"groupLockChanged": "グループロック状態変更"
 	},
 	"historyPanel": {
 		"title": "履歴",

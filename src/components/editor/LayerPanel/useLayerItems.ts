@@ -22,6 +22,10 @@ export interface UseLayerItemsReturn {
 	isGroupAllVisible: (group: ObjectGroup) => boolean;
 	/** グループ内の全オブジェクトが非表示かどうか */
 	isGroupAllHidden: (group: ObjectGroup) => boolean;
+	/** グループ内の全オブジェクトがロック中かどうか */
+	isGroupAllLocked: (group: ObjectGroup) => boolean;
+	/** グループ内の全オブジェクトがロック解除かどうか */
+	isGroupAllUnlocked: (group: ObjectGroup) => boolean;
 }
 
 /**
@@ -99,9 +103,27 @@ export function useLayerItems({
 		[objects],
 	);
 
+	// グループ内のオブジェクトが全てロック中かどうかを取得
+	const isGroupAllLocked = useCallback(
+		(group: ObjectGroup) => {
+			return group.objectIndices.every((i) => objects[i]?.flags.locked);
+		},
+		[objects],
+	);
+
+	// グループ内のオブジェクトが全てロック解除かどうかを取得
+	const isGroupAllUnlocked = useCallback(
+		(group: ObjectGroup) => {
+			return group.objectIndices.every((i) => !objects[i]?.flags.locked);
+		},
+		[objects],
+	);
+
 	return {
 		layerItems,
 		isGroupAllVisible,
 		isGroupAllHidden,
+		isGroupAllLocked,
+		isGroupAllUnlocked,
 	};
 }
