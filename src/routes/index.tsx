@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AlertCircle } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { AlertCircle, Pencil } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board";
@@ -120,6 +120,7 @@ const DEBOUNCE_DELAY = 300;
 
 function App() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const { stgy: initialCode } = Route.useSearch();
 	// サンプルコードを使用しているかどうか（URL更新をスキップするため）
 	const [isUsingDefaultSample, setIsUsingDefaultSample] = useState(
@@ -136,6 +137,12 @@ function App() {
 	const stgyInputId = useId();
 	const showBboxId = useId();
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// Editorで編集ボタンのハンドラー
+	const handleEditInEditor = useCallback(() => {
+		if (!stgyInput.trim() || !boardData) return;
+		navigate({ to: "/editor", search: { stgy: stgyInput.trim() } });
+	}, [stgyInput, boardData, navigate]);
 
 	// 入力変更ハンドラー（サンプルコードフラグを更新）
 	const handleInputChange = useCallback(
@@ -237,9 +244,19 @@ function App() {
 					<div className="space-y-4">
 						{/* ボード情報 */}
 						<div className="p-4 bg-card border border-border rounded-lg">
-							<h2 className="text-lg font-semibold mb-3 font-display">
-								{t("viewer.boardInfo.title")}
-							</h2>
+							<div className="flex items-center justify-between mb-3">
+								<h2 className="text-lg font-semibold font-display">
+									{t("viewer.boardInfo.title")}
+								</h2>
+								<button
+									type="button"
+									className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/30 hover:border-accent/50 rounded-lg transition-all"
+									onClick={handleEditInEditor}
+								>
+									<Pencil className="w-3.5 h-3.5" />
+									{t("imageGenerator.editInEditor")}
+								</button>
+							</div>
 							<dl className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
 								<div>
 									<dt className="text-muted-foreground">
