@@ -6,6 +6,7 @@ import {
 	CUSTOM_ICON_IDS,
 	DEFAULT_OBJECT_COLOR,
 	DEFAULT_PARAMS,
+	getIconPath,
 } from "./constants";
 
 /**
@@ -99,7 +100,7 @@ export function CustomIconImage({
 	return (
 		<g transform={transform}>
 			<image
-				href={`/icons/${objectId}.png`}
+				href={getIconPath(objectId)}
 				x={-iconSize.width / 2}
 				y={-iconSize.height / 2}
 				width={iconSize.width}

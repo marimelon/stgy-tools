@@ -35,7 +35,7 @@ import {
 	StackLineIcon,
 } from "../../icons";
 import { getConeBoundingBox, getDonutConeBoundingBox } from "../bounding-box";
-import { COLORS, DEFAULT_PARAMS, SIZES } from "../constants";
+import { COLORS, DEFAULT_PARAMS, getIconPath, SIZES } from "../constants";
 import {
 	colorToRgba,
 	renderOriginalIconIfEnabled,
@@ -94,7 +94,7 @@ function ConeShape({
 			</defs>
 			{/* 円形グラデーション画像を扇形にクリップ */}
 			<image
-				href="/icons/10.png"
+				href={getIconPath(10)}
 				x={cx - radius}
 				y={cy - radius}
 				width={radius * 2}
@@ -243,7 +243,7 @@ export function AoEObject({
 								</mask>
 							</defs>
 							<image
-								href={`/icons/${objectId}.png`}
+								href={getIconPath(objectId)}
 								x={-iconSize.width / 2}
 								y={-iconSize.height / 2}
 								width={iconSize.width}
@@ -307,7 +307,7 @@ export function AoEObject({
 							</mask>
 						</defs>
 						<image
-							href={`/icons/${objectId}.png`}
+							href={getIconPath(objectId)}
 							x={offsetX - imageOuterRadius}
 							y={offsetY - imageOuterRadius}
 							width={imageOuterRadius * 2}

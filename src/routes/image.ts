@@ -3,8 +3,8 @@
  *
  * GET /image?code=[stgy:a...]
  * GET /image?code=[stgy:a...]&format=svg  (SVGで返す場合)
- * GET /image?code=[stgy:a...]&width=1024  (幅を指定、デフォルト512、最大1024)
- * GET /image?code=[stgy:a...]&scale=2     (スケール指定、1-2倍)
+ * GET /image?code=[stgy:a...]&width=2048  (幅を指定、デフォルト512、最大2048)
+ * GET /image?code=[stgy:a...]&scale=4     (スケール指定、1-4倍)
  * GET /image?code=[stgy:a...]&title=1     (ボード名を表示)
  */
 
@@ -18,10 +18,10 @@ import { parseBoardData } from "@/lib/stgy/parser";
 const DEFAULT_WIDTH = 512;
 /** 最小出力幅 */
 const MIN_WIDTH = 128;
-/** 最大出力幅（素材画像の解像度制限のため） */
-const MAX_WIDTH = 1024;
-/** 最大スケール（素材画像の解像度制限のため） */
-const MAX_SCALE = 2;
+/** 最大出力幅（HR素材画像は2倍解像度） */
+const MAX_WIDTH = 2048;
+/** 最大スケール（HR素材画像は2倍解像度） */
+const MAX_SCALE = 4;
 
 export const Route = createFileRoute("/image")({
 	server: {

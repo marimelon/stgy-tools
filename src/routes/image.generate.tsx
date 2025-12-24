@@ -232,8 +232,9 @@ export const Route = createFileRoute("/image/generate")({
 /** スケールオプション */
 const SCALE_OPTIONS = [
 	{ value: "1", label: "1x (512×384)", width: 512 },
-	{ value: "1.5", label: "1.5x (768×576)", width: 768 },
 	{ value: "2", label: "2x (1024×768)", width: 1024 },
+	{ value: "3", label: "3x (1536×1152)", width: 1536 },
+	{ value: "4", label: "4x (2048×1536)", width: 2048 },
 ] as const;
 
 function ImageGeneratePage() {

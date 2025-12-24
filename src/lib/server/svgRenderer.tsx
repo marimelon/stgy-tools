@@ -237,7 +237,11 @@ function renderColoredAoE(
 			const coneAngle = param1 ?? 360; // 範囲角度（10-360度）
 			const outerRadius = 256; // クライアント側と同じサイズ
 			const donutRange = param2 ?? 50; // 0-240: 0=穴なし, 240=最大
-			const innerRadius = outerRadius * (donutRange / 240);
+			// Line param3=8 と同じ太さを最小として残す（クライアント側と同じ計算）
+			const MIN_THICKNESS_RATIO = 1 / 10;
+			const minThickness = outerRadius * MIN_THICKNESS_RATIO;
+			const maxInnerRadius = outerRadius - minThickness;
+			const innerRadius = maxInnerRadius * (donutRange / 240);
 			const maskId = `donut-mask-${Math.random().toString(36).slice(2, 9)}`;
 
 			// オリジナル画像をBase64で取得

@@ -47,6 +47,7 @@ export async function preloadImagesAsync(
 
 /**
  * Cloudflare Workers 用: env.ASSETS.fetch() を使用
+ * icons-hr/ を優先し、なければ icons/ にフォールバック
  */
 async function preloadImagesCloudflare(objectIds: number[]): Promise<void> {
 	const env = getGlobalEnv();
@@ -59,25 +60,24 @@ async function preloadImagesCloudflare(objectIds: number[]): Promise<void> {
 
 	const results = await Promise.all(
 		objectIds.map(async (objectId) => {
-			try {
-				const assetUrl = new URL(
-					`/icons/${objectId}.png`,
-					"https://assets.local",
-				);
-				const response = await assets.fetch(new Request(assetUrl));
-				if (!response.ok) {
-					console.error(
-						`[imageLoader] Failed to fetch icon ${objectId}: ${response.status}`,
-					);
-					return null;
+			// HR版を優先、なければ通常版にフォールバック
+			const iconPaths = [`/icons-hr/${objectId}.png`, `/icons/${objectId}.png`];
+
+			for (const iconPath of iconPaths) {
+				try {
+					const assetUrl = new URL(iconPath, "https://assets.local");
+					const response = await assets.fetch(new Request(assetUrl));
+					if (response.ok) {
+						const arrayBuffer = await response.arrayBuffer();
+						const base64 = arrayBufferToBase64(arrayBuffer);
+						return { objectId, dataUri: `data:image/png;base64,${base64}` };
+					}
+				} catch {
+					// このパスでは見つからない、次を試す
 				}
-				const arrayBuffer = await response.arrayBuffer();
-				const base64 = arrayBufferToBase64(arrayBuffer);
-				return { objectId, dataUri: `data:image/png;base64,${base64}` };
-			} catch (error) {
-				console.error(`[imageLoader] Error loading icon ${objectId}:`, error);
-				return null;
 			}
+			console.error(`[imageLoader] Icon ${objectId} not found`);
+			return null;
 		}),
 	);
 
@@ -90,10 +90,14 @@ async function preloadImagesCloudflare(objectIds: number[]): Promise<void> {
 
 /**
  * Node.js 用: fs を使用してファイルを読み込む
+ * icons-hr/ を優先し、なければ icons/ にフォールバック
  */
 async function preloadImagesNode(objectIds: number[]): Promise<void> {
 	// Nitroビルド（.output/public）と開発環境（public）の両方に対応
+	// HR版を優先、なければ通常版にフォールバック
 	const possibleDirs = [
+		join(process.cwd(), ".output", "public", "icons-hr"),
+		join(process.cwd(), "public", "icons-hr"),
 		join(process.cwd(), ".output", "public", "icons"),
 		join(process.cwd(), "public", "icons"),
 	];
