@@ -51,53 +51,64 @@ const HIDDEN_OBJECT_IDS: number[] = [
  * 各カテゴリ内はTofuObject.ja.csv カラム4でソート
  */
 const OBJECT_CATEGORIES: Record<string, number[]> = {
-	// カテゴリ2: クラス/ジョブ (カラム1: 1)
+	// カテゴリ2: クラス/ジョブ (カラム1: 1) - カラム3（ソート順）でソート
 	jobs: [
-		// ロール
-		ObjectIds.Tank,
-		ObjectIds.Tank1,
-		ObjectIds.Tank2,
-		ObjectIds.Healer,
-		ObjectIds.Healer1,
-		ObjectIds.Healer2,
-		ObjectIds.PureHealer,
-		ObjectIds.BarrierHealer,
-		ObjectIds.DPS,
-		ObjectIds.DPS1,
-		ObjectIds.DPS2,
-		ObjectIds.DPS3,
-		ObjectIds.DPS4,
-		ObjectIds.MeleeDPS,
-		ObjectIds.RangedDPS,
-		ObjectIds.PhysicalRangedDPS,
-		ObjectIds.MagicalRangedDPS,
-		// タンク
-		ObjectIds.Paladin,
-		ObjectIds.Warrior,
-		ObjectIds.DarkKnight,
-		ObjectIds.Gunbreaker,
-		// ヒーラー
-		ObjectIds.WhiteMage,
-		ObjectIds.Scholar,
-		ObjectIds.Astrologian,
-		ObjectIds.Sage,
-		// 近接DPS
-		ObjectIds.Monk,
-		ObjectIds.Dragoon,
-		ObjectIds.Ninja,
-		ObjectIds.Samurai,
-		ObjectIds.Reaper,
-		ObjectIds.Viper,
-		// 遠隔物理DPS
-		ObjectIds.Bard,
-		ObjectIds.Machinist,
-		ObjectIds.Dancer,
-		// 遠隔魔法DPS
-		ObjectIds.BlackMage,
-		ObjectIds.Summoner,
-		ObjectIds.RedMage,
-		ObjectIds.Pictomancer,
-		ObjectIds.BlueMage,
+		// ロールアイコン (ソート順 1-17)
+		ObjectIds.Tank, // 1
+		ObjectIds.Tank1, // 2
+		ObjectIds.Tank2, // 3
+		ObjectIds.Healer, // 4
+		ObjectIds.Healer1, // 5
+		ObjectIds.Healer2, // 6
+		ObjectIds.PureHealer, // 7
+		ObjectIds.BarrierHealer, // 8
+		ObjectIds.DPS, // 9
+		ObjectIds.DPS1, // 10
+		ObjectIds.DPS2, // 11
+		ObjectIds.DPS3, // 12
+		ObjectIds.DPS4, // 13
+		ObjectIds.MeleeDPS, // 14
+		ObjectIds.RangedDPS, // 15
+		ObjectIds.PhysicalRangedDPS, // 16
+		ObjectIds.MagicalRangedDPS, // 17
+		// タンクジョブ (ソート順 20-23)
+		ObjectIds.Paladin, // 20
+		ObjectIds.Warrior, // 21
+		ObjectIds.DarkKnight, // 22
+		ObjectIds.Gunbreaker, // 23
+		// ヒーラージョブ (ソート順 30-33)
+		ObjectIds.WhiteMage, // 30
+		ObjectIds.Scholar, // 31
+		ObjectIds.Astrologian, // 32
+		ObjectIds.Sage, // 33
+		// 近接DPSジョブ (ソート順 40-45)
+		ObjectIds.Monk, // 40
+		ObjectIds.Dragoon, // 41
+		ObjectIds.Ninja, // 42
+		ObjectIds.Samurai, // 43
+		ObjectIds.Reaper, // 44
+		ObjectIds.Viper, // 45
+		// 遠隔物理DPSジョブ (ソート順 50-52)
+		ObjectIds.Bard, // 50
+		ObjectIds.Machinist, // 51
+		ObjectIds.Dancer, // 52
+		// 遠隔魔法DPSジョブ (ソート順 60-63)
+		ObjectIds.BlackMage, // 60
+		ObjectIds.Summoner, // 61
+		ObjectIds.RedMage, // 62
+		ObjectIds.Pictomancer, // 63
+		// 青魔道士 (ソート順 70)
+		ObjectIds.BlueMage, // 70
+		// 基本クラス (ソート順 200-208)
+		ObjectIds.Gladiator, // 200
+		ObjectIds.Marauder, // 201
+		ObjectIds.Conjurer, // 202
+		ObjectIds.Pugilist, // 203
+		ObjectIds.Lancer, // 204
+		ObjectIds.Rogue, // 205
+		ObjectIds.Archer, // 206
+		ObjectIds.Thaumaturge, // 207
+		ObjectIds.Arcanist, // 208
 	],
 	// カテゴリ6: 攻撃範囲 (カラム1: 2) - カラム4でソート
 	attacks: [
