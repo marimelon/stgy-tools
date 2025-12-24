@@ -100,17 +100,17 @@ export function generateHreflangLinks(path: string) {
 	return [
 		{
 			rel: "alternate",
-			hreflang: "ja",
+			hrefLang: "ja",
 			href: `${SITE_CONFIG.url}${path}?lang=ja`,
 		},
 		{
 			rel: "alternate",
-			hreflang: "en",
+			hrefLang: "en",
 			href: `${SITE_CONFIG.url}${path}?lang=en`,
 		},
 		{
 			rel: "alternate",
-			hreflang: "x-default",
+			hrefLang: "x-default",
 			href: `${SITE_CONFIG.url}${path}`,
 		},
 	];
