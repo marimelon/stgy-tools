@@ -87,6 +87,11 @@
 			"flipHorizontal": "左右反転",
 			"flipVertical": "上下反転",
 			"locked": "ロック"
+		},
+		"objectList": {
+			"title": "オブジェクト一覧",
+			"empty": "オブジェクトがありません",
+			"count": "オブジェクト"
 		}
 	},
 	"batchProperty": {

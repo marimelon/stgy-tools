@@ -121,12 +121,12 @@ export function ExportModal({
 				</div>
 
 				<DialogFooter className="flex-col sm:flex-row gap-2">
-				<Button
-					variant="outline"
-					onClick={() => {
-						const url = `/image/generate?stgy=${encodeURIComponent(exportedCode)}`;
-						window.open(url, "_blank");
-					}}
+					<Button
+						variant="outline"
+						onClick={() => {
+							const url = `/image/generate?stgy=${encodeURIComponent(exportedCode)}`;
+							window.open(url, "_blank");
+						}}
 						disabled={!exportedCode}
 						className="sm:mr-auto"
 					>

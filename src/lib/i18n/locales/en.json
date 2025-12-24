@@ -87,6 +87,11 @@
 			"flipHorizontal": "Flip Horizontal",
 			"flipVertical": "Flip Vertical",
 			"locked": "Locked"
+		},
+		"objectList": {
+			"title": "Object List",
+			"empty": "No objects",
+			"count": "objects"
 		}
 	},
 	"batchProperty": {

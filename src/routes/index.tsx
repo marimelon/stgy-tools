@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Footer } from "@/components/ui/Footer";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ObjectListPanel } from "@/components/viewer/ObjectListPanel";
 import { generateCommonMeta } from "@/lib/seo";
 import type { BoardData, BoardObject } from "@/lib/stgy";
 import { decodeStgy, ObjectNames, parseBoardData } from "@/lib/stgy";
@@ -146,7 +147,16 @@ function App() {
 							</dl>
 						</div>
 
-						<div className="flex gap-4 flex-col lg:flex-row">
+						<div className="flex gap-4 flex-col xl:flex-row">
+							{/* オブジェクト一覧 */}
+							<div className="w-full xl:w-[220px] h-[300px] xl:h-[420px] flex-shrink-0">
+								<ObjectListPanel
+									objects={boardData.objects}
+									selectedIndex={selectedIndex}
+									onSelectObject={handleSelectObject}
+								/>
+							</div>
+
 							{/* ボードビューアー */}
 							<div className="p-4 bg-card border border-border rounded-lg flex-shrink-0">
 								<div className="mb-3 flex items-center gap-2">
