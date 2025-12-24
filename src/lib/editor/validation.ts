@@ -9,6 +9,7 @@ import {
 	OBJECT_LIMITS,
 	ObjectNames,
 } from "@/lib/stgy";
+import { getDebugMode } from "./useDebugMode";
 
 export interface ValidationResult {
 	canAdd: boolean;
@@ -23,6 +24,11 @@ export function canAddObject(
 	board: BoardData,
 	objectId: number,
 ): ValidationResult {
+	// デバッグモード時は制限なし
+	if (getDebugMode()) {
+		return { canAdd: true };
+	}
+
 	// 合計数チェック
 	if (board.objects.length >= MAX_TOTAL_OBJECTS) {
 		return {
@@ -59,6 +65,11 @@ export function canAddObjects(
 	objects: BoardObject[],
 ): ValidationResult {
 	if (objects.length === 0) {
+		return { canAdd: true };
+	}
+
+	// デバッグモード時は制限なし
+	if (getDebugMode()) {
 		return { canAdd: true };
 	}
 
