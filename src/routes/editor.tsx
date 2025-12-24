@@ -281,7 +281,14 @@ function EditorPage() {
 						}
 					}}
 					onCreateBoardFromImport={(name, stgyCode, encodeKey) => {
-						// 新しいボードを作成
+						// stgyCodeをデコードしてボードデータを取得
+						const decodedBoard = decodeBoardFromStgy(stgyCode);
+						if (!decodedBoard) {
+							console.warn("Failed to decode imported board");
+							return;
+						}
+
+						// 新しいボードをIndexedDBに保存
 						const newBoardId = createBoard(
 							name,
 							stgyCode,
@@ -289,8 +296,14 @@ function EditorPage() {
 							[],
 							DEFAULT_GRID_SETTINGS,
 						);
-						// 新しく作成したボードを開く（EditorProviderを再初期化）
-						handleOpenBoard(newBoardId);
+
+						// 直接エディターを初期化（IndexedDBの反映を待たずに）
+						setCurrentBoardId(newBoardId);
+						setInitialBoard({ ...decodedBoard, name });
+						setInitialGroups([]);
+						setInitialGridSettings(DEFAULT_GRID_SETTINGS);
+						setInitialEncodeKey(encodeKey);
+						setEditorKey((prev) => prev + 1);
 					}}
 				/>
 			</EditorProvider>
