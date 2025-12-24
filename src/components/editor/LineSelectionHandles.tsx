@@ -142,32 +142,6 @@ export function LineSelectionHandles({
 				onPointerMove={handlePointerMove}
 				onPointerUp={handlePointerUp}
 			/>
-
-			{/* 始点ラベル */}
-			<text
-				x={startX}
-				y={startY - 12}
-				textAnchor="middle"
-				fill="#3b82f6"
-				fontSize="10"
-				fontWeight="bold"
-				pointerEvents="none"
-			>
-				始点
-			</text>
-
-			{/* 終点ラベル */}
-			<text
-				x={endX}
-				y={endY - 12}
-				textAnchor="middle"
-				fill="#22c55e"
-				fontSize="10"
-				fontWeight="bold"
-				pointerEvents="none"
-			>
-				終点
-			</text>
 		</g>
 	);
 }
