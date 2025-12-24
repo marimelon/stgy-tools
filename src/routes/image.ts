@@ -1,11 +1,11 @@
 /**
  * stgy コードから PNG 画像を生成して返す API エンドポイント
  *
- * GET /image?code=[stgy:a...]
- * GET /image?code=[stgy:a...]&format=svg  (SVGで返す場合)
- * GET /image?code=[stgy:a...]&width=2048  (幅を指定、デフォルト512、最大2048)
- * GET /image?code=[stgy:a...]&scale=4     (スケール指定、1-4倍)
- * GET /image?code=[stgy:a...]&title=1     (ボード名を表示)
+ * GET /image?stgy=[stgy:a...]
+ * GET /image?stgy=[stgy:a...]&format=svg  (SVGで返す場合)
+ * GET /image?stgy=[stgy:a...]&width=2048  (幅を指定、デフォルト512、最大2048)
+ * GET /image?stgy=[stgy:a...]&scale=4     (スケール指定、1-4倍)
+ * GET /image?stgy=[stgy:a...]&title=1     (ボード名を表示)
  */
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -80,14 +80,14 @@ export const Route = createFileRoute("/image")({
 		handlers: {
 			GET: async ({ request }) => {
 				const url = new URL(request.url);
-				const code = url.searchParams.get("code");
+				const code = url.searchParams.get("stgy");
 				const format = url.searchParams.get("format") ?? "png";
 				const widthParam = url.searchParams.get("width");
 				const scaleParam = url.searchParams.get("scale");
 				const titleParam = url.searchParams.get("title");
 
 				if (!code) {
-					// codeパラメータがない場合は生成ページにリダイレクト
+					// stgyパラメータがない場合は生成ページにリダイレクト
 					return new Response(null, {
 						status: 302,
 						headers: { Location: "/image/generate" },

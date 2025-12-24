@@ -49,7 +49,7 @@ const seo = generateCommonMeta("editor");
 
 /** Search params for editor page */
 type EditorSearchParams = {
-	code?: string;
+	stgy?: string;
 };
 
 export const Route = createFileRoute("/editor")({
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/editor")({
 	ssr: false, // TanStack DB (useLiveQuery) requires client-side only
 	head: () => seo,
 	validateSearch: (search: Record<string, unknown>): EditorSearchParams => ({
-		code: typeof search.code === "string" ? search.code : undefined,
+		stgy: typeof search.stgy === "string" ? search.stgy : undefined,
 	}),
 });
 
@@ -84,7 +84,7 @@ function decodeBoardFromStgy(stgyCode: string): BoardData | null {
 function EditorPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { code: codeFromUrl } = Route.useSearch();
+	const { stgy: codeFromUrl } = Route.useSearch();
 
 	// Board manager state
 	const [showBoardManager, setShowBoardManager] = useState(false);

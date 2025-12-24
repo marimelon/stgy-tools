@@ -81,7 +81,7 @@ function RenderDebugPage() {
 			// キャッシュバスティング用のタイムスタンプを追加
 			const timestamp = Date.now();
 			const response = await fetch(
-				`/image?code=${encodedCode}&format=svg&_t=${timestamp}`,
+				`/image?stgy=${encodedCode}&format=svg&_t=${timestamp}`,
 			);
 
 			if (!response.ok) {

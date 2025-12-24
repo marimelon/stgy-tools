@@ -152,17 +152,17 @@ export const Route = createFileRoute("/image/generate")({
 	component: ImageGeneratePage,
 	validateSearch: (search: Record<string, unknown>) => {
 		return {
-			code: typeof search.code === "string" ? search.code : undefined,
+			stgy: typeof search.stgy === "string" ? search.stgy : undefined,
 		};
 	},
 	head: ({ match }) => {
-		const { code } = match.search;
-		const hasCode = Boolean(code);
+		const { stgy } = match.search;
+		const hasCode = Boolean(stgy);
 		const pagePath = PAGE_SEO.imageGenerator.path;
 
 		// 動的OGイメージ: stgyコードがある場合は生成画像を使用
 		const ogImage = hasCode
-			? `${SITE_CONFIG.url}/image?code=${encodeURIComponent(code as string)}`
+			? `${SITE_CONFIG.url}/image?stgy=${encodeURIComponent(stgy as string)}`
 			: `${SITE_CONFIG.url}/favicon.svg`;
 
 		// Twitter Cardタイプ: 画像がある場合はsummary_large_image
@@ -252,7 +252,7 @@ const SCALE_OPTIONS = [
 function ImageGeneratePage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { code: initialCode } = Route.useSearch();
+	const { stgy: initialCode } = Route.useSearch();
 	const [code, setCode] = useState(initialCode ?? "");
 	const [format, setFormat] = useState<"png" | "svg">("png");
 	const [scale, setScale] = useState("1");
@@ -279,7 +279,7 @@ function ImageGeneratePage() {
 		if (!code.trim() || !boardData) return;
 
 		// Navigate to Editor with stgy code as query parameter
-		navigate({ to: "/editor", search: { code: code.trim() } });
+		navigate({ to: "/editor", search: { stgy: code.trim() } });
 	}, [code, boardData, navigate]);
 
 	const generateUrl = useCallback(
@@ -314,7 +314,7 @@ function ImageGeneratePage() {
 
 			// クエリパラメータを構築
 			const params = new URLSearchParams();
-			params.set("code", codeToUse.trim());
+			params.set("stgy", codeToUse.trim());
 
 			if (format === "svg") {
 				params.set("format", "svg");
@@ -351,9 +351,9 @@ function ImageGeneratePage() {
 			const trimmedCode = code.trim();
 			const url = new URL(window.location.href);
 			if (trimmedCode) {
-				url.searchParams.set("code", trimmedCode);
+				url.searchParams.set("stgy", trimmedCode);
 			} else {
-				url.searchParams.delete("code");
+				url.searchParams.delete("stgy");
 			}
 			window.history.replaceState(null, "", url.toString());
 		}, DEBOUNCE_DELAY);
