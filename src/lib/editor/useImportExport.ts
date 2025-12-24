@@ -5,10 +5,10 @@
 import { useState } from "react";
 import type { BoardData } from "@/lib/stgy";
 import {
-	encodeStgy,
 	decodeStgy,
-	parseBoardData,
+	encodeStgy,
 	extractKeyFromStgy,
+	parseBoardData,
 } from "@/lib/stgy";
 import { recalculateBoardSize } from "./factory";
 

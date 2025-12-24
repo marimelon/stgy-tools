@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
 	ALPHABET_TABLE,
-	KEY_TABLE,
 	base64CharToValue,
+	KEY_TABLE,
 	valueToBase64Char,
 } from "../tables";
 

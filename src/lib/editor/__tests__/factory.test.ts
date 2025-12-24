@@ -2,16 +2,16 @@
  * ファクトリー関数のテスト
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import i18n from "@/lib/i18n";
+import { BackgroundId, ObjectIds } from "@/lib/stgy";
 import {
-	createEmptyBoard,
-	createDefaultObject,
-	duplicateObject,
 	calculateTextBoardSize,
+	createDefaultObject,
+	createEmptyBoard,
+	duplicateObject,
 	recalculateBoardSize,
 } from "../factory";
-import { BackgroundId, ObjectIds } from "@/lib/stgy";
-import i18n from "@/lib/i18n";
 
 describe("factory", () => {
 	describe("createEmptyBoard", () => {

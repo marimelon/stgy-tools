@@ -3,13 +3,13 @@
  */
 
 export { boardsCollection } from "./collection";
-export { storedBoardSchema, DEFAULT_GRID_SETTINGS } from "./schema";
-export type { StoredBoard } from "./schema";
 export {
-	useBoards,
-	type UseBoardsOptions,
 	type BoardSortOption,
-	type SortDirection,
 	type BoardsError,
 	type BoardsErrorType,
+	type SortDirection,
+	type UseBoardsOptions,
+	useBoards,
 } from "./hooks";
+export type { StoredBoard } from "./schema";
+export { DEFAULT_GRID_SETTINGS, storedBoardSchema } from "./schema";

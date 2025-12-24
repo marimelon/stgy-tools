@@ -5,10 +5,10 @@
  * React Portalを使用してbody直下にレンダリングし、親要素のoverflowの影響を受けない
  */
 
+import { ChevronDown, ChevronUp, LayoutPanelLeft } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { LayoutPanelLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { type PanelId, type PanelPreset, usePanelLayout } from "@/lib/panel";
 
 /** アイコンサイズ */

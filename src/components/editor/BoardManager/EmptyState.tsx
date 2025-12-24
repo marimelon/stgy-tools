@@ -2,8 +2,8 @@
  * Empty state component for when no boards exist
  */
 
-import { useTranslation } from "react-i18next";
 import { FolderPlus, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 export interface EmptyStateProps {

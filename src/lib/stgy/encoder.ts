@@ -6,14 +6,14 @@
  */
 
 import pako from "pako";
-import type { BoardData } from "./types";
 import { serializeBoardData } from "./serializer";
 import {
 	ALPHABET_TABLE,
-	KEY_TABLE,
 	base64CharToValue,
+	KEY_TABLE,
 	valueToBase64Char,
 } from "./tables";
+import type { BoardData } from "./types";
 
 const STGY_PREFIX = "[stgy:a";
 const STGY_SUFFIX = "]";

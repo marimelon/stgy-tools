@@ -4,21 +4,21 @@
  * オブジェクトの整列・配置機能をドロップダウンで提供
  */
 
+import {
+	AlignCenterHorizontal,
+	AlignCenterVertical,
+	AlignEndHorizontal,
+	AlignEndVertical,
+	AlignHorizontalSpaceAround,
+	AlignLeft,
+	AlignStartHorizontal,
+	AlignStartVertical,
+	AlignVerticalSpaceAround,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import {
-	AlignStartVertical,
-	AlignCenterVertical,
-	AlignEndVertical,
-	AlignStartHorizontal,
-	AlignCenterHorizontal,
-	AlignEndHorizontal,
-	AlignHorizontalSpaceAround,
-	AlignVerticalSpaceAround,
-	AlignLeft,
-} from "lucide-react";
 import type { AlignmentType } from "@/lib/editor";
-import { DropdownMenu, DropdownItem, DropdownDivider } from "./DropdownMenu";
+import { DropdownDivider, DropdownItem, DropdownMenu } from "./DropdownMenu";
 
 /** アイコンサイズ */
 const ICON_SIZE = 16;

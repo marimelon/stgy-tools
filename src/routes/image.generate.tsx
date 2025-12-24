@@ -7,6 +7,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board/BoardViewer";
+import {
+	generateCanonicalLink,
+	generateHreflangLinks,
+	PAGE_SEO,
+	SITE_CONFIG,
+} from "@/lib/seo";
 import { decodeStgy } from "@/lib/stgy/decoder";
 import { parseBoardData } from "@/lib/stgy/parser";
 import type { BoardData } from "@/lib/stgy/types";
@@ -139,11 +145,12 @@ export const Route = createFileRoute("/image/generate")({
 	head: ({ match }) => {
 		const { code } = match.search;
 		const hasCode = Boolean(code);
+		const pagePath = PAGE_SEO.imageGenerator.path;
 
 		// 動的OGイメージ: stgyコードがある場合は生成画像を使用
 		const ogImage = hasCode
-			? `/image?code=${encodeURIComponent(code as string)}`
-			: "/favicon.svg";
+			? `${SITE_CONFIG.url}/image?code=${encodeURIComponent(code as string)}`
+			: `${SITE_CONFIG.url}/favicon.svg`;
 
 		// Twitter Cardタイプ: 画像がある場合はsummary_large_image
 		const twitterCard = hasCode ? "summary_large_image" : "summary";
@@ -151,12 +158,11 @@ export const Route = createFileRoute("/image/generate")({
 		return {
 			meta: [
 				{
-					title: "FFXIV Strategy Board Image Generator | STGY Tools",
+					title: PAGE_SEO.imageGenerator.title,
 				},
 				{
 					name: "description",
-					content:
-						"Generate shareable images from FFXIV Strategy Board codes (stgy codes). Create PNG or SVG images for Discord, Twitter, and other platforms.",
+					content: PAGE_SEO.imageGenerator.description,
 				},
 				{
 					name: "keywords",
@@ -177,6 +183,10 @@ export const Route = createFileRoute("/image/generate")({
 				{
 					property: "og:type",
 					content: "website",
+				},
+				{
+					property: "og:url",
+					content: `${SITE_CONFIG.url}${pagePath}`,
 				},
 				{
 					property: "og:image",
@@ -209,6 +219,10 @@ export const Route = createFileRoute("/image/generate")({
 					name: "twitter:image",
 					content: ogImage,
 				},
+			],
+			links: [
+				generateCanonicalLink(pagePath),
+				...generateHreflangLinks(pagePath),
 			],
 		};
 	},

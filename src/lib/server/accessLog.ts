@@ -27,7 +27,16 @@ export function logAccess(entry: AccessLogEntry): void {
 		"/robots.txt",
 		"/sitemap.xml",
 	];
-	const skipExtensions = [".js", ".css", ".woff", ".woff2", ".ttf", ".png", ".svg", ".wasm"];
+	const skipExtensions = [
+		".js",
+		".css",
+		".woff",
+		".woff2",
+		".ttf",
+		".png",
+		".svg",
+		".wasm",
+	];
 
 	const shouldSkip =
 		skipPaths.includes(entry.path) ||
@@ -43,7 +52,8 @@ export function logAccess(entry: AccessLogEntry): void {
 	}
 
 	const logEntry = {
-		level: entry.status >= 500 ? "error" : entry.status >= 400 ? "warn" : "info",
+		level:
+			entry.status >= 500 ? "error" : entry.status >= 400 ? "warn" : "info",
 		...entry,
 	};
 
@@ -95,4 +105,3 @@ export function logResponse(
 
 	logAccess(entry);
 }
-

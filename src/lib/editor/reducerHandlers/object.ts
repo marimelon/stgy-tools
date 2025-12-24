@@ -4,13 +4,13 @@
 
 import { type BoardObject, ObjectIds } from "@/lib/stgy";
 import { duplicateObject } from "../factory";
-import type { EditorState, BatchUpdatePayload } from "../types";
+import type { BatchUpdatePayload, EditorState } from "../types";
 import {
 	cloneBoard,
-	updateObjectInBoard,
 	pushHistory,
 	shiftGroupIndices,
 	updateGroupsAfterDelete,
+	updateObjectInBoard,
 } from "./utils";
 
 /**

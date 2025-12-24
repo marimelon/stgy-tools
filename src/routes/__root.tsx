@@ -1,16 +1,23 @@
+import { TanStackDevtools } from "@tanstack/react-devtools";
 import {
+	createRootRoute,
 	HeadContent,
 	Outlet,
 	Scripts,
-	createRootRoute,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
-
+import {
+	generateWebApplicationSchema,
+	OGP_DEFAULTS,
+	SITE_CONFIG,
+} from "../lib/seo";
 import appCss from "../styles.css?url";
 
 // Initialize i18n
 import "../lib/i18n";
+
+// JSON-LD structured data
+const jsonLdScript = JSON.stringify(generateWebApplicationSchema());
 
 export const Route = createRootRoute({
 	head: () => ({
@@ -23,7 +30,29 @@ export const Route = createRootRoute({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "STGY Tools",
+				title: SITE_CONFIG.name,
+			},
+			// Default description (overridden by child routes)
+			{
+				name: "description",
+				content: SITE_CONFIG.description,
+			},
+			// Default OGP (overridden by child routes)
+			{
+				property: "og:site_name",
+				content: OGP_DEFAULTS.siteName,
+			},
+			{
+				property: "og:type",
+				content: OGP_DEFAULTS.type,
+			},
+			{
+				property: "og:locale",
+				content: "ja_JP",
+			},
+			{
+				property: "og:locale:alternate",
+				content: "en_US",
 			},
 		],
 		links: [
@@ -50,6 +79,23 @@ export const Route = createRootRoute({
 				rel: "icon",
 				type: "image/svg+xml",
 				href: "/favicon.svg",
+			},
+			// Apple Touch Icon
+			{
+				rel: "apple-touch-icon",
+				href: "/favicon.svg",
+			},
+			// Manifest
+			{
+				rel: "manifest",
+				href: "/manifest.json",
+			},
+		],
+		scripts: [
+			// JSON-LD structured data
+			{
+				type: "application/ld+json",
+				children: jsonLdScript,
 			},
 		],
 	}),

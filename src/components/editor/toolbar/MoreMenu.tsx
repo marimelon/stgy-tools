@@ -4,30 +4,30 @@
  * 小画面で使用する統合メニュー
  */
 
-import { useTranslation } from "react-i18next";
 import {
-	MoreHorizontal,
-	ArrowUpToLine,
-	ArrowUp,
+	AlignCenterHorizontal,
+	AlignCenterVertical,
+	AlignEndHorizontal,
+	AlignEndVertical,
+	AlignHorizontalSpaceAround,
+	AlignStartHorizontal,
+	AlignStartVertical,
+	AlignVerticalSpaceAround,
 	ArrowDown,
 	ArrowDownToLine,
+	ArrowUp,
+	ArrowUpToLine,
 	Group,
+	MoreHorizontal,
 	Ungroup,
-	AlignStartVertical,
-	AlignCenterVertical,
-	AlignEndVertical,
-	AlignStartHorizontal,
-	AlignCenterHorizontal,
-	AlignEndHorizontal,
-	AlignHorizontalSpaceAround,
-	AlignVerticalSpaceAround,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
+	type AlignmentType,
 	GRID_SIZES,
 	type GridSettings,
-	type AlignmentType,
 } from "@/lib/editor";
-import { DropdownMenu, DropdownItem, DropdownDivider } from "./DropdownMenu";
+import { DropdownDivider, DropdownItem, DropdownMenu } from "./DropdownMenu";
 
 /** アイコンサイズ */
 const ICON_SIZE = 16;

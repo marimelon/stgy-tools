@@ -6,9 +6,9 @@
 
 import pako from "pako";
 import {
-	KEY_TABLE,
 	ALPHABET_TABLE,
 	base64CharToValue,
+	KEY_TABLE,
 	valueToBase64Char,
 } from "./tables";
 

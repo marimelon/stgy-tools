@@ -5,8 +5,6 @@
  */
 
 import { useTranslation } from "react-i18next";
-import type { BoardData, BackgroundId } from "@/lib/stgy";
-import { BackgroundId as BgId } from "@/lib/stgy";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -15,6 +13,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import type { BackgroundId, BoardData } from "@/lib/stgy";
+import { BackgroundId as BgId } from "@/lib/stgy";
 import { PropertySection } from "./FormInputs";
 
 /** 背景ID一覧 */

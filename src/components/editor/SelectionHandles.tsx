@@ -5,7 +5,7 @@
  */
 
 import type React from "react";
-import type { ResizeHandle, HandleType } from "@/lib/editor";
+import type { HandleType, ResizeHandle } from "@/lib/editor";
 
 interface SelectionHandlesProps {
 	/** オブジェクト位置X */

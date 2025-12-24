@@ -6,28 +6,28 @@
 
 import {
 	createContext,
-	useContext,
-	useReducer,
-	useMemo,
 	type ReactNode,
+	useContext,
+	useMemo,
+	useReducer,
 } from "react";
 import type {
+	BackgroundId,
 	BoardData,
 	BoardObject,
 	Position,
-	BackgroundId,
 } from "@/lib/stgy";
-import type {
-	EditorState,
-	EditorAction,
-	GridSettings,
-	AlignmentType,
-	ObjectGroup,
-	BatchUpdatePayload,
-} from "./types";
-import { editorReducer, createInitialStateWithOptions } from "./reducer";
 import { useEditorActions } from "./hooks/useEditorActions";
 import { useEditorSelectors } from "./hooks/useEditorSelectors";
+import { createInitialStateWithOptions, editorReducer } from "./reducer";
+import type {
+	AlignmentType,
+	BatchUpdatePayload,
+	EditorAction,
+	EditorState,
+	GridSettings,
+	ObjectGroup,
+} from "./types";
 
 /**
  * エディターContextの値

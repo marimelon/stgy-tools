@@ -4,11 +4,11 @@
  * グリッドスナップと表示設定をドロップダウンで提供
  */
 
+import { Grid3x3 } from "lucide-react";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import { Grid3x3 } from "lucide-react";
 import { GRID_SIZES, type GridSettings } from "@/lib/editor";
-import { DropdownMenu, DropdownDivider } from "./DropdownMenu";
+import { DropdownDivider, DropdownMenu } from "./DropdownMenu";
 
 /** アイコンサイズ */
 const ICON_SIZE = 16;

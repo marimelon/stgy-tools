@@ -2,10 +2,10 @@
  * レイヤーオブジェクトアイテムコンポーネント
  */
 
+import { Eye, EyeOff, GripVertical } from "lucide-react";
 import type { DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { BoardObject } from "@/lib/stgy";
-import { GripVertical, Eye, EyeOff } from "lucide-react";
 import type { DropTarget } from "./types";
 
 interface LayerObjectItemProps {

@@ -1,20 +1,20 @@
 {
   "short_name": "STGY Tools",
   "name": "STGY Tools - FFXIV Strategy Board Editor",
+  "description": "FFXIV Strategy Board viewer and editor. Decode and create stgy codes for raid strategy diagrams.",
   "icons": [
-    {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
     {
       "src": "favicon.svg",
       "type": "image/svg+xml",
-      "sizes": "any"
+      "sizes": "any",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#0a0a0a",
-  "background_color": "#0a0a0a"
+  "background_color": "#0a0a0a",
+  "categories": ["utilities", "games"],
+  "lang": "ja",
+  "dir": "ltr"
 }

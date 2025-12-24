@@ -1,9 +1,16 @@
+import i18n from "@/lib/i18n";
 import type { BoardObject } from "@/lib/stgy";
 import { ObjectIds } from "@/lib/stgy";
-import i18n from "@/lib/i18n";
 import { getObjectBoundingBox } from "./bounding-box";
-import { BoundingBox, DebugInfo, SelectionIndicator } from "./ui-components";
-import { buildTransform, colorToRgba, CustomIconImage } from "./utils";
+import { AoEObject } from "./objects/AoEObject";
+import { EnemyIcon } from "./objects/EnemyIcon";
+import { FieldObject } from "./objects/FieldObject";
+import { JobIcon } from "./objects/JobIcon";
+import { MarkerIcon } from "./objects/markers/MarkerIcon";
+import { PlaceholderObject } from "./objects/PlaceholderObject";
+import { RoleIcon } from "./objects/RoleIcon";
+import { TextObject } from "./objects/TextObject";
+import { WaymarkIcon } from "./objects/WaymarkIcon";
 import {
 	isAoEObject,
 	isEnemy,
@@ -13,15 +20,8 @@ import {
 	isRoleIcon,
 	isWaymark,
 } from "./type-guards";
-import { FieldObject } from "./objects/FieldObject";
-import { AoEObject } from "./objects/AoEObject";
-import { RoleIcon } from "./objects/RoleIcon";
-import { WaymarkIcon } from "./objects/WaymarkIcon";
-import { EnemyIcon } from "./objects/EnemyIcon";
-import { JobIcon } from "./objects/JobIcon";
-import { TextObject } from "./objects/TextObject";
-import { PlaceholderObject } from "./objects/PlaceholderObject";
-import { MarkerIcon } from "./objects/markers/MarkerIcon";
+import { BoundingBox, DebugInfo, SelectionIndicator } from "./ui-components";
+import { buildTransform, CustomIconImage, colorToRgba } from "./utils";
 
 // Re-export for external use
 export { getObjectBoundingBox } from "./bounding-box";

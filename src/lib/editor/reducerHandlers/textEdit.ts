@@ -2,9 +2,9 @@
  * テキスト編集アクションハンドラー
  */
 
+import i18n from "@/lib/i18n";
 import { ObjectIds } from "@/lib/stgy";
 import type { EditorState } from "../types";
-import i18n from "@/lib/i18n";
 
 /**
  * テキスト編集を開始

@@ -1,8 +1,8 @@
 import {
 	DEFAULT_BBOX_SIZE,
-	OBJECT_BBOX_SIZES,
 	getConeBoundingBox,
 	getDonutConeBoundingBox,
+	OBJECT_BBOX_SIZES,
 } from "@/lib/board";
 import { ObjectIds } from "@/lib/stgy";
 import { CONE_RADIUS, DEFAULT_PARAMS, TEXT } from "./constants";

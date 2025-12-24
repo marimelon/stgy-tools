@@ -3,27 +3,31 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useId, type ReactNode } from "react";
-import { ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronDown, ChevronRight } from "lucide-react";
+import { type ReactNode, useId, useState } from "react";
+import { DebugHeader } from "@/components/debug/DebugHeader";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { recalculateBoardSize } from "@/lib/editor";
+import { generateDebugPageMeta } from "@/lib/seo";
 import {
-	decodeStgyDebug,
+	type CompareResult,
 	compareStgy,
-	hexDump,
-	parseBoardData,
+	type DecodeDebugInfo,
+	decodeStgyDebug,
 	encodeStgy,
 	extractKeyFromStgy,
-	type DecodeDebugInfo,
-	type CompareResult,
+	hexDump,
+	parseBoardData,
 } from "@/lib/stgy";
-import { recalculateBoardSize } from "@/lib/editor";
-import { DebugHeader } from "@/components/debug/DebugHeader";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+
+const seo = generateDebugPageMeta("stgy Encoder/Decoder Debug");
 
 export const Route = createFileRoute("/debug-stgy")({
 	component: StgyDebugPage,
+	head: () => seo,
 });
 
 function StgyDebugPage() {

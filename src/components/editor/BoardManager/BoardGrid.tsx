@@ -2,9 +2,9 @@
  * Board grid component for displaying board cards
  */
 
+import type { StoredBoard } from "@/lib/boards";
 import { BoardCard } from "./BoardCard";
 import { EmptyState } from "./EmptyState";
-import type { StoredBoard } from "@/lib/boards";
 
 export interface BoardGridProps {
 	boards: StoredBoard[];

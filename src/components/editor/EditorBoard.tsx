@@ -4,24 +4,24 @@
  * BoardViewerを拡張し、ドラッグ/回転/リサイズのインタラクションを追加
  */
 
-import { useRef, useState, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	BackgroundRenderer,
-	ObjectRenderer,
 	getObjectBoundingBox,
+	ObjectRenderer,
 } from "@/components/board";
 import {
-	useEditor,
-	useCanvasInteraction,
 	type EditorBoardProps,
+	useCanvasInteraction,
+	useEditor,
 } from "@/lib/editor";
 import { ObjectIds } from "@/lib/stgy";
-import { SelectionHandles } from "./SelectionHandles";
-import { LineSelectionHandles } from "./LineSelectionHandles";
-import { GridOverlay, SelectionIndicator } from "./GridOverlay";
 import { ContextMenu, type ContextMenuState } from "./ContextMenu";
+import { GridOverlay, SelectionIndicator } from "./GridOverlay";
 import { InlineTextEditor } from "./InlineTextEditor";
+import { LineSelectionHandles } from "./LineSelectionHandles";
+import { SelectionHandles } from "./SelectionHandles";
 
 /** キャンバスサイズ */
 const CANVAS_WIDTH = 512;

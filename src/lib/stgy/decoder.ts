@@ -8,8 +8,8 @@
 import pako from "pako";
 import {
 	ALPHABET_TABLE,
-	KEY_TABLE,
 	base64CharToValue,
+	KEY_TABLE,
 	valueToBase64Char,
 } from "./tables";
 

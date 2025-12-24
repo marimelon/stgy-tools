@@ -4,36 +4,36 @@
  * 複数オブジェクト選択時の一括プロパティ編集
  */
 
-import { useMemo, useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { rgbToHex, hexToRgb, useDebugMode } from "@/lib/editor";
-import {
-	OBJECT_FLIP_FLAGS,
-	DEFAULT_FLIP_FLAGS,
-	OBJECT_EDIT_PARAMS,
-	DEFAULT_EDIT_PARAMS,
-	EDIT_PARAMS,
-	EditParamIds,
-	ObjectNames,
-} from "@/lib/stgy";
 import { COLOR_CHANGEABLE_OBJECT_IDS } from "@/components/board/ObjectRenderer/constants";
-import type { BoardObject } from "@/lib/stgy";
-import type { BatchUpdatePayload } from "@/lib/editor/types";
 import { Badge } from "@/components/ui/badge";
+import { hexToRgb, rgbToHex, useDebugMode } from "@/lib/editor";
 import {
-	PropertySection,
-	SliderInput,
-	Checkbox,
-	NumberInput,
-} from "./FormInputs";
-import { ColorPalette } from "./ColorPalette";
-import {
+	type BatchPropertyValues,
 	computeBatchPropertyValues,
+	getCommonFlipFlags,
 	haveSameObjectId,
 	isMixed,
-	getCommonFlipFlags,
-	type BatchPropertyValues,
 } from "@/lib/editor/batchUtils";
+import type { BatchUpdatePayload } from "@/lib/editor/types";
+import type { BoardObject } from "@/lib/stgy";
+import {
+	DEFAULT_EDIT_PARAMS,
+	DEFAULT_FLIP_FLAGS,
+	EDIT_PARAMS,
+	EditParamIds,
+	OBJECT_EDIT_PARAMS,
+	OBJECT_FLIP_FLAGS,
+	ObjectNames,
+} from "@/lib/stgy";
+import { ColorPalette } from "./ColorPalette";
+import {
+	Checkbox,
+	NumberInput,
+	PropertySection,
+	SliderInput,
+} from "./FormInputs";
 
 /**
  * バッチプロパティパネルのProps

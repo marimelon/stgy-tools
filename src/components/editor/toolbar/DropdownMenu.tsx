@@ -5,16 +5,16 @@
  * React Portalを使用してbody直下にレンダリングし、親要素のoverflowの影響を受けない
  */
 
+import { ChevronDown } from "lucide-react";
 import {
-	useState,
-	useRef,
+	type MouseEvent,
+	type ReactNode,
 	useEffect,
 	useLayoutEffect,
-	type ReactNode,
-	type MouseEvent,
+	useRef,
+	useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown } from "lucide-react";
 
 interface DropdownMenuProps {
 	/** トリガーボタンのラベル */

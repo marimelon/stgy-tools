@@ -5,10 +5,10 @@
  */
 
 import type { ReactNode } from "react";
-import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
 import { Checkbox as ShadcnCheckbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 
 /**
  * プロパティセクション

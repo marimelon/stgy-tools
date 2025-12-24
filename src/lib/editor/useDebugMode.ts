@@ -5,7 +5,7 @@
  * カスタムイベントを使用して複数コンポーネント間で同期
  */
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "debugObjectPalette";
 const DEBUG_MODE_CHANGE_EVENT = "debugModeChange";

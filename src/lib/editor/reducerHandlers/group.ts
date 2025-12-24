@@ -2,7 +2,7 @@
  * グループ・グリッド操作ハンドラー
  */
 
-import type { EditorState, ObjectGroup, GridSettings } from "../types";
+import type { EditorState, GridSettings, ObjectGroup } from "../types";
 import { generateGroupId, pushHistory } from "./utils";
 
 /**

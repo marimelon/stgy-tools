@@ -6,9 +6,9 @@
 
 import { useCallback } from "react";
 import { useEditor } from "@/lib/editor";
+import { BatchPropertyPanel } from "./BatchPropertyPanel";
 import { BoardPropertyPanel } from "./BoardPropertyPanel";
 import { ObjectPropertyPanel } from "./ObjectPropertyPanel";
-import { BatchPropertyPanel } from "./BatchPropertyPanel";
 
 /**
  * プロパティパネル

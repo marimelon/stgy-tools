@@ -2,17 +2,17 @@
  * レイヤーグループヘッダーコンポーネント
  */
 
+import {
+	ChevronDown,
+	ChevronRight,
+	Eye,
+	EyeOff,
+	GripVertical,
+	X,
+} from "lucide-react";
 import type { DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { ObjectGroup } from "@/lib/editor/types";
-import {
-	GripVertical,
-	Eye,
-	EyeOff,
-	ChevronRight,
-	ChevronDown,
-	X,
-} from "lucide-react";
 import type { DropTarget } from "./types";
 
 interface LayerGroupHeaderProps {

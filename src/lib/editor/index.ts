@@ -2,80 +2,69 @@
  * エディターライブラリのエクスポート
  */
 
-export { EditorProvider, useEditor } from "./EditorContext";
-export type { EditorContextValue } from "./EditorContext";
-
+export type { BatchPropertyValues, MixedValue } from "./batchUtils";
 export {
-	editorReducer,
-	createInitialState,
-	createInitialStateWithOptions,
-} from "./reducer";
-export type { CreateInitialStateOptions } from "./reducer";
-
-export type {
-	EditorState,
-	EditorAction,
-	HistoryEntry,
-	BoardMetaUpdates,
-	GridSettings,
-	AlignmentType,
-	ResizeHandle,
-	HandleType,
-	InteractionMode,
-	DragState,
-	MarqueeState,
-	EditorBoardProps,
-	ObjectGroup,
-	BatchUpdatePayload,
-} from "./types";
-
-export { GRID_SIZES } from "./types";
-
-export {
-	MIXED_VALUE,
-	isMixed,
 	computeBatchPropertyValues,
-	haveSameObjectId,
 	getCommonFlipFlags,
+	haveSameObjectId,
+	isMixed,
+	MIXED_VALUE,
 } from "./batchUtils";
-export type { MixedValue, BatchPropertyValues } from "./batchUtils";
-
 export {
-	createEmptyBoard,
-	createDefaultObject,
-	duplicateObject,
-	calculateTextBoardSize,
-	recalculateBoardSize,
-} from "./factory";
-
+	COLOR_PALETTE,
+	COLOR_PALETTE_COLS,
+	COLOR_PALETTE_ROWS,
+	hexToRgb,
+	rgbToHex,
+} from "./colorUtils";
 export {
-	screenToSVG,
 	calculateRotation,
 	clampToCanvas,
-	snapToGrid,
 	distance,
+	screenToSVG,
+	snapToGrid,
 } from "./coordinates";
-
+export type { EditorContextValue } from "./EditorContext";
+export { EditorProvider, useEditor } from "./EditorContext";
 export {
-	useKeyboardShortcuts,
-	KEYBOARD_SHORTCUTS,
-} from "./useKeyboardShortcuts";
-
-export { useImportExport } from "./useImportExport";
-export type { ImportResult, UseImportExportReturn } from "./useImportExport";
-
-export { useCanvasInteraction } from "./useCanvasInteraction";
+	calculateTextBoardSize,
+	createDefaultObject,
+	createEmptyBoard,
+	duplicateObject,
+	recalculateBoardSize,
+} from "./factory";
+export type { CreateInitialStateOptions } from "./reducer";
+export {
+	createInitialState,
+	createInitialStateWithOptions,
+	editorReducer,
+} from "./reducer";
+export type {
+	AlignmentType,
+	BatchUpdatePayload,
+	BoardMetaUpdates,
+	DragState,
+	EditorAction,
+	EditorBoardProps,
+	EditorState,
+	GridSettings,
+	HandleType,
+	HistoryEntry,
+	InteractionMode,
+	MarqueeState,
+	ObjectGroup,
+	ResizeHandle,
+} from "./types";
+export { GRID_SIZES } from "./types";
 export type {
 	UseCanvasInteractionParams,
 	UseCanvasInteractionReturn,
 } from "./useCanvasInteraction";
-
+export { useCanvasInteraction } from "./useCanvasInteraction";
+export { getDebugMode, setDebugMode, useDebugMode } from "./useDebugMode";
+export type { ImportResult, UseImportExportReturn } from "./useImportExport";
+export { useImportExport } from "./useImportExport";
 export {
-	rgbToHex,
-	hexToRgb,
-	COLOR_PALETTE,
-	COLOR_PALETTE_ROWS,
-	COLOR_PALETTE_COLS,
-} from "./colorUtils";
-
-export { useDebugMode, getDebugMode, setDebugMode } from "./useDebugMode";
+	KEYBOARD_SHORTCUTS,
+	useKeyboardShortcuts,
+} from "./useKeyboardShortcuts";

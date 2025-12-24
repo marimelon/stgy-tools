@@ -4,10 +4,10 @@
  * 背景をドラッグして複数オブジェクトを範囲選択する機能を提供
  */
 
-import { useState, useCallback, useRef, type RefObject } from "react";
+import { type RefObject, useCallback, useRef, useState } from "react";
 import type { BoardObject, Position } from "@/lib/stgy";
-import type { MarqueeState } from "../types";
 import { screenToSVG } from "../coordinates";
+import type { MarqueeState } from "../types";
 
 export interface UseMarqueeSelectionParams {
 	svgRef: RefObject<SVGSVGElement | null>;

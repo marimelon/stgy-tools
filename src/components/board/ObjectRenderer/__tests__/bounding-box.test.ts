@@ -2,13 +2,13 @@
  * バウンディングボックス計算のテスト
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import { ObjectIds } from "@/lib/stgy";
 import {
 	getConeBoundingBox,
 	getDonutConeBoundingBox,
 	getObjectBoundingBox,
 } from "../bounding-box";
-import { ObjectIds } from "@/lib/stgy";
 
 describe("bounding-box", () => {
 	describe("getConeBoundingBox", () => {

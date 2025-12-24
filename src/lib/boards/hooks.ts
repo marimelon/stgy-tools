@@ -3,10 +3,10 @@
  */
 
 import { useLiveQuery } from "@tanstack/react-db";
-import { useCallback, useState, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { GridSettings, ObjectGroup } from "@/lib/editor/types";
 import { boardsCollection } from "./collection";
 import { DEFAULT_GRID_SETTINGS, type StoredBoard } from "./schema";
-import type { ObjectGroup, GridSettings } from "@/lib/editor/types";
 
 /** Sort options for board list */
 export type BoardSortOption = "updatedAt" | "createdAt" | "name";

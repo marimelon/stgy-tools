@@ -4,7 +4,7 @@
  * テキストオブジェクトをダブルクリックで直接編集するためのコンポーネント
  */
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { BoardObject } from "@/lib/stgy";
 
 interface InlineTextEditorProps {

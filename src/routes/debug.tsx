@@ -1,10 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ObjectNames, ObjectIds } from "@/lib/stgy";
-import type { BoardObject } from "@/lib/stgy";
 import { ObjectRenderer } from "@/components/board";
 import { DebugHeader } from "@/components/debug/DebugHeader";
+import { generateDebugPageMeta } from "@/lib/seo";
+import type { BoardObject } from "@/lib/stgy";
+import { ObjectIds, ObjectNames } from "@/lib/stgy";
 
-export const Route = createFileRoute("/debug")({ component: DebugPage });
+const seo = generateDebugPageMeta("Object ID Debug View");
+
+export const Route = createFileRoute("/debug")({
+	component: DebugPage,
+	head: () => seo,
+});
 
 /** 全オブジェクトIDのリスト */
 const ALL_OBJECT_IDS = Object.keys(ObjectNames)

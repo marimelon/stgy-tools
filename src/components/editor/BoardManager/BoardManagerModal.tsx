@@ -2,9 +2,9 @@
  * Board Manager Modal component
  */
 
+import { ArrowUpDown, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Search, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -12,16 +12,16 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { type BoardSortOption, useBoards } from "@/lib/boards";
 import { BoardGrid } from "./BoardGrid";
 import { UndoToast } from "./UndoToast";
-import { useBoards, type BoardSortOption } from "@/lib/boards";
 
 export interface BoardManagerModalProps {
 	open: boolean;

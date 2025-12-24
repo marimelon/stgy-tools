@@ -2,14 +2,14 @@
  * エディターReducerのテスト
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { ObjectIds } from "@/lib/stgy";
+import { createDefaultObject, createEmptyBoard } from "../factory";
 import {
-	editorReducer,
 	createInitialState,
 	createInitialStateWithOptions,
+	editorReducer,
 } from "../reducer";
-import { createEmptyBoard, createDefaultObject } from "../factory";
-import { ObjectIds } from "@/lib/stgy";
 import type { EditorState } from "../types";
 
 describe("reducer", () => {

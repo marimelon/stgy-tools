@@ -5,27 +5,27 @@
  */
 
 import { useTranslation } from "react-i18next";
-import { rgbToHex, hexToRgb, useDebugMode } from "@/lib/editor";
+import { COLOR_CHANGEABLE_OBJECT_IDS } from "@/components/board/ObjectRenderer/constants";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { hexToRgb, rgbToHex, useDebugMode } from "@/lib/editor";
+import type { BoardObject } from "@/lib/stgy";
 import {
-	ObjectIds,
-	OBJECT_FLIP_FLAGS,
-	DEFAULT_FLIP_FLAGS,
-	OBJECT_EDIT_PARAMS,
 	DEFAULT_EDIT_PARAMS,
+	DEFAULT_FLIP_FLAGS,
 	EDIT_PARAMS,
 	EditParamIds,
+	OBJECT_EDIT_PARAMS,
+	OBJECT_FLIP_FLAGS,
+	ObjectIds,
 } from "@/lib/stgy";
-import { COLOR_CHANGEABLE_OBJECT_IDS } from "@/components/board/ObjectRenderer/constants";
-import type { BoardObject } from "@/lib/stgy";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-	PropertySection,
-	NumberInput,
-	SliderInput,
-	Checkbox,
-} from "./FormInputs";
 import { ColorPalette } from "./ColorPalette";
+import {
+	Checkbox,
+	NumberInput,
+	PropertySection,
+	SliderInput,
+} from "./FormInputs";
 
 /** EditParamIds を i18n キーにマッピング */
 const EDIT_PARAM_I18N_KEYS: Record<number, string> = {

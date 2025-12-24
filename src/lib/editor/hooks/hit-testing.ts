@@ -4,8 +4,8 @@
  * バウンディングボックスと回転を考慮した正確な当たり判定を提供
  */
 
-import type { BoardObject, Position } from "@/lib/stgy";
 import { getObjectBoundingBox } from "@/components/board";
+import type { BoardObject, Position } from "@/lib/stgy";
 
 /**
  * 指定位置がオブジェクトのバウンディングボックス内にあるかを判定

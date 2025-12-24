@@ -4,27 +4,31 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useId, useCallback } from "react";
 import {
 	AlertCircle,
+	Download,
 	Eye,
 	EyeOff,
 	Layers,
 	SplitSquareHorizontal,
-	Download,
 } from "lucide-react";
-import { decodeStgy, parseBoardData, ObjectNames } from "@/lib/stgy";
-import type { BoardData, BoardObject } from "@/lib/stgy";
+import { useCallback, useEffect, useId, useState } from "react";
 import { BoardViewer } from "@/components/board";
 import { DebugHeader } from "@/components/debug/DebugHeader";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { generateDebugPageMeta } from "@/lib/seo";
+import type { BoardData, BoardObject } from "@/lib/stgy";
+import { decodeStgy, ObjectNames, parseBoardData } from "@/lib/stgy";
+
+const seo = generateDebugPageMeta("Render Comparison Debug");
 
 export const Route = createFileRoute("/debug-render")({
 	component: RenderDebugPage,
+	head: () => seo,
 });
 
 /** ビューモード */

@@ -2,9 +2,9 @@
  * Board card component for the board manager grid
  */
 
-import { useState, useRef, useEffect } from "react";
+import { Copy, FolderOpen, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MoreHorizontal, FolderOpen, Pencil, Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -12,8 +12,8 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BoardThumbnail } from "./BoardThumbnail";
 import type { StoredBoard } from "@/lib/boards";
+import { BoardThumbnail } from "./BoardThumbnail";
 
 export interface BoardCardProps {
 	board: StoredBoard;

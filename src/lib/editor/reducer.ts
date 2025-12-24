@@ -3,49 +3,49 @@
  */
 
 import type { BoardData } from "@/lib/stgy";
-import type {
-	EditorState,
-	EditorAction,
-	ObjectGroup,
-	GridSettings,
-} from "./types";
 import {
+	handleAddObject,
+	// 整列
+	handleAlignObjects,
+	handleCommitHistory,
+	// クリップボード
+	handleCopyObjects,
+	handleDeleteObjects,
+	handleDeselectAll,
+	handleDuplicateObjects,
+	handleEndTextEdit,
+	// グループ・グリッド
+	handleGroupObjects,
+	// レイヤー
+	handleMoveLayer,
+	handleMoveObjects,
+	handlePasteObjects,
+	handleRedo,
+	handleRemoveFromGroup,
+	handleReorderGroup,
+	handleReorderLayer,
 	// 選択系
 	handleSelectObject,
 	handleSelectObjects,
-	handleDeselectAll,
-	// オブジェクト操作
-	handleUpdateObject,
-	handleAddObject,
-	handleDeleteObjects,
-	handleDuplicateObjects,
-	handleMoveObjects,
-	handleUpdateObjectsBatch,
-	// クリップボード
-	handleCopyObjects,
-	handlePasteObjects,
 	// 履歴・ボード
 	handleSetBoard,
-	handleUpdateBoardMeta,
-	handleCommitHistory,
-	handleUndo,
-	handleRedo,
-	// レイヤー
-	handleMoveLayer,
-	handleReorderLayer,
-	handleReorderGroup,
-	// グループ・グリッド
-	handleGroupObjects,
-	handleUngroup,
-	handleToggleGroupCollapse,
-	handleRemoveFromGroup,
 	handleSetGridSettings,
-	// 整列
-	handleAlignObjects,
 	// テキスト編集
 	handleStartTextEdit,
-	handleEndTextEdit,
+	handleToggleGroupCollapse,
+	handleUndo,
+	handleUngroup,
+	handleUpdateBoardMeta,
+	// オブジェクト操作
+	handleUpdateObject,
+	handleUpdateObjectsBatch,
 } from "./reducerHandlers";
+import type {
+	EditorAction,
+	EditorState,
+	GridSettings,
+	ObjectGroup,
+} from "./types";
 
 /**
  * エディターReducer

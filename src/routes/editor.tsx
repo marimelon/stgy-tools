@@ -2,26 +2,9 @@
  * エディターページ
  */
 
-import { useState, useRef, useEffect, useCallback } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-	EditorProvider,
-	createEmptyBoard,
-	useKeyboardShortcuts,
-	useImportExport,
-	useEditor,
-	recalculateBoardSize,
-	type GridSettings,
-	type ObjectGroup,
-} from "@/lib/editor";
-import {
-	decodeStgy,
-	parseBoardData,
-	encodeStgy,
-	type BoardData,
-} from "@/lib/stgy";
-import { PanelProvider } from "@/lib/panel";
-import { ResizableLayout } from "@/components/panel";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
 	EditorBoard,
 	EditorToolbar,
@@ -31,19 +14,40 @@ import {
 } from "@/components/editor";
 import {
 	BoardManagerModal,
-	LoadErrorScreen,
 	DecodeErrorDialog,
+	LoadErrorScreen,
 } from "@/components/editor/BoardManager";
+import { ResizableLayout } from "@/components/panel";
 import { useBoards } from "@/lib/boards";
-import { useTranslation } from "react-i18next";
+import {
+	createEmptyBoard,
+	EditorProvider,
+	type GridSettings,
+	type ObjectGroup,
+	recalculateBoardSize,
+	useEditor,
+	useImportExport,
+	useKeyboardShortcuts,
+} from "@/lib/editor";
+import { PanelProvider } from "@/lib/panel";
+import { generateCommonMeta } from "@/lib/seo";
+import {
+	type BoardData,
+	decodeStgy,
+	encodeStgy,
+	parseBoardData,
+} from "@/lib/stgy";
 
 /** キャンバスの基本サイズ */
 const CANVAS_WIDTH = 512;
 const CANVAS_HEIGHT = 384;
 
+const seo = generateCommonMeta("editor");
+
 export const Route = createFileRoute("/editor")({
 	component: EditorPage,
 	ssr: false, // TanStack DB (useLiveQuery) requires client-side only
+	head: () => seo,
 });
 
 /** Default grid settings */

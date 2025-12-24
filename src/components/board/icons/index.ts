@@ -2,47 +2,45 @@
  * アイコンコンポーネントのエクスポート
  */
 
-// 型
-export type { IconProps } from "./types";
-
 // AoE関連アイコン
 export {
-	GazeIcon,
-	BlockIcon,
-	StackIcon,
-	StackLineIcon,
-	StackChainIcon,
-	KnockbackRadialIcon,
-	KnockbackLineIcon,
-	CircleAoEMovingIcon,
 	Area1PIcon,
 	Area2PIcon,
 	Area3PIcon,
 	Area4PIcon,
+	BlockIcon,
+	CircleAoEMovingIcon,
+	GazeIcon,
+	KnockbackLineIcon,
+	KnockbackRadialIcon,
+	StackChainIcon,
+	StackIcon,
+	StackLineIcon,
 } from "./AoEIcons";
+// 図形アイコン
+export {
+	ShapeArrowIcon,
+	ShapeCircleIcon,
+	ShapeCrossIcon,
+	ShapeRotationIcon,
+	ShapeSquareIcon,
+	ShapeTriangleIcon,
+} from "./ShapeIcons";
 
 // 特殊アイコン
 export {
-	LockOnRedIcon,
-	LockOnBlueIcon,
-	LockOnPurpleIcon,
-	LockOnGreenIcon,
+	BuffIcon,
+	ClockwiseIcon,
+	CounterClockwiseIcon,
+	DebuffIcon,
 	EmphasisCircleIcon,
 	EmphasisCrossIcon,
 	EmphasisSquareIcon,
 	EmphasisTriangleIcon,
-	ClockwiseIcon,
-	CounterClockwiseIcon,
-	BuffIcon,
-	DebuffIcon,
+	LockOnBlueIcon,
+	LockOnGreenIcon,
+	LockOnPurpleIcon,
+	LockOnRedIcon,
 } from "./SpecialIcons";
-
-// 図形アイコン
-export {
-	ShapeCircleIcon,
-	ShapeCrossIcon,
-	ShapeSquareIcon,
-	ShapeTriangleIcon,
-	ShapeArrowIcon,
-	ShapeRotationIcon,
-} from "./ShapeIcons";
+// 型
+export type { IconProps } from "./types";

@@ -2,16 +2,16 @@
  * ボード・オブジェクト生成ファクトリー
  */
 
+import i18n from "@/lib/i18n";
 import type { BoardData, BoardObject, Position } from "@/lib/stgy";
 import {
 	BackgroundId,
-	ObjectIds,
-	OBJECT_EDIT_PARAMS,
 	DEFAULT_EDIT_PARAMS,
 	EDIT_PARAMS,
 	EditParamIds,
+	OBJECT_EDIT_PARAMS,
+	ObjectIds,
 } from "@/lib/stgy";
-import i18n from "@/lib/i18n";
 
 /**
  * 空のボードを生成

@@ -2,8 +2,8 @@
  * Full screen error display for storage load failures
  */
 
+import { AlertTriangle, FilePlus, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { AlertTriangle, RefreshCw, FilePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { BoardsError } from "@/lib/boards";
 

@@ -6,19 +6,19 @@
 
 import { useCallback } from "react";
 import type {
+	BackgroundId,
 	BoardData,
 	BoardObject,
 	Position,
-	BackgroundId,
 } from "@/lib/stgy";
+import { createDefaultObject } from "../factory";
 import type {
-	EditorState,
-	EditorAction,
-	GridSettings,
 	AlignmentType,
 	BatchUpdatePayload,
+	EditorAction,
+	EditorState,
+	GridSettings,
 } from "../types";
-import { createDefaultObject } from "../factory";
 
 export interface UseEditorActionsParams {
 	state: EditorState;

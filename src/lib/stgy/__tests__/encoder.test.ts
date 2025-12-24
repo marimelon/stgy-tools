@@ -1,11 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { encodeStgy } from "../encoder";
+import { describe, expect, it } from "vitest";
 import { decodeStgy } from "../decoder";
+import { encodeStgy } from "../encoder";
 import { parseBoardData } from "../parser";
 import { serializeBoardData } from "../serializer";
-import { BackgroundId } from "../types";
 import { ALPHABET_TABLE } from "../tables";
 import type { BoardData } from "../types";
+import { BackgroundId } from "../types";
 
 const SAMPLE_STGY =
 	"[stgy:a7AIxEt68bIksM7YvDMlkmKJL8iH2Eq-2vDUI+1PGMl9+UVD4FhAcsxS5tImN8GsSsHqSfbiqbA-P+yOUQ9unhordXjeMGL9gogzDY+BIgOtPiufNvO85+QJQtQ0HoGATs4AS6KNbAfZ0mBO0j7Xyr7DzEG8fCafOqcmj1p4mq-RTUxIVf5RqM+0GuS+XSB9CIBbHIKJoW3OvB8GEo0Z9+6TbKxdVBGwL5FY53igor8+TrbL7P2mEZwElDFDgDrmoxRYo-tH36+ipeUTp]";

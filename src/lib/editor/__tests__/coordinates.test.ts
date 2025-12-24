@@ -2,12 +2,12 @@
  * 座標ユーティリティのテスト
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
 	calculateRotation,
 	clampToCanvas,
-	snapToGrid,
 	distance,
+	snapToGrid,
 } from "../coordinates";
 
 describe("coordinates", () => {

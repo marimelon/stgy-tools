@@ -2,17 +2,17 @@
  * タイプガード関数のテスト
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import { ObjectIds } from "@/lib/stgy";
 import {
-	isFieldObject,
 	isAoEObject,
+	isEnemy,
+	isFieldObject,
+	isJobIcon,
+	isMarker,
 	isRoleIcon,
 	isWaymark,
-	isEnemy,
-	isMarker,
-	isJobIcon,
 } from "../type-guards";
-import { ObjectIds } from "@/lib/stgy";
 
 describe("type-guards", () => {
 	describe("isFieldObject", () => {

@@ -2,8 +2,8 @@
  * Undo toast component for deleted boards
  */
 
-import { useTranslation } from "react-i18next";
 import { Undo2, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 export interface UndoToastProps {

@@ -1,17 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useId } from "react";
 import { AlertCircle, Eye } from "lucide-react";
+import { useId, useState } from "react";
 import { BoardViewer } from "@/components/board";
-import { decodeStgy, parseBoardData, ObjectNames } from "@/lib/stgy";
-import type { BoardData, BoardObject } from "@/lib/stgy";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Footer } from "@/components/ui/Footer";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { generateCommonMeta } from "@/lib/seo";
+import type { BoardData, BoardObject } from "@/lib/stgy";
+import { decodeStgy, ObjectNames, parseBoardData } from "@/lib/stgy";
 
-export const Route = createFileRoute("/")({ component: App });
+const seo = generateCommonMeta("home");
+
+export const Route = createFileRoute("/")({
+	component: App,
+	head: () => seo,
+});
 
 function getBackgroundName(id: number): string {
 	const names: Record<number, string> = {

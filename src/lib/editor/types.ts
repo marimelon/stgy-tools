@@ -3,12 +3,12 @@
  */
 
 import type {
+	BackgroundId,
 	BoardData,
 	BoardObject,
-	BackgroundId,
-	Position,
 	Color,
 	ObjectFlags,
+	Position,
 } from "@/lib/stgy";
 
 // ============================================
