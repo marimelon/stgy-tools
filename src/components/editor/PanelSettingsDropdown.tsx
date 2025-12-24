@@ -68,11 +68,11 @@ export function PanelSettingsDropdown() {
 		}
 	}, [isOpen]);
 
-	// クリック外で閉じる
+	// クリック外で閉じる（キャプチャフェーズで捕捉してエディタ上のクリックも検知）
 	useEffect(() => {
 		if (!isOpen) return;
 
-		const handleClickOutside = (e: globalThis.MouseEvent) => {
+		const handleClickOutside = (e: MouseEvent | PointerEvent) => {
 			const target = e.target as Node;
 			if (
 				buttonRef.current &&
@@ -84,9 +84,13 @@ export function PanelSettingsDropdown() {
 			}
 		};
 
-		document.addEventListener("mousedown", handleClickOutside);
+		// キャプチャフェーズで捕捉することで、stopPropagationされる前にイベントを検知
+		// SVGキャンバスはpointerdownを使用しているため、両方を監視
+		document.addEventListener("mousedown", handleClickOutside, true);
+		document.addEventListener("pointerdown", handleClickOutside, true);
 		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
+			document.removeEventListener("mousedown", handleClickOutside, true);
+			document.removeEventListener("pointerdown", handleClickOutside, true);
 		};
 	}, [isOpen]);
 
