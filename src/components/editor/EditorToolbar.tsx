@@ -455,8 +455,8 @@ export function EditorToolbar({
 					</>
 				)}
 
-				{/* 状態表示 */}
-				<div className="ml-auto text-right text-xs flex-shrink-0 whitespace-nowrap flex items-center gap-3 text-muted-foreground font-mono">
+				{/* 保存状態表示 */}
+				<div className="ml-auto text-right text-xs flex-shrink-0 whitespace-nowrap flex items-center gap-2 text-muted-foreground font-mono">
 					{state.isDirty && (
 						<span
 							className="status-dot dirty"
@@ -466,30 +466,6 @@ export function EditorToolbar({
 					{lastSavedAt && (
 						<span title={`${lastSavedAt.toLocaleString()}`}>
 							{formatRelativeTime(lastSavedAt, t)}
-						</span>
-					)}
-					{toolbarSize === "large" ? (
-						<span>
-							{t("toolbar.objectCount")}
-							<span className="text-primary">{state.board.objects.length}</span>
-							{hasSelection && (
-								<>
-									{t("toolbar.selected")}
-									<span className="text-accent">
-										{state.selectedIndices.length}
-									</span>
-								</>
-							)}
-						</span>
-					) : (
-						<span>
-							<span className="text-primary">{state.board.objects.length}</span>
-							{hasSelection && (
-								<span className="text-accent">
-									{" "}
-									/ {state.selectedIndices.length}
-								</span>
-							)}
 						</span>
 					)}
 				</div>

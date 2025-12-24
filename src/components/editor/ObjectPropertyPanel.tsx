@@ -143,7 +143,10 @@ export function ObjectPropertyPanel({
 	return (
 		<div className="panel h-full overflow-y-auto">
 			<div className="panel-header">
-				<h2 className="panel-title">{t("propertyPanel.title")}</h2>
+				<h2 className="panel-title">
+					{t("propertyPanel.title")}
+					<span className="ml-2 text-xs font-normal text-accent">1</span>
+				</h2>
 			</div>
 
 			<div className="p-4 space-y-1">

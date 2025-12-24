@@ -7,7 +7,6 @@
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { COLOR_CHANGEABLE_OBJECT_IDS } from "@/components/board/ObjectRenderer/constants";
-import { Badge } from "@/components/ui/badge";
 import { hexToRgb, rgbToHex, useDebugMode } from "@/lib/editor";
 import {
 	type BatchPropertyValues,
@@ -164,27 +163,22 @@ export function BatchPropertyPanel({
 	return (
 		<div className="panel h-full overflow-y-auto">
 			<div className="panel-header">
-				<h2 className="panel-title">{t("batchProperty.title", "一括編集")}</h2>
+				<h2 className="panel-title">
+					{t("batchProperty.title", "一括編集")}
+					<span className="ml-2 text-xs font-normal text-accent">
+						{objects.length}
+					</span>
+				</h2>
 			</div>
 
 			<div className="p-4 space-y-1">
 				{/* 選択情報 */}
 				<div className="mb-4">
-					<div className="text-xs font-medium mb-1.5 uppercase tracking-wide text-muted-foreground font-display">
-						{t("batchProperty.selection", "選択")}
-					</div>
-					<div className="flex items-center gap-2 flex-wrap">
-						<Badge variant="secondary" className="font-mono text-xs">
-							{t("batchProperty.objectCount", "{{count}}個のオブジェクト", {
-								count: objects.length,
-							})}
-						</Badge>
-						{sameObjectId && commonObjectId && (
-							<span className="text-sm text-muted-foreground">
-								{ObjectNames[commonObjectId]}
-							</span>
-						)}
-					</div>
+					{sameObjectId && commonObjectId && (
+						<span className="text-sm text-muted-foreground">
+							{ObjectNames[commonObjectId]}
+						</span>
+					)}
 				</div>
 
 				{/* 変形 */}
