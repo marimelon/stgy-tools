@@ -4,6 +4,8 @@
 
 import type { BoardData } from "@/lib/stgy";
 import {
+	// ユーティリティ
+	generateHistoryId,
 	handleAddObject,
 	// 整列
 	handleAlignObjects,
@@ -16,8 +18,6 @@ import {
 	handleDeselectAll,
 	handleDuplicateObjects,
 	handleEndTextEdit,
-	// ユーティリティ
-	generateHistoryId,
 	// グループ・グリッド
 	handleGroupObjects,
 	handleJumpToHistory,

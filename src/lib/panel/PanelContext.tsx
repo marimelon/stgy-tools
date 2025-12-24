@@ -36,10 +36,14 @@ export interface PanelContextValue {
 	applyPreset: (preset: PanelPreset) => void;
 	/** デフォルトにリセット */
 	resetToDefault: () => void;
-	/** 左スロットのパネル一覧 */
+	/** 左スロットのパネル一覧（表示中のみ） */
 	leftPanels: [PanelId, PanelConfig][];
-	/** 右スロットのパネル一覧 */
+	/** 右スロットのパネル一覧（表示中のみ） */
 	rightPanels: [PanelId, PanelConfig][];
+	/** 左スロットの非表示パネル一覧 */
+	leftHiddenPanels: [PanelId, PanelConfig][];
+	/** 右スロットの非表示パネル一覧 */
+	rightHiddenPanels: [PanelId, PanelConfig][];
 }
 
 const PanelContext = createContext<PanelContextValue | null>(null);
@@ -170,6 +174,19 @@ export function PanelProvider({ children }: PanelProviderProps) {
 			.sort(([_, a], [__, b]) => a.order - b.order);
 	}, [config.panels]);
 
+	// 非表示パネル一覧
+	const leftHiddenPanels = useMemo(() => {
+		return (Object.entries(config.panels) as [PanelId, PanelConfig][])
+			.filter(([_, cfg]) => cfg.slot === "left" && !cfg.visible)
+			.sort(([_, a], [__, b]) => a.order - b.order);
+	}, [config.panels]);
+
+	const rightHiddenPanels = useMemo(() => {
+		return (Object.entries(config.panels) as [PanelId, PanelConfig][])
+			.filter(([_, cfg]) => cfg.slot === "right" && !cfg.visible)
+			.sort(([_, a], [__, b]) => a.order - b.order);
+	}, [config.panels]);
+
 	const value = useMemo<PanelContextValue>(
 		() => ({
 			config,
@@ -179,6 +196,8 @@ export function PanelProvider({ children }: PanelProviderProps) {
 			resetToDefault,
 			leftPanels,
 			rightPanels,
+			leftHiddenPanels,
+			rightHiddenPanels,
 		}),
 		[
 			config,
@@ -188,6 +207,8 @@ export function PanelProvider({ children }: PanelProviderProps) {
 			resetToDefault,
 			leftPanels,
 			rightPanels,
+			leftHiddenPanels,
+			rightHiddenPanels,
 		],
 	);
 
