@@ -68,3 +68,4 @@ export {
 	KEYBOARD_SHORTCUTS,
 	useKeyboardShortcuts,
 } from "./useKeyboardShortcuts";
+export { useObjectPaletteState } from "./useObjectPaletteState";

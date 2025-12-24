@@ -10,7 +10,12 @@ import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ObjectRenderer } from "@/components/board";
 import { DEFAULT_BBOX_SIZE, OBJECT_BBOX_SIZES } from "@/lib/board";
-import { createDefaultObject, useDebugMode, useEditor } from "@/lib/editor";
+import {
+	createDefaultObject,
+	useDebugMode,
+	useEditor,
+	useObjectPaletteState,
+} from "@/lib/editor";
 import { ObjectIds } from "@/lib/stgy";
 
 /** 非表示オブジェクト（CSVでFalse） - デバッグモード時のみ表示 */
@@ -177,21 +182,7 @@ export function ObjectPalette() {
 	const { t } = useTranslation();
 	const { addObject } = useEditor();
 	const { debugMode, toggleDebugMode } = useDebugMode();
-	const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-		new Set(["roles", "attacks"]),
-	);
-
-	const toggleCategory = (category: string) => {
-		setExpandedCategories((prev) => {
-			const next = new Set(prev);
-			if (next.has(category)) {
-				next.delete(category);
-			} else {
-				next.add(category);
-			}
-			return next;
-		});
-	};
+	const { expandedCategories, toggleCategory } = useObjectPaletteState();
 
 	const handleAddObject = (objectId: number) => {
 		addObject(objectId);
