@@ -6,9 +6,27 @@
 
 import { type RefObject, useCallback, useState } from "react";
 import type { BoardObject, Position } from "@/lib/stgy";
+import {
+	DEFAULT_EDIT_PARAMS,
+	EDIT_PARAMS,
+	EditParamIds,
+	OBJECT_EDIT_PARAMS,
+} from "@/lib/stgy";
 import { calculateRotation, screenToSVG, snapToGrid } from "../coordinates";
 import type { DragState, GridSettings, ResizeHandle } from "../types";
 import { isPointInObject } from "./hit-testing";
+
+/**
+ * オブジェクトタイプに応じたサイズ制限を取得
+ */
+function getSizeLimits(objectId: number): { min: number; max: number } {
+	const editParams = OBJECT_EDIT_PARAMS[objectId] ?? DEFAULT_EDIT_PARAMS;
+	const sizeParamId = editParams.includes(EditParamIds.SizeSmall)
+		? EditParamIds.SizeSmall
+		: EditParamIds.Size;
+	const sizeParam = EDIT_PARAMS[sizeParamId];
+	return { min: sizeParam.min, max: sizeParam.max };
+}
 
 export interface UseDragInteractionParams {
 	svgRef: RefObject<SVGSVGElement | null>;
@@ -277,8 +295,9 @@ export function useDragInteraction({
 
 				if (startDistance > 0) {
 					const scaleFactor = distance / startDistance;
+					const { min, max } = getSizeLimits(startObjectState.objectId);
 					const newSize = Math.round(
-						Math.max(50, Math.min(200, startObjectState.size * scaleFactor)),
+						Math.max(min, Math.min(max, startObjectState.size * scaleFactor)),
 					);
 					updateObject(objectIndex, { size: newSize });
 				}
