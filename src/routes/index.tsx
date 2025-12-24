@@ -10,15 +10,106 @@ import { Footer } from "@/components/ui/Footer";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ObjectListPanel } from "@/components/viewer/ObjectListPanel";
-import { generateCommonMeta } from "@/lib/seo";
+import {
+	generateCanonicalLink,
+	generateHreflangLinks,
+	PAGE_SEO,
+	SITE_CONFIG,
+} from "@/lib/seo";
 import type { BoardData, BoardObject } from "@/lib/stgy";
 import { decodeStgy, ObjectNames, parseBoardData } from "@/lib/stgy";
 
-const seo = generateCommonMeta("home");
-
 export const Route = createFileRoute("/")({
 	component: App,
-	head: () => seo,
+	validateSearch: (search: Record<string, unknown>) => {
+		return {
+			stgy: typeof search.stgy === "string" ? search.stgy : undefined,
+		};
+	},
+	head: ({ match }) => {
+		const { stgy } = match.search;
+		const hasCode = Boolean(stgy);
+		const pagePath = PAGE_SEO.home.path;
+
+		// 動的OGイメージ: stgyコードがある場合は生成画像を使用
+		const ogImage = hasCode
+			? `${SITE_CONFIG.url}/image?stgy=${encodeURIComponent(stgy as string)}`
+			: `${SITE_CONFIG.url}/favicon.svg`;
+
+		// Twitter Cardタイプ: 画像がある場合はsummary_large_image
+		const twitterCard = hasCode ? "summary_large_image" : "summary";
+
+		return {
+			meta: [
+				{
+					title: PAGE_SEO.home.title,
+				},
+				{
+					name: "description",
+					content: PAGE_SEO.home.description,
+				},
+				{
+					name: "keywords",
+					content:
+						"FFXIV, Final Fantasy XIV, Strategy Board, stgy, viewer, raid strategy, FF14",
+				},
+				// Open Graph
+				{
+					property: "og:title",
+					content: "FFXIV Strategy Board Viewer",
+				},
+				{
+					property: "og:description",
+					content: hasCode
+						? "View this FFXIV Strategy Board diagram"
+						: "View and decode FFXIV Strategy Board (stgy) codes. Visualize raid strategies with interactive SVG rendering.",
+				},
+				{
+					property: "og:type",
+					content: "website",
+				},
+				{
+					property: "og:url",
+					content: `${SITE_CONFIG.url}${pagePath}`,
+				},
+				{
+					property: "og:image",
+					content: ogImage,
+				},
+				{
+					property: "og:image:width",
+					content: "512",
+				},
+				{
+					property: "og:image:height",
+					content: "384",
+				},
+				// Twitter Card
+				{
+					name: "twitter:card",
+					content: twitterCard,
+				},
+				{
+					name: "twitter:title",
+					content: "FFXIV Strategy Board Viewer",
+				},
+				{
+					name: "twitter:description",
+					content: hasCode
+						? "View this FFXIV Strategy Board diagram"
+						: "View and decode FFXIV Strategy Board (stgy) codes.",
+				},
+				{
+					name: "twitter:image",
+					content: ogImage,
+				},
+			],
+			links: [
+				generateCanonicalLink(pagePath),
+				...generateHreflangLinks(pagePath),
+			],
+		};
+	},
 });
 
 const SAMPLE_STGY =
@@ -29,7 +120,12 @@ const DEBOUNCE_DELAY = 300;
 
 function App() {
 	const { t } = useTranslation();
-	const [stgyInput, setStgyInput] = useState(SAMPLE_STGY);
+	const { stgy: initialCode } = Route.useSearch();
+	// サンプルコードを使用しているかどうか（URL更新をスキップするため）
+	const [isUsingDefaultSample, setIsUsingDefaultSample] = useState(
+		!initialCode,
+	);
+	const [stgyInput, setStgyInput] = useState(initialCode ?? SAMPLE_STGY);
 	const [boardData, setBoardData] = useState<BoardData | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [showBoundingBox, setShowBoundingBox] = useState(false);
@@ -40,6 +136,19 @@ function App() {
 	const stgyInputId = useId();
 	const showBboxId = useId();
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// 入力変更ハンドラー（サンプルコードフラグを更新）
+	const handleInputChange = useCallback(
+		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+			const newValue = e.target.value;
+			setStgyInput(newValue);
+			// ユーザーが入力を変更したらサンプルコードフラグをオフ
+			if (isUsingDefaultSample) {
+				setIsUsingDefaultSample(false);
+			}
+		},
+		[isUsingDefaultSample],
+	);
 
 	// 自動デコード関数
 	const decodeBoardData = useCallback((input: string) => {
@@ -64,7 +173,7 @@ function App() {
 		}
 	}, []);
 
-	// 入力変更時の自動デコード（デバウンス付き）
+	// 入力変更時の自動デコード＆URL更新（デバウンス付き）
 	useEffect(() => {
 		if (debounceTimerRef.current) {
 			clearTimeout(debounceTimerRef.current);
@@ -72,6 +181,18 @@ function App() {
 
 		debounceTimerRef.current = setTimeout(() => {
 			decodeBoardData(stgyInput);
+
+			// サンプルコード使用時はURLを更新しない
+			if (!isUsingDefaultSample) {
+				const trimmedCode = stgyInput.trim();
+				const url = new URL(window.location.href);
+				if (trimmedCode) {
+					url.searchParams.set("stgy", trimmedCode);
+				} else {
+					url.searchParams.delete("stgy");
+				}
+				window.history.replaceState(null, "", url.toString());
+			}
 		}, DEBOUNCE_DELAY);
 
 		return () => {
@@ -79,7 +200,7 @@ function App() {
 				clearTimeout(debounceTimerRef.current);
 			}
 		};
-	}, [stgyInput, decodeBoardData]);
+	}, [stgyInput, decodeBoardData, isUsingDefaultSample]);
 
 	const handleSelectObject = (
 		index: number | null,
@@ -99,7 +220,7 @@ function App() {
 					<Textarea
 						id={stgyInputId}
 						value={stgyInput}
-						onChange={(e) => setStgyInput(e.target.value)}
+						onChange={handleInputChange}
 						className="h-24 font-mono text-sm"
 						placeholder={t("viewer.inputPlaceholder")}
 					/>
