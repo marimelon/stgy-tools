@@ -52,6 +52,41 @@
 		"ja": "日本語",
 		"en": "English"
 	},
+	"viewer": {
+		"pageTitle": "STGY Tools Viewer",
+		"inputLabel": "Enter stgy code:",
+		"inputPlaceholder": "[stgy:a...]",
+		"boardInfo": {
+			"title": "Board Information",
+			"name": "Name",
+			"unnamed": "(Untitled)",
+			"objectCount": "Object Count",
+			"background": "Background"
+		},
+		"showBoundingBox": "Show bounding box",
+		"selectedObject": {
+			"title": "Selected Object",
+			"clickToSelect": "Click an object to select",
+			"index": "Index",
+			"objectName": "Object Name",
+			"objectId": "Object ID",
+			"position": "Position",
+			"rotation": "Rotation",
+			"size": "Size",
+			"color": "Color",
+			"text": "Text",
+			"param1": "Parameter 1",
+			"param2": "Parameter 2",
+			"flags": "Flags",
+			"unknown": "Unknown"
+		},
+		"flags": {
+			"visible": "Visible",
+			"flipHorizontal": "Flip Horizontal",
+			"flipVertical": "Flip Vertical",
+			"locked": "Locked"
+		}
+	},
 	"batchProperty": {
 		"title": "Batch Edit",
 		"selection": "Selection",

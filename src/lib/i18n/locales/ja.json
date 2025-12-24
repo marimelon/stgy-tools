@@ -52,6 +52,41 @@
 		"ja": "日本語",
 		"en": "English"
 	},
+	"viewer": {
+		"pageTitle": "STGY Tools Viewer",
+		"inputLabel": "stgyコードを入力:",
+		"inputPlaceholder": "[stgy:a...]",
+		"boardInfo": {
+			"title": "ボード情報",
+			"name": "名前",
+			"unnamed": "(無題)",
+			"objectCount": "オブジェクト数",
+			"background": "背景"
+		},
+		"showBoundingBox": "バウンディングボックスを表示",
+		"selectedObject": {
+			"title": "選択オブジェクト",
+			"clickToSelect": "オブジェクトをクリックして選択",
+			"index": "インデックス",
+			"objectName": "オブジェクト名",
+			"objectId": "オブジェクトID",
+			"position": "位置",
+			"rotation": "回転",
+			"size": "サイズ",
+			"color": "色",
+			"text": "テキスト",
+			"param1": "パラメータ1",
+			"param2": "パラメータ2",
+			"flags": "フラグ",
+			"unknown": "不明"
+		},
+		"flags": {
+			"visible": "表示",
+			"flipHorizontal": "左右反転",
+			"flipVertical": "上下反転",
+			"locked": "ロック"
+		}
+	},
 	"batchProperty": {
 		"title": "一括編集",
 		"selection": "選択",

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/badge";
@@ -19,19 +20,6 @@ export const Route = createFileRoute("/")({
 	head: () => seo,
 });
 
-function getBackgroundName(id: number): string {
-	const names: Record<number, string> = {
-		1: "設定なし",
-		2: "全面チェック",
-		3: "円形チェック",
-		4: "正方形チェック",
-		5: "全面グレー",
-		6: "円形グレー",
-		7: "正方形グレー",
-	};
-	return names[id] ?? `不明 (${id})`;
-}
-
 const SAMPLE_STGY =
 	"[stgy:a7AIxEt68bIksM7YvDMlkmKJL8iH2Eq-2vDUI+1PGMl9+UVD4FhAcsxS5tImN8GsSsHqSfbiqbA-P+yOUQ9unhordXjeMGL9gogzDY+BIgOtPiufNvO85+QJQtQ0HoGATs4AS6KNbAfZ0mBO0j7Xyr7DzEG8fCafOqcmj1p4mq-RTUxIVf5RqM+0GuS+XSB9CIBbHIKJoW3OvB8GEo0Z9+6TbKxdVBGwL5FY53igor8+TrbL7P2mEZwElDFDgDrmoxRYo-tH36+ipeUTp]";
 
@@ -39,6 +27,7 @@ const SAMPLE_STGY =
 const DEBOUNCE_DELAY = 300;
 
 function App() {
+	const { t } = useTranslation();
 	const [stgyInput, setStgyInput] = useState(SAMPLE_STGY);
 	const [boardData, setBoardData] = useState<BoardData | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -101,17 +90,17 @@ function App() {
 
 	return (
 		<div className="min-h-screen bg-background text-foreground">
-			<AppHeader currentPage="viewer" title="STGY Tools Viewer" />
+			<AppHeader currentPage="viewer" title={t("viewer.pageTitle")} />
 
 			<main className="p-4 max-w-6xl mx-auto">
 				<div className="mb-6 space-y-3">
-					<Label htmlFor={stgyInputId}>stgyコードを入力:</Label>
+					<Label htmlFor={stgyInputId}>{t("viewer.inputLabel")}</Label>
 					<Textarea
 						id={stgyInputId}
 						value={stgyInput}
 						onChange={(e) => setStgyInput(e.target.value)}
 						className="h-24 font-mono text-sm"
-						placeholder="[stgy:a...]"
+						placeholder={t("viewer.inputPlaceholder")}
 					/>
 				</div>
 
@@ -127,23 +116,31 @@ function App() {
 						{/* ボード情報 */}
 						<div className="p-4 bg-card border border-border rounded-lg">
 							<h2 className="text-lg font-semibold mb-3 font-display">
-								ボード情報
+								{t("viewer.boardInfo.title")}
 							</h2>
 							<dl className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
 								<div>
-									<dt className="text-muted-foreground">名前</dt>
-									<dd className="font-medium">{boardData.name || "(無題)"}</dd>
+									<dt className="text-muted-foreground">
+										{t("viewer.boardInfo.name")}
+									</dt>
+									<dd className="font-medium">
+										{boardData.name || t("viewer.boardInfo.unnamed")}
+									</dd>
 								</div>
 								<div>
-									<dt className="text-muted-foreground">オブジェクト数</dt>
+									<dt className="text-muted-foreground">
+										{t("viewer.boardInfo.objectCount")}
+									</dt>
 									<dd className="font-medium font-mono text-primary">
 										{boardData.objects.length}
 									</dd>
 								</div>
 								<div>
-									<dt className="text-muted-foreground">背景</dt>
+									<dt className="text-muted-foreground">
+										{t("viewer.boardInfo.background")}
+									</dt>
 									<dd className="font-medium">
-										{getBackgroundName(boardData.backgroundId)}
+										{t(`background.${boardData.backgroundId}`)}
 									</dd>
 								</div>
 							</dl>
@@ -164,7 +161,7 @@ function App() {
 										htmlFor={showBboxId}
 										className="text-sm cursor-pointer"
 									>
-										バウンディングボックスを表示
+										{t("viewer.showBoundingBox")}
 									</Label>
 								</div>
 								<BoardViewer
@@ -179,7 +176,7 @@ function App() {
 							{/* 選択オブジェクト情報 */}
 							<div className="p-4 bg-card border border-border rounded-lg flex-1 min-w-[250px]">
 								<h2 className="text-lg font-semibold mb-3 font-display">
-									選択オブジェクト
+									{t("viewer.selectedObject.title")}
 								</h2>
 								{selectedObject && selectedIndex !== null ? (
 									<SelectedObjectInfo
@@ -188,7 +185,7 @@ function App() {
 									/>
 								) : (
 									<p className="text-muted-foreground text-sm">
-										オブジェクトをクリックして選択
+										{t("viewer.selectedObject.clickToSelect")}
 									</p>
 								)}
 							</div>
@@ -209,38 +206,56 @@ function SelectedObjectInfo({
 	index: number;
 	object: BoardObject;
 }) {
-	const objectName = ObjectNames[object.objectId] ?? "不明";
+	const { t } = useTranslation();
+	const objectName =
+		t(`object.${object.objectId}`, { defaultValue: "" }) ||
+		ObjectNames[object.objectId] ||
+		t("viewer.selectedObject.unknown");
 
 	return (
 		<dl className="space-y-2 text-sm">
 			<div className="flex justify-between">
-				<dt className="text-muted-foreground">インデックス</dt>
+				<dt className="text-muted-foreground">
+					{t("viewer.selectedObject.index")}
+				</dt>
 				<dd className="font-mono">{index}</dd>
 			</div>
 			<div className="flex justify-between">
-				<dt className="text-muted-foreground">オブジェクト名</dt>
+				<dt className="text-muted-foreground">
+					{t("viewer.selectedObject.objectName")}
+				</dt>
 				<dd className="font-medium">{objectName}</dd>
 			</div>
 			<div className="flex justify-between">
-				<dt className="text-muted-foreground">オブジェクトID</dt>
+				<dt className="text-muted-foreground">
+					{t("viewer.selectedObject.objectId")}
+				</dt>
 				<dd className="font-mono text-primary">{object.objectId}</dd>
 			</div>
 			<div className="flex justify-between">
-				<dt className="text-muted-foreground">位置</dt>
+				<dt className="text-muted-foreground">
+					{t("viewer.selectedObject.position")}
+				</dt>
 				<dd className="font-mono">
 					({object.position.x.toFixed(1)}, {object.position.y.toFixed(1)})
 				</dd>
 			</div>
 			<div className="flex justify-between">
-				<dt className="text-muted-foreground">回転</dt>
+				<dt className="text-muted-foreground">
+					{t("viewer.selectedObject.rotation")}
+				</dt>
 				<dd className="font-mono">{object.rotation}°</dd>
 			</div>
 			<div className="flex justify-between">
-				<dt className="text-muted-foreground">サイズ</dt>
+				<dt className="text-muted-foreground">
+					{t("viewer.selectedObject.size")}
+				</dt>
 				<dd className="font-mono">{object.size}%</dd>
 			</div>
 			<div className="flex justify-between items-center">
-				<dt className="text-muted-foreground">色</dt>
+				<dt className="text-muted-foreground">
+					{t("viewer.selectedObject.color")}
+				</dt>
 				<dd className="font-mono flex items-center gap-2">
 					<span
 						className="inline-block w-4 h-4 rounded border border-border"
@@ -253,31 +268,39 @@ function SelectedObjectInfo({
 			</div>
 			{object.text && (
 				<div className="flex justify-between">
-					<dt className="text-muted-foreground">テキスト</dt>
+					<dt className="text-muted-foreground">
+						{t("viewer.selectedObject.text")}
+					</dt>
 					<dd className="font-mono">"{object.text}"</dd>
 				</div>
 			)}
 			{object.param1 !== undefined && (
 				<div className="flex justify-between">
-					<dt className="text-muted-foreground">パラメータ1</dt>
+					<dt className="text-muted-foreground">
+						{t("viewer.selectedObject.param1")}
+					</dt>
 					<dd className="font-mono">{object.param1}</dd>
 				</div>
 			)}
 			{object.param2 !== undefined && (
 				<div className="flex justify-between">
-					<dt className="text-muted-foreground">パラメータ2</dt>
+					<dt className="text-muted-foreground">
+						{t("viewer.selectedObject.param2")}
+					</dt>
 					<dd className="font-mono">{object.param2}</dd>
 				</div>
 			)}
 			<div className="pt-2 border-t border-border">
-				<dt className="text-muted-foreground mb-2">フラグ</dt>
+				<dt className="text-muted-foreground mb-2">
+					{t("viewer.selectedObject.flags")}
+				</dt>
 				<dd className="flex flex-wrap gap-1">
 					{object.flags.visible && (
 						<Badge
 							variant="outline"
 							className="bg-green-500/10 text-green-400 border-green-500/30"
 						>
-							表示
+							{t("viewer.flags.visible")}
 						</Badge>
 					)}
 					{object.flags.flipHorizontal && (
@@ -285,7 +308,7 @@ function SelectedObjectInfo({
 							variant="outline"
 							className="bg-blue-500/10 text-blue-400 border-blue-500/30"
 						>
-							左右反転
+							{t("viewer.flags.flipHorizontal")}
 						</Badge>
 					)}
 					{object.flags.flipVertical && (
@@ -293,7 +316,7 @@ function SelectedObjectInfo({
 							variant="outline"
 							className="bg-blue-500/10 text-blue-400 border-blue-500/30"
 						>
-							上下反転
+							{t("viewer.flags.flipVertical")}
 						</Badge>
 					)}
 					{object.flags.locked && (
@@ -301,7 +324,7 @@ function SelectedObjectInfo({
 							variant="outline"
 							className="bg-yellow-500/10 text-yellow-400 border-yellow-500/30"
 						>
-							ロック
+							{t("viewer.flags.locked")}
 						</Badge>
 					)}
 				</dd>
