@@ -37,7 +37,7 @@ export function BoardThumbnail({ stgyCode, className }: BoardThumbnailProps) {
 
 	return (
 		<div
-			className={`overflow-hidden [&>svg]:w-full [&>svg]:h-full ${className ?? ""}`}
+			className={`overflow-hidden [&>svg]:w-full [&>svg]:h-full [&_*]:pointer-events-none ${className ?? ""}`}
 		>
 			<BoardViewer boardData={boardData} />
 		</div>
