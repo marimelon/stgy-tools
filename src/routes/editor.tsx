@@ -2,7 +2,7 @@
  * エディターページ
  */
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -47,10 +47,18 @@ const CANVAS_HEIGHT = 384;
 
 const seo = generateCommonMeta("editor");
 
+/** Search params for editor page */
+type EditorSearchParams = {
+	code?: string;
+};
+
 export const Route = createFileRoute("/editor")({
 	component: EditorPage,
 	ssr: false, // TanStack DB (useLiveQuery) requires client-side only
 	head: () => seo,
+	validateSearch: (search: Record<string, unknown>): EditorSearchParams => ({
+		code: typeof search.code === "string" ? search.code : undefined,
+	}),
 });
 
 /** Default grid settings */
@@ -75,6 +83,8 @@ function decodeBoardFromStgy(stgyCode: string): BoardData | null {
 
 function EditorPage() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
+	const { code: codeFromUrl } = Route.useSearch();
 
 	// Board manager state
 	const [showBoardManager, setShowBoardManager] = useState(false);
@@ -211,10 +221,52 @@ function EditorPage() {
 		setIsInitialized(true);
 	}, [clearError, handleCreateNewBoard]);
 
+	// Handle importing a board from URL query parameter
+	const handleImportFromUrl = useCallback(
+		(code: string) => {
+			// Decode the stgy code
+			const decodedBoard = decodeBoardFromStgy(code);
+			if (!decodedBoard) {
+				console.warn("Failed to decode board from URL parameter");
+				return false;
+			}
+
+			// Create a new board with the imported data
+			const boardName = decodedBoard.name || t("boardManager.defaultBoardName");
+			const newBoardId = createBoard(
+				boardName,
+				code,
+				0,
+				[],
+				DEFAULT_GRID_SETTINGS,
+			);
+
+			// Initialize editor with the imported board
+			setCurrentBoardId(newBoardId);
+			setInitialBoard({ ...decodedBoard, name: boardName });
+			setInitialGroups([]);
+			setInitialGridSettings(DEFAULT_GRID_SETTINGS);
+			setInitialEncodeKey(0);
+			setEditorKey((prev) => prev + 1);
+
+			// Clear the URL parameter to prevent re-import on refresh
+			navigate({ to: "/editor", search: {}, replace: true });
+
+			return true;
+		},
+		[createBoard, t, navigate],
+	);
+
 	// Auto-initialize: create first board or open last edited board
 	useEffect(() => {
 		// Wait for loading to complete, skip if error or memory-only mode
 		if (isLoading || isInitialized || storageError || isMemoryOnlyMode) return;
+
+		// Check for stgy code in URL query parameter (from Image Generator page)
+		if (codeFromUrl && handleImportFromUrl(codeFromUrl)) {
+			setIsInitialized(true);
+			return;
+		}
 
 		if (boards.length === 0) {
 			// First time: auto-create a new board
@@ -233,8 +285,10 @@ function EditorPage() {
 		currentBoardId,
 		storageError,
 		isMemoryOnlyMode,
+		codeFromUrl,
 		handleCreateNewBoard,
 		handleOpenBoard,
+		handleImportFromUrl,
 	]);
 
 	// Show storage error screen

@@ -45,7 +45,9 @@
 		"actualImageTab": "実際の画像",
 		"enterCodeToPreview": "stgyコードを入力するとプレビューが表示されます",
 		"imageLoadError": "画像の読み込みに失敗しました",
-		"retry": "再試行"
+		"retry": "再試行",
+		"editInEditor": "Editorで編集",
+		"editInEditorDescription": "このボードをEditorで開いて編集できます"
 	},
 	"language": {
 		"label": "言語",

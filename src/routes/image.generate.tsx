@@ -3,7 +3,8 @@
  * stgyコードを入力して画像URLを生成する
  */
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Pencil } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board/BoardViewer";
@@ -250,6 +251,7 @@ const SCALE_OPTIONS = [
 
 function ImageGeneratePage() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const { code: initialCode } = Route.useSearch();
 	const [code, setCode] = useState(initialCode ?? "");
 	const [format, setFormat] = useState<"png" | "svg">("png");
@@ -271,6 +273,14 @@ function ImageGeneratePage() {
 	const formatGroupId = useId();
 	const sizeGroupId = useId();
 	const generatedUrlId = useId();
+
+	// Navigate to Editor with the current stgy code via URL parameter
+	const handleEditInEditor = useCallback(() => {
+		if (!code.trim() || !boardData) return;
+
+		// Navigate to Editor with stgy code as query parameter
+		navigate({ to: "/editor", search: { code: code.trim() } });
+	}, [code, boardData, navigate]);
 
 	const generateUrl = useCallback(
 		(codeToUse: string) => {
@@ -659,6 +669,21 @@ function ImageGeneratePage() {
 										<code className="block p-3 bg-secondary/30 border border-border rounded-lg text-accent text-xs font-mono overflow-x-auto break-all">
 											{`![${strategyBoardAlt}](${generatedUrl})`}
 										</code>
+									</div>
+
+									{/* Editorで編集ボタン */}
+									<div className="pt-2 border-t border-border/50">
+										<button
+											type="button"
+											className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-accent/10 hover:bg-accent/20 text-accent border border-accent/30 hover:border-accent/50 rounded-lg text-sm font-medium transition-all"
+											onClick={handleEditInEditor}
+										>
+											<Pencil className="w-4 h-4" />
+											{t("imageGenerator.editInEditor")}
+										</button>
+										<p className="text-xs text-muted-foreground mt-2 text-center">
+											{t("imageGenerator.editInEditorDescription")}
+										</p>
 									</div>
 								</>
 							) : (

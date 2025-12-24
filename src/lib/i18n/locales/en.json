@@ -45,7 +45,9 @@
 		"actualImageTab": "Actual Image",
 		"enterCodeToPreview": "Enter a stgy code to see the preview",
 		"imageLoadError": "Failed to load image",
-		"retry": "Retry"
+		"retry": "Retry",
+		"editInEditor": "Edit in Editor",
+		"editInEditorDescription": "Open this board in Editor to edit"
 	},
 	"language": {
 		"label": "Language",
