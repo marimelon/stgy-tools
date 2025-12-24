@@ -16,6 +16,8 @@ import {
 	handleDeselectAll,
 	handleDuplicateObjects,
 	handleEndTextEdit,
+	// ユーティリティ
+	generateHistoryId,
 	// グループ・グリッド
 	handleGroupObjects,
 	handleJumpToHistory,
@@ -221,6 +223,7 @@ export function createInitialStateWithOptions(
 		gridSettings: initialGridSettings,
 		history: [
 			{
+				id: generateHistoryId(),
 				board: structuredClone(board),
 				groups: initialGroups,
 				description: "初期状態",

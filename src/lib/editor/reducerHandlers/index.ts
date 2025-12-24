@@ -58,6 +58,7 @@ export {
 export {
 	cloneBoard,
 	generateGroupId,
+	generateHistoryId,
 	MAX_HISTORY,
 	pushHistory,
 	shiftGroupIndices,
