@@ -42,7 +42,7 @@
 		"parseError": "stgyコードの解析に失敗しました: {{message}}",
 		"unknownError": "不明なエラー",
 		"previewTab": "プレビュー",
-		"actualImageTab": "実際の画像",
+		"actualImageTab": "画像",
 		"enterCodeToPreview": "stgyコードを入力するとプレビューが表示されます",
 		"imageLoadError": "画像の読み込みに失敗しました",
 		"retry": "再試行",

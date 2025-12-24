@@ -42,7 +42,7 @@
 		"parseError": "Failed to parse stgy code: {{message}}",
 		"unknownError": "Unknown error",
 		"previewTab": "Preview",
-		"actualImageTab": "Actual Image",
+		"actualImageTab": "Image",
 		"enterCodeToPreview": "Enter a stgy code to see the preview",
 		"imageLoadError": "Failed to load image",
 		"retry": "Retry",
