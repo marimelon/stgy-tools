@@ -3,10 +3,25 @@
  */
 
 import type { BoardData, BoardObject } from "@/lib/stgy";
-import type { EditorState, HistoryEntry, ObjectGroup } from "../types";
+import {
+	type EditorState,
+	type HistoryEntry,
+	MAX_HISTORY_SIZE,
+	type ObjectGroup,
+} from "../types";
 
-/** 履歴の最大保持数 */
-export const MAX_HISTORY = 50;
+/**
+ * 履歴の最大保持数
+ * @deprecated MAX_HISTORY_SIZE を使用してください
+ */
+export const MAX_HISTORY = MAX_HISTORY_SIZE;
+
+/**
+ * 履歴エントリ用のユニークIDを生成
+ */
+export function generateHistoryId(): string {
+	return `history-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
 
 /**
  * 履歴エントリを追加
@@ -20,6 +35,7 @@ export function pushHistory(
 
 	// 新しいエントリを追加
 	const entry: HistoryEntry = {
+		id: generateHistoryId(),
 		board: structuredClone(state.board),
 		groups: structuredClone(state.groups),
 		description,
@@ -27,7 +43,7 @@ export function pushHistory(
 	newHistory.push(entry);
 
 	// 履歴が多すぎる場合は古いものを削除
-	if (newHistory.length > MAX_HISTORY) {
+	if (newHistory.length > MAX_HISTORY_SIZE) {
 		newHistory.shift();
 	}
 

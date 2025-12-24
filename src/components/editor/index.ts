@@ -28,6 +28,7 @@ export {
 export type { GridOverlayProps, SelectionIndicatorProps } from "./GridOverlay";
 // SVGオーバーレイ
 export { GridOverlay, SelectionIndicator } from "./GridOverlay";
+export { HistoryPanel } from "./HistoryPanel";
 export type { ImportModalProps } from "./ImportModal";
 export { ImportModal } from "./ImportModal";
 export { LayerPanel } from "./LayerPanel";

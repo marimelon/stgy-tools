@@ -90,7 +90,12 @@ export function PanelSettingsDropdown() {
 		};
 	}, [isOpen]);
 
-	const panelIds: PanelId[] = ["objectPalette", "layerPanel", "propertyPanel"];
+	const panelIds: PanelId[] = [
+		"objectPalette",
+		"layerPanel",
+		"propertyPanel",
+		"historyPanel",
+	];
 	const presetIds: PanelPreset[] = [
 		"default",
 		"propertyLeft",

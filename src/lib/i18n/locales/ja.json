@@ -130,6 +130,13 @@
 		"visibilityChanged": "表示状態変更",
 		"groupVisibilityChanged": "グループ表示状態変更"
 	},
+	"historyPanel": {
+		"title": "履歴",
+		"clear": "履歴をクリア",
+		"clearConfirm": "履歴をクリアしますか？",
+		"initial": "初期状態",
+		"noHistory": "操作履歴がありません"
+	},
 	"propertyPanel": {
 		"title": "プロパティ",
 		"object": "オブジェクト",
@@ -285,6 +292,7 @@
 		"objectPalette": "オブジェクトパレット",
 		"layerPanel": "レイヤーパネル",
 		"propertyPanel": "プロパティパネル",
+		"historyPanel": "履歴パネル",
 		"default": "デフォルト",
 		"propertyLeft": "プロパティ左配置",
 		"allLeft": "全て左",

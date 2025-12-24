@@ -4,7 +4,7 @@
 
 import type { BoardData } from "@/lib/stgy";
 import type { EditorState } from "../types";
-import { cloneBoard, pushHistory } from "./utils";
+import { cloneBoard, generateHistoryId, pushHistory } from "./utils";
 
 /**
  * ボードを設定
@@ -21,6 +21,7 @@ export function handleSetBoard(
 		isDirty: false,
 		history: [
 			{
+				id: generateHistoryId(),
 				board: structuredClone(payload.board),
 				groups: [],
 				description: "初期状態",
@@ -97,5 +98,53 @@ export function handleRedo(state: EditorState): EditorState {
 		historyIndex: newIndex,
 		selectedIndices: [],
 		isDirty: true,
+	};
+}
+
+/**
+ * 任意の履歴位置に移動
+ */
+export function handleJumpToHistory(
+	state: EditorState,
+	payload: { index: number },
+): EditorState {
+	const { index } = payload;
+
+	// 範囲チェック
+	if (index < 0 || index >= state.history.length) {
+		return state;
+	}
+
+	// 同じ位置なら何もしない
+	if (index === state.historyIndex) {
+		return state;
+	}
+
+	const entry = state.history[index];
+	return {
+		...state,
+		board: structuredClone(entry.board),
+		groups: structuredClone(entry.groups ?? []),
+		historyIndex: index,
+		selectedIndices: [],
+		isDirty: index > 0,
+	};
+}
+
+/**
+ * 履歴をクリア（現在の状態を維持し、履歴のみリセット）
+ */
+export function handleClearHistory(state: EditorState): EditorState {
+	return {
+		...state,
+		history: [
+			{
+				id: generateHistoryId(),
+				board: structuredClone(state.board),
+				groups: structuredClone(state.groups),
+				description: "初期状態",
+			},
+		],
+		historyIndex: 0,
 	};
 }

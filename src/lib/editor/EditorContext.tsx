@@ -67,6 +67,10 @@ export interface EditorContextValue {
 	redo: () => void;
 	/** 履歴をコミット (ドラッグ終了時など) */
 	commitHistory: (description: string) => void;
+	/** 任意の履歴位置に移動 */
+	jumpToHistory: (index: number) => void;
+	/** 履歴をクリア（初期状態に戻す） */
+	clearHistory: () => void;
 	/** オブジェクトを移動 */
 	moveObjects: (indices: number[], deltaX: number, deltaY: number) => void;
 	/** ボードメタデータを更新 */

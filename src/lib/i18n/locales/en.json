@@ -130,6 +130,13 @@
 		"visibilityChanged": "Visibility changed",
 		"groupVisibilityChanged": "Group visibility changed"
 	},
+	"historyPanel": {
+		"title": "History",
+		"clear": "Clear history",
+		"clearConfirm": "Clear history?",
+		"initial": "Initial state",
+		"noHistory": "No history"
+	},
 	"propertyPanel": {
 		"title": "Properties",
 		"object": "Object",
@@ -285,6 +292,7 @@
 		"objectPalette": "Object Palette",
 		"layerPanel": "Layer Panel",
 		"propertyPanel": "Property Panel",
+		"historyPanel": "History Panel",
 		"default": "Default",
 		"propertyLeft": "Property on Left",
 		"allLeft": "All Left",

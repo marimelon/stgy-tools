@@ -19,7 +19,9 @@ export {
 } from "./group";
 // 履歴・ボード
 export {
+	handleClearHistory,
 	handleCommitHistory,
+	handleJumpToHistory,
 	handleRedo,
 	handleSetBoard,
 	handleUndo,

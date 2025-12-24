@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import {
 	EditorBoard,
 	EditorToolbar,
+	HistoryPanel,
 	LayerPanel,
 	ObjectPalette,
 	PropertyPanel,
@@ -472,6 +473,7 @@ function EditorContent({
 						objectPalette: <ObjectPalette />,
 						layerPanel: <LayerPanel />,
 						propertyPanel: <PropertyPanel />,
+						historyPanel: <HistoryPanel />,
 					}}
 				>
 					{/* 中央: キャンバス */}

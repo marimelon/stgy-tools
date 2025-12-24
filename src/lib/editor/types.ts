@@ -80,6 +80,8 @@ export interface ObjectGroup {
  * 履歴エントリ
  */
 export interface HistoryEntry {
+	/** 一意のID */
+	id: string;
 	/** ボードデータのスナップショット */
 	board: BoardData;
 	/** グループ情報のスナップショット */
@@ -103,6 +105,9 @@ export interface GridSettings {
 /** 利用可能なグリッドサイズ */
 export const GRID_SIZES = [8, 16, 32] as const;
 export type GridSize = (typeof GRID_SIZES)[number];
+
+/** 履歴の最大保持件数 */
+export const MAX_HISTORY_SIZE = 50;
 
 // ============================================
 // バッチ更新関連の型
@@ -198,7 +203,9 @@ export type EditorAction =
 			updates: BatchUpdatePayload;
 	  }
 	| { type: "START_TEXT_EDIT"; index: number }
-	| { type: "END_TEXT_EDIT"; save: boolean; text?: string };
+	| { type: "END_TEXT_EDIT"; save: boolean; text?: string }
+	| { type: "JUMP_TO_HISTORY"; index: number }
+	| { type: "CLEAR_HISTORY" };
 
 /**
  * ボードメタデータ更新用の部分型

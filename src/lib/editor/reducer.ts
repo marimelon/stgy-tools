@@ -7,6 +7,8 @@ import {
 	handleAddObject,
 	// 整列
 	handleAlignObjects,
+	// 履歴
+	handleClearHistory,
 	handleCommitHistory,
 	// クリップボード
 	handleCopyObjects,
@@ -16,6 +18,7 @@ import {
 	handleEndTextEdit,
 	// グループ・グリッド
 	handleGroupObjects,
+	handleJumpToHistory,
 	// レイヤー
 	handleMoveLayer,
 	handleMoveObjects,
@@ -27,7 +30,7 @@ import {
 	// 選択系
 	handleSelectObject,
 	handleSelectObjects,
-	// 履歴・ボード
+	// ボード
 	handleSetBoard,
 	handleSetGridSettings,
 	// テキスト編集
@@ -163,6 +166,12 @@ export function editorReducer(
 				save: action.save,
 				text: action.text,
 			});
+
+		case "JUMP_TO_HISTORY":
+			return handleJumpToHistory(state, { index: action.index });
+
+		case "CLEAR_HISTORY":
+			return handleClearHistory(state);
 
 		default:
 			return state;

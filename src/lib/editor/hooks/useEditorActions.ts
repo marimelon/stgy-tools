@@ -40,6 +40,8 @@ export interface UseEditorActionsReturn {
 	undo: () => void;
 	redo: () => void;
 	commitHistory: (description: string) => void;
+	jumpToHistory: (index: number) => void;
+	clearHistory: () => void;
 	moveObjects: (indices: number[], deltaX: number, deltaY: number) => void;
 	updateBoardMeta: (updates: {
 		name?: string;
@@ -155,6 +157,17 @@ export function useEditorActions({
 		},
 		[dispatch],
 	);
+
+	const jumpToHistory = useCallback(
+		(index: number) => {
+			dispatch({ type: "JUMP_TO_HISTORY", index });
+		},
+		[dispatch],
+	);
+
+	const clearHistory = useCallback(() => {
+		dispatch({ type: "CLEAR_HISTORY" });
+	}, [dispatch]);
 
 	const moveObjects = useCallback(
 		(indices: number[], deltaX: number, deltaY: number) => {
@@ -300,6 +313,8 @@ export function useEditorActions({
 		undo,
 		redo,
 		commitHistory,
+		jumpToHistory,
+		clearHistory,
 		moveObjects,
 		updateBoardMeta,
 		moveLayer,

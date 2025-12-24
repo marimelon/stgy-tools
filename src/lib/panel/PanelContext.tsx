@@ -64,6 +64,7 @@ interface PanelProviderProps {
 
 /**
  * localStorageから設定を読み込み
+ * 新しいパネルが追加された場合、デフォルト値でマージする
  */
 function loadConfig(): PanelLayoutConfig {
 	if (typeof window === "undefined") {
@@ -83,7 +84,14 @@ function loadConfig(): PanelLayoutConfig {
 			parsed.panels.layerPanel &&
 			parsed.panels.propertyPanel
 		) {
-			return parsed;
+			// デフォルト設定とマージして、新しいパネルを補完
+			return {
+				...parsed,
+				panels: {
+					...DEFAULT_PANEL_LAYOUT.panels,
+					...parsed.panels,
+				},
+			};
 		}
 	} catch {
 		// 無効なJSONは無視

@@ -3,7 +3,11 @@
  */
 
 /** パネル識別子 */
-export type PanelId = "objectPalette" | "layerPanel" | "propertyPanel";
+export type PanelId =
+	| "objectPalette"
+	| "layerPanel"
+	| "propertyPanel"
+	| "historyPanel";
 
 /** パネル配置スロット */
 export type PanelSlot = "left" | "right";
@@ -33,6 +37,7 @@ export const DEFAULT_PANEL_LAYOUT: PanelLayoutConfig = {
 		objectPalette: { slot: "left", order: 0, visible: true },
 		layerPanel: { slot: "right", order: 1, visible: true },
 		propertyPanel: { slot: "right", order: 0, visible: true },
+		historyPanel: { slot: "right", order: 2, visible: false },
 	},
 };
 
@@ -44,6 +49,7 @@ export const PANEL_PRESETS: Record<PanelPreset, PanelLayoutConfig> = {
 			propertyPanel: { slot: "left", order: 0, visible: true },
 			objectPalette: { slot: "right", order: 0, visible: true },
 			layerPanel: { slot: "right", order: 1, visible: true },
+			historyPanel: { slot: "right", order: 2, visible: false },
 		},
 	},
 	allLeft: {
@@ -51,6 +57,7 @@ export const PANEL_PRESETS: Record<PanelPreset, PanelLayoutConfig> = {
 			objectPalette: { slot: "left", order: 0, visible: true },
 			layerPanel: { slot: "left", order: 1, visible: true },
 			propertyPanel: { slot: "left", order: 2, visible: true },
+			historyPanel: { slot: "left", order: 3, visible: false },
 		},
 	},
 	allRight: {
@@ -58,6 +65,7 @@ export const PANEL_PRESETS: Record<PanelPreset, PanelLayoutConfig> = {
 			objectPalette: { slot: "right", order: 0, visible: true },
 			layerPanel: { slot: "right", order: 1, visible: true },
 			propertyPanel: { slot: "right", order: 2, visible: true },
+			historyPanel: { slot: "right", order: 3, visible: false },
 		},
 	},
 };
@@ -67,6 +75,7 @@ export const PANEL_NAMES: Record<PanelId, string> = {
 	objectPalette: "オブジェクトパレット",
 	layerPanel: "レイヤーパネル",
 	propertyPanel: "プロパティパネル",
+	historyPanel: "履歴パネル",
 };
 
 /** プリセット表示名 */
