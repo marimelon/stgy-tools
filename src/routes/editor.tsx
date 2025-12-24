@@ -280,6 +280,18 @@ function EditorPage() {
 							});
 						}
 					}}
+					onCreateBoardFromImport={(name, stgyCode, encodeKey) => {
+						// 新しいボードを作成
+						const newBoardId = createBoard(
+							name,
+							stgyCode,
+							encodeKey,
+							[],
+							DEFAULT_GRID_SETTINGS,
+						);
+						// 新しく作成したボードを開く（EditorProviderを再初期化）
+						handleOpenBoard(newBoardId);
+					}}
 				/>
 			</EditorProvider>
 
@@ -319,6 +331,11 @@ interface EditorContentProps {
 		groups: ObjectGroup[],
 		gridSettings: GridSettings,
 	) => void;
+	onCreateBoardFromImport?: (
+		name: string,
+		stgyCode: string,
+		encodeKey: number,
+	) => void;
 }
 
 /**
@@ -330,6 +347,7 @@ function EditorContent({
 	isMemoryOnlyMode,
 	onOpenBoardManager,
 	onSaveBoard,
+	onCreateBoardFromImport,
 }: EditorContentProps) {
 	// キーボードショートカットを有効化
 	useKeyboardShortcuts();
@@ -464,6 +482,9 @@ function EditorContent({
 			<EditorToolbar
 				lastSavedAt={isMemoryOnlyMode ? null : lastSavedAt}
 				onOpenBoardManager={isMemoryOnlyMode ? undefined : onOpenBoardManager}
+				onCreateBoardFromImport={
+					isMemoryOnlyMode ? undefined : onCreateBoardFromImport
+				}
 			/>
 
 			{/* メインエリア */}

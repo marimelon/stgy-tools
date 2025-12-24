@@ -7,6 +7,7 @@ import { AlertCircle, Download } from "lucide-react";
 import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -31,6 +32,12 @@ export interface ImportModalProps {
 	onImport: () => void;
 	/** 閉じる時のコールバック */
 	onClose: () => void;
+	/** ボード管理に追加するか */
+	addToBoards: boolean;
+	/** ボード管理に追加するかを変更 */
+	onAddToBoardsChange: (value: boolean) => void;
+	/** ボード管理機能が利用可能か（メモリモードの場合はfalse） */
+	isBoardManagementAvailable: boolean;
 }
 
 /**
@@ -42,9 +49,13 @@ export function ImportModal({
 	importError,
 	onImport,
 	onClose,
+	addToBoards,
+	onAddToBoardsChange,
+	isBoardManagementAvailable,
 }: ImportModalProps) {
 	const { t } = useTranslation();
 	const textareaId = useId();
+	const checkboxId = useId();
 
 	return (
 		<Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -71,6 +82,21 @@ export function ImportModal({
 						<div className="flex items-center gap-2 text-sm px-3 py-2 rounded-md bg-destructive/10 border border-destructive/30 text-destructive">
 							<AlertCircle className="size-4" />
 							{importError}
+						</div>
+					)}
+
+					{isBoardManagementAvailable && (
+						<div className="flex items-center gap-2">
+							<Checkbox
+								id={checkboxId}
+								checked={addToBoards}
+								onCheckedChange={(checked) =>
+									onAddToBoardsChange(checked === true)
+								}
+							/>
+							<Label htmlFor={checkboxId} className="cursor-pointer text-sm">
+								{t("importModal.addToBoards")}
+							</Label>
 						</div>
 					)}
 				</div>

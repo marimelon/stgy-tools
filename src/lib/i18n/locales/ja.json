@@ -279,7 +279,8 @@
 		"pasteCode": "stgyコードを貼り付け:",
 		"placeholder": "[stgy:a...]",
 		"cancel": "キャンセル",
-		"import": "インポート"
+		"import": "インポート",
+		"addToBoards": "ボード管理に追加する"
 	},
 	"panelSettings": {
 		"title": "パネルレイアウト設定",

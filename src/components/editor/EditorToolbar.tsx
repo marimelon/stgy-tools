@@ -57,6 +57,12 @@ export interface EditorToolbarProps {
 	lastSavedAt?: Date | null;
 	/** Board Manager を開くコールバック */
 	onOpenBoardManager?: () => void;
+	/** インポート時に新しいボードを作成するコールバック */
+	onCreateBoardFromImport?: (
+		name: string,
+		stgyCode: string,
+		encodeKey: number,
+	) => void;
 }
 
 /**
@@ -82,6 +88,7 @@ function formatRelativeTime(date: Date, t: TFunction): string {
 export function EditorToolbar({
 	lastSavedAt,
 	onOpenBoardManager,
+	onCreateBoardFromImport,
 }: EditorToolbarProps = {}) {
 	const { t } = useTranslation();
 	const toolbarRef = useRef<HTMLDivElement>(null);
@@ -117,6 +124,8 @@ export function EditorToolbar({
 		importError,
 		executeImport,
 		resetImport,
+		addToBoards,
+		setAddToBoards,
 		showExportModal,
 		openExportModal,
 		closeExportModal,
@@ -137,7 +146,20 @@ export function EditorToolbar({
 			if (result.key !== undefined) {
 				setEncodeKey(result.key);
 			}
-			setBoard(result.board);
+
+			// ボード管理に追加する場合は新しいボードを作成してそちらを開く
+			// （EditorProviderが再初期化されるため setBoard は不要）
+			if (addToBoards && onCreateBoardFromImport) {
+				onCreateBoardFromImport(
+					result.board.name,
+					importText.trim(),
+					result.key ?? 0,
+				);
+			} else {
+				// ボード管理に追加しない場合は現在のエディターに読み込む
+				setBoard(result.board);
+			}
+
 			closeImportModal();
 			resetImport();
 		}
@@ -479,6 +501,9 @@ export function EditorToolbar({
 					importError={importError}
 					onImport={handleImport}
 					onClose={closeImportModal}
+					addToBoards={addToBoards}
+					onAddToBoardsChange={setAddToBoards}
+					isBoardManagementAvailable={!!onCreateBoardFromImport}
 				/>
 			)}
 

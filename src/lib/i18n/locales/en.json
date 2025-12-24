@@ -279,7 +279,8 @@
 		"pasteCode": "Paste stgy code:",
 		"placeholder": "[stgy:a...]",
 		"cancel": "Cancel",
-		"import": "Import"
+		"import": "Import",
+		"addToBoards": "Add to board management"
 	},
 	"panelSettings": {
 		"title": "Panel Layout Settings",
