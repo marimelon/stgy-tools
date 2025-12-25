@@ -380,18 +380,9 @@ function App() {
 							</dl>
 						</div>
 
-						<div className="flex gap-4 flex-col xl:flex-row">
-							{/* オブジェクト一覧 */}
-							<div className="w-full xl:w-[220px] h-[300px] xl:h-[420px] flex-shrink-0">
-								<ObjectListPanel
-									objects={boardData.objects}
-									selectedIndex={selectedIndex}
-									onSelectObject={handleSelectObject}
-								/>
-							</div>
-
-							{/* ボードビューアー */}
-							<div className="p-4 bg-card border border-border rounded-lg flex-shrink-0">
+						<div className="flex gap-4 flex-col lg:flex-row">
+							{/* ボードビューアー - モバイルでは1番目、デスクトップでは中央 */}
+							<div className="p-4 bg-card border border-border rounded-lg order-1 lg:order-2 lg:flex-shrink-0">
 								<div className="mb-3 flex items-center gap-2">
 									<Checkbox
 										id={showBboxId}
@@ -409,15 +400,15 @@ function App() {
 								</div>
 								<BoardViewer
 									boardData={boardData}
-									scale={1}
+									responsive
 									showBoundingBox={showBoundingBox}
 									selectedIndex={selectedIndex}
 									onSelectObject={handleSelectObject}
 								/>
 							</div>
 
-							{/* 選択オブジェクト情報 */}
-							<div className="p-4 bg-card border border-border rounded-lg flex-1 min-w-[250px]">
+							{/* 選択オブジェクト情報 - モバイルでは2番目、デスクトップでは右 */}
+							<div className="p-4 bg-card border border-border rounded-lg order-2 lg:order-3 lg:flex-1 lg:min-w-[220px]">
 								<h2 className="text-lg font-semibold mb-3 font-display">
 									{t("viewer.selectedObject.title")}
 								</h2>
@@ -431,6 +422,15 @@ function App() {
 										{t("viewer.selectedObject.clickToSelect")}
 									</p>
 								)}
+							</div>
+
+							{/* オブジェクト一覧 - モバイルでは3番目（最後）、デスクトップでは左 */}
+							<div className="w-full lg:w-[200px] h-[250px] lg:h-[420px] flex-shrink-0 order-3 lg:order-1">
+								<ObjectListPanel
+									objects={boardData.objects}
+									selectedIndex={selectedIndex}
+									onSelectObject={handleSelectObject}
+								/>
 							</div>
 						</div>
 					</div>

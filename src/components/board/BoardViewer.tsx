@@ -8,7 +8,10 @@ const CANVAS_HEIGHT = 384;
 
 interface BoardViewerProps {
 	boardData: BoardData;
+	/** 固定スケール（responsiveがfalseの場合に使用） */
 	scale?: number;
+	/** trueの場合、コンテナ幅に合わせて自動スケール */
+	responsive?: boolean;
 	showBoundingBox?: boolean;
 	selectedIndex?: number | null;
 	onSelectObject?: (index: number | null, object: BoardObject | null) => void;
@@ -17,6 +20,7 @@ interface BoardViewerProps {
 export function BoardViewer({
 	boardData,
 	scale = 1,
+	responsive = false,
 	showBoundingBox = false,
 	selectedIndex = null,
 	onSelectObject,
@@ -38,13 +42,25 @@ export function BoardViewer({
 		onSelectObject?.(null, null);
 	};
 
+	// レスポンシブモード: コンテナ幅に合わせて自動スケール
+	// 固定モード: scale値で固定サイズ
+	const svgProps = responsive
+		? {
+				width: "100%",
+				height: "auto",
+				style: { backgroundColor: "#1a1a1a", maxWidth: CANVAS_WIDTH },
+			}
+		: {
+				width: CANVAS_WIDTH * scale,
+				height: CANVAS_HEIGHT * scale,
+				style: { backgroundColor: "#1a1a1a" },
+			};
+
 	return (
 		// biome-ignore lint/a11y/useKeyWithClickEvents: SVG element with click for deselection
 		<svg
-			width={CANVAS_WIDTH * scale}
-			height={CANVAS_HEIGHT * scale}
+			{...svgProps}
 			viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
-			style={{ backgroundColor: "#1a1a1a" }}
 			onClick={handleBackgroundClick}
 			role="img"
 			aria-label="Strategy Board Viewer"
