@@ -7,6 +7,7 @@ import {
 	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 // Initialize i18n
 import i18n from "../lib/i18n";
@@ -140,9 +141,32 @@ function RootDocument() {
 		i18n.changeLanguage(lang);
 	}
 
+	// ハイドレーション後にトランジションを有効化（FOUC対策）
+	useEffect(() => {
+		document.documentElement.classList.add("hydrated");
+	}, []);
+
 	return (
 		<html lang={lang} style={initialStyle}>
 			<head>
+				{/* FOUC Prevention - inline style before any CSS loads */}
+				<style
+					// biome-ignore lint/security/noDangerouslySetInnerHtml: Required for FOUC prevention
+					dangerouslySetInnerHTML={{
+						__html: `
+							html:not(.hydrated) *, html:not(.hydrated) *::before, html:not(.hydrated) *::after {
+								transition: none !important;
+								animation: none !important;
+							}
+							html:not(.hydrated) body {
+								visibility: hidden;
+							}
+							html.hydrated body {
+								visibility: visible;
+							}
+						`,
+					}}
+				/>
 				<HeadContent />
 			</head>
 			<body style={initialStyle}>
