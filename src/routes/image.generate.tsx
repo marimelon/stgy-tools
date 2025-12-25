@@ -4,17 +4,20 @@
  */
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Pencil } from "lucide-react";
+import { Check, Copy, Loader2, Pencil } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board/BoardViewer";
 import { AppHeader } from "@/components/ui/AppHeader";
+
 import {
 	generateCanonicalLink,
 	generateHreflangLinks,
 	PAGE_SEO,
 	SITE_CONFIG,
 } from "@/lib/seo";
+import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
+import { createShortLinkFn } from "@/lib/server/shortLinks/serverFn";
 import { decodeStgy } from "@/lib/stgy/decoder";
 import { parseBoardData } from "@/lib/stgy/parser";
 import type { BoardData } from "@/lib/stgy/types";
@@ -155,6 +158,10 @@ export const Route = createFileRoute("/image/generate")({
 			stgy: typeof search.stgy === "string" ? search.stgy : undefined,
 		};
 	},
+	loader: async () => {
+		const featureFlags = await getFeatureFlagsFn();
+		return { featureFlags };
+	},
 	head: ({ match }) => {
 		const { stgy } = match.search;
 		const hasCode = Boolean(stgy);
@@ -253,6 +260,7 @@ function ImageGeneratePage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { stgy: initialCode } = Route.useSearch();
+	const { featureFlags } = Route.useLoaderData();
 	const [code, setCode] = useState(initialCode ?? "");
 	const [format, setFormat] = useState<"png" | "svg">("png");
 	const [scale, setScale] = useState("1");
@@ -274,6 +282,16 @@ function ImageGeneratePage() {
 	const sizeGroupId = useId();
 	const generatedUrlId = useId();
 
+	// 短縮URL状態
+	const [useShortUrl, setUseShortUrl] = useState(false);
+	const [isGeneratingShortUrl, setIsGeneratingShortUrl] = useState(false);
+	const [shortUrl, setShortUrl] = useState(""); // 生成された短縮URL
+	const [fullUrl, setFullUrl] = useState(""); // 元のURL
+
+	// HTML/Markdownコピー状態
+	const [copiedHtml, setCopiedHtml] = useState(false);
+	const [copiedMarkdown, setCopiedMarkdown] = useState(false);
+
 	// Navigate to Editor with the current stgy code via URL parameter
 	const handleEditInEditor = useCallback(() => {
 		if (!code.trim() || !boardData) return;
@@ -281,6 +299,61 @@ function ImageGeneratePage() {
 		// Navigate to Editor with stgy code as query parameter
 		navigate({ to: "/editor", search: { stgy: code.trim() } });
 	}, [code, boardData, navigate]);
+
+	// 短縮URLチェックボックス変更ハンドラー
+	const handleShortUrlChange = useCallback(
+		async (checked: boolean) => {
+			if (!checked) {
+				// チェックOFF: 元のURLに戻す
+				setUseShortUrl(false);
+				if (fullUrl) {
+					setGeneratedUrl(fullUrl);
+				}
+				return;
+			}
+
+			// チェックON: 短縮URLを生成
+			if (!code.trim() || !boardData) return;
+
+			setIsGeneratingShortUrl(true);
+
+			try {
+				const baseUrl = window.location.origin;
+				const result = await createShortLinkFn({
+					data: { stgy: code.trim(), baseUrl },
+				});
+
+				if (!result.success || !result.data.id) {
+					return;
+				}
+
+				// 短縮IDを使った画像URLを生成
+				const params = new URLSearchParams();
+				params.set("s", result.data.id);
+
+				if (format === "svg") {
+					params.set("format", "svg");
+				} else if (scale !== "1") {
+					params.set("scale", scale);
+				}
+
+				if (showTitle) {
+					params.set("title", "1");
+				}
+
+				const newShortUrl = `${baseUrl}/image?${params.toString()}`;
+
+				// 元のURLを保存してから短縮URLに更新
+				setFullUrl(generatedUrl);
+				setShortUrl(newShortUrl);
+				setGeneratedUrl(newShortUrl);
+				setUseShortUrl(true);
+			} finally {
+				setIsGeneratingShortUrl(false);
+			}
+		},
+		[code, boardData, format, scale, showTitle, generatedUrl, fullUrl],
+	);
 
 	const generateUrl = useCallback(
 		(codeToUse: string) => {
@@ -330,6 +403,10 @@ function ImageGeneratePage() {
 			setGeneratedUrl(url);
 			setCopied(false);
 			setImageLoadError(false);
+			// 短縮状態をリセット
+			setUseShortUrl(false);
+			setShortUrl("");
+			setFullUrl("");
 		},
 		[format, scale, showTitle, t],
 	);
@@ -557,34 +634,45 @@ function ImageGeneratePage() {
 								<>
 									{/* プレビュー */}
 									<div className="mb-4">
-										<div className="flex gap-1 mb-3 border-b border-border">
+										<div className="flex items-center justify-between mb-3 border-b border-border">
+											<div className="flex gap-1">
+												<button
+													type="button"
+													className={`px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium transition-colors relative ${
+														previewMode === "preview"
+															? "text-primary"
+															: "text-muted-foreground hover:text-foreground"
+													}`}
+													onClick={() => setPreviewMode("preview")}
+												>
+													{t("imageGenerator.previewTab")}
+													{previewMode === "preview" && (
+														<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+													)}
+												</button>
+												<button
+													type="button"
+													className={`px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium transition-colors relative ${
+														previewMode === "actual"
+															? "text-primary"
+															: "text-muted-foreground hover:text-foreground"
+													}`}
+													onClick={() => setPreviewMode("actual")}
+												>
+													{t("imageGenerator.actualImageTab")}
+													{previewMode === "actual" && (
+														<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+													)}
+												</button>
+											</div>
+											{/* Editorで編集ボタン */}
 											<button
 												type="button"
-												className={`px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium transition-colors relative ${
-													previewMode === "preview"
-														? "text-primary"
-														: "text-muted-foreground hover:text-foreground"
-												}`}
-												onClick={() => setPreviewMode("preview")}
+												className="flex items-center gap-1.5 px-3 py-1.5 text-xs md:text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/30 hover:border-accent/50 rounded-lg transition-all mb-1"
+												onClick={handleEditInEditor}
 											>
-												{t("imageGenerator.previewTab")}
-												{previewMode === "preview" && (
-													<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
-												)}
-											</button>
-											<button
-												type="button"
-												className={`px-3 md:px-4 py-2.5 text-xs md:text-sm font-medium transition-colors relative ${
-													previewMode === "actual"
-														? "text-primary"
-														: "text-muted-foreground hover:text-foreground"
-												}`}
-												onClick={() => setPreviewMode("actual")}
-											>
-												{t("imageGenerator.actualImageTab")}
-												{previewMode === "actual" && (
-													<span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
-												)}
+												<Pencil className="w-3.5 h-3.5" />
+												{t("imageGenerator.editInEditor")}
 											</button>
 										</div>
 										<div className="bg-secondary/30 rounded-lg p-2 md:p-4 flex justify-center items-center min-h-[150px] md:min-h-[200px] lg:min-h-[280px] overflow-auto border border-border/50">
@@ -623,67 +711,136 @@ function ImageGeneratePage() {
 
 									{/* 生成されたURL */}
 									<div className="mb-4">
-										<label
-											htmlFor={generatedUrlId}
-											className="block text-muted-foreground text-sm mb-2"
-										>
-											{t("imageGenerator.generatedUrl")}
-										</label>
-										<div className="flex flex-col md:flex-row gap-2">
-											<input
-												id={generatedUrlId}
-												type="text"
-												className="flex-1 p-3 bg-secondary/30 border border-border rounded-lg text-foreground text-xs font-mono focus:outline-none"
-												value={generatedUrl}
-												readOnly
-											/>
+										<div className="flex items-center justify-between mb-2">
+											<label
+												htmlFor={generatedUrlId}
+												className="text-muted-foreground text-sm"
+											>
+												{t("imageGenerator.generatedUrl")}
+											</label>
 											<button
 												type="button"
-												className={`px-4 py-3 rounded-lg text-sm whitespace-nowrap transition-all font-medium ${
+												className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-all ${
 													copied
-														? "bg-green-500/20 text-green-400 border border-green-500/40"
-														: "bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30"
+														? "bg-green-500/20 text-green-400"
+														: "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
 												}`}
 												onClick={copyToClipboard}
 											>
-												{copied ? `✓ ${t("common.copied")}` : t("common.copy")}
+												{copied ? (
+													<Check className="w-3 h-3" />
+												) : (
+													<Copy className="w-3 h-3" />
+												)}
+												{t("common.copy")}
 											</button>
 										</div>
+										<input
+											id={generatedUrlId}
+											type="text"
+											className="w-full p-3 bg-secondary/30 border border-border rounded-lg text-foreground text-xs font-mono focus:outline-none"
+											value={generatedUrl}
+											readOnly
+										/>
+										{featureFlags.shortLinksEnabled && (
+											<label className="flex items-center gap-2 mt-2 cursor-pointer text-sm">
+												<input
+													type="checkbox"
+													checked={useShortUrl}
+													onChange={(e) => handleShortUrlChange(e.target.checked)}
+													disabled={isGeneratingShortUrl || !generatedUrl}
+													className="w-4 h-4 rounded accent-accent disabled:opacity-50"
+												/>
+												<span
+													className={
+														isGeneratingShortUrl || !generatedUrl
+															? "text-muted-foreground"
+															: "text-foreground"
+													}
+												>
+													{isGeneratingShortUrl ? (
+														<span className="flex items-center gap-1.5">
+															<Loader2 className="w-3 h-3 animate-spin" />
+															{t("imageGenerator.shortenUrl")}
+														</span>
+													) : (
+														t("imageGenerator.shortenUrl")
+													)}
+												</span>
+											</label>
+										)}
 									</div>
 
 									{/* HTMLコード */}
 									<div className="mb-4">
-										<span className="block text-muted-foreground text-sm mb-2">
-											{t("imageGenerator.htmlCode")}
-										</span>
+										<div className="flex items-center justify-between mb-2">
+											<span className="text-muted-foreground text-sm">
+												HTML
+											</span>
+											<button
+												type="button"
+												className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-all ${
+													copiedHtml
+														? "bg-green-500/20 text-green-400"
+														: "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+												}`}
+												onClick={async () => {
+													const htmlCode = `<img src="${generatedUrl}" alt="${strategyBoardAlt}" />`;
+													await navigator.clipboard.writeText(htmlCode);
+													setCopiedHtml(true);
+													setTimeout(
+														() => setCopiedHtml(false),
+														COPY_FEEDBACK_DURATION,
+													);
+												}}
+											>
+												{copiedHtml ? (
+													<Check className="w-3 h-3" />
+												) : (
+													<Copy className="w-3 h-3" />
+												)}
+												{t("common.copy")}
+											</button>
+										</div>
 										<code className="block p-3 bg-secondary/30 border border-border rounded-lg text-accent text-xs font-mono overflow-x-auto break-all">
 											{`<img src="${generatedUrl}" alt="${strategyBoardAlt}" />`}
 										</code>
 									</div>
 
 									{/* Markdownコード */}
-									<div className="mb-4">
-										<span className="block text-muted-foreground text-sm mb-2">
-											{t("imageGenerator.markdownCode")}
-										</span>
+									<div>
+										<div className="flex items-center justify-between mb-2">
+											<span className="text-muted-foreground text-sm">
+												Markdown
+											</span>
+											<button
+												type="button"
+												className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-all ${
+													copiedMarkdown
+														? "bg-green-500/20 text-green-400"
+														: "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+												}`}
+												onClick={async () => {
+													const markdownCode = `![${strategyBoardAlt}](${generatedUrl})`;
+													await navigator.clipboard.writeText(markdownCode);
+													setCopiedMarkdown(true);
+													setTimeout(
+														() => setCopiedMarkdown(false),
+														COPY_FEEDBACK_DURATION,
+													);
+												}}
+											>
+												{copiedMarkdown ? (
+													<Check className="w-3 h-3" />
+												) : (
+													<Copy className="w-3 h-3" />
+												)}
+												{t("common.copy")}
+											</button>
+										</div>
 										<code className="block p-3 bg-secondary/30 border border-border rounded-lg text-accent text-xs font-mono overflow-x-auto break-all">
 											{`![${strategyBoardAlt}](${generatedUrl})`}
 										</code>
-									</div>
-
-									{/* Editorで編集ボタン */}
-									<div className="pt-2 border-t border-border/50">
-										<button
-											type="button"
-											className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-accent/10 hover:bg-accent/20 text-accent border border-accent/30 hover:border-accent/50 rounded-lg text-sm font-medium transition-all"
-											onClick={handleEditInEditor}
-										>
-											<Pencil className="w-4 h-4" />
-											{t("imageGenerator.editInEditor")}
-										</button>
-										<p className="text-xs text-muted-foreground mt-2 text-center">
-											{t("imageGenerator.editInEditorDescription")}
-										</p>
 									</div>
 								</>
 							) : (

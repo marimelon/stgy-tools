@@ -35,7 +35,8 @@
 		"outputSize": "出力サイズ（PNG）",
 		"showBoardName": "ボード名を表示",
 		"generateUrl": "URL生成",
-		"generatedUrl": "生成されたURL",
+		"generatedUrl": "画像URL",
+		"shortenUrl": "URLを短縮",
 		"htmlCode": "HTMLコード",
 		"markdownCode": "Markdownコード",
 		"strategyBoard": "戦略ボード",
@@ -46,8 +47,9 @@
 		"enterCodeToPreview": "stgyコードを入力するとプレビューが表示されます",
 		"imageLoadError": "画像の読み込みに失敗しました",
 		"retry": "再試行",
-		"editInEditor": "Editorで編集",
-		"editInEditorDescription": "このボードをEditorで開いて編集できます"
+		"boardActions": "ボード操作",
+		"openInViewer": "Viewerで開く",
+		"editInEditor": "Editorで編集"
 	},
 	"language": {
 		"label": "言語",
@@ -64,6 +66,17 @@
 			"unnamed": "(無題)",
 			"objectCount": "オブジェクト数",
 			"background": "背景"
+		},
+		"shortLink": {
+			"generate": "短縮リンク",
+			"copied": "コピー済み",
+			"error": {
+				"FEATURE_DISABLED": "短縮リンク機能は無効です",
+				"INVALID_STGY": "無効なstgyコードです",
+				"STORAGE_ERROR": "ストレージエラーが発生しました",
+				"NETWORK_ERROR": "ネットワークエラーが発生しました",
+				"UNKNOWN": "短縮リンクの生成に失敗しました"
+			}
 		},
 		"showBoundingBox": "バウンディングボックスを表示",
 		"selectedObject": {

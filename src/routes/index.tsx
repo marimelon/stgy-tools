@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AlertCircle, Pencil } from "lucide-react";
+import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
+import { AlertCircle, Check, Link, Loader2, Pencil } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board";
@@ -16,6 +16,11 @@ import {
 	PAGE_SEO,
 	SITE_CONFIG,
 } from "@/lib/seo";
+import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
+import {
+	createShortLinkFn,
+	resolveShortIdFn,
+} from "@/lib/server/shortLinks/serverFn";
 import type { BoardData, BoardObject } from "@/lib/stgy";
 import { decodeStgy, ObjectNames, parseBoardData } from "@/lib/stgy";
 
@@ -24,16 +29,39 @@ export const Route = createFileRoute("/")({
 	validateSearch: (search: Record<string, unknown>) => {
 		return {
 			stgy: typeof search.stgy === "string" ? search.stgy : undefined,
+			s: typeof search.s === "string" ? search.s : undefined,
 		};
 	},
-	head: ({ match }) => {
-		const { stgy } = match.search;
-		const hasCode = Boolean(stgy);
+	loaderDeps: ({ search }) => ({ s: search.s, stgy: search.stgy }),
+	loader: async ({ deps }) => {
+		// Feature Flagsを取得
+		const featureFlags = await getFeatureFlagsFn();
+
+		if (deps.stgy) {
+			return { resolvedStgy: deps.stgy, shortId: undefined, featureFlags };
+		}
+		if (deps.s) {
+			const result = await resolveShortIdFn({ data: { shortId: deps.s } });
+			if (!result) {
+				throw notFound();
+			}
+			return { resolvedStgy: result.stgy, shortId: deps.s, featureFlags };
+		}
+		return { resolvedStgy: undefined, shortId: undefined, featureFlags };
+	},
+	head: ({ match, loaderData }) => {
+		const { stgy, s } = match.search;
+		// 短縮IDの場合はloaderDataから解決済みのstgyを取得
+		const resolvedStgy = loaderData?.resolvedStgy ?? stgy;
+		const hasCode = Boolean(resolvedStgy);
 		const pagePath = PAGE_SEO.home.path;
 
 		// 動的OGイメージ: stgyコードがある場合は生成画像を使用
+		// 短縮IDがある場合はそれを使用（OGP用に短いURL）
 		const ogImage = hasCode
-			? `${SITE_CONFIG.url}/image?stgy=${encodeURIComponent(stgy as string)}`
+			? s
+				? `${SITE_CONFIG.url}/image?s=${encodeURIComponent(s)}`
+				: `${SITE_CONFIG.url}/image?stgy=${encodeURIComponent(resolvedStgy as string)}`
 			: `${SITE_CONFIG.url}/favicon.svg`;
 
 		// Twitter Cardタイプ: 画像がある場合はsummary_large_image
@@ -121,12 +149,33 @@ const DEBOUNCE_DELAY = 300;
 function App() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { stgy: initialCode } = Route.useSearch();
+	const { stgy: searchStgy, s: shortId } = Route.useSearch();
+	const { resolvedStgy, featureFlags } = Route.useLoaderData();
+
+	// 初期コード: loader で解決されたstgyを優先
+	const initialCode = resolvedStgy ?? searchStgy;
+
 	// サンプルコードを使用しているかどうか（URL更新をスキップするため）
 	const [isUsingDefaultSample, setIsUsingDefaultSample] = useState(
 		!initialCode,
 	);
 	const [stgyInput, setStgyInput] = useState(initialCode ?? SAMPLE_STGY);
+
+	// 短縮IDで開いた場合は初回のみstgyに展開してURLを更新
+	const hasInitialized = useRef(false);
+	useEffect(() => {
+		if (!hasInitialized.current && resolvedStgy && shortId) {
+			setStgyInput(resolvedStgy);
+			setIsUsingDefaultSample(false);
+			hasInitialized.current = true;
+
+			// URLを ?s=xxx から ?stgy=xxx に置き換え
+			const url = new URL(window.location.href);
+			url.searchParams.delete("s");
+			url.searchParams.set("stgy", resolvedStgy);
+			window.history.replaceState(null, "", url.toString());
+		}
+	}, [resolvedStgy, shortId]);
 	const [boardData, setBoardData] = useState<BoardData | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [showBoundingBox, setShowBoundingBox] = useState(false);
@@ -138,11 +187,35 @@ function App() {
 	const showBboxId = useId();
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+	// 短縮リンク生成
+	const [isGeneratingShortLink, setIsGeneratingShortLink] = useState(false);
+	const [copiedShortLink, setCopiedShortLink] = useState(false);
+
 	// Editorで編集ボタンのハンドラー
 	const handleEditInEditor = useCallback(() => {
 		if (!stgyInput.trim() || !boardData) return;
 		navigate({ to: "/editor", search: { stgy: stgyInput.trim() } });
 	}, [stgyInput, boardData, navigate]);
+
+	// 短縮リンク生成ハンドラー
+	const handleGenerateShortLink = useCallback(async () => {
+		if (!stgyInput.trim() || !boardData) return;
+		setIsGeneratingShortLink(true);
+		setCopiedShortLink(false);
+		try {
+			const baseUrl = window.location.origin;
+			const result = await createShortLinkFn({
+				data: { stgy: stgyInput.trim(), baseUrl },
+			});
+			if (result.success && result.data.url) {
+				await navigator.clipboard.writeText(result.data.url);
+				setCopiedShortLink(true);
+				setTimeout(() => setCopiedShortLink(false), 2000);
+			}
+		} finally {
+			setIsGeneratingShortLink(false);
+		}
+	}, [stgyInput, boardData]);
 
 	// 入力変更ハンドラー（サンプルコードフラグを更新）
 	const handleInputChange = useCallback(
@@ -248,14 +321,36 @@ function App() {
 								<h2 className="text-lg font-semibold font-display">
 									{t("viewer.boardInfo.title")}
 								</h2>
-								<button
-									type="button"
-									className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/30 hover:border-accent/50 rounded-lg transition-all"
-									onClick={handleEditInEditor}
-								>
-									<Pencil className="w-3.5 h-3.5" />
-									{t("imageGenerator.editInEditor")}
-								</button>
+								<div className="flex items-center gap-2">
+									{featureFlags.shortLinksEnabled && (
+										<button
+											type="button"
+											className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+											onClick={handleGenerateShortLink}
+											disabled={isGeneratingShortLink}
+											title={t("viewer.shortLink.generate")}
+										>
+											{isGeneratingShortLink ? (
+												<Loader2 className="w-3.5 h-3.5 animate-spin" />
+											) : copiedShortLink ? (
+												<Check className="w-3.5 h-3.5" />
+											) : (
+												<Link className="w-3.5 h-3.5" />
+											)}
+											{copiedShortLink
+												? t("viewer.shortLink.copied")
+												: t("viewer.shortLink.generate")}
+										</button>
+									)}
+									<button
+										type="button"
+										className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/30 hover:border-accent/50 rounded-lg transition-all"
+										onClick={handleEditInEditor}
+									>
+										<Pencil className="w-3.5 h-3.5" />
+										{t("imageGenerator.editInEditor")}
+									</button>
+								</div>
 							</div>
 							<dl className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
 								<div>

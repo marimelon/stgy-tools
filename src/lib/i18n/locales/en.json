@@ -35,7 +35,8 @@
 		"outputSize": "Output Size (PNG)",
 		"showBoardName": "Show Board Name",
 		"generateUrl": "Generate URL",
-		"generatedUrl": "Generated URL",
+		"generatedUrl": "Image URL",
+		"shortenUrl": "Shorten URL",
 		"htmlCode": "HTML Code",
 		"markdownCode": "Markdown Code",
 		"strategyBoard": "Strategy Board",
@@ -46,8 +47,9 @@
 		"enterCodeToPreview": "Enter a stgy code to see the preview",
 		"imageLoadError": "Failed to load image",
 		"retry": "Retry",
-		"editInEditor": "Edit in Editor",
-		"editInEditorDescription": "Open this board in Editor to edit"
+		"boardActions": "Board Actions",
+		"openInViewer": "Open in Viewer",
+		"editInEditor": "Edit in Editor"
 	},
 	"language": {
 		"label": "Language",
@@ -64,6 +66,17 @@
 			"unnamed": "(Untitled)",
 			"objectCount": "Object Count",
 			"background": "Background"
+		},
+		"shortLink": {
+			"generate": "Short Link",
+			"copied": "Copied",
+			"error": {
+				"FEATURE_DISABLED": "Short link feature is disabled",
+				"INVALID_STGY": "Invalid stgy code",
+				"STORAGE_ERROR": "Storage error occurred",
+				"NETWORK_ERROR": "Network error occurred",
+				"UNKNOWN": "Failed to generate short link"
+			}
 		},
 		"showBoundingBox": "Show bounding box",
 		"selectedObject": {

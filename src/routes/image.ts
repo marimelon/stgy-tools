@@ -6,10 +6,12 @@
  * GET /image?stgy=[stgy:a...]&width=2048  (幅を指定、デフォルト512、最大2048)
  * GET /image?stgy=[stgy:a...]&scale=4     (スケール指定、1-4倍)
  * GET /image?stgy=[stgy:a...]&title=1     (ボード名を表示)
+ * GET /image?s=abc123                      (短縮IDからstgyを解決して生成)
  */
 
 import { createFileRoute } from "@tanstack/react-router";
 import { renderImage } from "@/lib/server/imageRenderer";
+import { isShortLinksEnabled, resolveShortId } from "@/lib/server/shortLinks";
 import { decodeStgy } from "@/lib/stgy/decoder";
 import { parseBoardData } from "@/lib/stgy/parser";
 
@@ -79,11 +81,41 @@ export const Route = createFileRoute("/image")({
 		handlers: {
 			GET: async ({ request }) => {
 				const url = new URL(request.url);
-				const code = url.searchParams.get("stgy");
+				let code = url.searchParams.get("stgy");
+				const shortId = url.searchParams.get("s");
 				const format = url.searchParams.get("format") ?? "png";
 				const widthParam = url.searchParams.get("width");
 				const scaleParam = url.searchParams.get("scale");
 				const titleParam = url.searchParams.get("title");
+
+				// 短縮IDが指定されている場合はstgyコードに解決
+				if (!code && shortId) {
+					// 機能が無効な場合は503を返す
+					if (!isShortLinksEnabled()) {
+						return new Response(
+							JSON.stringify({
+								error: "Short links feature is disabled",
+								code: "FEATURE_DISABLED",
+							}),
+							{
+								status: 503,
+								headers: { "Content-Type": "application/json" },
+							},
+						);
+					}
+
+					const resolved = await resolveShortId(shortId);
+					if (!resolved) {
+						return new Response(
+							JSON.stringify({ error: "Short link not found" }),
+							{
+								status: 404,
+								headers: { "Content-Type": "application/json" },
+							},
+						);
+					}
+					code = resolved.stgy;
+				}
 
 				if (!code) {
 					// stgyパラメータがない場合は生成ページにリダイレクト
