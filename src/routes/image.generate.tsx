@@ -285,7 +285,6 @@ function ImageGeneratePage() {
 	// 短縮URL状態
 	const [useShortUrl, setUseShortUrl] = useState(false);
 	const [isGeneratingShortUrl, setIsGeneratingShortUrl] = useState(false);
-	const [shortUrl, setShortUrl] = useState(""); // 生成された短縮URL
 	const [fullUrl, setFullUrl] = useState(""); // 元のURL
 
 	// HTML/Markdownコピー状態
@@ -345,7 +344,6 @@ function ImageGeneratePage() {
 
 				// 元のURLを保存してから短縮URLに更新
 				setFullUrl(generatedUrl);
-				setShortUrl(newShortUrl);
 				setGeneratedUrl(newShortUrl);
 				setUseShortUrl(true);
 			} finally {
@@ -405,7 +403,6 @@ function ImageGeneratePage() {
 			setImageLoadError(false);
 			// 短縮状態をリセット
 			setUseShortUrl(false);
-			setShortUrl("");
 			setFullUrl("");
 		},
 		[format, scale, showTitle, t],
@@ -747,7 +744,9 @@ function ImageGeneratePage() {
 												<input
 													type="checkbox"
 													checked={useShortUrl}
-													onChange={(e) => handleShortUrlChange(e.target.checked)}
+													onChange={(e) =>
+														handleShortUrlChange(e.target.checked)
+													}
 													disabled={isGeneratingShortUrl || !generatedUrl}
 													className="w-4 h-4 rounded accent-accent disabled:opacity-50"
 												/>
