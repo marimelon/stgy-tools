@@ -1,5 +1,12 @@
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { AlertCircle, Check, Link, Loader2, Pencil } from "lucide-react";
+import {
+	AlertCircle,
+	Check,
+	Link,
+	Loader2,
+	Maximize2,
+	Pencil,
+} from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board";
@@ -9,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Footer } from "@/components/ui/Footer";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { BoardExpandModal } from "@/components/viewer/BoardExpandModal";
 import { ObjectListPanel } from "@/components/viewer/ObjectListPanel";
 import {
 	generateCanonicalLink,
@@ -187,6 +195,7 @@ function App() {
 	const [boardData, setBoardData] = useState<BoardData | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [showBoundingBox, setShowBoundingBox] = useState(false);
+	const [isExpandModalOpen, setIsExpandModalOpen] = useState(false);
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 	const [selectedObject, setSelectedObject] = useState<BoardObject | null>(
 		null,
@@ -391,20 +400,30 @@ function App() {
 						<div className="flex gap-4 flex-col lg:flex-row">
 							{/* ボードビューアー - モバイルでは1番目、デスクトップでは中央 */}
 							<div className="p-4 bg-card border border-border rounded-lg order-1 lg:order-2 lg:w-[540px] flex-shrink-0">
-								<div className="mb-3 flex items-center gap-2">
-									<Checkbox
-										id={showBboxId}
-										checked={showBoundingBox}
-										onCheckedChange={(checked) =>
-											setShowBoundingBox(checked === true)
-										}
-									/>
-									<Label
-										htmlFor={showBboxId}
-										className="text-sm cursor-pointer"
+								<div className="mb-3 flex items-center justify-between">
+									<div className="flex items-center gap-2">
+										<Checkbox
+											id={showBboxId}
+											checked={showBoundingBox}
+											onCheckedChange={(checked) =>
+												setShowBoundingBox(checked === true)
+											}
+										/>
+										<Label
+											htmlFor={showBboxId}
+											className="text-sm cursor-pointer"
+										>
+											{t("viewer.showBoundingBox")}
+										</Label>
+									</div>
+									<button
+										type="button"
+										className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+										onClick={() => setIsExpandModalOpen(true)}
+										title={t("viewer.expandBoard")}
 									>
-										{t("viewer.showBoundingBox")}
-									</Label>
+										<Maximize2 className="w-4 h-4" />
+									</button>
 								</div>
 								<BoardViewer
 									boardData={boardData}
@@ -444,6 +463,14 @@ function App() {
 					</div>
 				)}
 			</main>
+
+			{boardData && (
+				<BoardExpandModal
+					boardData={boardData}
+					open={isExpandModalOpen}
+					onOpenChange={setIsExpandModalOpen}
+				/>
+			)}
 
 			<Footer />
 		</div>

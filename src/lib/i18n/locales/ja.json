@@ -5,7 +5,8 @@
 		"preview": "プレビュー",
 		"generate": "生成",
 		"error": "エラー",
-		"defaultText": "テキスト"
+		"defaultText": "テキスト",
+		"close": "閉じる"
 	},
 	"contextMenu": {
 		"copy": "コピー",
@@ -79,6 +80,10 @@
 			}
 		},
 		"showBoundingBox": "バウンディングボックスを表示",
+		"expandBoard": "拡大表示",
+		"expandModal": {
+			"description": "ボードの拡大表示"
+		},
 		"selectedObject": {
 			"title": "選択オブジェクト",
 			"clickToSelect": "オブジェクトをクリックして選択",

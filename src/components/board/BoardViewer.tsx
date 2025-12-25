@@ -3,8 +3,8 @@ import { BackgroundRenderer } from "./BackgroundRenderer";
 import { ObjectRenderer } from "./ObjectRenderer";
 
 /** ゲーム内キャンバスサイズ */
-const CANVAS_WIDTH = 512;
-const CANVAS_HEIGHT = 384;
+export const CANVAS_WIDTH = 512;
+export const CANVAS_HEIGHT = 384;
 
 interface BoardViewerProps {
 	boardData: BoardData;

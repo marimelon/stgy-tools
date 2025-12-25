@@ -5,7 +5,8 @@
 		"preview": "Preview",
 		"generate": "Generate",
 		"error": "Error",
-		"defaultText": "Text"
+		"defaultText": "Text",
+		"close": "Close"
 	},
 	"contextMenu": {
 		"copy": "Copy",
@@ -79,6 +80,10 @@
 			}
 		},
 		"showBoundingBox": "Show bounding box",
+		"expandBoard": "Expand",
+		"expandModal": {
+			"description": "Expanded board view"
+		},
 		"selectedObject": {
 			"title": "Selected Object",
 			"clickToSelect": "Click an object to select",
