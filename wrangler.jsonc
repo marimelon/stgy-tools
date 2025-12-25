@@ -1,5 +1,11 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
+  "kv_namespaces": [
+    {
+      "binding": "SHORT_LINKS",
+      "id": "37be94bd1d6c472da05aacfdc43f7d2c"
+    }
+  ],
   "name": "stgy-tools",
   "compatibility_date": "2025-09-02",
   "compatibility_flags": ["nodejs_compat"],
@@ -8,7 +14,8 @@
     "binding": "ASSETS"
   },
   "vars": {
-    "EXTERNAL_IMAGE_RENDERER_URL": "https://stgy.m4e.dev/image"
+    "EXTERNAL_IMAGE_RENDERER_URL": "https://stgy.m4e.dev/image",
+    "SHORT_LINKS_ENABLED": "true"
   },
   "observability": {
     "logs": {
