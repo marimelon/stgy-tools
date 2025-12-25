@@ -63,6 +63,8 @@ export interface EditorToolbarProps {
 		stgyCode: string,
 		encodeKey: number,
 	) => void;
+	/** 短縮リンク機能が有効かどうか */
+	shortLinksEnabled?: boolean;
 }
 
 /**
@@ -89,6 +91,7 @@ export function EditorToolbar({
 	lastSavedAt,
 	onOpenBoardManager,
 	onCreateBoardFromImport,
+	shortLinksEnabled = false,
 }: EditorToolbarProps = {}) {
 	const { t } = useTranslation();
 	const toolbarRef = useRef<HTMLDivElement>(null);
@@ -510,11 +513,13 @@ export function EditorToolbar({
 			{/* エクスポートモーダル */}
 			{showExportModal && (
 				<ExportModal
+					board={state.board}
 					exportedCode={exportedCode}
 					encodeKey={encodeKey}
 					onEncodeKeyChange={setEncodeKey}
 					onCopy={handleCopyExport}
 					onClose={closeExportModal}
+					shortLinksEnabled={shortLinksEnabled}
 				/>
 			)}
 		</>

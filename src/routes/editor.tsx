@@ -39,6 +39,7 @@ import {
 	getLocalizedSeo,
 	SITE_CONFIG,
 } from "@/lib/seo";
+import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
 import {
 	type BoardData,
 	decodeStgy,
@@ -59,6 +60,10 @@ type EditorSearchParams = {
 export const Route = createFileRoute("/editor")({
 	component: EditorPage,
 	ssr: false, // TanStack DB (useLiveQuery) requires client-side only
+	loader: async () => {
+		const featureFlags = await getFeatureFlagsFn();
+		return { featureFlags };
+	},
 	head: ({ match }) => {
 		const { lang } = match.search;
 		const seo = getLocalizedSeo("editor", lang);
@@ -116,6 +121,7 @@ function EditorPage() {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { stgy: codeFromUrl } = Route.useSearch();
+	const { featureFlags } = Route.useLoaderData();
 
 	// Board manager state
 	const [showBoardManager, setShowBoardManager] = useState(false);
@@ -354,6 +360,7 @@ function EditorPage() {
 					initialEncodeKey={initialEncodeKey}
 					currentBoardId={currentBoardId}
 					isMemoryOnlyMode={isMemoryOnlyMode}
+					shortLinksEnabled={featureFlags.shortLinksEnabled}
 					onOpenBoardManager={() => setShowBoardManager(true)}
 					onSaveBoard={(name, stgyCode, encodeKey, groups, gridSettings) => {
 						if (currentBoardId && !isMemoryOnlyMode) {
@@ -422,6 +429,7 @@ interface EditorContentProps {
 	initialEncodeKey: number;
 	currentBoardId: string | null;
 	isMemoryOnlyMode: boolean;
+	shortLinksEnabled: boolean;
 	onOpenBoardManager: () => void;
 	onSaveBoard: (
 		name: string,
@@ -444,6 +452,7 @@ function EditorContent({
 	initialEncodeKey,
 	currentBoardId,
 	isMemoryOnlyMode,
+	shortLinksEnabled,
 	onOpenBoardManager,
 	onSaveBoard,
 	onCreateBoardFromImport,
@@ -573,6 +582,7 @@ function EditorContent({
 				onCreateBoardFromImport={
 					isMemoryOnlyMode ? undefined : onCreateBoardFromImport
 				}
+				shortLinksEnabled={shortLinksEnabled}
 			/>
 
 			{/* メインエリア */}

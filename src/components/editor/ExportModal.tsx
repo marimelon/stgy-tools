@@ -3,7 +3,15 @@
  * shadcn/ui Dialog ベース
  */
 
-import { Check, Copy, ExternalLink, Key } from "lucide-react";
+import {
+	Check,
+	Copy,
+	ExternalLink,
+	Key,
+	Link2,
+	Loader2,
+	Share2,
+} from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -16,12 +24,21 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { recalculateBoardSize } from "@/lib/editor";
+import { createShortLinkFn } from "@/lib/server/shortLinks/serverFn";
+import { type BoardData, encodeStgy } from "@/lib/stgy";
+
+/** 共有リンク用の固定キー */
+const SHARE_LINK_KEY = 61;
 
 /**
  * エクスポートモーダルのProps
  */
 export interface ExportModalProps {
+	/** ボードデータ */
+	board: BoardData;
 	/** エクスポートされたコード */
 	exportedCode: string;
 	/** エンコードキー */
@@ -32,22 +49,36 @@ export interface ExportModalProps {
 	onCopy: () => void;
 	/** 閉じる時のコールバック */
 	onClose: () => void;
+	/** 短縮リンク機能が有効かどうか */
+	shortLinksEnabled?: boolean;
 }
 
 /**
  * エクスポートモーダル
  */
 export function ExportModal({
+	board,
 	exportedCode,
 	encodeKey,
 	onEncodeKeyChange,
 	onCopy,
 	onClose,
+	shortLinksEnabled = false,
 }: ExportModalProps) {
 	const { t } = useTranslation();
 	const keyInputId = useId();
 	const codeTextareaId = useId();
 	const [copied, setCopied] = useState(false);
+	const [copiedShareLink, setCopiedShareLink] = useState(false);
+	const [isGeneratingShortLink, setIsGeneratingShortLink] = useState(false);
+	const [copiedShortLink, setCopiedShortLink] = useState(false);
+
+	// 共有リンク用のstgyコードを生成（固定キー使用）
+	const generateShareCode = (): string => {
+		const { width, height } = recalculateBoardSize(board);
+		const exportBoard = { ...board, width, height };
+		return encodeStgy(exportBoard, SHARE_LINK_KEY);
+	};
 
 	const handleCopy = () => {
 		onCopy();
@@ -67,9 +98,46 @@ export function ExportModal({
 		}
 	};
 
+	// 直接共有リンクをコピー（固定キー使用）
+	const handleCreateShareLink = async () => {
+		try {
+			const shareCode = generateShareCode();
+			const shareUrl = `${window.location.origin}/?stgy=${encodeURIComponent(shareCode)}`;
+			await navigator.clipboard.writeText(shareUrl);
+			setCopiedShareLink(true);
+			setTimeout(() => setCopiedShareLink(false), 2000);
+		} catch {
+			// クリップボードAPIが利用できない場合は何もしない
+		}
+	};
+
+	// 短縮リンクを作成（固定キー使用）
+	const handleCreateShortLink = async () => {
+		setIsGeneratingShortLink(true);
+		setCopiedShortLink(false);
+		try {
+			const shareCode = generateShareCode();
+			const result = await createShortLinkFn({
+				data: { stgy: shareCode, baseUrl: window.location.origin },
+			});
+			if (result.success && result.data.url) {
+				await navigator.clipboard.writeText(result.data.url);
+				setCopiedShortLink(true);
+				setTimeout(() => setCopiedShortLink(false), 2000);
+			}
+		} catch {
+			// エラー時は何もしない
+		} finally {
+			setIsGeneratingShortLink(false);
+		}
+	};
+
 	return (
 		<Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
-			<DialogContent className="sm:max-w-md">
+			<DialogContent
+				className="sm:max-w-md"
+				onOpenAutoFocus={(e) => e.preventDefault()}
+			>
 				<DialogHeader>
 					<DialogTitle className="font-display">
 						{t("exportModal.title")}
@@ -108,15 +176,89 @@ export function ExportModal({
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor={codeTextareaId}>
-							{t("exportModal.generatedCode")}
-						</Label>
+						<div className="flex items-center justify-between">
+							<Label htmlFor={codeTextareaId}>
+								{t("exportModal.generatedCode")}
+							</Label>
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={handleCopy}
+								className="h-7 px-2"
+							>
+								{copied ? (
+									<>
+										<Check className="size-3.5" />
+										{t("exportModal.copied")}
+									</>
+								) : (
+									<>
+										<Copy className="size-3.5" />
+										{t("exportModal.copy")}
+									</>
+								)}
+							</Button>
+						</div>
 						<Textarea
 							id={codeTextareaId}
 							value={exportedCode}
 							readOnly
 							className="h-32 font-mono text-sm resize-none break-all"
 						/>
+					</div>
+
+					<Separator />
+
+					{/* 共有リンクセクション */}
+					<div className="space-y-2">
+						<Label className="flex items-center gap-2">
+							<Share2 className="size-4 text-primary" />
+							{t("exportModal.shareSection")}
+						</Label>
+						<div className="flex gap-2">
+							<Button
+								variant="outline"
+								onClick={handleCreateShareLink}
+								disabled={!exportedCode}
+								className="flex-1 justify-start"
+							>
+								{copiedShareLink ? (
+									<>
+										<Check className="size-4" />
+										{t("exportModal.shareLinkCopied")}
+									</>
+								) : (
+									<>
+										<Link2 className="size-4" />
+										{t("exportModal.createShareLink")}
+									</>
+								)}
+							</Button>
+							{shortLinksEnabled && (
+								<Button
+									variant="ghost"
+									onClick={handleCreateShortLink}
+									disabled={!exportedCode || isGeneratingShortLink}
+								>
+									{isGeneratingShortLink ? (
+										<>
+											<Loader2 className="size-4 animate-spin" />
+											{t("exportModal.generatingShortLink")}
+										</>
+									) : copiedShortLink ? (
+										<>
+											<Check className="size-4" />
+											{t("exportModal.shortLinkCopied")}
+										</>
+									) : (
+										<>
+											<Share2 className="size-4" />
+											{t("exportModal.createShortLink")}
+										</>
+									)}
+								</Button>
+							)}
+						</div>
 					</div>
 				</div>
 
@@ -133,24 +275,9 @@ export function ExportModal({
 						<ExternalLink className="size-4" />
 						{t("exportModal.openImageGenerator")}
 					</Button>
-					<div className="flex gap-2">
-						<Button variant="ghost" onClick={onClose}>
-							{t("exportModal.close")}
-						</Button>
-						<Button onClick={handleCopy}>
-							{copied ? (
-								<>
-									<Check className="size-4" />
-									{t("exportModal.copied")}
-								</>
-							) : (
-								<>
-									<Copy className="size-4" />
-									{t("exportModal.copy")}
-								</>
-							)}
-						</Button>
-					</div>
+					<Button variant="ghost" onClick={onClose}>
+						{t("exportModal.close")}
+					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

@@ -298,11 +298,17 @@
 		"usingKey": "キー",
 		"useKey": "を使用",
 		"usingRandomKey": "ランダムキーを使用",
-		"generatedCode": "生成されたstgyコード:",
+		"generatedCode": "stgyコード:",
 		"openImageGenerator": "画像生成を開く",
 		"close": "閉じる",
 		"copy": "コピー",
-		"copied": "コピーしました"
+		"copied": "コピーしました",
+		"shareSection": "共有",
+		"createShareLink": "共有リンクをコピー",
+		"shareLinkCopied": "コピーしました",
+		"createShortLink": "短縮リンク",
+		"shortLinkCopied": "コピーしました",
+		"generatingShortLink": "生成中..."
 	},
 	"importModal": {
 		"title": "インポート",

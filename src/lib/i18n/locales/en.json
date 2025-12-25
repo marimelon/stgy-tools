@@ -298,11 +298,17 @@
 		"usingKey": "Using key",
 		"useKey": "",
 		"usingRandomKey": "Using random key",
-		"generatedCode": "Generated stgy code:",
+		"generatedCode": "stgy code:",
 		"openImageGenerator": "Open Image Generator",
 		"close": "Close",
 		"copy": "Copy",
-		"copied": "Copied"
+		"copied": "Copied",
+		"shareSection": "Share",
+		"createShareLink": "Copy Share Link",
+		"shareLinkCopied": "Copied",
+		"createShortLink": "Short Link",
+		"shortLinkCopied": "Copied",
+		"generatingShortLink": "Generating..."
 	},
 	"importModal": {
 		"title": "Import",
