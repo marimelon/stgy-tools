@@ -4,6 +4,7 @@ import {
 	HeadContent,
 	Outlet,
 	Scripts,
+	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import {
@@ -111,8 +112,17 @@ const initialStyle = {
 };
 
 function RootDocument() {
+	// SSRでも動作するようにURLの検索パラメータから言語を取得
+	const search = useRouterState({
+		select: (s) => s.location.search as { lang?: string },
+	});
+	const lang = search.lang === "en" ? "en" : "ja";
+
+	// i18nの言語も同期（クライアントサイドのみ）
 	const { i18n } = useTranslation();
-	const lang = i18n.language === "en" ? "en" : "ja";
+	if (typeof window !== "undefined" && i18n.language !== lang) {
+		i18n.changeLanguage(lang);
+	}
 
 	return (
 		<html lang={lang} style={initialStyle}>
