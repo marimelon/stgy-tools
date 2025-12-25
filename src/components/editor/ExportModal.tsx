@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { recalculateBoardSize } from "@/lib/editor";
+import { useDebugMode } from "@/lib/editor/useDebugMode";
 import { createShortLinkFn } from "@/lib/server/shortLinks/serverFn";
 import { type BoardData, encodeStgy } from "@/lib/stgy";
 
@@ -66,6 +67,7 @@ export function ExportModal({
 	shortLinksEnabled = false,
 }: ExportModalProps) {
 	const { t } = useTranslation();
+	const { debugMode } = useDebugMode();
 	const keyInputId = useId();
 	const codeTextareaId = useId();
 	const [copied, setCopied] = useState(false);
@@ -145,35 +147,37 @@ export function ExportModal({
 				</DialogHeader>
 
 				<div className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor={keyInputId} className="flex items-center gap-2">
-							<Key className="size-4 text-primary" />
-							{t("exportModal.encryptionKey")}
-						</Label>
-						<div className="flex items-center gap-3">
-							<Input
-								id={keyInputId}
-								type="number"
-								min={0}
-								max={63}
-								value={encodeKey ?? ""}
-								onChange={handleKeyChange}
-								placeholder={t("exportModal.randomPlaceholder")}
-								className="w-24 font-mono"
-							/>
-							<span className="text-xs text-muted-foreground px-2 py-1 rounded bg-muted">
-								{encodeKey !== null ? (
-									<>
-										{t("exportModal.usingKey")}{" "}
-										<span className="text-primary">{encodeKey}</span>{" "}
-										{t("exportModal.useKey")}
-									</>
-								) : (
-									t("exportModal.usingRandomKey")
-								)}
-							</span>
+					{debugMode && (
+						<div className="space-y-2">
+							<Label htmlFor={keyInputId} className="flex items-center gap-2">
+								<Key className="size-4 text-primary" />
+								{t("exportModal.encryptionKey")}
+							</Label>
+							<div className="flex items-center gap-3">
+								<Input
+									id={keyInputId}
+									type="number"
+									min={0}
+									max={63}
+									value={encodeKey ?? ""}
+									onChange={handleKeyChange}
+									placeholder={t("exportModal.randomPlaceholder")}
+									className="w-24 font-mono"
+								/>
+								<span className="text-xs text-muted-foreground px-2 py-1 rounded bg-muted">
+									{encodeKey !== null ? (
+										<>
+											{t("exportModal.usingKey")}{" "}
+											<span className="text-primary">{encodeKey}</span>{" "}
+											{t("exportModal.useKey")}
+										</>
+									) : (
+										t("exportModal.usingRandomKey")
+									)}
+								</span>
+							</div>
 						</div>
-					</div>
+					)}
 
 					<div className="space-y-2">
 						<div className="flex items-center justify-between">
