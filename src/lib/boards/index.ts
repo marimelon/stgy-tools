@@ -3,6 +3,7 @@
  */
 
 export { boardsCollection } from "./collection";
+export { generateContentHash, generateHashFromBinary } from "./hash";
 export {
 	type BoardSortOption,
 	type BoardsError,

@@ -29,6 +29,9 @@ export const storedBoardSchema = z.object({
 	gridSettings: gridSettingsSchema,
 	createdAt: z.string(),
 	updatedAt: z.string(),
+	// SHA-256 hash of decoded binary data (for content-based duplicate detection)
+	// Optional for backward compatibility with existing data
+	contentHash: z.string().optional(),
 });
 
 export type StoredBoard = z.infer<typeof storedBoardSchema>;

@@ -3,10 +3,11 @@
  */
 
 import { useLiveQuery } from "@tanstack/react-db";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { GridSettings, ObjectGroup } from "@/lib/editor/types";
 import { decodeStgy } from "@/lib/stgy";
 import { boardsCollection } from "./collection";
+import { generateContentHash } from "./hash";
 import { DEFAULT_GRID_SETTINGS, type StoredBoard } from "./schema";
 
 /** Sort options for board list */
@@ -122,15 +123,16 @@ export function useBoards(options: UseBoardsOptions = {}) {
 
 	// Create a new board
 	const createBoard = useCallback(
-		(
+		async (
 			name: string,
 			stgyCode: string,
 			encodeKey: number,
 			groups: ObjectGroup[] = [],
 			gridSettings: GridSettings = DEFAULT_GRID_SETTINGS,
-		): string => {
+		): Promise<string> => {
 			const id = crypto.randomUUID();
 			const now = new Date().toISOString();
+			const contentHash = await generateContentHash(stgyCode);
 			boardsCollection.insert({
 				id,
 				name,
@@ -140,6 +142,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				gridSettings,
 				createdAt: now,
 				updatedAt: now,
+				contentHash: contentHash ?? undefined,
 			});
 			return id;
 		},
@@ -148,7 +151,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 
 	// Update an existing board
 	const updateBoard = useCallback(
-		(
+		async (
 			id: string,
 			updates: Partial<
 				Pick<
@@ -156,7 +159,12 @@ export function useBoards(options: UseBoardsOptions = {}) {
 					"name" | "stgyCode" | "encodeKey" | "groups" | "gridSettings"
 				>
 			>,
-		) => {
+		): Promise<void> => {
+			// If stgyCode is being updated, regenerate the content hash
+			const contentHash = updates.stgyCode
+				? await generateContentHash(updates.stgyCode)
+				: undefined;
+
 			boardsCollection.update(id, (draft) => {
 				if (updates.name !== undefined) draft.name = updates.name;
 				if (updates.stgyCode !== undefined) draft.stgyCode = updates.stgyCode;
@@ -165,6 +173,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				if (updates.groups !== undefined) draft.groups = updates.groups;
 				if (updates.gridSettings !== undefined)
 					draft.gridSettings = updates.gridSettings;
+				if (contentHash !== undefined) draft.contentHash = contentHash;
 				draft.updatedAt = new Date().toISOString();
 			});
 		},
@@ -251,23 +260,22 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		[boards],
 	);
 
-	// Decode stgy code to binary for comparison (memoized per board)
-	const decodedBoardsCache = useMemo(() => {
-		const cache = new Map<string, Uint8Array | null>();
-		for (const board of boards) {
-			try {
-				cache.set(board.id, decodeStgy(board.stgyCode));
-			} catch {
-				cache.set(board.id, null);
-			}
-		}
-		return cache;
-	}, [boards]);
-
-	// Find a board by content (compares decoded binary data, ignoring encryption key)
+	// Find a board by content (uses hash for fast comparison, falls back to binary for old data)
 	const findBoardByContent = useCallback(
-		(stgyCode: string): StoredBoard | undefined => {
-			// Decode the incoming stgy code
+		async (stgyCode: string): Promise<StoredBoard | undefined> => {
+			// Generate hash for the incoming stgy code
+			const incomingHash = await generateContentHash(stgyCode);
+			if (!incomingHash) return undefined;
+
+			// First, try to find by hash (fast path)
+			const matchByHash = boards.find((b) => b.contentHash === incomingHash);
+			if (matchByHash) return matchByHash;
+
+			// Fallback: check boards without contentHash using binary comparison
+			const boardsWithoutHash = boards.filter((b) => !b.contentHash);
+			if (boardsWithoutHash.length === 0) return undefined;
+
+			// Decode incoming stgy code for binary comparison
 			let incomingBinary: Uint8Array;
 			try {
 				incomingBinary = decodeStgy(stgyCode);
@@ -276,18 +284,19 @@ export function useBoards(options: UseBoardsOptions = {}) {
 			}
 
 			// Compare with each board's decoded binary
-			return boards.find((board) => {
-				const existingBinary = decodedBoardsCache.get(board.id);
-				if (!existingBinary) return false;
-
-				// Compare binary data
-				if (incomingBinary.length !== existingBinary.length) return false;
-				return incomingBinary.every(
-					(byte, index) => byte === existingBinary[index],
-				);
+			return boardsWithoutHash.find((board) => {
+				try {
+					const existingBinary = decodeStgy(board.stgyCode);
+					if (incomingBinary.length !== existingBinary.length) return false;
+					return incomingBinary.every(
+						(byte, index) => byte === existingBinary[index],
+					);
+				} catch {
+					return false;
+				}
 			});
 		},
-		[boards, decodedBoardsCache],
+		[boards],
 	);
 
 	// Clear error

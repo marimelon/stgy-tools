@@ -199,7 +199,7 @@ function EditorPage() {
 
 	// Handle creating a new board (or starting in memory-only mode)
 	const handleCreateNewBoard = useCallback(
-		(memoryOnly = false) => {
+		async (memoryOnly = false) => {
 			const defaultName = t("boardManager.defaultBoardName");
 			const newBoard = createEmptyBoard(defaultName);
 
@@ -208,7 +208,7 @@ function EditorPage() {
 				const boardToSave = { ...newBoard, width, height };
 				const stgyCode = encodeStgy(boardToSave, 0);
 
-				const newBoardId = createBoard(
+				const newBoardId = await createBoard(
 					newBoard.name,
 					stgyCode,
 					0,
@@ -238,7 +238,7 @@ function EditorPage() {
 	}, []);
 
 	// Handle decode error: delete corrupted board
-	const handleDeleteCorruptedBoard = useCallback(() => {
+	const handleDeleteCorruptedBoard = useCallback(async () => {
 		if (!decodeError) return;
 
 		deleteBoard(decodeError.boardId);
@@ -249,7 +249,7 @@ function EditorPage() {
 		if (remainingBoards.length > 0) {
 			handleOpenBoard(remainingBoards[0].id);
 		} else {
-			handleCreateNewBoard();
+			await handleCreateNewBoard();
 		}
 	}, [decodeError, deleteBoard, boards, handleOpenBoard, handleCreateNewBoard]);
 
@@ -260,20 +260,20 @@ function EditorPage() {
 	}, [clearError]);
 
 	// Handle storage error: continue without saving
-	const handleContinueWithoutSaving = useCallback(() => {
+	const handleContinueWithoutSaving = useCallback(async () => {
 		clearError();
 		setIsMemoryOnlyMode(true);
-		handleCreateNewBoard(true);
+		await handleCreateNewBoard(true);
 		setIsInitialized(true);
 	}, [clearError, handleCreateNewBoard]);
 
 	// Handle importing a board from URL query parameter
 	const handleImportFromUrl = useCallback(
-		(code: string): boolean | "pending" => {
+		async (code: string): Promise<boolean | "pending"> => {
 			const trimmedCode = code.trim();
 
 			// Check for existing board with same content (ignores encryption key)
-			const existingBoard = findBoardByContent(trimmedCode);
+			const existingBoard = await findBoardByContent(trimmedCode);
 			if (existingBoard) {
 				// Show duplicate detection modal
 				setPendingImport({ code: trimmedCode, existingBoard });
@@ -289,7 +289,7 @@ function EditorPage() {
 
 			// Create a new board with the imported data
 			const boardName = decodedBoard.name || t("boardManager.defaultBoardName");
-			const newBoardId = createBoard(
+			const newBoardId = await createBoard(
 				boardName,
 				trimmedCode,
 				0,
@@ -325,7 +325,7 @@ function EditorPage() {
 	}, [pendingImport, handleOpenBoard, navigate]);
 
 	// Handle duplicate modal: create new board
-	const handleCreateNewFromImport = useCallback(() => {
+	const handleCreateNewFromImport = useCallback(async () => {
 		if (!pendingImport) return;
 
 		const decodedBoard = decodeBoardFromStgy(pendingImport.code);
@@ -337,7 +337,7 @@ function EditorPage() {
 
 		// Create new board
 		const boardName = decodedBoard.name || t("boardManager.defaultBoardName");
-		const newBoardId = createBoard(
+		const newBoardId = await createBoard(
 			boardName,
 			pendingImport.code,
 			0,
@@ -360,7 +360,7 @@ function EditorPage() {
 	}, [pendingImport, createBoard, t, navigate]);
 
 	// Handle duplicate modal: cancel
-	const handleCancelImport = useCallback(() => {
+	const handleCancelImport = useCallback(async () => {
 		setPendingImport(null);
 
 		// Clear URL parameter
@@ -370,7 +370,7 @@ function EditorPage() {
 		if (boards.length > 0) {
 			handleOpenBoard(boards[0].id);
 		} else {
-			handleCreateNewBoard();
+			await handleCreateNewBoard();
 		}
 	}, [navigate, boards, handleOpenBoard, handleCreateNewBoard]);
 
@@ -379,31 +379,35 @@ function EditorPage() {
 		// Wait for loading to complete, skip if error or memory-only mode
 		if (isLoading || isInitialized || storageError || isMemoryOnlyMode) return;
 
-		// Check for stgy code in URL query parameter (from Image Generator page)
-		if (codeFromUrl) {
-			const result = handleImportFromUrl(codeFromUrl);
-			if (result === "pending") {
-				// Duplicate found, modal will be shown
-				setIsInitialized(true);
-				return;
+		const initializeEditor = async () => {
+			// Check for stgy code in URL query parameter (from Image Generator page)
+			if (codeFromUrl) {
+				const result = await handleImportFromUrl(codeFromUrl);
+				if (result === "pending") {
+					// Duplicate found, modal will be shown
+					setIsInitialized(true);
+					return;
+				}
+				if (result === true) {
+					setIsInitialized(true);
+					return;
+				}
+				// result === false: decode failed, continue to normal flow
 			}
-			if (result === true) {
-				setIsInitialized(true);
-				return;
-			}
-			// result === false: decode failed, continue to normal flow
-		}
 
-		if (boards.length === 0) {
-			// First time: auto-create a new board
-			handleCreateNewBoard();
-			setIsInitialized(true);
-		} else if (!currentBoardId) {
-			// Revisit: open the most recently updated board
-			const mostRecentBoard = boards[0]; // Already sorted by updatedAt desc
-			handleOpenBoard(mostRecentBoard.id);
-			setIsInitialized(true);
-		}
+			if (boards.length === 0) {
+				// First time: auto-create a new board
+				await handleCreateNewBoard();
+				setIsInitialized(true);
+			} else if (!currentBoardId) {
+				// Revisit: open the most recently updated board
+				const mostRecentBoard = boards[0]; // Already sorted by updatedAt desc
+				handleOpenBoard(mostRecentBoard.id);
+				setIsInitialized(true);
+			}
+		};
+
+		initializeEditor();
 	}, [
 		isLoading,
 		isInitialized,
@@ -453,7 +457,7 @@ function EditorPage() {
 					onOpenBoardManager={() => setShowBoardManager(true)}
 					onSaveBoard={(name, stgyCode, encodeKey, groups, gridSettings) => {
 						if (currentBoardId && !isMemoryOnlyMode) {
-							updateBoard(currentBoardId, {
+							void updateBoard(currentBoardId, {
 								name,
 								stgyCode,
 								encodeKey,
@@ -462,7 +466,7 @@ function EditorPage() {
 							});
 						}
 					}}
-					onCreateBoardFromImport={(name, stgyCode, encodeKey) => {
+					onCreateBoardFromImport={async (name, stgyCode, encodeKey) => {
 						// stgyCodeをデコードしてボードデータを取得
 						const decodedBoard = decodeBoardFromStgy(stgyCode);
 						if (!decodedBoard) {
@@ -471,7 +475,7 @@ function EditorPage() {
 						}
 
 						// 新しいボードをIndexedDBに保存
-						const newBoardId = createBoard(
+						const newBoardId = await createBoard(
 							name,
 							stgyCode,
 							encodeKey,
@@ -542,7 +546,7 @@ interface EditorContentProps {
 		name: string,
 		stgyCode: string,
 		encodeKey: number,
-	) => void;
+	) => void | Promise<void>;
 }
 
 /**
