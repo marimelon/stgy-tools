@@ -9,7 +9,7 @@ export const SITE_CONFIG = {
 		"FFXIV Strategy Board viewer and editor. Decode and create stgy codes for raid strategy diagrams.",
 	descriptionJa:
 		"FFXIV 作戦盤のビューアー・エディター。stgyコードのデコード・作成に対応。",
-	url: "https://stgy-tools.marime.net",
+	url: "https://stgy.m4e.dev",
 	locale: {
 		default: "ja",
 		supported: ["ja", "en"] as const,

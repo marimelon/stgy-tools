@@ -6,4 +6,4 @@ Disallow: /debug-stgy
 Disallow: /debug-render
 Disallow: /debug
 
-Sitemap: https://stgy-tools.marime.net/sitemap.xml
+Sitemap: https://stgy.m4e.dev/sitemap.xml
