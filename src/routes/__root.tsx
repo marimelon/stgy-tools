@@ -116,7 +116,12 @@ function RootDocument() {
 	const search = useRouterState({
 		select: (s) => s.location.search as { lang?: string },
 	});
-	const lang = search.lang === "en" ? "en" : "ja";
+	// サポートされている言語のみ認識、それ以外はデフォルト言語にフォールバック
+	const supportedLangs = SITE_CONFIG.locale.supported;
+	const isSupported = supportedLangs.includes(
+		search.lang as (typeof supportedLangs)[number],
+	);
+	const lang = isSupported ? (search.lang as "ja" | "en") : "ja";
 
 	// i18nの言語も同期（クライアントサイドのみ）
 	const { i18n } = useTranslation();

@@ -168,7 +168,16 @@ export function getLocalizedSeo(
 	lang?: string | null,
 ) {
 	const seo = PAGE_SEO[page];
-	const isJa = lang === "ja" || (!lang && SITE_CONFIG.locale.default === "ja");
+	// サポートされている言語のみ認識、それ以外はデフォルト言語にフォールバック
+	const supportedLangs = SITE_CONFIG.locale.supported;
+	const normalizedLang = supportedLangs.includes(
+		lang as (typeof supportedLangs)[number],
+	)
+		? lang
+		: null;
+	const isJa =
+		normalizedLang === "ja" ||
+		(!normalizedLang && SITE_CONFIG.locale.default === "ja");
 	return {
 		title: isJa ? seo.titleJa : seo.title,
 		description: isJa ? seo.descriptionJa : seo.description,
