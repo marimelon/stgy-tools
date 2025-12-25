@@ -36,9 +36,7 @@ export function ObjectListItem({
 	const isVisible = object.flags.visible;
 
 	// ツールチップ用のフルテキスト
-	const fullText = object.text
-		? `${objectName} "${object.text}"`
-		: objectName;
+	const fullText = object.text ? `${objectName} "${object.text}"` : objectName;
 
 	return (
 		<button

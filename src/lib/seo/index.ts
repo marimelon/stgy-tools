@@ -8,7 +8,7 @@ export const SITE_CONFIG = {
 	description:
 		"FFXIV Strategy Board viewer and editor. Decode and create stgy codes for raid strategy diagrams.",
 	descriptionJa:
-		"FFXIV 作戦盤のビューアー・エディター。stgyコードのデコード・作成に対応。",
+		"FFXIV ストラテジーボードのビューアー・エディター。stgyコードのデコード・作成に対応。",
 	url: "https://stgy.m4e.dev",
 	locale: {
 		default: "ja",
@@ -20,29 +20,29 @@ export const SITE_CONFIG = {
 export const PAGE_SEO = {
 	home: {
 		title: "STGY Tools - FFXIV Strategy Board Viewer",
-		titleJa: "STGY Tools - FFXIV 作戦盤ビューアー",
+		titleJa: "STGY Tools - FFXIV ストラテジーボードビューアー",
 		description:
 			"View and decode FFXIV Strategy Board (stgy) codes. Visualize raid strategies with interactive SVG rendering.",
 		descriptionJa:
-			"FFXIV 作戦盤のstgyコードを表示・デコード。インタラクティブなSVGレンダリングでレイド攻略を可視化。",
+			"FFXIV ストラテジーボードのstgyコードを表示・デコード。インタラクティブなSVGレンダリングでレイド攻略を可視化。",
 		path: "/",
 	},
 	editor: {
 		title: "Strategy Board Editor | STGY Tools",
-		titleJa: "作戦盤エディター | STGY Tools",
+		titleJa: "ストラテジーボードエディター | STGY Tools",
 		description:
 			"Create and edit FFXIV Strategy Board diagrams. Full-featured editor with layers, groups, and export to stgy codes.",
 		descriptionJa:
-			"FFXIV 作戦盤のダイアグラムを作成・編集。レイヤー、グループ、stgyコード出力に対応した多機能エディター。",
+			"FFXIV ストラテジーボードのダイアグラムを作成・編集。レイヤー、グループ、stgyコード出力に対応した多機能エディター。",
 		path: "/editor",
 	},
 	imageGenerator: {
 		title: "FFXIV Strategy Board Image Generator | STGY Tools",
-		titleJa: "FFXIV 作戦盤画像ジェネレーター | STGY Tools",
+		titleJa: "FFXIV ストラテジーボード画像ジェネレーター | STGY Tools",
 		description:
 			"Generate shareable images from FFXIV Strategy Board codes. Create PNG or SVG images for Discord, Twitter, and other platforms.",
 		descriptionJa:
-			"FFXIV 作戦盤コードから共有可能な画像を生成。Discord、Twitter向けのPNG/SVG画像を作成。",
+			"FFXIV ストラテジーボードコードから共有可能な画像を生成。Discord、Twitter向けのPNG/SVG画像を作成。",
 		path: "/image/generate",
 	},
 } as const;
