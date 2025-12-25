@@ -159,6 +159,25 @@ export function generateCommonMeta(page: keyof typeof PAGE_SEO) {
 	};
 }
 
+/** 言語タイプ */
+export type SupportedLang = (typeof SITE_CONFIG.locale.supported)[number];
+
+/** 言語に応じたSEO情報を取得 */
+export function getLocalizedSeo(
+	page: keyof typeof PAGE_SEO,
+	lang?: string | null,
+) {
+	const seo = PAGE_SEO[page];
+	const isJa = lang === "ja" || (!lang && SITE_CONFIG.locale.default === "ja");
+	return {
+		title: isJa ? seo.titleJa : seo.title,
+		description: isJa ? seo.descriptionJa : seo.description,
+		path: seo.path,
+		lang: isJa ? "ja" : "en",
+		ogLocale: isJa ? "ja_JP" : "en_US",
+	};
+}
+
 /** デバッグページ用メタタグ（noindex） */
 export function generateDebugPageMeta(title: string) {
 	return {

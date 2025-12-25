@@ -13,7 +13,7 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import {
 	generateCanonicalLink,
 	generateHreflangLinks,
-	PAGE_SEO,
+	getLocalizedSeo,
 	SITE_CONFIG,
 } from "@/lib/seo";
 import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
@@ -156,6 +156,7 @@ export const Route = createFileRoute("/image/generate")({
 	validateSearch: (search: Record<string, unknown>) => {
 		return {
 			stgy: typeof search.stgy === "string" ? search.stgy : undefined,
+			lang: typeof search.lang === "string" ? search.lang : undefined,
 		};
 	},
 	loader: async () => {
@@ -163,9 +164,9 @@ export const Route = createFileRoute("/image/generate")({
 		return { featureFlags };
 	},
 	head: ({ match }) => {
-		const { stgy } = match.search;
+		const { stgy, lang } = match.search;
 		const hasCode = Boolean(stgy);
-		const pagePath = PAGE_SEO.imageGenerator.path;
+		const seo = getLocalizedSeo("imageGenerator", lang);
 
 		// 動的OGイメージ: stgyコードがある場合は生成画像を使用
 		const ogImage = hasCode
@@ -175,14 +176,21 @@ export const Route = createFileRoute("/image/generate")({
 		// Twitter Cardタイプ: 画像がある場合はsummary_large_image
 		const twitterCard = hasCode ? "summary_large_image" : "summary";
 
+		// 言語に応じた動的OG説明文
+		const ogDescription = hasCode
+			? seo.lang === "ja"
+				? "FFXIV ストラテジーボードのダイアグラムを表示"
+				: "View this FFXIV Strategy Board diagram"
+			: seo.description;
+
 		return {
 			meta: [
 				{
-					title: PAGE_SEO.imageGenerator.title,
+					title: seo.title,
 				},
 				{
 					name: "description",
-					content: PAGE_SEO.imageGenerator.description,
+					content: seo.description,
 				},
 				{
 					name: "keywords",
@@ -192,13 +200,11 @@ export const Route = createFileRoute("/image/generate")({
 				// Open Graph
 				{
 					property: "og:title",
-					content: "FFXIV Strategy Board Image Generator",
+					content: seo.title,
 				},
 				{
 					property: "og:description",
-					content: hasCode
-						? "View this FFXIV Strategy Board diagram"
-						: "Generate shareable images from FFXIV Strategy Board codes. Perfect for Discord and social media sharing.",
+					content: ogDescription,
 				},
 				{
 					property: "og:type",
@@ -206,7 +212,7 @@ export const Route = createFileRoute("/image/generate")({
 				},
 				{
 					property: "og:url",
-					content: `${SITE_CONFIG.url}${pagePath}`,
+					content: `${SITE_CONFIG.url}${seo.path}`,
 				},
 				{
 					property: "og:image",
@@ -220,6 +226,10 @@ export const Route = createFileRoute("/image/generate")({
 					property: "og:image:height",
 					content: "384",
 				},
+				{
+					property: "og:locale",
+					content: seo.ogLocale,
+				},
 				// Twitter Card
 				{
 					name: "twitter:card",
@@ -227,13 +237,11 @@ export const Route = createFileRoute("/image/generate")({
 				},
 				{
 					name: "twitter:title",
-					content: "FFXIV Strategy Board Image Generator",
+					content: seo.title,
 				},
 				{
 					name: "twitter:description",
-					content: hasCode
-						? "View this FFXIV Strategy Board diagram"
-						: "Generate shareable images from FFXIV Strategy Board codes.",
+					content: ogDescription,
 				},
 				{
 					name: "twitter:image",
@@ -241,8 +249,8 @@ export const Route = createFileRoute("/image/generate")({
 				},
 			],
 			links: [
-				generateCanonicalLink(pagePath),
-				...generateHreflangLinks(pagePath),
+				generateCanonicalLink(seo.path),
+				...generateHreflangLinks(seo.path),
 			],
 		};
 	},

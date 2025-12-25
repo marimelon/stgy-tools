@@ -15,6 +15,7 @@ import appCss from "../styles.css?url";
 
 // Initialize i18n
 import "../lib/i18n";
+import { useTranslation } from "react-i18next";
 
 // JSON-LD structured data
 const jsonLdScript = JSON.stringify(generateWebApplicationSchema());
@@ -110,8 +111,11 @@ const initialStyle = {
 };
 
 function RootDocument() {
+	const { i18n } = useTranslation();
+	const lang = i18n.language === "en" ? "en" : "ja";
+
 	return (
-		<html lang="ja" style={initialStyle}>
+		<html lang={lang} style={initialStyle}>
 			<head>
 				<HeadContent />
 			</head>

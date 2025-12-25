@@ -33,7 +33,12 @@ import {
 	useKeyboardShortcuts,
 } from "@/lib/editor";
 import { PanelProvider } from "@/lib/panel";
-import { generateCommonMeta } from "@/lib/seo";
+import {
+	generateCanonicalLink,
+	generateHreflangLinks,
+	getLocalizedSeo,
+	SITE_CONFIG,
+} from "@/lib/seo";
 import {
 	type BoardData,
 	decodeStgy,
@@ -45,19 +50,45 @@ import {
 const CANVAS_WIDTH = 512;
 const CANVAS_HEIGHT = 384;
 
-const seo = generateCommonMeta("editor");
-
 /** Search params for editor page */
 type EditorSearchParams = {
 	stgy?: string;
+	lang?: string;
 };
 
 export const Route = createFileRoute("/editor")({
 	component: EditorPage,
 	ssr: false, // TanStack DB (useLiveQuery) requires client-side only
-	head: () => seo,
+	head: ({ match }) => {
+		const { lang } = match.search;
+		const seo = getLocalizedSeo("editor", lang);
+
+		return {
+			meta: [
+				{ title: seo.title },
+				{ name: "description", content: seo.description },
+				// Open Graph
+				{ property: "og:title", content: seo.title },
+				{ property: "og:description", content: seo.description },
+				{ property: "og:type", content: "website" },
+				{ property: "og:url", content: `${SITE_CONFIG.url}${seo.path}` },
+				{ property: "og:image", content: `${SITE_CONFIG.url}/favicon.svg` },
+				{ property: "og:locale", content: seo.ogLocale },
+				// Twitter Card
+				{ name: "twitter:card", content: "summary" },
+				{ name: "twitter:title", content: seo.title },
+				{ name: "twitter:description", content: seo.description },
+				{ name: "twitter:image", content: `${SITE_CONFIG.url}/favicon.svg` },
+			],
+			links: [
+				generateCanonicalLink(seo.path),
+				...generateHreflangLinks(seo.path),
+			],
+		};
+	},
 	validateSearch: (search: Record<string, unknown>): EditorSearchParams => ({
 		stgy: typeof search.stgy === "string" ? search.stgy : undefined,
+		lang: typeof search.lang === "string" ? search.lang : undefined,
 	}),
 });
 

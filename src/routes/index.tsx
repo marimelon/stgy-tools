@@ -13,7 +13,7 @@ import { ObjectListPanel } from "@/components/viewer/ObjectListPanel";
 import {
 	generateCanonicalLink,
 	generateHreflangLinks,
-	PAGE_SEO,
+	getLocalizedSeo,
 	SITE_CONFIG,
 } from "@/lib/seo";
 import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
@@ -30,6 +30,7 @@ export const Route = createFileRoute("/")({
 		return {
 			stgy: typeof search.stgy === "string" ? search.stgy : undefined,
 			s: typeof search.s === "string" ? search.s : undefined,
+			lang: typeof search.lang === "string" ? search.lang : undefined,
 		};
 	},
 	loaderDeps: ({ search }) => ({ s: search.s, stgy: search.stgy }),
@@ -50,11 +51,11 @@ export const Route = createFileRoute("/")({
 		return { resolvedStgy: undefined, shortId: undefined, featureFlags };
 	},
 	head: ({ match, loaderData }) => {
-		const { stgy, s } = match.search;
+		const { stgy, s, lang } = match.search;
 		// 短縮IDの場合はloaderDataから解決済みのstgyを取得
 		const resolvedStgy = loaderData?.resolvedStgy ?? stgy;
 		const hasCode = Boolean(resolvedStgy);
-		const pagePath = PAGE_SEO.home.path;
+		const seo = getLocalizedSeo("home", lang);
 
 		// 動的OGイメージ: stgyコードがある場合は生成画像を使用
 		// 短縮IDがある場合はそれを使用（OGP用に短いURL）
@@ -67,14 +68,21 @@ export const Route = createFileRoute("/")({
 		// Twitter Cardタイプ: 画像がある場合はsummary_large_image
 		const twitterCard = hasCode ? "summary_large_image" : "summary";
 
+		// 言語に応じた動的OG説明文
+		const ogDescription = hasCode
+			? seo.lang === "ja"
+				? "FFXIV ストラテジーボードのダイアグラムを表示"
+				: "View this FFXIV Strategy Board diagram"
+			: seo.description;
+
 		return {
 			meta: [
 				{
-					title: PAGE_SEO.home.title,
+					title: seo.title,
 				},
 				{
 					name: "description",
-					content: PAGE_SEO.home.description,
+					content: seo.description,
 				},
 				{
 					name: "keywords",
@@ -84,13 +92,11 @@ export const Route = createFileRoute("/")({
 				// Open Graph
 				{
 					property: "og:title",
-					content: "FFXIV Strategy Board Viewer",
+					content: seo.title,
 				},
 				{
 					property: "og:description",
-					content: hasCode
-						? "View this FFXIV Strategy Board diagram"
-						: "View and decode FFXIV Strategy Board (stgy) codes. Visualize raid strategies with interactive SVG rendering.",
+					content: ogDescription,
 				},
 				{
 					property: "og:type",
@@ -98,7 +104,7 @@ export const Route = createFileRoute("/")({
 				},
 				{
 					property: "og:url",
-					content: `${SITE_CONFIG.url}${pagePath}`,
+					content: `${SITE_CONFIG.url}${seo.path}`,
 				},
 				{
 					property: "og:image",
@@ -112,6 +118,10 @@ export const Route = createFileRoute("/")({
 					property: "og:image:height",
 					content: "384",
 				},
+				{
+					property: "og:locale",
+					content: seo.ogLocale,
+				},
 				// Twitter Card
 				{
 					name: "twitter:card",
@@ -119,13 +129,11 @@ export const Route = createFileRoute("/")({
 				},
 				{
 					name: "twitter:title",
-					content: "FFXIV Strategy Board Viewer",
+					content: seo.title,
 				},
 				{
 					name: "twitter:description",
-					content: hasCode
-						? "View this FFXIV Strategy Board diagram"
-						: "View and decode FFXIV Strategy Board (stgy) codes.",
+					content: ogDescription,
 				},
 				{
 					name: "twitter:image",
@@ -133,8 +141,8 @@ export const Route = createFileRoute("/")({
 				},
 			],
 			links: [
-				generateCanonicalLink(pagePath),
-				...generateHreflangLinks(pagePath),
+				generateCanonicalLink(seo.path),
+				...generateHreflangLinks(seo.path),
 			],
 		};
 	},
