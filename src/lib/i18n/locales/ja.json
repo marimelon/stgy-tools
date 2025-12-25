@@ -323,6 +323,17 @@
 		"import": "インポート",
 		"addToBoards": "ボード管理に追加する"
 	},
+	"duplicateBoard": {
+		"title": "同じボードが見つかりました",
+		"description": "このボードは既に保存されています：",
+		"boardName": "ボード名",
+		"updatedAt": "更新日時",
+		"openExisting": "既存のボードを開く",
+		"openExistingDescription": "保存済みの編集内容を維持します",
+		"createNew": "新しいボードとして保存",
+		"createNewDescription": "コピーを作成して編集を開始します",
+		"cancel": "キャンセル"
+	},
 	"panelSettings": {
 		"title": "パネルレイアウト設定",
 		"panelVisibility": "パネル表示",

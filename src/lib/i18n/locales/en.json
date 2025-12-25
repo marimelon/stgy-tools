@@ -323,6 +323,17 @@
 		"import": "Import",
 		"addToBoards": "Add to board management"
 	},
+	"duplicateBoard": {
+		"title": "Duplicate board found",
+		"description": "This board is already saved:",
+		"boardName": "Board name",
+		"updatedAt": "Updated",
+		"openExisting": "Open existing board",
+		"openExistingDescription": "Keep your saved changes",
+		"createNew": "Save as new board",
+		"createNewDescription": "Create a copy and start editing",
+		"cancel": "Cancel"
+	},
 	"panelSettings": {
 		"title": "Panel Layout Settings",
 		"panelVisibility": "Panel Visibility",

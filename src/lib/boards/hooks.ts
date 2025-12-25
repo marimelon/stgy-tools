@@ -3,8 +3,9 @@
  */
 
 import { useLiveQuery } from "@tanstack/react-db";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GridSettings, ObjectGroup } from "@/lib/editor/types";
+import { decodeStgy } from "@/lib/stgy";
 import { boardsCollection } from "./collection";
 import { DEFAULT_GRID_SETTINGS, type StoredBoard } from "./schema";
 
@@ -250,6 +251,45 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		[boards],
 	);
 
+	// Decode stgy code to binary for comparison (memoized per board)
+	const decodedBoardsCache = useMemo(() => {
+		const cache = new Map<string, Uint8Array | null>();
+		for (const board of boards) {
+			try {
+				cache.set(board.id, decodeStgy(board.stgyCode));
+			} catch {
+				cache.set(board.id, null);
+			}
+		}
+		return cache;
+	}, [boards]);
+
+	// Find a board by content (compares decoded binary data, ignoring encryption key)
+	const findBoardByContent = useCallback(
+		(stgyCode: string): StoredBoard | undefined => {
+			// Decode the incoming stgy code
+			let incomingBinary: Uint8Array;
+			try {
+				incomingBinary = decodeStgy(stgyCode);
+			} catch {
+				return undefined;
+			}
+
+			// Compare with each board's decoded binary
+			return boards.find((board) => {
+				const existingBinary = decodedBoardsCache.get(board.id);
+				if (!existingBinary) return false;
+
+				// Compare binary data
+				if (incomingBinary.length !== existingBinary.length) return false;
+				return incomingBinary.every(
+					(byte, index) => byte === existingBinary[index],
+				);
+			});
+		},
+		[boards, decodedBoardsCache],
+	);
+
 	// Clear error
 	const clearError = useCallback(() => {
 		setError(null);
@@ -265,6 +305,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		deleteBoard,
 		duplicateBoard,
 		getBoard,
+		findBoardByContent,
 		// Undo support
 		deletedBoard,
 		undoDelete,

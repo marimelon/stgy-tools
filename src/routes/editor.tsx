@@ -6,6 +6,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+	DuplicateBoardModal,
 	EditorBoard,
 	EditorToolbar,
 	ErrorToast,
@@ -22,6 +23,7 @@ import {
 import { ResizableLayout } from "@/components/panel";
 import { CompactAppHeader } from "@/components/ui/AppHeader";
 import { useBoards } from "@/lib/boards";
+import type { StoredBoard } from "@/lib/boards/schema";
 import {
 	createEmptyBoard,
 	EditorProvider,
@@ -160,7 +162,14 @@ function EditorPage() {
 		updateBoard,
 		deleteBoard,
 		getBoard,
+		findBoardByContent,
 	} = useBoards();
+
+	// Pending import state (for duplicate detection modal)
+	const [pendingImport, setPendingImport] = useState<{
+		code: string;
+		existingBoard: StoredBoard;
+	} | null>(null);
 
 	// Handle opening a board
 	const handleOpenBoard = useCallback(
@@ -260,9 +269,19 @@ function EditorPage() {
 
 	// Handle importing a board from URL query parameter
 	const handleImportFromUrl = useCallback(
-		(code: string) => {
+		(code: string): boolean | "pending" => {
+			const trimmedCode = code.trim();
+
+			// Check for existing board with same content (ignores encryption key)
+			const existingBoard = findBoardByContent(trimmedCode);
+			if (existingBoard) {
+				// Show duplicate detection modal
+				setPendingImport({ code: trimmedCode, existingBoard });
+				return "pending";
+			}
+
 			// Decode the stgy code
-			const decodedBoard = decodeBoardFromStgy(code);
+			const decodedBoard = decodeBoardFromStgy(trimmedCode);
 			if (!decodedBoard) {
 				console.warn("Failed to decode board from URL parameter");
 				return false;
@@ -272,7 +291,7 @@ function EditorPage() {
 			const boardName = decodedBoard.name || t("boardManager.defaultBoardName");
 			const newBoardId = createBoard(
 				boardName,
-				code,
+				trimmedCode,
 				0,
 				[],
 				DEFAULT_GRID_SETTINGS,
@@ -291,8 +310,69 @@ function EditorPage() {
 
 			return true;
 		},
-		[createBoard, t, navigate],
+		[createBoard, t, navigate, findBoardByContent],
 	);
+
+	// Handle duplicate modal: open existing board
+	const handleOpenExistingFromImport = useCallback(() => {
+		if (!pendingImport) return;
+
+		handleOpenBoard(pendingImport.existingBoard.id);
+		setPendingImport(null);
+
+		// Clear URL parameter
+		navigate({ to: "/editor", search: {}, replace: true });
+	}, [pendingImport, handleOpenBoard, navigate]);
+
+	// Handle duplicate modal: create new board
+	const handleCreateNewFromImport = useCallback(() => {
+		if (!pendingImport) return;
+
+		const decodedBoard = decodeBoardFromStgy(pendingImport.code);
+		if (!decodedBoard) {
+			console.warn("Failed to decode board from pending import");
+			setPendingImport(null);
+			return;
+		}
+
+		// Create new board
+		const boardName = decodedBoard.name || t("boardManager.defaultBoardName");
+		const newBoardId = createBoard(
+			boardName,
+			pendingImport.code,
+			0,
+			[],
+			DEFAULT_GRID_SETTINGS,
+		);
+
+		// Initialize editor with the imported board
+		setCurrentBoardId(newBoardId);
+		setInitialBoard({ ...decodedBoard, name: boardName });
+		setInitialGroups([]);
+		setInitialGridSettings(DEFAULT_GRID_SETTINGS);
+		setInitialEncodeKey(0);
+		setEditorKey((prev) => prev + 1);
+
+		setPendingImport(null);
+
+		// Clear URL parameter
+		navigate({ to: "/editor", search: {}, replace: true });
+	}, [pendingImport, createBoard, t, navigate]);
+
+	// Handle duplicate modal: cancel
+	const handleCancelImport = useCallback(() => {
+		setPendingImport(null);
+
+		// Clear URL parameter
+		navigate({ to: "/editor", search: {}, replace: true });
+
+		// Open the most recent board or create new one
+		if (boards.length > 0) {
+			handleOpenBoard(boards[0].id);
+		} else {
+			handleCreateNewBoard();
+		}
+	}, [navigate, boards, handleOpenBoard, handleCreateNewBoard]);
 
 	// Auto-initialize: create first board or open last edited board
 	useEffect(() => {
@@ -300,9 +380,18 @@ function EditorPage() {
 		if (isLoading || isInitialized || storageError || isMemoryOnlyMode) return;
 
 		// Check for stgy code in URL query parameter (from Image Generator page)
-		if (codeFromUrl && handleImportFromUrl(codeFromUrl)) {
-			setIsInitialized(true);
-			return;
+		if (codeFromUrl) {
+			const result = handleImportFromUrl(codeFromUrl);
+			if (result === "pending") {
+				// Duplicate found, modal will be shown
+				setIsInitialized(true);
+				return;
+			}
+			if (result === true) {
+				setIsInitialized(true);
+				return;
+			}
+			// result === false: decode failed, continue to normal flow
 		}
 
 		if (boards.length === 0) {
@@ -420,6 +509,17 @@ function EditorPage() {
 				onDelete={handleDeleteCorruptedBoard}
 				onOpenAnother={handleOpenAnotherBoard}
 			/>
+
+			{/* Duplicate Board Modal */}
+			{pendingImport && (
+				<DuplicateBoardModal
+					open={true}
+					onClose={handleCancelImport}
+					existingBoard={pendingImport.existingBoard}
+					onOpenExisting={handleOpenExistingFromImport}
+					onCreateNew={handleCreateNewFromImport}
+				/>
+			)}
 		</PanelProvider>
 	);
 }
