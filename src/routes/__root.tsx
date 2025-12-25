@@ -7,6 +7,9 @@ import {
 	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { useTranslation } from "react-i18next";
+// Initialize i18n
+import i18n from "../lib/i18n";
 import {
 	generateWebApplicationSchema,
 	OGP_DEFAULTS,
@@ -14,14 +17,22 @@ import {
 } from "../lib/seo";
 import appCss from "../styles.css?url";
 
-// Initialize i18n
-import "../lib/i18n";
-import { useTranslation } from "react-i18next";
-
 // JSON-LD structured data
 const jsonLdScript = JSON.stringify(generateWebApplicationSchema());
 
 export const Route = createRootRoute({
+	beforeLoad: ({ search }) => {
+		// SSRでi18nの言語を設定
+		const langParam = (search as { lang?: string }).lang;
+		const supportedLangs = SITE_CONFIG.locale.supported;
+		const isSupported = supportedLangs.includes(
+			langParam as (typeof supportedLangs)[number],
+		);
+		const lang = isSupported ? langParam : SITE_CONFIG.locale.default;
+		if (i18n.language !== lang) {
+			i18n.changeLanguage(lang);
+		}
+	},
 	head: () => ({
 		meta: [
 			{
