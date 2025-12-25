@@ -35,10 +35,16 @@ export function ObjectListItem({
 
 	const isVisible = object.flags.visible;
 
+	// ツールチップ用のフルテキスト
+	const fullText = object.text
+		? `${objectName} "${object.text}"`
+		: objectName;
+
 	return (
 		<button
 			type="button"
 			onClick={() => onSelect(index)}
+			title={fullText}
 			className={`
 				w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm
 				transition-colors hover:bg-accent/10
