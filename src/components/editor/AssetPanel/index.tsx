@@ -82,13 +82,13 @@ export function AssetPanel() {
 			targetPosition,
 		);
 
-		// オブジェクトを追加
-		const newIndices: number[] = [];
-		for (const obj of offsetObjects) {
-			const newIndex = state.board.objects.length + newIndices.length;
-			dispatch({ type: "ADD_OBJECT", object: obj });
-			newIndices.push(newIndex);
+		// オブジェクトを追加（ADD_OBJECTは先頭に追加するため逆順で追加）
+		for (let i = offsetObjects.length - 1; i >= 0; i--) {
+			dispatch({ type: "ADD_OBJECT", object: offsetObjects[i] });
 		}
+
+		// 追加後のインデックスは 0 から N-1（先頭に追加されるため）
+		const newIndices = offsetObjects.map((_, i) => i);
 
 		// 追加したオブジェクトを選択
 		dispatch({ type: "SELECT_OBJECTS", indices: newIndices });
