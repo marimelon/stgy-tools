@@ -2,7 +2,9 @@
  * フィールドID別パーサー
  */
 
+import { COORDINATE_SCALE, FlagBits } from "../constants";
 import type { BackgroundId, ObjectFlags } from "../types";
+import { padTo4Bytes } from "../utils";
 import type { BinaryReader } from "./BinaryReader";
 import type { ParseContext } from "./types";
 
@@ -12,10 +14,10 @@ export type FieldParser = (reader: BinaryReader, context: ParseContext) => void;
 /** フラグ値をObjectFlagsに変換 */
 function parseFlags(value: number): ObjectFlags {
 	return {
-		visible: (value & 0x01) !== 0,
-		flipHorizontal: (value & 0x02) !== 0,
-		flipVertical: (value & 0x04) !== 0,
-		locked: (value & 0x08) !== 0,
+		visible: (value & FlagBits.VISIBLE) !== 0,
+		flipHorizontal: (value & FlagBits.FLIP_HORIZONTAL) !== 0,
+		flipVertical: (value & FlagBits.FLIP_VERTICAL) !== 0,
+		locked: (value & FlagBits.LOCKED) !== 0,
 	};
 }
 
@@ -23,7 +25,7 @@ function parseFlags(value: number): ObjectFlags {
 function parseField1(reader: BinaryReader, context: ParseContext): void {
 	const stringLength = reader.readUint16();
 	// 4バイト境界にパディングされた長さ
-	const paddedLength = Math.ceil(stringLength / 4) * 4;
+	const paddedLength = padTo4Bytes(stringLength);
 	context.boardName = reader.readString(paddedLength);
 }
 
@@ -43,7 +45,7 @@ function parseField3(reader: BinaryReader, context: ParseContext): void {
 		context.backgroundId = reader.readUint16() as BackgroundId;
 	} else {
 		// テキスト
-		const paddedLength = Math.ceil(length / 4) * 4;
+		const paddedLength = padTo4Bytes(length);
 		const text = reader.readString(paddedLength);
 		context.texts.push(text);
 	}
@@ -64,8 +66,8 @@ function parseField5(reader: BinaryReader, context: ParseContext): void {
 	reader.readUint16(); // type = 3
 	const count = reader.readUint16();
 	for (let i = 0; i < count; i++) {
-		const x = reader.readUint16() / 10; // 1/10ピクセル → ピクセル
-		const y = reader.readUint16() / 10;
+		const x = reader.readUint16() / COORDINATE_SCALE; // 1/10ピクセル → ピクセル
+		const y = reader.readUint16() / COORDINATE_SCALE;
 		context.positions.push({ x, y });
 	}
 }

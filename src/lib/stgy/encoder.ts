@@ -8,13 +8,17 @@
 import pako from "pako";
 import { encodeBase64 } from "./base64";
 import { encryptCipher } from "./cipher";
+import {
+	CIPHER_KEY_RANGE,
+	KEY_CHAR_INDEX,
+	MAX_CIPHER_KEY,
+	STGY_PREFIX,
+	STGY_SUFFIX,
+} from "./constants";
 import { calculateCRC32 } from "./crc32";
 import { serializeBoardData } from "./serializer";
 import { base64CharToValue, KEY_TABLE } from "./tables";
 import type { BoardData } from "./types";
-
-const STGY_PREFIX = "[stgy:a";
-const STGY_SUFFIX = "]";
 
 /**
  * KEY_TABLEの逆変換テーブル (Base64値 → キー文字)
@@ -77,8 +81,8 @@ export function encodeStgy(board: BoardData, options?: EncodeOptions): string {
 	// 8. キー値の決定 (指定されていればそれを使用、なければランダム)
 	const key =
 		options?.key !== undefined
-			? Math.max(0, Math.min(63, options.key))
-			: Math.floor(Math.random() * 64);
+			? Math.max(0, Math.min(MAX_CIPHER_KEY, options.key))
+			: Math.floor(Math.random() * CIPHER_KEY_RANGE);
 
 	// 9. キー文字を取得
 	const keyChar = REVERSE_KEY_TABLE[key];
@@ -102,7 +106,7 @@ export function extractKeyFromStgy(stgyString: string): number {
 	if (!stgyString.startsWith(STGY_PREFIX)) {
 		throw new Error("Invalid stgy string format");
 	}
-	const keyChar = stgyString[7];
+	const keyChar = stgyString[KEY_CHAR_INDEX];
 	const mappedChar = KEY_TABLE[keyChar];
 	if (!mappedChar) {
 		throw new Error(`Invalid key character: ${keyChar}`);

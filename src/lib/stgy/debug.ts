@@ -7,11 +7,16 @@
 import pako from "pako";
 import { decodeBase64 } from "./base64";
 import { decryptCipher } from "./cipher";
+import {
+	COMPRESSED_DATA_OFFSET,
+	FlagBits,
+	MIN_STGY_PAYLOAD_LENGTH,
+	STGY_PREFIX,
+	STGY_SUFFIX,
+} from "./constants";
 import { calculateCRC32 } from "./crc32";
 import { base64CharToValue, KEY_TABLE } from "./tables";
-
-const STGY_PREFIX = "[stgy:a";
-const STGY_SUFFIX = "]";
+import { padTo4Bytes } from "./utils";
 
 /**
  * フィールド情報
@@ -86,10 +91,10 @@ function getFieldName(fieldId: number): string {
  */
 function parseFlags(value: number): Record<string, boolean> {
 	return {
-		visible: (value & 0x01) !== 0,
-		flipHorizontal: (value & 0x02) !== 0,
-		flipVertical: (value & 0x04) !== 0,
-		locked: (value & 0x08) !== 0,
+		visible: (value & FlagBits.VISIBLE) !== 0,
+		flipHorizontal: (value & FlagBits.FLIP_HORIZONTAL) !== 0,
+		flipVertical: (value & FlagBits.FLIP_VERTICAL) !== 0,
+		locked: (value & FlagBits.LOCKED) !== 0,
 	};
 }
 
@@ -112,7 +117,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 			case 1: {
 				// ボード名
 				const stringLength = data[offset + 2] | (data[offset + 3] << 8);
-				const paddedLength = Math.ceil(stringLength / 4) * 4;
+				const paddedLength = padTo4Bytes(stringLength);
 				rawData = data.slice(offset, offset + 4 + paddedLength);
 				const textBytes = data.slice(offset + 4, offset + 4 + stringLength);
 				let end = Array.from(textBytes).indexOf(0);
@@ -138,7 +143,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 				const length = data[offset + 2] | (data[offset + 3] << 8);
 				if (length > 8) {
 					// テキスト
-					const paddedLength = Math.ceil(length / 4) * 4;
+					const paddedLength = padTo4Bytes(length);
 					rawData = data.slice(offset, offset + 4 + paddedLength);
 					const textBytes = data.slice(offset + 4, offset + 4 + length);
 					let end = Array.from(textBytes).indexOf(0);
@@ -304,7 +309,7 @@ export function decodeStgyDebug(stgyString: string): DecodeDebugInfo {
 	}
 
 	const payload = stgyString.slice(STGY_PREFIX.length, -STGY_SUFFIX.length);
-	if (payload.length < 2) {
+	if (payload.length < MIN_STGY_PAYLOAD_LENGTH) {
 		throw new Error("Invalid stgy string: too short");
 	}
 
@@ -331,7 +336,7 @@ export function decodeStgyDebug(stgyString: string): DecodeDebugInfo {
 			(prefixedBinary[3] << 24)) >>>
 		0;
 	const decompressedLength = prefixedBinary[4] | (prefixedBinary[5] << 8);
-	const compressedData = prefixedBinary.slice(6);
+	const compressedData = prefixedBinary.slice(COMPRESSED_DATA_OFFSET);
 	const crc32Calculated = calculateCRC32(prefixedBinary.slice(4));
 
 	// 解凍

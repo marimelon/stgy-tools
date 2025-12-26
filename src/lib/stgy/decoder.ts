@@ -8,11 +8,15 @@
 import pako from "pako";
 import { decodeBase64 } from "./base64";
 import { decryptCipher } from "./cipher";
+import {
+	BINARY_HEADER_SIZE,
+	COMPRESSED_DATA_OFFSET,
+	MIN_STGY_PAYLOAD_LENGTH,
+	STGY_PREFIX,
+	STGY_SUFFIX,
+} from "./constants";
 import { calculateCRC32 } from "./crc32";
 import { base64CharToValue, KEY_TABLE } from "./tables";
-
-const STGY_PREFIX = "[stgy:a";
-const STGY_SUFFIX = "]";
 
 /**
  * stgy文字列をデコードしてボードデータを返す
@@ -29,7 +33,7 @@ export function decodeStgy(stgyString: string): Uint8Array {
 	}
 
 	const data = stgyString.slice(STGY_PREFIX.length, -STGY_SUFFIX.length);
-	if (data.length < 2) {
+	if (data.length < MIN_STGY_PAYLOAD_LENGTH) {
 		throw new Error("Invalid stgy string: too short");
 	}
 
@@ -51,7 +55,7 @@ export function decodeStgy(stgyString: string): Uint8Array {
 	const binary = decodeBase64(base64String);
 
 	// 6. バイナリ構造を解析
-	if (binary.length < 6) {
+	if (binary.length < BINARY_HEADER_SIZE) {
 		throw new Error("Invalid binary: too short");
 	}
 
@@ -64,7 +68,7 @@ export function decodeStgy(stgyString: string): Uint8Array {
 	const decompressedLength = binary[4] | (binary[5] << 8);
 
 	// 圧縮データ
-	const compressedData = binary.slice(6);
+	const compressedData = binary.slice(COMPRESSED_DATA_OFFSET);
 
 	// 7. CRC32検証
 	const calculatedCRC = calculateCRC32(binary.slice(4));
@@ -116,6 +120,6 @@ export function decodeStgyWithInfo(stgyString: string): DecodeResult {
 	return {
 		data,
 		decompressedLength: data.length,
-		compressedLength: binary.length - 6,
+		compressedLength: binary.length - BINARY_HEADER_SIZE,
 	};
 }
