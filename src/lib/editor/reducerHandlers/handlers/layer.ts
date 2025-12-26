@@ -2,8 +2,8 @@
  * レイヤー操作ハンドラー
  */
 
-import type { EditorState } from "../types";
-import { cloneBoard, pushHistory } from "./utils";
+import type { EditorState } from "../../types";
+import { cloneBoard, pushHistory } from "../utils";
 
 /** レイヤー移動方向 */
 export type LayerDirection = "front" | "back" | "forward" | "backward";

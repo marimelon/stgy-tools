@@ -2,8 +2,8 @@
  * 整列操作ハンドラー
  */
 
-import type { AlignmentType, EditorState } from "../types";
-import { cloneBoard, pushHistory, updateObjectInBoard } from "./utils";
+import type { AlignmentType, EditorState } from "../../types";
+import { cloneBoard, pushHistory, updateObjectInBoard } from "../utils";
 
 /** 整列タイプの説明 */
 const ALIGNMENT_DESCRIPTIONS: Record<AlignmentType, string> = {

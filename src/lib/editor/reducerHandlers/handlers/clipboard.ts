@@ -2,9 +2,9 @@
  * クリップボード操作ハンドラー
  */
 
-import type { EditorState } from "../types";
-import { canAddObjects } from "./businessLogic/validation";
-import { cloneBoard, pushHistory } from "./utils";
+import type { EditorState } from "../../types";
+import { canAddObjects } from "../businessLogic/validation";
+import { cloneBoard, pushHistory } from "../utils";
 
 /**
  * オブジェクトをコピー

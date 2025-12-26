@@ -2,7 +2,7 @@
  * 選択系アクションハンドラー
  */
 
-import type { EditorState } from "../types";
+import type { EditorState } from "../../types";
 
 /**
  * オブジェクトを選択

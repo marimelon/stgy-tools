@@ -3,12 +3,12 @@
  */
 
 // 整列
-export { handleAlignObjects } from "./alignment";
+export { handleAlignObjects } from "./handlers/alignment";
 // クリップボード
 export {
 	handleCopyObjects,
 	handlePasteObjects,
-} from "./clipboard";
+} from "./handlers/clipboard";
 // グループ・グリッド
 export {
 	handleGroupObjects,
@@ -16,7 +16,7 @@ export {
 	handleSetGridSettings,
 	handleToggleGroupCollapse,
 	handleUngroup,
-} from "./group";
+} from "./handlers/group";
 // 履歴・ボード
 export {
 	handleClearHistory,
@@ -26,14 +26,14 @@ export {
 	handleSetBoard,
 	handleUndo,
 	handleUpdateBoardMeta,
-} from "./history";
+} from "./handlers/history";
 // レイヤー
 export {
 	handleMoveLayer,
 	handleReorderGroup,
 	handleReorderLayer,
 	type LayerDirection,
-} from "./layer";
+} from "./handlers/layer";
 // オブジェクト操作
 export {
 	handleAddObject,
@@ -42,18 +42,18 @@ export {
 	handleMoveObjects,
 	handleUpdateObject,
 	handleUpdateObjectsBatch,
-} from "./object";
+} from "./handlers/object";
 // 選択系
 export {
 	handleDeselectAll,
 	handleSelectObject,
 	handleSelectObjects,
-} from "./selection";
+} from "./handlers/selection";
 // テキスト編集
 export {
 	handleEndTextEdit,
 	handleStartTextEdit,
-} from "./textEdit";
+} from "./handlers/textEdit";
 // ユーティリティ
 export {
 	cloneBoard,

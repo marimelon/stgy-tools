@@ -2,8 +2,8 @@
  * グループ・グリッド操作ハンドラー
  */
 
-import type { EditorState, GridSettings, ObjectGroup } from "../types";
-import { generateGroupId, pushHistory } from "./utils";
+import type { EditorState, GridSettings, ObjectGroup } from "../../types";
+import { generateGroupId, pushHistory } from "../utils";
 
 /**
  * オブジェクトをグループ化

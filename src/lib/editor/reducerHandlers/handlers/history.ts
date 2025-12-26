@@ -3,8 +3,8 @@
  */
 
 import type { BoardData } from "@/lib/stgy";
-import type { EditorState } from "../types";
-import { cloneBoard, generateHistoryId, pushHistory } from "./utils";
+import type { EditorState } from "../../types";
+import { cloneBoard, generateHistoryId, pushHistory } from "../utils";
 
 /**
  * ボードを設定

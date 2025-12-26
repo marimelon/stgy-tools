@@ -4,7 +4,7 @@
 
 import i18n from "@/lib/i18n";
 import { ObjectIds } from "@/lib/stgy";
-import type { EditorState } from "../types";
+import type { EditorState } from "../../types";
 
 /**
  * テキスト編集を開始

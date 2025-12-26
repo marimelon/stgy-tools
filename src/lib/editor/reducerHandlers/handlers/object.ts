@@ -3,16 +3,16 @@
  */
 
 import { type BoardObject, ObjectIds } from "@/lib/stgy";
-import { duplicateObject } from "../factory";
-import type { BatchUpdatePayload, EditorState } from "../types";
-import { canAddObject, canAddObjects } from "./businessLogic/validation";
+import { duplicateObject } from "../../factory";
+import type { BatchUpdatePayload, EditorState } from "../../types";
+import { canAddObject, canAddObjects } from "../businessLogic/validation";
 import {
 	cloneBoard,
 	pushHistory,
 	shiftGroupIndices,
 	updateGroupsAfterDelete,
 	updateObjectInBoard,
-} from "./utils";
+} from "../utils";
 
 /**
  * オブジェクトを更新
