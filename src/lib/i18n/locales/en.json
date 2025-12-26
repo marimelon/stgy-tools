@@ -171,6 +171,7 @@
 	"assetPanel": {
 		"title": "Assets",
 		"saveSelection": "Save Selection as Asset",
+		"importAsset": "Import from stgy code",
 		"search": "Search assets...",
 		"noAssets": "No saved assets",
 		"noAssetsDescription": "Select objects and click save button",
@@ -183,10 +184,31 @@
 			"save": "Save",
 			"cancel": "Cancel"
 		},
+		"exportModal": {
+			"title": "Export Asset",
+			"stgyCode": "stgy Code",
+			"copy": "Copy",
+			"copied": "Copied"
+		},
+		"importModal": {
+			"title": "Import Asset",
+			"assetName": "Asset Name",
+			"stgyCode": "stgy Code",
+			"stgyCodePlaceholder": "Enter code in [stgy:a...] format",
+			"preview": "Preview",
+			"objectCount": "{{count}} object(s)",
+			"import": "Import",
+			"errors": {
+				"invalidStgy": "Invalid stgy code",
+				"noObjects": "No objects in the code",
+				"nameRequired": "Please enter an asset name"
+			}
+		},
 		"contextMenu": {
 			"apply": "Apply to Canvas",
 			"rename": "Rename",
 			"duplicate": "Duplicate",
+			"export": "Export as stgy",
 			"delete": "Delete"
 		},
 		"toast": {

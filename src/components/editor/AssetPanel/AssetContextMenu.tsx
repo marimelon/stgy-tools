@@ -4,7 +4,7 @@
  * アセットの右クリックメニュー
  */
 
-import { Copy, MousePointer, Pencil, Trash2 } from "lucide-react";
+import { Copy, MousePointer, Pencil, Share, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,8 @@ interface AssetContextMenuProps {
 	onRename: (asset: StoredAsset, newName: string) => void;
 	/** 複製アクション */
 	onDuplicate: (asset: StoredAsset) => void;
+	/** エクスポートアクション */
+	onExport: (asset: StoredAsset) => void;
 	/** 削除アクション */
 	onDelete: (asset: StoredAsset) => void;
 }
@@ -42,6 +44,7 @@ export function AssetContextMenu({
 	onApply,
 	onRename,
 	onDuplicate,
+	onExport,
 	onDelete,
 }: AssetContextMenuProps) {
 	const { t } = useTranslation();
@@ -115,6 +118,11 @@ export function AssetContextMenu({
 		onClose();
 	};
 
+	const handleExport = () => {
+		onExport(asset);
+		onClose();
+	};
+
 	const handleDelete = () => {
 		onDelete(asset);
 		onClose();
@@ -178,6 +186,14 @@ export function AssetContextMenu({
 					>
 						<Copy size={14} />
 						{t("assetPanel.contextMenu.duplicate")}
+					</button>
+					<button
+						type="button"
+						onClick={handleExport}
+						className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-left hover:bg-accent transition-colors"
+					>
+						<Share size={14} />
+						{t("assetPanel.contextMenu.export")}
 					</button>
 					<div className="my-1 border-t border-border" />
 					<button

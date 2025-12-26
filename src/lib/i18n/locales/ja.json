@@ -171,6 +171,7 @@
 	"assetPanel": {
 		"title": "アセット",
 		"saveSelection": "選択をアセットとして保存",
+		"importAsset": "stgyコードからインポート",
 		"search": "アセットを検索...",
 		"noAssets": "保存されたアセットがありません",
 		"noAssetsDescription": "オブジェクトを選択して保存ボタンをクリック",
@@ -183,10 +184,31 @@
 			"save": "保存",
 			"cancel": "キャンセル"
 		},
+		"exportModal": {
+			"title": "アセットをエクスポート",
+			"stgyCode": "stgyコード",
+			"copy": "コピー",
+			"copied": "コピーしました"
+		},
+		"importModal": {
+			"title": "アセットをインポート",
+			"assetName": "アセット名",
+			"stgyCode": "stgyコード",
+			"stgyCodePlaceholder": "[stgy:a...] 形式のコードを入力",
+			"preview": "プレビュー",
+			"objectCount": "{{count}}個のオブジェクト",
+			"import": "インポート",
+			"errors": {
+				"invalidStgy": "無効なstgyコードです",
+				"noObjects": "オブジェクトが含まれていません",
+				"nameRequired": "アセット名を入力してください"
+			}
+		},
 		"contextMenu": {
 			"apply": "キャンバスに配置",
 			"rename": "名前を変更",
 			"duplicate": "複製",
+			"export": "stgyでエクスポート",
 			"delete": "削除"
 		},
 		"toast": {

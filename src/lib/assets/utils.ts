@@ -2,8 +2,8 @@
  * Utility functions for asset operations
  */
 
-import type { BoardObject, Position } from "@/lib/stgy";
-import type { AssetBounds } from "./schema";
+import type { BoardData, BoardObject, Position } from "@/lib/stgy";
+import type { AssetBounds, StoredAsset } from "./schema";
 
 /**
  * Calculate bounding box for a set of objects
@@ -82,5 +82,34 @@ export function calculatePreviewViewBox(
 		y: bounds.minY - padding,
 		width: Math.max(width, 1),
 		height: Math.max(height, 1),
+	};
+}
+
+/**
+ * Convert StoredAsset to BoardData for stgy encoding
+ * Uses dummy board metadata for compatibility
+ */
+export function assetToBoardData(asset: StoredAsset): BoardData {
+	return {
+		version: 2,
+		width: 512,
+		height: 384,
+		name: asset.name,
+		backgroundId: 0,
+		objects: asset.objects,
+	};
+}
+
+/**
+ * Extract asset data from BoardData (for stgy import)
+ * Can be used to import any stgy as an asset
+ */
+export function boardDataToAssetData(boardData: BoardData): {
+	objects: BoardObject[];
+	bounds: AssetBounds;
+} {
+	return {
+		objects: boardData.objects,
+		bounds: calculateAssetBounds(boardData.objects),
 	};
 }

@@ -24,6 +24,8 @@ export {
 
 // Utils
 export {
+	assetToBoardData,
+	boardDataToAssetData,
 	calculateAssetBounds,
 	calculatePreviewViewBox,
 	getBoundsCenter,

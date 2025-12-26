@@ -4,7 +4,7 @@
  * 保存したアセットの一覧表示と管理
  */
 
-import { Package, Save, Search, Undo2 } from "lucide-react";
+import { Download, Package, Save, Search, Undo2 } from "lucide-react";
 import { type MouseEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,8 @@ import {
 import { canAddObjects, useEditor } from "@/lib/editor";
 import { AssetContextMenu } from "./AssetContextMenu";
 import { AssetItem } from "./AssetItem";
+import { ExportAssetModal } from "./ExportAssetModal";
+import { ImportAssetModal } from "./ImportAssetModal";
 import { SaveAssetModal } from "./SaveAssetModal";
 
 interface ContextMenuState {
@@ -41,15 +43,21 @@ export function AssetPanel() {
 	} = useAssets({ sortBy: "updatedAt", sortDirection: "desc" });
 
 	const [showSaveModal, setShowSaveModal] = useState(false);
+	const [showImportModal, setShowImportModal] = useState(false);
+	const [exportAsset, setExportAsset] = useState<StoredAsset | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
 	// カスタムイベントでモーダルを開く（ヘッダーアクションボタン用）
 	useEffect(() => {
-		const handleOpenModal = () => setShowSaveModal(true);
-		window.addEventListener("openSaveAssetModal", handleOpenModal);
-		return () =>
-			window.removeEventListener("openSaveAssetModal", handleOpenModal);
+		const handleOpenSaveModal = () => setShowSaveModal(true);
+		const handleOpenImportModal = () => setShowImportModal(true);
+		window.addEventListener("openSaveAssetModal", handleOpenSaveModal);
+		window.addEventListener("openImportAssetModal", handleOpenImportModal);
+		return () => {
+			window.removeEventListener("openSaveAssetModal", handleOpenSaveModal);
+			window.removeEventListener("openImportAssetModal", handleOpenImportModal);
+		};
 	}, []);
 
 	// 検索フィルタ
@@ -118,6 +126,11 @@ export function AssetPanel() {
 	// 複製
 	const handleDuplicate = (asset: StoredAsset) => {
 		duplicateAsset(asset.id);
+	};
+
+	// エクスポート
+	const handleExport = (asset: StoredAsset) => {
+		setExportAsset(asset);
 	};
 
 	// 削除
@@ -199,6 +212,17 @@ export function AssetPanel() {
 				<SaveAssetModal onClose={() => setShowSaveModal(false)} />
 			)}
 
+			{showImportModal && (
+				<ImportAssetModal onClose={() => setShowImportModal(false)} />
+			)}
+
+			{exportAsset && (
+				<ExportAssetModal
+					asset={exportAsset}
+					onClose={() => setExportAsset(null)}
+				/>
+			)}
+
 			{/* コンテキストメニュー */}
 			{contextMenu && (
 				<AssetContextMenu
@@ -208,6 +232,7 @@ export function AssetPanel() {
 					onApply={handleApplyAsset}
 					onRename={handleRename}
 					onDuplicate={handleDuplicate}
+					onExport={handleExport}
 					onDelete={handleDelete}
 				/>
 			)}
@@ -246,23 +271,37 @@ export function AssetPanelActions() {
 	const { state } = useEditor();
 	const canSave = state.selectedIndices.length > 0;
 
-	const handleClick = () => {
+	const handleSaveClick = () => {
 		window.dispatchEvent(new CustomEvent("openSaveAssetModal"));
 	};
 
+	const handleImportClick = () => {
+		window.dispatchEvent(new CustomEvent("openImportAssetModal"));
+	};
+
 	return (
-		<button
-			type="button"
-			onClick={handleClick}
-			disabled={!canSave}
-			className={`p-1.5 rounded transition-colors ${
-				canSave
-					? "text-foreground hover:bg-muted"
-					: "text-muted-foreground cursor-not-allowed"
-			}`}
-			title={t("assetPanel.saveSelection")}
-		>
-			<Save size={16} />
-		</button>
+		<div className="flex gap-0.5">
+			<button
+				type="button"
+				onClick={handleImportClick}
+				className="p-1.5 rounded transition-colors text-foreground hover:bg-muted"
+				title={t("assetPanel.importAsset")}
+			>
+				<Download size={16} />
+			</button>
+			<button
+				type="button"
+				onClick={handleSaveClick}
+				disabled={!canSave}
+				className={`p-1.5 rounded transition-colors ${
+					canSave
+						? "text-foreground hover:bg-muted"
+						: "text-muted-foreground cursor-not-allowed"
+				}`}
+				title={t("assetPanel.saveSelection")}
+			>
+				<Save size={16} />
+			</button>
+		</div>
 	);
 }
