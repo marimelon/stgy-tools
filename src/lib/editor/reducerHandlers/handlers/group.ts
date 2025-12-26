@@ -45,6 +45,27 @@ export function handleUngroup(
 }
 
 /**
+ * グループ名を変更
+ */
+export function handleRenameGroup(
+	state: EditorState,
+	payload: { groupId: string; name: string },
+): EditorState {
+	const { groupId, name } = payload;
+	const normalizedName = name.trim();
+
+	const newGroups = state.groups.map((g) =>
+		g.id === groupId ? { ...g, name: normalizedName || undefined } : g,
+	);
+
+	return {
+		...state,
+		groups: newGroups,
+		...pushHistory({ ...state, groups: newGroups }, "グループ名変更"),
+	};
+}
+
+/**
  * グループの折りたたみ状態を切り替え
  */
 export function handleToggleGroupCollapse(

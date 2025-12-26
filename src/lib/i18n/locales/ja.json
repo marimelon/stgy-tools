@@ -159,7 +159,8 @@
 		"lockGroup": "グループをロック",
 		"unlockGroup": "グループのロック解除",
 		"lockChanged": "ロック状態変更",
-		"groupLockChanged": "グループロック状態変更"
+		"groupLockChanged": "グループロック状態変更",
+		"editGroupName": "グループ名を編集"
 	},
 	"historyPanel": {
 		"title": "履歴",

@@ -12,7 +12,7 @@ import {
 	LockOpen,
 	X,
 } from "lucide-react";
-import type { DragEvent } from "react";
+import { type DragEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ObjectGroup } from "@/lib/editor/types";
 import type { DropTarget } from "./types";
@@ -35,6 +35,7 @@ interface LayerGroupHeaderProps {
 	onToggleVisibility: (group: ObjectGroup) => void;
 	onToggleLock: (group: ObjectGroup) => void;
 	onUngroup: (groupId: string, e: React.MouseEvent) => void;
+	onRename: (groupId: string, name: string) => void;
 }
 
 /**
@@ -58,11 +59,72 @@ export function LayerGroupHeader({
 	onToggleVisibility,
 	onToggleLock,
 	onUngroup,
+	onRename,
 }: LayerGroupHeaderProps) {
 	const { t } = useTranslation();
 	const firstIndex = Math.min(...group.objectIndices);
 	const isDropBeforeGroup =
 		dropTarget?.index === firstIndex && dropTarget?.position === "before";
+
+	// 編集状態管理
+	const [isEditing, setIsEditing] = useState(false);
+	const [editName, setEditName] = useState("");
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	// 編集開始時にフォーカス
+	useEffect(() => {
+		if (isEditing && inputRef.current) {
+			inputRef.current.focus();
+			inputRef.current.select();
+		}
+	}, [isEditing]);
+
+	// group.id が変わったら編集をリセット（Undo/Redo対応）
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally only trigger on group.id change
+	useEffect(() => {
+		if (isEditing) {
+			setIsEditing(false);
+		}
+	}, [group.id]);
+
+	// 編集開始
+	const handleStartEdit = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setEditName(group.name || "");
+		setIsEditing(true);
+	};
+
+	// 保存
+	const handleSaveEdit = () => {
+		const trimmed = editName.trim();
+		if (trimmed !== (group.name || "")) {
+			onRename(group.id, trimmed);
+		}
+		setIsEditing(false);
+	};
+
+	// キャンセル
+	const handleCancelEdit = () => {
+		setEditName(group.name || "");
+		setIsEditing(false);
+	};
+
+	// キー入力
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === "Enter") {
+			handleSaveEdit();
+		} else if (e.key === "Escape") {
+			handleCancelEdit();
+		}
+	};
+
+	// 表示名取得
+	const getDisplayName = () => {
+		if (group.name) {
+			return group.name;
+		}
+		return `${t("layerPanel.group")} (${group.objectIndices.length})`;
+	};
 
 	return (
 		<div className="relative">
@@ -103,60 +165,89 @@ export function LayerGroupHeader({
 				{/* グループアイコン */}
 				<span className="text-purple-400 text-xs">⊞</span>
 
-				{/* グループ名 */}
-				<span
-					className={`flex-1 text-xs truncate font-medium ${isAllHidden ? "text-purple-400/50" : "text-purple-400"}`}
-				>
-					{t("layerPanel.group")} ({group.objectIndices.length})
-				</span>
+				{/* グループ名（編集可能） */}
+				{isEditing ? (
+					<input
+						ref={inputRef}
+						type="text"
+						value={editName}
+						onChange={(e) => setEditName(e.target.value)}
+						onBlur={handleSaveEdit}
+						onKeyDown={handleKeyDown}
+						onClick={(e) => e.stopPropagation()}
+						maxLength={100}
+						className="flex-1 text-xs font-medium px-1 py-0.5 border border-primary rounded bg-background text-purple-400"
+						aria-label={t("layerPanel.editGroupName")}
+					/>
+				) : (
+					// biome-ignore lint/a11y/noStaticElementInteractions: Double-click to edit group name
+					<span
+						onDoubleClick={handleStartEdit}
+						className={`flex-1 text-xs truncate cursor-text ${
+							isAllHidden ? "text-purple-400/50" : "text-purple-400"
+						} ${group.name ? "font-semibold" : "font-medium"}`}
+						title={getDisplayName()}
+					>
+						{getDisplayName()}
+					</span>
+				)}
 
-				{/* グループ表示/非表示トグル */}
-				<button
-					type="button"
-					onClick={(e) => {
-						e.stopPropagation();
-						onToggleVisibility(group);
-					}}
-					className={isAllVisible ? "text-purple-400" : "text-muted-foreground"}
-					title={
-						isAllVisible ? t("layerPanel.hideGroup") : t("layerPanel.showGroup")
-					}
-				>
-					{isAllVisible ? <Eye size={14} /> : <EyeOff size={14} />}
-				</button>
+				{/* 編集中は他のボタンを非表示 */}
+				{!isEditing && (
+					<>
+						{/* グループ表示/非表示トグル */}
+						<button
+							type="button"
+							onClick={(e) => {
+								e.stopPropagation();
+								onToggleVisibility(group);
+							}}
+							className={
+								isAllVisible ? "text-purple-400" : "text-muted-foreground"
+							}
+							title={
+								isAllVisible
+									? t("layerPanel.hideGroup")
+									: t("layerPanel.showGroup")
+							}
+						>
+							{isAllVisible ? <Eye size={14} /> : <EyeOff size={14} />}
+						</button>
 
-				{/* グループロック/ロック解除トグル */}
-				<button
-					type="button"
-					onClick={(e) => {
-						e.stopPropagation();
-						onToggleLock(group);
-					}}
-					className={
-						isAllLocked
-							? "text-purple-400"
-							: isAllUnlocked
-								? "text-muted-foreground"
-								: "text-purple-400/50"
-					}
-					title={
-						isAllLocked
-							? t("layerPanel.unlockGroup")
-							: t("layerPanel.lockGroup")
-					}
-				>
-					{isAllLocked ? <Lock size={14} /> : <LockOpen size={14} />}
-				</button>
+						{/* グループロック/ロック解除トグル */}
+						<button
+							type="button"
+							onClick={(e) => {
+								e.stopPropagation();
+								onToggleLock(group);
+							}}
+							className={
+								isAllLocked
+									? "text-purple-400"
+									: isAllUnlocked
+										? "text-muted-foreground"
+										: "text-purple-400/50"
+							}
+							title={
+								isAllLocked
+									? t("layerPanel.unlockGroup")
+									: t("layerPanel.lockGroup")
+							}
+						>
+							{isAllLocked ? <Lock size={14} /> : <LockOpen size={14} />}
+						</button>
 
-				{/* グループ解除ボタン */}
-				<button
-					type="button"
-					onClick={(e) => onUngroup(group.id, e)}
-					className="text-muted-foreground hover:text-foreground"
-					title={t("layerPanel.ungroup")}
-				>
-					<X size={14} />
-				</button>
+						{/* グループ解除ボタン */}
+						<button
+							type="button"
+							onClick={(e) => onUngroup(group.id, e)}
+							className="text-muted-foreground hover:text-foreground"
+							title={t("layerPanel.ungroup")}
+						>
+							<X size={14} />
+						</button>
+					</>
+				)}
 			</div>
 		</div>
 	);

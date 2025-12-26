@@ -27,6 +27,7 @@ import {
 	handlePasteObjects,
 	handleRedo,
 	handleRemoveFromGroup,
+	handleRenameGroup,
 	handleReorderGroup,
 	handleReorderLayer,
 	// 選択系
@@ -138,6 +139,12 @@ export function editorReducer(
 
 		case "UNGROUP":
 			return handleUngroup(state, { groupId: action.groupId });
+
+		case "RENAME_GROUP":
+			return handleRenameGroup(state, {
+				groupId: action.groupId,
+				name: action.name,
+			});
 
 		case "TOGGLE_GROUP_COLLAPSE":
 			return handleToggleGroupCollapse(state, { groupId: action.groupId });

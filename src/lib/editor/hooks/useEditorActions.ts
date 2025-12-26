@@ -52,6 +52,7 @@ export interface UseEditorActionsReturn {
 	reorderGroup: (groupId: string, toIndex: number) => void;
 	groupSelected: () => void;
 	ungroup: (groupId: string) => void;
+	renameGroup: (groupId: string, name: string) => void;
 	removeFromGroup: (objectIndex: number) => void;
 	toggleGroupCollapse: (groupId: string) => void;
 	getGroupForObject: (
@@ -221,6 +222,13 @@ export function useEditorActions({
 		[dispatch],
 	);
 
+	const renameGroup = useCallback(
+		(groupId: string, name: string) => {
+			dispatch({ type: "RENAME_GROUP", groupId, name });
+		},
+		[dispatch],
+	);
+
 	const removeFromGroup = useCallback(
 		(objectIndex: number) => {
 			dispatch({ type: "REMOVE_FROM_GROUP", objectIndex });
@@ -322,6 +330,7 @@ export function useEditorActions({
 		reorderGroup,
 		groupSelected,
 		ungroup,
+		renameGroup,
 		removeFromGroup,
 		toggleGroupCollapse,
 		getGroupForObject,

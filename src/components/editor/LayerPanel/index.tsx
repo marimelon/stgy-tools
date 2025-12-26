@@ -27,6 +27,7 @@ export function LayerPanel() {
 		commitHistory,
 		selectGroup,
 		ungroup,
+		renameGroup,
 		toggleGroupCollapse,
 		getGroupForObject,
 		reorderLayer,
@@ -154,6 +155,14 @@ export function LayerPanel() {
 		[ungroup],
 	);
 
+	// グループ名変更
+	const handleRenameGroup = useCallback(
+		(groupId: string, name: string) => {
+			renameGroup(groupId, name);
+		},
+		[renameGroup],
+	);
+
 	// 折りたたみトグル
 	const handleToggleCollapse = useCallback(
 		(groupId: string, e: React.MouseEvent) => {
@@ -204,6 +213,7 @@ export function LayerPanel() {
 										onToggleVisibility={handleToggleGroupVisibility}
 										onToggleLock={handleToggleGroupLock}
 										onUngroup={handleUngroupClick}
+										onRename={handleRenameGroup}
 									/>
 								);
 							}

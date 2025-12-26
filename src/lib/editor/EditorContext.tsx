@@ -88,6 +88,8 @@ export interface EditorContextValue {
 	groupSelected: () => void;
 	/** グループを解除 */
 	ungroup: (groupId: string) => void;
+	/** グループ名を変更 */
+	renameGroup: (groupId: string, name: string) => void;
 	/** オブジェクトをグループから除外 */
 	removeFromGroup: (objectIndex: number) => void;
 	/** グループの折りたたみ切替 */

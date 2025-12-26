@@ -13,6 +13,7 @@ export {
 export {
 	handleGroupObjects,
 	handleRemoveFromGroup,
+	handleRenameGroup,
 	handleSetGridSettings,
 	handleToggleGroupCollapse,
 	handleUngroup,

@@ -203,6 +203,7 @@ export type EditorAction =
 	  }
 	| { type: "GROUP_OBJECTS"; indices: number[] }
 	| { type: "UNGROUP"; groupId: string }
+	| { type: "RENAME_GROUP"; groupId: string; name: string }
 	| { type: "TOGGLE_GROUP_COLLAPSE"; groupId: string }
 	| { type: "SET_GRID_SETTINGS"; settings: Partial<GridSettings> }
 	| { type: "ALIGN_OBJECTS"; indices: number[]; alignment: AlignmentType }

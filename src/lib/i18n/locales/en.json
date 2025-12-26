@@ -159,7 +159,8 @@
 		"lockGroup": "Lock group",
 		"unlockGroup": "Unlock group",
 		"lockChanged": "Lock changed",
-		"groupLockChanged": "Group lock changed"
+		"groupLockChanged": "Group lock changed",
+		"editGroupName": "Edit group name"
 	},
 	"historyPanel": {
 		"title": "History",
