@@ -5,12 +5,10 @@
  */
 
 import pako from "pako";
-import {
-	ALPHABET_TABLE,
-	base64CharToValue,
-	KEY_TABLE,
-	valueToBase64Char,
-} from "./tables";
+import { decodeBase64 } from "./base64";
+import { decryptCipher } from "./cipher";
+import { calculateCRC32 } from "./crc32";
+import { base64CharToValue, KEY_TABLE } from "./tables";
 
 const STGY_PREFIX = "[stgy:a";
 const STGY_SUFFIX = "]";
@@ -61,62 +59,6 @@ export interface CompareResult {
 		original: number;
 		reEncoded: number;
 	}>;
-}
-
-/**
- * 置換暗号をデコード
- */
-function decryptCipher(encoded: string, key: number): string {
-	let result = "";
-	for (let i = 0; i < encoded.length; i++) {
-		const inputChar = encoded[i];
-		const standardChar = ALPHABET_TABLE[inputChar];
-		if (standardChar === undefined) {
-			throw new Error(`Unknown character in payload: ${inputChar}`);
-		}
-		const val = base64CharToValue(standardChar);
-		const decodedVal = (val - i - key) & 0x3f;
-		result += valueToBase64Char(decodedVal);
-	}
-	return result;
-}
-
-/**
- * Base64デコード
- */
-function decodeBase64(base64: string): Uint8Array {
-	const standardBase64 = base64.replace(/-/g, "+").replace(/_/g, "/");
-	const padded =
-		standardBase64 + "=".repeat((4 - (standardBase64.length % 4)) % 4);
-	const binaryString = atob(padded);
-	const bytes = new Uint8Array(binaryString.length);
-	for (let i = 0; i < binaryString.length; i++) {
-		bytes[i] = binaryString.charCodeAt(i);
-	}
-	return bytes;
-}
-
-/**
- * CRC32計算
- */
-const CRC32_TABLE = (() => {
-	const table = new Uint32Array(256);
-	for (let i = 0; i < 256; i++) {
-		let c = i;
-		for (let j = 0; j < 8; j++) {
-			c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-		}
-		table[i] = c;
-	}
-	return table;
-})();
-
-function calculateCRC32(data: Uint8Array): number {
-	let crc = 0xffffffff;
-	for (let i = 0; i < data.length; i++) {
-		crc = CRC32_TABLE[(crc ^ data[i]) & 0xff] ^ (crc >>> 8);
-	}
-	return (crc ^ 0xffffffff) >>> 0;
 }
 
 /**

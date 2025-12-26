@@ -6,85 +6,13 @@
  */
 
 import pako from "pako";
-import {
-	ALPHABET_TABLE,
-	base64CharToValue,
-	KEY_TABLE,
-	valueToBase64Char,
-} from "./tables";
+import { decodeBase64 } from "./base64";
+import { decryptCipher } from "./cipher";
+import { calculateCRC32 } from "./crc32";
+import { base64CharToValue, KEY_TABLE } from "./tables";
 
 const STGY_PREFIX = "[stgy:a";
 const STGY_SUFFIX = "]";
-
-/**
- * CRC32計算用テーブル
- */
-const CRC32_TABLE = (() => {
-	const table = new Uint32Array(256);
-	for (let i = 0; i < 256; i++) {
-		let c = i;
-		for (let j = 0; j < 8; j++) {
-			c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-		}
-		table[i] = c;
-	}
-	return table;
-})();
-
-/**
- * CRC32を計算
- */
-function calculateCRC32(data: Uint8Array): number {
-	let crc = 0xffffffff;
-	for (let i = 0; i < data.length; i++) {
-		crc = CRC32_TABLE[(crc ^ data[i]) & 0xff] ^ (crc >>> 8);
-	}
-	return (crc ^ 0xffffffff) >>> 0;
-}
-
-/**
- * 置換暗号をデコード
- * @param encoded エンコードされた文字列
- * @param key キー値 (0-63)
- * @returns 標準Base64文字列
- */
-function decryptCipher(encoded: string, key: number): string {
-	let result = "";
-	for (let i = 0; i < encoded.length; i++) {
-		const inputChar = encoded[i];
-		// ALPHABET_TABLEで変換
-		const standardChar = ALPHABET_TABLE[inputChar];
-		if (standardChar === undefined) {
-			throw new Error(`Unknown character in payload: ${inputChar}`);
-		}
-		// Base64値を取得
-		const val = base64CharToValue(standardChar);
-		// デコード: (val - i - key) & 0x3F
-		const decodedVal = (val - i - key) & 0x3f;
-		// Base64文字に戻す
-		result += valueToBase64Char(decodedVal);
-	}
-	return result;
-}
-
-/**
- * Base64デコード（URL-safe Base64対応）
- * - → +, _ → / に変換してからデコード
- */
-function decodeBase64(base64: string): Uint8Array {
-	// URL-safe Base64を標準Base64に変換
-	const standardBase64 = base64.replace(/-/g, "+").replace(/_/g, "/");
-	// パディングを追加
-	const padded =
-		standardBase64 + "=".repeat((4 - (standardBase64.length % 4)) % 4);
-	// デコード
-	const binaryString = atob(padded);
-	const bytes = new Uint8Array(binaryString.length);
-	for (let i = 0; i < binaryString.length; i++) {
-		bytes[i] = binaryString.charCodeAt(i);
-	}
-	return bytes;
-}
 
 /**
  * stgy文字列をデコードしてボードデータを返す

@@ -6,24 +6,15 @@
  */
 
 import pako from "pako";
+import { encodeBase64 } from "./base64";
+import { encryptCipher } from "./cipher";
+import { calculateCRC32 } from "./crc32";
 import { serializeBoardData } from "./serializer";
-import {
-	ALPHABET_TABLE,
-	base64CharToValue,
-	KEY_TABLE,
-	valueToBase64Char,
-} from "./tables";
+import { base64CharToValue, KEY_TABLE } from "./tables";
 import type { BoardData } from "./types";
 
 const STGY_PREFIX = "[stgy:a";
 const STGY_SUFFIX = "]";
-
-/**
- * ALPHABET_TABLEの逆変換テーブル (標準Base64文字 → カスタム文字)
- */
-const REVERSE_ALPHABET_TABLE: Record<string, string> = Object.fromEntries(
-	Object.entries(ALPHABET_TABLE).map(([k, v]) => [v, k]),
-);
 
 /**
  * KEY_TABLEの逆変換テーブル (Base64値 → キー文字)
@@ -34,77 +25,6 @@ const REVERSE_KEY_TABLE: Record<number, string> = Object.fromEntries(
 		keyChar,
 	]),
 );
-
-/**
- * CRC32計算用テーブル
- */
-const CRC32_TABLE = (() => {
-	const table = new Uint32Array(256);
-	for (let i = 0; i < 256; i++) {
-		let c = i;
-		for (let j = 0; j < 8; j++) {
-			c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-		}
-		table[i] = c;
-	}
-	return table;
-})();
-
-/**
- * CRC32を計算
- */
-function calculateCRC32(data: Uint8Array): number {
-	let crc = 0xffffffff;
-	for (let i = 0; i < data.length; i++) {
-		crc = CRC32_TABLE[(crc ^ data[i]) & 0xff] ^ (crc >>> 8);
-	}
-	return (crc ^ 0xffffffff) >>> 0;
-}
-
-/**
- * 置換暗号をエンコード
- * @param base64String 標準Base64文字列
- * @param key キー値 (0-63)
- * @returns エンコードされた文字列
- */
-function encryptCipher(base64String: string, key: number): string {
-	let result = "";
-	for (let i = 0; i < base64String.length; i++) {
-		const inputChar = base64String[i];
-		// Base64値を取得
-		const val = base64CharToValue(inputChar);
-		// エンコード: (val + i + key) & 0x3F
-		const encodedVal = (val + i + key) & 0x3f;
-		// Base64文字に変換
-		const standardChar = valueToBase64Char(encodedVal);
-		// REVERSE_ALPHABET_TABLEでカスタム文字に変換
-		const customChar = REVERSE_ALPHABET_TABLE[standardChar];
-		if (customChar === undefined) {
-			throw new Error(`Cannot encode character: ${standardChar}`);
-		}
-		result += customChar;
-	}
-	return result;
-}
-
-/**
- * Base64エンコード（URL-safe Base64で出力）
- * + → -, / → _ に変換し、パディングを除去
- */
-function encodeBase64(data: Uint8Array): string {
-	// バイナリを文字列に変換
-	let binaryString = "";
-	for (let i = 0; i < data.length; i++) {
-		binaryString += String.fromCharCode(data[i]);
-	}
-	// 標準Base64エンコード
-	const standardBase64 = btoa(binaryString);
-	// URL-safe Base64に変換し、パディングを除去
-	return standardBase64
-		.replace(/\+/g, "-")
-		.replace(/\//g, "_")
-		.replace(/=/g, "");
-}
 
 /**
  * エンコードオプション
