@@ -20,7 +20,7 @@ export const SITE_CONFIG = {
 export const PAGE_SEO = {
 	home: {
 		title: "STGY Tools - FFXIV Strategy Board Viewer",
-		titleJa: "STGY Tools - FFXIV ストラテジーボードビューアー",
+		titleJa: "STGY Tools - FFXIV ストラテジーボード Viewer",
 		description:
 			"View and decode FFXIV Strategy Board (stgy) codes. Display raid strategies with interactive visualization.",
 		descriptionJa:
@@ -29,7 +29,7 @@ export const PAGE_SEO = {
 	},
 	editor: {
 		title: "Strategy Board Editor | STGY Tools",
-		titleJa: "ストラテジーボードエディター | STGY Tools",
+		titleJa: "ストラテジーボード Editor | STGY Tools",
 		description:
 			"Create and edit FFXIV Strategy Board diagrams. Full-featured editor with layers, groups, and stgy code export.",
 		descriptionJa:
@@ -38,7 +38,7 @@ export const PAGE_SEO = {
 	},
 	imageGenerator: {
 		title: "FFXIV Strategy Board Image Generator | STGY Tools",
-		titleJa: "FFXIV ストラテジーボード画像ジェネレーター | STGY Tools",
+		titleJa: "FFXIV ストラテジーボード Image Generator | STGY Tools",
 		description:
 			"Generate shareable images from FFXIV Strategy Board codes. Export as PNG or SVG for Discord, Twitter, and more.",
 		descriptionJa:
