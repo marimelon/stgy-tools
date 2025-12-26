@@ -43,4 +43,3 @@ export function DebugHeader({ title, description }: DebugHeaderProps) {
 		</header>
 	);
 }
-

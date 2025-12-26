@@ -7,4 +7,3 @@ export interface IconProps {
 	/** SVG transform属性 */
 	transform: string;
 }
-

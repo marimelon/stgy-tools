@@ -386,6 +386,9 @@ function EditorPage() {
 		const initializeEditor = async () => {
 			// Check for stgy code in URL query parameter (from Image Generator page)
 			if (codeFromUrl) {
+				// Clear URL parameter immediately to prevent re-processing on state updates
+				navigate({ to: "/editor", search: {}, replace: true });
+
 				const result = await handleImportFromUrl(codeFromUrl);
 				if (result === "pending") {
 					// Duplicate found, modal will be shown
@@ -423,6 +426,7 @@ function EditorPage() {
 		handleCreateNewBoard,
 		handleOpenBoard,
 		handleImportFromUrl,
+		navigate,
 	]);
 
 	// Show storage error screen
