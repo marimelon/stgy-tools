@@ -27,6 +27,8 @@ export interface LayerItem {
 	isInGroup: boolean;
 	/** 所属グループID */
 	groupId?: string;
+	/** グループ内の最後のアイテムかどうか */
+	isLastInGroup?: boolean;
 }
 
 /**

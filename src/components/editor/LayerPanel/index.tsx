@@ -330,6 +330,7 @@ export function LayerPanel() {
 										object={obj}
 										isSelected={selectedIndices.includes(index)}
 										isInGroup={item.isInGroup}
+										isLastInGroup={item.isLastInGroup}
 										groupId={item.groupId}
 										isDragging={draggedIndex === index}
 										dropTarget={dropTarget}

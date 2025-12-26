@@ -13,6 +13,7 @@ interface LayerObjectItemProps {
 	object: BoardObject;
 	isSelected: boolean;
 	isInGroup: boolean;
+	isLastInGroup?: boolean;
 	groupId?: string;
 	isDragging: boolean;
 	dropTarget: DropTarget | null;
@@ -40,6 +41,7 @@ export function LayerObjectItem({
 	object,
 	isSelected,
 	isInGroup,
+	isLastInGroup,
 	groupId,
 	isDragging,
 	dropTarget,
@@ -85,7 +87,7 @@ export function LayerObjectItem({
 				onDrop={onDrop}
 				onClick={(e) => onSelect(index, e)}
 				onContextMenu={(e) => onContextMenu(e, index, isInGroup, groupId)}
-				className={`layer-item select-none ${isInGroup ? "ml-4" : ""} ${isDragging ? "opacity-50" : ""} ${isSelected ? "bg-accent/20 border-accent" : ""}`}
+				className={`layer-item select-none ${isInGroup ? "in-group" : ""} ${isLastInGroup ? "last-in-group" : ""} ${isDragging ? "opacity-50" : ""} ${isSelected ? "bg-accent/20 border-accent" : ""}`}
 			>
 				{/* ドラッグハンドル */}
 				<span className="cursor-grab active:cursor-grabbing text-muted-foreground">

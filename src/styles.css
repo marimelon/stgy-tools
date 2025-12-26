@@ -80,6 +80,7 @@
   --color-selection-border: oklch(0.72 0.16 190);
   --color-group-bg: oklch(0.62 0.2 300 / 0.18);
   --color-group-border: oklch(0.62 0.2 300);
+  --color-group-line: oklch(0.62 0.2 300 / 0.4);
 
   --font-display: 'Rajdhani', 'Noto Sans JP', sans-serif;
   --font-body: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
@@ -257,6 +258,77 @@
 .layer-item.group-selected {
   background: var(--color-group-bg);
   border-color: var(--color-group-border);
+}
+
+/* グループ内アイテムの縦線スタイル */
+.layer-item.in-group {
+  margin-left: 20px;
+  position: relative;
+  animation: layer-item-fade-in 200ms ease-out;
+}
+
+@keyframes layer-item-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 縦線 */
+.layer-item.in-group::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--color-group-line);
+  border-radius: 1px;
+  animation: group-line-grow 200ms ease-out;
+}
+
+@keyframes group-line-grow {
+  from {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  to {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+}
+
+/* グループ内最後のアイテムは縦線を中央までに */
+.layer-item.in-group.last-in-group::before {
+  bottom: 50%;
+}
+
+/* 横の接続線 */
+.layer-item.in-group::after {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  width: 8px;
+  height: 2px;
+  background: var(--color-group-line);
+  border-radius: 1px;
+  animation: group-connector-grow 200ms ease-out 100ms both;
+}
+
+@keyframes group-connector-grow {
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
 }
 
 /* ============================================
