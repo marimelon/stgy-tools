@@ -22,6 +22,32 @@ import { DEFAULT_PANEL_LAYOUT } from "./types";
 const STORAGE_KEY = "strategy-board-panel-layout";
 
 /**
+ * 古い展開パネル組み合わせベースのlocalStorageキーを削除
+ * 新しい形式: editor-{left|right}-sidebar-{number}
+ * 古い形式: editor-{left|right}-sidebar-{panelId1}-{panelId2}-...
+ */
+function cleanupLegacySidebarKeys(): void {
+	if (typeof window === "undefined") return;
+
+	const keysToRemove: string[] = [];
+	const validKeyPattern = /^editor-(left|right)-sidebar-\d+$/;
+
+	for (let i = 0; i < localStorage.length; i++) {
+		const key = localStorage.key(i);
+		if (key?.startsWith("editor-") && key.includes("-sidebar-")) {
+			// 新しい形式（数字のみ）でなければ削除対象
+			if (!validKeyPattern.test(key)) {
+				keysToRemove.push(key);
+			}
+		}
+	}
+
+	for (const key of keysToRemove) {
+		localStorage.removeItem(key);
+	}
+}
+
+/**
  * PanelContextの値
  */
 export interface PanelContextValue {
@@ -117,6 +143,11 @@ function loadConfig(): PanelLayoutConfig {
  */
 export function PanelProvider({ children }: PanelProviderProps) {
 	const [config, setConfig] = useState<PanelLayoutConfig>(loadConfig);
+
+	// 初回マウント時に古いサイドバーレイアウトキーをクリーンアップ
+	useEffect(() => {
+		cleanupLegacySidebarKeys();
+	}, []);
 
 	// localStorageに保存
 	useEffect(() => {

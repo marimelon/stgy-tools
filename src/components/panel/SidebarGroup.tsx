@@ -43,12 +43,9 @@ export function SidebarGroup({
 	const expandedCount = panels.filter(([, config]) => !config.collapsed).length;
 
 	// レイアウトの保存・復元
-	const expandedIds = panels
-		.filter(([, config]) => !config.collapsed)
-		.map(([id]) => id)
-		.join("-");
+	// 固定キー + パネル数形式で保存（展開パネルの組み合わせでキーが散乱するのを防ぐ）
 	const { defaultLayout, onLayoutChange } = useDefaultLayout({
-		id: `${storageId}-${expandedIds}`,
+		id: `${storageId}-${expandedCount}`,
 		storage: localStorage,
 	});
 
