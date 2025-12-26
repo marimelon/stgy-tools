@@ -5,12 +5,14 @@
  * ドラッグ&ドロップでレイヤー順序を変更可能
  */
 
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useEditor } from "@/lib/editor";
 import type { ObjectGroup } from "@/lib/editor/types";
+import { LayerContextMenu } from "./LayerContextMenu";
 import { LayerGroupHeader } from "./LayerGroupHeader";
 import { LayerObjectItem } from "./LayerObjectItem";
+import { useLayerContextMenu } from "./useLayerContextMenu";
 import { useLayerDragDrop } from "./useLayerDragDrop";
 import { useLayerItems } from "./useLayerItems";
 
@@ -33,9 +35,23 @@ export function LayerPanel() {
 		reorderLayer,
 		reorderGroup,
 		removeFromGroup,
+		copySelected,
+		paste,
+		duplicateSelected,
+		deleteSelected,
+		groupSelected,
+		moveLayer,
+		canGroup,
 	} = useEditor();
-	const { board, selectedIndices, groups } = state;
+	const { board, selectedIndices, groups, clipboard } = state;
 	const { objects } = board;
+
+	// コンテキストメニュー
+	const { menuState, openObjectMenu, openGroupMenu, closeMenu } =
+		useLayerContextMenu();
+
+	// グループ名編集のための状態（コンテキストメニューから発火）
+	const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
 
 	// レイヤーアイテムと可視性・ロック状態ヘルパー
 	const {
@@ -172,6 +188,88 @@ export function LayerPanel() {
 		[toggleGroupCollapse],
 	);
 
+	// コンテキストメニューから編集モード開始
+	const handleStartRenameGroup = useCallback((groupId: string) => {
+		setEditingGroupId(groupId);
+	}, []);
+
+	// 編集モード開始後のクリア
+	const handleEditingStarted = useCallback(() => {
+		setEditingGroupId(null);
+	}, []);
+
+	// コンテキストメニューのアクション
+	const contextMenuActions = useMemo(
+		() => ({
+			copy: () => {
+				copySelected();
+				commitHistory(t("contextMenu.copy"));
+			},
+			paste: () => {
+				paste();
+				commitHistory(t("contextMenu.paste"));
+			},
+			duplicate: () => {
+				duplicateSelected();
+				commitHistory(t("contextMenu.duplicate"));
+			},
+			delete: () => {
+				deleteSelected();
+				commitHistory(t("contextMenu.delete"));
+			},
+			group: () => {
+				groupSelected();
+				commitHistory(t("contextMenu.group"));
+			},
+			ungroup: (groupId: string) => {
+				ungroup(groupId);
+			},
+			removeFromGroup: (objectIndex: number) => {
+				removeFromGroup(objectIndex);
+			},
+			toggleVisibility: (index: number) => {
+				handleToggleVisibility(index);
+			},
+			toggleLock: (index: number) => {
+				handleToggleLock(index);
+			},
+			toggleGroupVisibility: (group: ObjectGroup) => {
+				handleToggleGroupVisibility(group);
+			},
+			toggleGroupLock: (group: ObjectGroup) => {
+				handleToggleGroupLock(group);
+			},
+			moveLayer: (direction: "front" | "back" | "forward" | "backward") => {
+				if (selectedIndices.length === 1) {
+					moveLayer(direction);
+				}
+			},
+			startRenameGroup: handleStartRenameGroup,
+			toggleGroupCollapse: (groupId: string) => {
+				toggleGroupCollapse(groupId);
+			},
+		}),
+		[
+			copySelected,
+			paste,
+			duplicateSelected,
+			deleteSelected,
+			groupSelected,
+			ungroup,
+			removeFromGroup,
+			handleToggleVisibility,
+			handleToggleLock,
+			handleToggleGroupVisibility,
+			handleToggleGroupLock,
+			moveLayer,
+			selectedIndices,
+			handleStartRenameGroup,
+			toggleGroupCollapse,
+			commitHistory,
+			t,
+		],
+	);
+
 	return (
 		<div
 			className="flex flex-col h-full"
@@ -204,6 +302,7 @@ export function LayerPanel() {
 										isAllLocked={isGroupAllLocked(group)}
 										isAllUnlocked={isGroupAllUnlocked(group)}
 										dropTarget={dropTarget}
+										shouldStartEditing={editingGroupId === group.id}
 										onDragStart={handleGroupDragStart}
 										onDragOver={handleDragOver}
 										onDragEnd={handleDragEnd}
@@ -214,6 +313,8 @@ export function LayerPanel() {
 										onToggleLock={handleToggleGroupLock}
 										onUngroup={handleUngroupClick}
 										onRename={handleRenameGroup}
+										onContextMenu={openGroupMenu}
+										onEditingStarted={handleEditingStarted}
 									/>
 								);
 							}
@@ -229,6 +330,7 @@ export function LayerPanel() {
 										object={obj}
 										isSelected={selectedIndices.includes(index)}
 										isInGroup={item.isInGroup}
+										groupId={item.groupId}
 										isDragging={draggedIndex === index}
 										dropTarget={dropTarget}
 										draggedGroupId={draggedGroupId}
@@ -239,6 +341,7 @@ export function LayerPanel() {
 										onSelect={handleSelectObject}
 										onToggleVisibility={handleToggleVisibility}
 										onToggleLock={handleToggleLock}
+										onContextMenu={openObjectMenu}
 									/>
 								);
 							}
@@ -262,6 +365,19 @@ export function LayerPanel() {
 					</span>
 				)}
 			</div>
+
+			{/* コンテキストメニュー */}
+			<LayerContextMenu
+				menuState={menuState}
+				onClose={closeMenu}
+				objects={objects}
+				selectedIndices={selectedIndices}
+				hasClipboard={clipboard !== null}
+				canGroup={canGroup}
+				isGroupAllVisible={isGroupAllVisible}
+				isGroupAllLocked={isGroupAllLocked}
+				actions={contextMenuActions}
+			/>
 		</div>
 	);
 }

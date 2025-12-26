@@ -13,6 +13,7 @@ interface LayerObjectItemProps {
 	object: BoardObject;
 	isSelected: boolean;
 	isInGroup: boolean;
+	groupId?: string;
 	isDragging: boolean;
 	dropTarget: DropTarget | null;
 	draggedGroupId: string | null;
@@ -23,6 +24,12 @@ interface LayerObjectItemProps {
 	onSelect: (index: number, e: React.MouseEvent) => void;
 	onToggleVisibility: (index: number) => void;
 	onToggleLock: (index: number) => void;
+	onContextMenu: (
+		e: React.MouseEvent,
+		index: number,
+		isInGroup: boolean,
+		groupId?: string,
+	) => void;
 }
 
 /**
@@ -33,6 +40,7 @@ export function LayerObjectItem({
 	object,
 	isSelected,
 	isInGroup,
+	groupId,
 	isDragging,
 	dropTarget,
 	draggedGroupId,
@@ -43,6 +51,7 @@ export function LayerObjectItem({
 	onSelect,
 	onToggleVisibility,
 	onToggleLock,
+	onContextMenu,
 }: LayerObjectItemProps) {
 	const { t } = useTranslation();
 	const name = t(`object.${object.objectId}`, {
@@ -75,6 +84,7 @@ export function LayerObjectItem({
 				onDragEnd={onDragEnd}
 				onDrop={onDrop}
 				onClick={(e) => onSelect(index, e)}
+				onContextMenu={(e) => onContextMenu(e, index, isInGroup, groupId)}
 				className={`layer-item select-none ${isInGroup ? "ml-4" : ""} ${isDragging ? "opacity-50" : ""} ${isSelected ? "bg-accent/20 border-accent" : ""}`}
 			>
 				{/* ドラッグハンドル */}

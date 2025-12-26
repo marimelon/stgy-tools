@@ -28,3 +28,24 @@ export interface LayerItem {
 	/** 所属グループID */
 	groupId?: string;
 }
+
+/**
+ * レイヤーコンテキストメニューのターゲット種別
+ */
+export type LayerContextMenuTarget =
+	| { type: "object"; index: number; isInGroup: boolean; groupId?: string }
+	| { type: "group"; group: ObjectGroup };
+
+/**
+ * レイヤーコンテキストメニューの状態
+ */
+export interface LayerContextMenuState {
+	/** メニューが開いているか */
+	isOpen: boolean;
+	/** メニュー表示位置X */
+	x: number;
+	/** メニュー表示位置Y */
+	y: number;
+	/** メニューのターゲット */
+	target: LayerContextMenuTarget | null;
+}

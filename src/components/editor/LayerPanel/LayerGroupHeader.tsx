@@ -26,6 +26,8 @@ interface LayerGroupHeaderProps {
 	isAllLocked: boolean;
 	isAllUnlocked: boolean;
 	dropTarget: DropTarget | null;
+	/** 外部から編集モードを開始するためのフラグ（コンテキストメニュー用） */
+	shouldStartEditing?: boolean;
 	onDragStart: (e: DragEvent<HTMLDivElement>, groupId: string) => void;
 	onDragOver: (e: DragEvent<HTMLDivElement>, index: number) => void;
 	onDragEnd: () => void;
@@ -36,6 +38,9 @@ interface LayerGroupHeaderProps {
 	onToggleLock: (group: ObjectGroup) => void;
 	onUngroup: (groupId: string, e: React.MouseEvent) => void;
 	onRename: (groupId: string, name: string) => void;
+	onContextMenu: (e: React.MouseEvent, group: ObjectGroup) => void;
+	/** 編集モード開始後のクリアコールバック */
+	onEditingStarted?: () => void;
 }
 
 /**
@@ -50,6 +55,7 @@ export function LayerGroupHeader({
 	isAllLocked,
 	isAllUnlocked,
 	dropTarget,
+	shouldStartEditing,
 	onDragStart,
 	onDragOver,
 	onDragEnd,
@@ -60,6 +66,8 @@ export function LayerGroupHeader({
 	onToggleLock,
 	onUngroup,
 	onRename,
+	onContextMenu,
+	onEditingStarted,
 }: LayerGroupHeaderProps) {
 	const { t } = useTranslation();
 	const firstIndex = Math.min(...group.objectIndices);
@@ -86,6 +94,15 @@ export function LayerGroupHeader({
 			setIsEditing(false);
 		}
 	}, [group.id]);
+
+	// 外部から編集モードを開始（コンテキストメニュー用）
+	useEffect(() => {
+		if (shouldStartEditing) {
+			setEditName(group.name || "");
+			setIsEditing(true);
+			onEditingStarted?.();
+		}
+	}, [shouldStartEditing, group.name, onEditingStarted]);
 
 	// 編集開始
 	const handleStartEdit = (e: React.MouseEvent) => {
@@ -142,6 +159,7 @@ export function LayerGroupHeader({
 				onDragEnd={onDragEnd}
 				onDrop={onDrop}
 				onClick={(e) => onSelect(group.id, e)}
+				onContextMenu={(e) => onContextMenu(e, group)}
 				className={`layer-item select-none ${isDragging ? "opacity-50" : ""} ${isAllSelected ? "bg-purple-500/15 border-purple-500" : ""}`}
 			>
 				{/* ドラッグハンドル */}
