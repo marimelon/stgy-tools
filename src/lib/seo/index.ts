@@ -6,9 +6,9 @@
 export const SITE_CONFIG = {
 	name: "STGY Tools",
 	description:
-		"FFXIV Strategy Board viewer and editor. Decode and create stgy codes for raid strategy diagrams.",
+		"View and edit FFXIV Strategy Boards. Decode and create stgy codes for raid strategy diagrams.",
 	descriptionJa:
-		"FFXIV ストラテジーボードのビューアー・エディター。stgyコードのデコード・作成に対応。",
+		"FFXIV ストラテジーボードを表示・編集するツール。stgyコードの読み込み・作成に対応。",
 	url: "https://stgy.m4e.dev",
 	locale: {
 		default: "ja",
@@ -22,27 +22,27 @@ export const PAGE_SEO = {
 		title: "STGY Tools - FFXIV Strategy Board Viewer",
 		titleJa: "STGY Tools - FFXIV ストラテジーボードビューアー",
 		description:
-			"View and decode FFXIV Strategy Board (stgy) codes. Visualize raid strategies with interactive SVG rendering.",
+			"View and decode FFXIV Strategy Board (stgy) codes. Display raid strategies with interactive visualization.",
 		descriptionJa:
-			"FFXIV ストラテジーボードのstgyコードを表示・デコード。インタラクティブなSVGレンダリングでレイド攻略を可視化。",
+			"FFXIV ストラテジーボードのstgyコードを表示・読み込み。レイド攻略図を見やすく表示します。",
 		path: "/",
 	},
 	editor: {
 		title: "Strategy Board Editor | STGY Tools",
 		titleJa: "ストラテジーボードエディター | STGY Tools",
 		description:
-			"Create and edit FFXIV Strategy Board diagrams. Full-featured editor with layers, groups, and export to stgy codes.",
+			"Create and edit FFXIV Strategy Board diagrams. Full-featured editor with layers, groups, and stgy code export.",
 		descriptionJa:
-			"FFXIV ストラテジーボードのダイアグラムを作成・編集。レイヤー、グループ、stgyコード出力に対応した多機能エディター。",
+			"FFXIV ストラテジーボードを作成・編集。レイヤーやグループ機能を備えた多機能エディター。",
 		path: "/editor",
 	},
 	imageGenerator: {
 		title: "FFXIV Strategy Board Image Generator | STGY Tools",
 		titleJa: "FFXIV ストラテジーボード画像ジェネレーター | STGY Tools",
 		description:
-			"Generate shareable images from FFXIV Strategy Board codes. Create PNG or SVG images for Discord, Twitter, and other platforms.",
+			"Generate shareable images from FFXIV Strategy Board codes. Export as PNG or SVG for Discord, Twitter, and more.",
 		descriptionJa:
-			"FFXIV ストラテジーボードコードから共有可能な画像を生成。Discord、Twitter向けのPNG/SVG画像を作成。",
+			"FFXIV ストラテジーボードのコードから画像を生成。DiscordやTwitterで共有できるPNG/SVG形式で出力。",
 		path: "/image/generate",
 	},
 } as const;

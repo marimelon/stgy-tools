@@ -29,7 +29,7 @@
 	"imageGenerator": {
 		"pageTitle": "STGY Tools Image Generator",
 		"title": "Generate Image URL",
-		"description": "Generate an image URL from an FFXIV Strategy Board share code (stgy code).",
+		"description": "Generate an image URL from an FFXIV Strategy Board code (stgy format).",
 		"stgyCode": "stgy Code",
 		"stgyCodePlaceholder": "[stgy:a...]",
 		"outputFormat": "Output Format",

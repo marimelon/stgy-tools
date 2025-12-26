@@ -29,7 +29,7 @@
 	"imageGenerator": {
 		"pageTitle": "STGY Tools Image Generator",
 		"title": "Generate Image URL",
-		"description": "FFXIVストラテジーボードの共有コード（stgyコード）から画像URLを生成します。",
+		"description": "FFXIV ストラテジーボードのコード（stgy形式）から画像URLを生成します。",
 		"stgyCode": "stgyコード",
 		"stgyCodePlaceholder": "[stgy:a...]",
 		"outputFormat": "出力フォーマット",
