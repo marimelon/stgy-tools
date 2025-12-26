@@ -5,25 +5,48 @@
  * React Portalを使用してbody直下にレンダリングし、親要素のoverflowの影響を受けない
  */
 
-import { ChevronDown, ChevronUp, LayoutPanelLeft } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+	ChevronDown as ArrowDown,
+	ChevronUp as ArrowUp,
+	ChevronDown,
+	ChevronUp,
+	LayoutPanelLeft,
+} from "lucide-react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { type PanelId, usePanelLayout } from "@/lib/panel";
+import {
+	type PanelConfig,
+	type PanelId,
+	type PanelSlot,
+	usePanelLayout,
+} from "@/lib/panel";
 
 /** アイコンサイズ */
 const ICON_SIZE = 16;
 
 /** メニュー幅 */
-const MENU_WIDTH = 256;
+const MENU_WIDTH = 320;
 
 /**
  * パネル設定ドロップダウン
  */
 export function PanelSettingsDropdown() {
 	const { t } = useTranslation();
-	const { config, togglePanelVisibility, updatePanelSlot, resetToDefault } =
-		usePanelLayout();
+	const {
+		config,
+		togglePanelVisibility,
+		updatePanelSlot,
+		resetToDefault,
+		reorderPanel,
+	} = usePanelLayout();
 	const [isOpen, setIsOpen] = useState(false);
 	const [isPositioned, setIsPositioned] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
@@ -97,6 +120,28 @@ export function PanelSettingsDropdown() {
 		"historyPanel",
 	];
 
+	// スロット内の表示中パネルをソート順で取得（メモ化）
+	const getVisiblePanelsInSlot = useCallback(
+		(slot: PanelSlot) => {
+			return (Object.entries(config.panels) as [PanelId, PanelConfig][])
+				.filter(([_, cfg]) => cfg.slot === slot && cfg.visible)
+				.sort(([_, a], [__, b]) => a.order - b.order)
+				.map(([id, _]) => id);
+		},
+		[config.panels],
+	);
+
+	// 左右スロットの表示パネルをメモ化
+	const leftVisiblePanels = useMemo(
+		() => getVisiblePanelsInSlot("left"),
+		[getVisiblePanelsInSlot],
+	);
+
+	const rightVisiblePanels = useMemo(
+		() => getVisiblePanelsInSlot("right"),
+		[getVisiblePanelsInSlot],
+	);
+
 	return (
 		<div>
 			<button
@@ -128,48 +173,94 @@ export function PanelSettingsDropdown() {
 					>
 						{/* パネル一覧（表示/配置統合） */}
 						<div className="p-2 border-b border-slate-700">
-							{panelIds.map((panelId) => (
-								<div
-									key={panelId}
-									className="flex items-center gap-2 py-1.5 px-1 hover:bg-slate-700/50 rounded"
-								>
-									<label className="flex items-center gap-2 flex-1 cursor-pointer">
-										<input
-											type="checkbox"
-											checked={config.panels[panelId].visible}
-											onChange={() => togglePanelVisibility(panelId)}
-											className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500"
-										/>
-										<span className="text-sm text-slate-200">
-											{t(`panelSettings.${panelId}`)}
-										</span>
-									</label>
-									<div className="flex gap-0.5">
-										<button
-											type="button"
-											onClick={() => updatePanelSlot(panelId, "left")}
-											className={`px-2 py-0.5 text-xs rounded-l transition-colors ${
-												config.panels[panelId].slot === "left"
-													? "bg-cyan-600 text-white"
-													: "bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-slate-200"
-											}`}
-										>
-											{t("panelSettings.left")}
-										</button>
-										<button
-											type="button"
-											onClick={() => updatePanelSlot(panelId, "right")}
-											className={`px-2 py-0.5 text-xs rounded-r transition-colors ${
-												config.panels[panelId].slot === "right"
-													? "bg-cyan-600 text-white"
-													: "bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-slate-200"
-											}`}
-										>
-											{t("panelSettings.right")}
-										</button>
+							{panelIds.map((panelId) => {
+								const isVisible = config.panels[panelId].visible;
+								const slot = config.panels[panelId].slot;
+								const visiblePanels =
+									slot === "left" ? leftVisiblePanels : rightVisiblePanels;
+								const index = visiblePanels.indexOf(panelId);
+								const canGoUp = isVisible && index > 0;
+								const canGoDown =
+									isVisible && index !== -1 && index < visiblePanels.length - 1;
+
+								return (
+									<div
+										key={panelId}
+										className="flex items-center gap-2 py-1.5 px-1 hover:bg-slate-700/50 rounded"
+									>
+										<label className="flex items-center gap-2 flex-1 cursor-pointer min-w-0">
+											<input
+												type="checkbox"
+												checked={isVisible}
+												onChange={() => togglePanelVisibility(panelId)}
+												className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-700 text-cyan-500 focus:ring-cyan-500 flex-shrink-0"
+											/>
+											<span className="text-sm text-slate-200 whitespace-nowrap overflow-hidden text-ellipsis">
+												{t(`panelSettings.${panelId}`)}
+											</span>
+										</label>
+
+										{/* 順序変更ボタン（表示中のパネルのみ） */}
+										{isVisible && (
+											<div className="flex gap-0.5">
+												<button
+													type="button"
+													onClick={() => reorderPanel(panelId, "up")}
+													disabled={!canGoUp}
+													title={t("panelSettings.moveUp")}
+													aria-label={`${t(`panelSettings.${panelId}`)} ${t("panelSettings.moveUp")}`}
+													className={`p-1 rounded transition-colors ${
+														canGoUp
+															? "text-slate-400 hover:bg-slate-600 hover:text-slate-200"
+															: "text-slate-600 cursor-not-allowed"
+													}`}
+												>
+													<ArrowUp size={14} />
+												</button>
+												<button
+													type="button"
+													onClick={() => reorderPanel(panelId, "down")}
+													disabled={!canGoDown}
+													title={t("panelSettings.moveDown")}
+													aria-label={`${t(`panelSettings.${panelId}`)} ${t("panelSettings.moveDown")}`}
+													className={`p-1 rounded transition-colors ${
+														canGoDown
+															? "text-slate-400 hover:bg-slate-600 hover:text-slate-200"
+															: "text-slate-600 cursor-not-allowed"
+													}`}
+												>
+													<ArrowDown size={14} />
+												</button>
+											</div>
+										)}
+
+										<div className="flex gap-0.5">
+											<button
+												type="button"
+												onClick={() => updatePanelSlot(panelId, "left")}
+												className={`px-2 py-0.5 text-xs rounded-l transition-colors ${
+													config.panels[panelId].slot === "left"
+														? "bg-cyan-600 text-white"
+														: "bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-slate-200"
+												}`}
+											>
+												{t("panelSettings.left")}
+											</button>
+											<button
+												type="button"
+												onClick={() => updatePanelSlot(panelId, "right")}
+												className={`px-2 py-0.5 text-xs rounded-r transition-colors ${
+													config.panels[panelId].slot === "right"
+														? "bg-cyan-600 text-white"
+														: "bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-slate-200"
+												}`}
+											>
+												{t("panelSettings.right")}
+											</button>
+										</div>
 									</div>
-								</div>
-							))}
+								);
+							})}
 						</div>
 
 						{/* リセット */}

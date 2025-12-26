@@ -33,6 +33,8 @@ export interface PanelContextValue {
 	togglePanelVisibility: (panelId: PanelId) => void;
 	/** パネルの折りたたみ状態を切り替え */
 	togglePanelCollapsed: (panelId: PanelId) => void;
+	/** パネルの順序を変更（同じスロット内で上下移動） */
+	reorderPanel: (panelId: PanelId, direction: "up" | "down") => void;
 	/** デフォルトにリセット */
 	resetToDefault: () => void;
 	/** 左スロットのパネル一覧（表示中のみ） */
@@ -172,6 +174,55 @@ export function PanelProvider({ children }: PanelProviderProps) {
 		}));
 	}, []);
 
+	const reorderPanel = useCallback(
+		(panelId: PanelId, direction: "up" | "down") => {
+			setConfig((prev) => {
+				const panel = prev.panels[panelId];
+
+				// 同じスロット内の表示中パネルを取得してソート
+				const sameslotPanels = (
+					Object.entries(prev.panels) as [PanelId, PanelConfig][]
+				)
+					.filter(([_, cfg]) => cfg.slot === panel.slot && cfg.visible)
+					.sort(([_, a], [__, b]) => a.order - b.order);
+
+				// 現在のインデックスを取得
+				const currentIndex = sameslotPanels.findIndex(
+					([id, _]) => id === panelId,
+				);
+				if (currentIndex === -1) return prev;
+
+				// 移動先インデックスを計算
+				const targetIndex =
+					direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+				// 境界チェック
+				if (targetIndex < 0 || targetIndex >= sameslotPanels.length)
+					return prev;
+
+				// order値をswap
+				const [currentId] = sameslotPanels[currentIndex];
+				const [targetId] = sameslotPanels[targetIndex];
+
+				return {
+					...prev,
+					panels: {
+						...prev.panels,
+						[currentId]: {
+							...prev.panels[currentId],
+							order: prev.panels[targetId].order,
+						},
+						[targetId]: {
+							...prev.panels[targetId],
+							order: prev.panels[currentId].order,
+						},
+					},
+				};
+			});
+		},
+		[],
+	);
+
 	const resetToDefault = useCallback(() => {
 		setConfig(DEFAULT_PANEL_LAYOUT);
 	}, []);
@@ -208,6 +259,7 @@ export function PanelProvider({ children }: PanelProviderProps) {
 			updatePanelSlot,
 			togglePanelVisibility,
 			togglePanelCollapsed,
+			reorderPanel,
 			resetToDefault,
 			leftPanels,
 			rightPanels,
@@ -219,6 +271,7 @@ export function PanelProvider({ children }: PanelProviderProps) {
 			updatePanelSlot,
 			togglePanelVisibility,
 			togglePanelCollapsed,
+			reorderPanel,
 			resetToDefault,
 			leftPanels,
 			rightPanels,

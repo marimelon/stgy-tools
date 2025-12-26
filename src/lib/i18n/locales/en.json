@@ -376,6 +376,8 @@
 		"resetToDefault": "Reset to Default",
 		"left": "Left",
 		"right": "Right",
+		"moveUp": "Move Up",
+		"moveDown": "Move Down",
 		"objectPalette": "Object Palette",
 		"assetPanel": "Asset Panel",
 		"layerPanel": "Layer Panel",
