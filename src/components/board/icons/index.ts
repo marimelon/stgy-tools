@@ -16,7 +16,7 @@ export {
 	StackChainIcon,
 	StackIcon,
 	StackLineIcon,
-} from "./AoEIcons";
+} from "./aoe";
 // 図形アイコン
 export {
 	ShapeArrowIcon,

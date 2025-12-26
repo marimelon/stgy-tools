@@ -1,27 +1,9 @@
-import i18n from "@/lib/i18n";
 import type { BoardObject } from "@/lib/stgy";
 import { ObjectIds } from "@/lib/stgy";
 import { getObjectBoundingBox } from "./bounding-box";
-import { AoEObject } from "./objects/AoEObject";
-import { EnemyIcon } from "./objects/EnemyIcon";
-import { FieldObject } from "./objects/FieldObject";
-import { JobIcon } from "./objects/JobIcon";
-import { MarkerIcon } from "./objects/markers/MarkerIcon";
-import { PlaceholderObject } from "./objects/PlaceholderObject";
-import { RoleIcon } from "./objects/RoleIcon";
-import { TextObject } from "./objects/TextObject";
-import { WaymarkIcon } from "./objects/WaymarkIcon";
-import {
-	isAoEObject,
-	isEnemy,
-	isFieldObject,
-	isJobIcon,
-	isMarker,
-	isRoleIcon,
-	isWaymark,
-} from "./type-guards";
+import { getStrategy } from "./strategies";
 import { BoundingBox, DebugInfo, SelectionIndicator } from "./ui-components";
-import { buildTransform, CustomIconImage, colorToRgba } from "./utils";
+import { buildTransform } from "./utils";
 
 // Re-export for external use
 export { getObjectBoundingBox } from "./bounding-box";
@@ -80,66 +62,13 @@ export function ObjectRenderer({
 		onSelect?.(index);
 	};
 
-	// オブジェクトタイプに応じてレンダリング
-	let content: React.ReactNode;
-
-	if (isFieldObject(objectId)) {
-		content = (
-			<FieldObject objectId={objectId} transform={transform} color={color} />
-		);
-	} else if (objectId === ObjectIds.Line) {
-		// Line: 始点(position)から終点(param1/10, param2/10)への線
-		// param1, param2 は座標を10倍した整数値（小数第一位まで対応）
-		const endX = (param1 ?? position.x * 10 + 2560) / 10;
-		const endY = (param2 ?? position.y * 10) / 10;
-		const lineThickness = object.param3 ?? 6;
-		const lineFill = colorToRgba(color);
-		content = (
-			<line
-				x1={position.x}
-				y1={position.y}
-				x2={endX}
-				y2={endY}
-				stroke={lineFill}
-				strokeWidth={lineThickness}
-				strokeLinecap="butt"
-			/>
-		);
-	} else if (isAoEObject(objectId)) {
-		content = (
-			<AoEObject
-				objectId={objectId}
-				transform={transform}
-				color={color}
-				param1={param1}
-				param2={param2}
-				param3={object.param3}
-			/>
-		);
-	} else if (isJobIcon(objectId)) {
-		content = <JobIcon objectId={objectId} transform={transform} />;
-	} else if (isRoleIcon(objectId)) {
-		content = <RoleIcon objectId={objectId} transform={transform} />;
-	} else if (isWaymark(objectId)) {
-		content = <WaymarkIcon objectId={objectId} transform={transform} />;
-	} else if (isEnemy(objectId)) {
-		content = <EnemyIcon objectId={objectId} transform={transform} />;
-	} else if (isMarker(objectId)) {
-		content = <MarkerIcon objectId={objectId} transform={transform} />;
-	} else if (objectId === ObjectIds.Text) {
-		content = (
-			<TextObject
-				transform={transform}
-				text={text || i18n.t("common.defaultText")}
-				color={color}
-			/>
-		);
-	} else if (objectId === ObjectIds.Group) {
-		// グループアイコン - オリジナル画像を使用
-		content = <CustomIconImage objectId={objectId} transform={transform} />;
-	} else {
-		content = <PlaceholderObject objectId={objectId} transform={transform} />;
-	}
+	// オブジェクトタイプに応じてレンダリング（ストラテジーパターン）
+	const strategy = getStrategy(objectId);
+	const content = strategy.render({
+		object,
+		transform,
+		scale,
+	});
 
 	// Lineは絶対座標で描画するため回転を適用しない
 	const effectiveRotation = objectId === ObjectIds.Line ? 0 : rotation;
