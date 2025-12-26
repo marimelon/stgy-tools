@@ -9,7 +9,7 @@ import {
 	OBJECT_LIMITS,
 	ObjectNames,
 } from "@/lib/stgy";
-import { getDebugMode } from "./useDebugMode";
+import { getDebugMode } from "../../useDebugMode";
 
 export interface ValidationResult {
 	canAdd: boolean;

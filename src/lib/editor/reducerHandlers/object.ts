@@ -5,7 +5,7 @@
 import { type BoardObject, ObjectIds } from "@/lib/stgy";
 import { duplicateObject } from "../factory";
 import type { BatchUpdatePayload, EditorState } from "../types";
-import { canAddObject, canAddObjects } from "../validation";
+import { canAddObject, canAddObjects } from "./businessLogic/validation";
 import {
 	cloneBoard,
 	pushHistory,

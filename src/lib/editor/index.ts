@@ -39,6 +39,8 @@ export {
 	createInitialStateWithOptions,
 	editorReducer,
 } from "./reducer";
+export type { ValidationResult } from "./reducerHandlers/businessLogic/validation";
+export { canAddObjects } from "./reducerHandlers/businessLogic/validation";
 export type {
 	AlignmentType,
 	BatchUpdatePayload,
@@ -69,5 +71,3 @@ export {
 	useKeyboardShortcuts,
 } from "./useKeyboardShortcuts";
 export { useObjectPaletteState } from "./useObjectPaletteState";
-export type { ValidationResult } from "./validation";
-export { canAddObjects } from "./validation";

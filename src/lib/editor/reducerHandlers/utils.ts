@@ -9,6 +9,10 @@ import {
 	MAX_HISTORY_SIZE,
 	type ObjectGroup,
 } from "../types";
+import {
+	removeIndices,
+	shiftIndicesDown,
+} from "./businessLogic/indexManagement";
 
 /**
  * 履歴の最大保持数
@@ -63,43 +67,24 @@ export function generateGroupId(): string {
 
 /**
  * オブジェクト追加時にグループのインデックスを更新（先頭追加）
+ * @deprecated Use shiftIndicesDown from businessLogic/indexManagement instead
  */
 export function shiftGroupIndices(
 	groups: ObjectGroup[],
 	count: number,
 ): ObjectGroup[] {
-	return groups.map((group) => ({
-		...group,
-		objectIndices: group.objectIndices.map((i) => i + count),
-	}));
+	return shiftIndicesDown(groups, count);
 }
 
 /**
  * オブジェクト削除時にグループを更新
+ * @deprecated Use removeIndices from businessLogic/indexManagement instead
  */
 export function updateGroupsAfterDelete(
 	groups: ObjectGroup[],
 	deletedIndices: number[],
 ): ObjectGroup[] {
-	const sortedDeleted = [...deletedIndices].sort((a, b) => b - a);
-
-	return groups
-		.map((group) => {
-			let newIndices = group.objectIndices.filter(
-				(i) => !deletedIndices.includes(i),
-			);
-
-			// 削除されたインデックスより大きいインデックスを調整
-			for (const deleted of sortedDeleted) {
-				newIndices = newIndices.map((i) => (i > deleted ? i - 1 : i));
-			}
-
-			return {
-				...group,
-				objectIndices: newIndices,
-			};
-		})
-		.filter((group) => group.objectIndices.length > 0); // 空のグループを削除
+	return removeIndices(groups, deletedIndices);
 }
 
 /**

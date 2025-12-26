@@ -3,7 +3,7 @@
  */
 
 import type { EditorState } from "../types";
-import { canAddObjects } from "../validation";
+import { canAddObjects } from "./businessLogic/validation";
 import { cloneBoard, pushHistory } from "./utils";
 
 /**
