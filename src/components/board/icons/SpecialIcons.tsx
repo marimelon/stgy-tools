@@ -557,3 +557,4 @@ export function DebuffIcon({ transform }: IconProps) {
 		</g>
 	);
 }
+
