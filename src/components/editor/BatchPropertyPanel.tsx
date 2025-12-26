@@ -161,16 +161,7 @@ export function BatchPropertyPanel({
 		isMixed(batchValues.color.b);
 
 	return (
-		<div className="panel h-full overflow-y-auto">
-			<div className="panel-header">
-				<h2 className="panel-title">
-					{t("batchProperty.title", "一括編集")}
-					<span className="ml-2 text-xs font-normal text-accent">
-						{objects.length}
-					</span>
-				</h2>
-			</div>
-
+		<div className="h-full overflow-y-auto">
 			<div className="p-4 space-y-1">
 				{/* 選択情報 */}
 				<div className="mb-4">

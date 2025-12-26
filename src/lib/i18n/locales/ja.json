@@ -362,11 +362,17 @@
 		"createNewDescription": "コピーを作成して編集を開始します",
 		"cancel": "キャンセル"
 	},
+	"panel": {
+		"collapse": "折りたたむ",
+		"expand": "展開",
+		"objectPalette": "オブジェクト",
+		"layerPanel": "レイヤー",
+		"propertyPanel": "プロパティ",
+		"assetPanel": "アセット",
+		"historyPanel": "履歴"
+	},
 	"panelSettings": {
-		"title": "パネルレイアウト設定",
-		"panelVisibility": "パネル表示",
-		"panelPosition": "パネル配置",
-		"presets": "プリセット",
+		"title": "パネル設定",
 		"resetToDefault": "デフォルトに戻す",
 		"left": "左",
 		"right": "右",
@@ -374,11 +380,7 @@
 		"assetPanel": "アセットパネル",
 		"layerPanel": "レイヤーパネル",
 		"propertyPanel": "プロパティパネル",
-		"historyPanel": "履歴パネル",
-		"default": "デフォルト",
-		"propertyLeft": "プロパティ左配置",
-		"allLeft": "全て左",
-		"allRight": "全て右"
+		"historyPanel": "履歴パネル"
 	},
 	"boardManager": {
 		"title": "ボード管理",

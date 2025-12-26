@@ -362,11 +362,17 @@
 		"createNewDescription": "Create a copy and start editing",
 		"cancel": "Cancel"
 	},
+	"panel": {
+		"collapse": "Collapse",
+		"expand": "Expand",
+		"objectPalette": "Objects",
+		"layerPanel": "Layers",
+		"propertyPanel": "Properties",
+		"assetPanel": "Assets",
+		"historyPanel": "History"
+	},
 	"panelSettings": {
-		"title": "Panel Layout Settings",
-		"panelVisibility": "Panel Visibility",
-		"panelPosition": "Panel Position",
-		"presets": "Presets",
+		"title": "Panel Settings",
 		"resetToDefault": "Reset to Default",
 		"left": "Left",
 		"right": "Right",
@@ -374,11 +380,7 @@
 		"assetPanel": "Asset Panel",
 		"layerPanel": "Layer Panel",
 		"propertyPanel": "Property Panel",
-		"historyPanel": "History Panel",
-		"default": "Default",
-		"propertyLeft": "Property on Left",
-		"allLeft": "All Left",
-		"allRight": "All Right"
+		"historyPanel": "History Panel"
 	},
 	"boardManager": {
 		"title": "Board Manager",

@@ -165,13 +165,9 @@ export function LayerPanel() {
 
 	return (
 		<div
-			className="panel flex flex-col h-full"
+			className="flex flex-col h-full"
 			style={{ background: "var(--color-bg-base)" }}
 		>
-			<div className="panel-header flex-shrink-0">
-				<h2 className="panel-title">{t("layerPanel.title")}</h2>
-			</div>
-
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: Drag container for layer reordering */}
 			<div className="flex-1 overflow-y-auto" onDragLeave={handleDragLeave}>
 				{objects.length === 0 ? (

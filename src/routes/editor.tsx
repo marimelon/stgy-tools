@@ -7,13 +7,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	AssetPanel,
+	AssetPanelActions,
 	DuplicateBoardModal,
 	EditorBoard,
 	EditorToolbar,
 	ErrorToast,
 	HistoryPanel,
+	HistoryPanelActions,
 	LayerPanel,
 	ObjectPalette,
+	ObjectPaletteActions,
 	PropertyPanel,
 } from "@/components/editor";
 import {
@@ -699,6 +702,11 @@ function EditorContent({
 						layerPanel: <LayerPanel />,
 						propertyPanel: <PropertyPanel />,
 						historyPanel: <HistoryPanel />,
+					}}
+					panelActions={{
+						objectPalette: <ObjectPaletteActions />,
+						assetPanel: <AssetPanelActions />,
+						historyPanel: <HistoryPanelActions />,
 					}}
 				>
 					{/* 中央: キャンバス */}

@@ -54,11 +54,7 @@ export function BoardPropertyPanel({
 	const { t } = useTranslation();
 
 	return (
-		<div className="panel h-full overflow-y-auto">
-			<div className="panel-header">
-				<h2 className="panel-title">{t("boardPanel.title")}</h2>
-			</div>
-
+		<div className="h-full overflow-y-auto">
 			<div className="p-4 space-y-1">
 				{/* ボード名 */}
 				<PropertySection title={t("boardPanel.boardName")}>

@@ -211,7 +211,7 @@ const OBJECT_CATEGORIES: Record<string, number[]> = {
 export function ObjectPalette() {
 	const { t } = useTranslation();
 	const { addObject } = useEditor();
-	const { debugMode, toggleDebugMode } = useDebugMode();
+	const { debugMode } = useDebugMode();
 	const { expandedCategories, toggleCategory } = useObjectPaletteState();
 
 	const handleAddObject = (objectId: number) => {
@@ -220,26 +220,9 @@ export function ObjectPalette() {
 
 	return (
 		<div
-			className="panel h-full overflow-y-auto"
+			className="h-full overflow-y-auto"
 			style={{ background: "var(--color-bg-base)" }}
 		>
-			<div className="panel-header flex items-center justify-between">
-				<h2 className="panel-title">{t("objectPalette.title")}</h2>
-				{/* デバッグモードトグル */}
-				<button
-					type="button"
-					onClick={toggleDebugMode}
-					className={`p-1 rounded transition-colors ${
-						debugMode
-							? "text-amber-400 bg-amber-400/20"
-							: "text-muted-foreground hover:text-foreground hover:bg-muted"
-					}`}
-					title={`${t("objectPalette.debugMode")}: ${debugMode ? "ON" : "OFF"}`}
-				>
-					<Bug size={16} />
-				</button>
-			</div>
-
 			<div className="p-2">
 				{Object.entries(OBJECT_CATEGORIES).map(([key, ids]) => (
 					<div key={key} className="mb-1">
@@ -453,5 +436,28 @@ function ObjectPaletteItem({
 				</div>
 			)}
 		</div>
+	);
+}
+
+/**
+ * オブジェクトパレットのアクションボタン（ヘッダー用）
+ */
+export function ObjectPaletteActions() {
+	const { t } = useTranslation();
+	const { debugMode, toggleDebugMode } = useDebugMode();
+
+	return (
+		<button
+			type="button"
+			onClick={toggleDebugMode}
+			className={`p-1 rounded transition-colors ${
+				debugMode
+					? "text-amber-400 bg-amber-400/20"
+					: "text-muted-foreground hover:text-foreground hover:bg-muted"
+			}`}
+			title={`${t("objectPalette.debugMode")}: ${debugMode ? "ON" : "OFF"}`}
+		>
+			<Bug size={16} />
+		</button>
 	);
 }

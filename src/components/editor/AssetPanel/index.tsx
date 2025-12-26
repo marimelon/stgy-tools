@@ -5,7 +5,7 @@
  */
 
 import { Package, Save, Search, Undo2 } from "lucide-react";
-import { type MouseEvent, useState } from "react";
+import { type MouseEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,8 +44,13 @@ export function AssetPanel() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
-	// 選択状態の確認
-	const canSave = state.selectedIndices.length > 0;
+	// カスタムイベントでモーダルを開く（ヘッダーアクションボタン用）
+	useEffect(() => {
+		const handleOpenModal = () => setShowSaveModal(true);
+		window.addEventListener("openSaveAssetModal", handleOpenModal);
+		return () =>
+			window.removeEventListener("openSaveAssetModal", handleOpenModal);
+	}, []);
 
 	// 検索フィルタ
 	const filteredAssets = searchQuery
@@ -122,27 +127,9 @@ export function AssetPanel() {
 
 	return (
 		<div
-			className="panel flex flex-col h-full"
+			className="flex flex-col h-full"
 			style={{ background: "var(--color-bg-base)" }}
 		>
-			{/* ヘッダー */}
-			<div className="panel-header flex items-center justify-between">
-				<h2 className="panel-title">{t("assetPanel.title")}</h2>
-				<button
-					type="button"
-					onClick={() => setShowSaveModal(true)}
-					disabled={!canSave}
-					className={`p-1.5 rounded transition-colors ${
-						canSave
-							? "text-foreground hover:bg-muted"
-							: "text-muted-foreground cursor-not-allowed"
-					}`}
-					title={t("assetPanel.saveSelection")}
-				>
-					<Save size={16} />
-				</button>
-			</div>
-
 			{/* 検索バー */}
 			<div className="px-2 py-2 border-b border-border">
 				<div className="relative">
@@ -248,5 +235,34 @@ function EmptyState({ hasAssets }: { hasAssets: boolean }) {
 					: t("assetPanel.noAssetsDescription")}
 			</p>
 		</div>
+	);
+}
+
+/**
+ * アセットパネルのアクションボタン（ヘッダー用）
+ */
+export function AssetPanelActions() {
+	const { t } = useTranslation();
+	const { state } = useEditor();
+	const canSave = state.selectedIndices.length > 0;
+
+	const handleClick = () => {
+		window.dispatchEvent(new CustomEvent("openSaveAssetModal"));
+	};
+
+	return (
+		<button
+			type="button"
+			onClick={handleClick}
+			disabled={!canSave}
+			className={`p-1.5 rounded transition-colors ${
+				canSave
+					? "text-foreground hover:bg-muted"
+					: "text-muted-foreground cursor-not-allowed"
+			}`}
+			title={t("assetPanel.saveSelection")}
+		>
+			<Save size={16} />
+		</button>
 	);
 }

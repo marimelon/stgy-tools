@@ -15,15 +15,9 @@ import { HistoryItem } from "./HistoryItem";
  */
 export function HistoryPanel() {
 	const { t } = useTranslation();
-	const { state, jumpToHistory, clearHistory } = useEditor();
+	const { state, jumpToHistory } = useEditor();
 	const { history, historyIndex } = state;
 	const listRef = useRef<HTMLDivElement>(null);
-
-	const handleClear = useCallback(() => {
-		if (window.confirm(t("historyPanel.clearConfirm"))) {
-			clearHistory();
-		}
-	}, [clearHistory, t]);
 
 	// キーボードナビゲーション（新しい履歴が上なので、↑で新しい方へ、↓で古い方へ）
 	const handleKeyDown = useCallback(
@@ -43,23 +37,9 @@ export function HistoryPanel() {
 
 	return (
 		<div
-			className="panel flex flex-col h-full"
+			className="flex flex-col h-full"
 			style={{ background: "var(--color-bg-base)" }}
 		>
-			{/* ヘッダー */}
-			<div className="panel-header flex-shrink-0 flex items-center justify-between">
-				<h2 className="panel-title">{t("historyPanel.title")}</h2>
-				<button
-					type="button"
-					className="p-1 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
-					onClick={handleClear}
-					disabled={!hasHistory}
-					title={t("historyPanel.clear")}
-				>
-					<Trash2 size={14} />
-				</button>
-			</div>
-
 			{/* 履歴リスト */}
 			<div
 				ref={listRef}
@@ -94,5 +74,32 @@ export function HistoryPanel() {
 				)}
 			</div>
 		</div>
+	);
+}
+
+/**
+ * 履歴パネルのアクションボタン（ヘッダー用）
+ */
+export function HistoryPanelActions() {
+	const { t } = useTranslation();
+	const { state, clearHistory } = useEditor();
+	const hasHistory = state.history.length > 1;
+
+	const handleClear = () => {
+		if (window.confirm(t("historyPanel.clearConfirm"))) {
+			clearHistory();
+		}
+	};
+
+	return (
+		<button
+			type="button"
+			className="p-1 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+			onClick={handleClear}
+			disabled={!hasHistory}
+			title={t("historyPanel.clear")}
+		>
+			<Trash2 size={14} />
+		</button>
 	);
 }

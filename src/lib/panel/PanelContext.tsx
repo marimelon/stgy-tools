@@ -15,10 +15,9 @@ import type {
 	PanelConfig,
 	PanelId,
 	PanelLayoutConfig,
-	PanelPreset,
 	PanelSlot,
 } from "./types";
-import { DEFAULT_PANEL_LAYOUT, PANEL_PRESETS } from "./types";
+import { DEFAULT_PANEL_LAYOUT } from "./types";
 
 const STORAGE_KEY = "strategy-board-panel-layout";
 
@@ -32,8 +31,8 @@ export interface PanelContextValue {
 	updatePanelSlot: (panelId: PanelId, slot: PanelSlot) => void;
 	/** パネルの表示/非表示を切り替え */
 	togglePanelVisibility: (panelId: PanelId) => void;
-	/** プリセットを適用 */
-	applyPreset: (preset: PanelPreset) => void;
+	/** パネルの折りたたみ状態を切り替え */
+	togglePanelCollapsed: (panelId: PanelId) => void;
 	/** デフォルトにリセット */
 	resetToDefault: () => void;
 	/** 左スロットのパネル一覧（表示中のみ） */
@@ -69,6 +68,7 @@ interface PanelProviderProps {
 /**
  * localStorageから設定を読み込み
  * 新しいパネルが追加された場合、デフォルト値でマージする
+ * 既存データにcollapsedプロパティがない場合はfalseで補完
  */
 function loadConfig(): PanelLayoutConfig {
 	if (typeof window === "undefined") {
@@ -89,12 +89,18 @@ function loadConfig(): PanelLayoutConfig {
 			parsed.panels.propertyPanel
 		) {
 			// デフォルト設定とマージして、新しいパネルを補完
+			// 各パネルのcollapsedプロパティがない場合はfalseで補完（マイグレーション）
+			const migratedPanels = { ...DEFAULT_PANEL_LAYOUT.panels };
+			for (const [id, cfg] of Object.entries(parsed.panels)) {
+				const panelId = id as PanelId;
+				migratedPanels[panelId] = {
+					...cfg,
+					collapsed: cfg.collapsed ?? false,
+				};
+			}
 			return {
 				...parsed,
-				panels: {
-					...DEFAULT_PANEL_LAYOUT.panels,
-					...parsed.panels,
-				},
+				panels: migratedPanels,
 			};
 		}
 	} catch {
@@ -153,8 +159,17 @@ export function PanelProvider({ children }: PanelProviderProps) {
 		}));
 	}, []);
 
-	const applyPreset = useCallback((preset: PanelPreset) => {
-		setConfig(PANEL_PRESETS[preset]);
+	const togglePanelCollapsed = useCallback((panelId: PanelId) => {
+		setConfig((prev) => ({
+			...prev,
+			panels: {
+				...prev.panels,
+				[panelId]: {
+					...prev.panels[panelId],
+					collapsed: !prev.panels[panelId].collapsed,
+				},
+			},
+		}));
 	}, []);
 
 	const resetToDefault = useCallback(() => {
@@ -192,7 +207,7 @@ export function PanelProvider({ children }: PanelProviderProps) {
 			config,
 			updatePanelSlot,
 			togglePanelVisibility,
-			applyPreset,
+			togglePanelCollapsed,
 			resetToDefault,
 			leftPanels,
 			rightPanels,
@@ -203,7 +218,7 @@ export function PanelProvider({ children }: PanelProviderProps) {
 			config,
 			updatePanelSlot,
 			togglePanelVisibility,
-			applyPreset,
+			togglePanelCollapsed,
 			resetToDefault,
 			leftPanels,
 			rightPanels,

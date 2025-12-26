@@ -4,7 +4,7 @@
 
 // 型は @/lib/editor から再エクスポート（後方互換性のため）
 export type { HandleType, ResizeHandle } from "@/lib/editor";
-export { AssetPanel } from "./AssetPanel";
+export { AssetPanel, AssetPanelActions } from "./AssetPanel";
 export type { BoardPropertyPanelProps } from "./BoardPropertyPanel";
 export { BoardPropertyPanel } from "./BoardPropertyPanel";
 export type { ColorPaletteProps } from "./ColorPalette";
@@ -32,13 +32,13 @@ export {
 export type { GridOverlayProps, SelectionIndicatorProps } from "./GridOverlay";
 // SVGオーバーレイ
 export { GridOverlay, SelectionIndicator } from "./GridOverlay";
-export { HistoryPanel } from "./HistoryPanel";
+export { HistoryPanel, HistoryPanelActions } from "./HistoryPanel";
 export type { ImportModalProps } from "./ImportModal";
 export { ImportModal } from "./ImportModal";
 export { LayerPanel } from "./LayerPanel";
 export type { ModalProps } from "./Modal";
 export { Modal } from "./Modal";
-export { ObjectPalette } from "./ObjectPalette";
+export { ObjectPalette, ObjectPaletteActions } from "./ObjectPalette";
 export type { ObjectPropertyPanelProps } from "./ObjectPropertyPanel";
 export { ObjectPropertyPanel } from "./ObjectPropertyPanel";
 export { PropertyPanel } from "./PropertyPanel";

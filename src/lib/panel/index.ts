@@ -9,13 +9,7 @@ export type {
 	PanelConfig,
 	PanelId,
 	PanelLayoutConfig,
-	PanelPreset,
 	PanelSlot,
 } from "./types";
 
-export {
-	DEFAULT_PANEL_LAYOUT,
-	PANEL_NAMES,
-	PANEL_PRESETS,
-	PRESET_NAMES,
-} from "./types";
+export { DEFAULT_PANEL_LAYOUT } from "./types";
