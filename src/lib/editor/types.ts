@@ -218,6 +218,7 @@ export type EditorAction =
 	| { type: "END_TEXT_EDIT"; save: boolean; text?: string }
 	| { type: "JUMP_TO_HISTORY"; index: number }
 	| { type: "CLEAR_HISTORY" }
+	| { type: "SET_ERROR"; error: EditorError }
 	| { type: "CLEAR_ERROR" };
 
 /**

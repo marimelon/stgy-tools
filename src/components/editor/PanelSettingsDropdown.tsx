@@ -96,6 +96,7 @@ export function PanelSettingsDropdown() {
 
 	const panelIds: PanelId[] = [
 		"objectPalette",
+		"assetPanel",
 		"layerPanel",
 		"propertyPanel",
 		"historyPanel",

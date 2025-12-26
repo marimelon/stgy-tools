@@ -175,6 +175,9 @@ export function editorReducer(
 		case "CLEAR_HISTORY":
 			return handleClearHistory(state);
 
+		case "SET_ERROR":
+			return { ...state, lastError: action.error };
+
 		case "CLEAR_ERROR":
 			return { ...state, lastError: null };
 

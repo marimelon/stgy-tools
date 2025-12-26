@@ -168,6 +168,34 @@
 		"initial": "Initial state",
 		"noHistory": "No history"
 	},
+	"assetPanel": {
+		"title": "Assets",
+		"saveSelection": "Save Selection as Asset",
+		"search": "Search assets...",
+		"noAssets": "No saved assets",
+		"noAssetsDescription": "Select objects and click save button",
+		"objectCount": "{{count}} object(s)",
+		"saveModal": {
+			"title": "Save as Asset",
+			"name": "Asset Name",
+			"namePlaceholder": "Enter asset name",
+			"preview": "Preview",
+			"save": "Save",
+			"cancel": "Cancel"
+		},
+		"contextMenu": {
+			"apply": "Apply to Canvas",
+			"rename": "Rename",
+			"duplicate": "Duplicate",
+			"delete": "Delete"
+		},
+		"toast": {
+			"assetSaved": "Asset saved: {{name}}",
+			"assetApplied": "Asset applied: {{name}}",
+			"assetDeleted": "\"{{name}}\" deleted",
+			"undo": "Undo"
+		}
+	},
 	"propertyPanel": {
 		"title": "Properties",
 		"object": "Object",
@@ -343,6 +371,7 @@
 		"left": "Left",
 		"right": "Right",
 		"objectPalette": "Object Palette",
+		"assetPanel": "Asset Panel",
 		"layerPanel": "Layer Panel",
 		"propertyPanel": "Property Panel",
 		"historyPanel": "History Panel",

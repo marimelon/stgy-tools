@@ -6,6 +6,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+	AssetPanel,
 	DuplicateBoardModal,
 	EditorBoard,
 	EditorToolbar,
@@ -694,6 +695,7 @@ function EditorContent({
 				<ResizableLayout
 					panelComponents={{
 						objectPalette: <ObjectPalette />,
+						assetPanel: <AssetPanel />,
 						layerPanel: <LayerPanel />,
 						propertyPanel: <PropertyPanel />,
 						historyPanel: <HistoryPanel />,

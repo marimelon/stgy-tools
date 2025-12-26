@@ -168,6 +168,34 @@
 		"initial": "初期状態",
 		"noHistory": "操作履歴がありません"
 	},
+	"assetPanel": {
+		"title": "アセット",
+		"saveSelection": "選択をアセットとして保存",
+		"search": "アセットを検索...",
+		"noAssets": "保存されたアセットがありません",
+		"noAssetsDescription": "オブジェクトを選択して保存ボタンをクリック",
+		"objectCount": "{{count}}個のオブジェクト",
+		"saveModal": {
+			"title": "アセットとして保存",
+			"name": "アセット名",
+			"namePlaceholder": "アセット名を入力",
+			"preview": "プレビュー",
+			"save": "保存",
+			"cancel": "キャンセル"
+		},
+		"contextMenu": {
+			"apply": "キャンバスに配置",
+			"rename": "名前を変更",
+			"duplicate": "複製",
+			"delete": "削除"
+		},
+		"toast": {
+			"assetSaved": "アセットを保存しました: {{name}}",
+			"assetApplied": "アセットを配置しました: {{name}}",
+			"assetDeleted": "「{{name}}」を削除しました",
+			"undo": "元に戻す"
+		}
+	},
 	"propertyPanel": {
 		"title": "プロパティ",
 		"object": "オブジェクト",
@@ -343,6 +371,7 @@
 		"left": "左",
 		"right": "右",
 		"objectPalette": "オブジェクトパレット",
+		"assetPanel": "アセットパネル",
 		"layerPanel": "レイヤーパネル",
 		"propertyPanel": "プロパティパネル",
 		"historyPanel": "履歴パネル",

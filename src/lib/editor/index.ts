@@ -69,3 +69,5 @@ export {
 	useKeyboardShortcuts,
 } from "./useKeyboardShortcuts";
 export { useObjectPaletteState } from "./useObjectPaletteState";
+export type { ValidationResult } from "./validation";
+export { canAddObjects } from "./validation";

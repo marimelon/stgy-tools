@@ -4,6 +4,7 @@
 
 // 型は @/lib/editor から再エクスポート（後方互換性のため）
 export type { HandleType, ResizeHandle } from "@/lib/editor";
+export { AssetPanel } from "./AssetPanel";
 export type { BoardPropertyPanelProps } from "./BoardPropertyPanel";
 export { BoardPropertyPanel } from "./BoardPropertyPanel";
 export type { ColorPaletteProps } from "./ColorPalette";
