@@ -431,9 +431,16 @@ function App() {
 							</div>
 						</div>
 
-						{/* メインボードビューアー（最大化表示） */}
+						{/* メインボードビューアー（ビューポート高さに収まるサイズ） */}
 						<div className="flex justify-center">
-							<div className="w-full max-w-4xl">
+							<div
+								className="w-full max-w-4xl"
+								style={{
+									// ボードの高さがビューポート高さの70%に収まるように幅を制限
+									// アスペクト比 512:384 に基づいて計算
+									maxWidth: "min(896px, calc(70vh * 512 / 384))",
+								}}
+							>
 								<BoardViewer
 									boardData={boardData}
 									responsive
