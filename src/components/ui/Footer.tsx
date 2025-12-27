@@ -19,12 +19,16 @@ export function Footer({ className = "" }: { className?: string }) {
 			<div className="max-w-4xl mx-auto">
 				{expanded ? (
 					<div className="space-y-0.5 animate-in fade-in duration-200">
-						<p>FINAL FANTASY XIV ©2010 - 2025 SQUARE ENIX CO., LTD.</p>
-						<p>
-							FINAL FANTASY is a registered trademark of Square Enix Holdings
-							Co., Ltd. All material used under license.
-						</p>
+						<p>© SQUARE ENIX</p>
 						<p>STGY Tools is not affiliated with SQUARE ENIX CO., LTD.</p>
+						<p className="mt-1.5 pt-1.5 border-t border-border/20">
+							<a
+								href="mailto:contact@stgy.m4e.dev"
+								className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+							>
+								Contact: contact@stgy.m4e.dev
+							</a>
+						</p>
 						<button
 							type="button"
 							onClick={() => setExpanded(false)}
@@ -34,13 +38,22 @@ export function Footer({ className = "" }: { className?: string }) {
 						</button>
 					</div>
 				) : (
-					<button
-						type="button"
-						onClick={() => setExpanded(true)}
-						className="hover:text-muted-foreground transition-colors"
-					>
-						FFXIV ©SQUARE ENIX · STGY Tools is unofficial
-					</button>
+					<div className="flex items-center justify-center gap-2 flex-wrap">
+						<button
+							type="button"
+							onClick={() => setExpanded(true)}
+							className="hover:text-muted-foreground transition-colors"
+						>
+							© SQUARE ENIX · STGY Tools is unofficial
+						</button>
+						<span className="text-muted-foreground/30">|</span>
+						<a
+							href="mailto:contact@stgy.m4e.dev"
+							className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+						>
+							Contact
+						</a>
+					</div>
 				)}
 			</div>
 		</footer>
@@ -58,7 +71,7 @@ export function CompactFooter({ className = "" }: { className?: string }) {
 				className,
 			)}
 		>
-			<p>FFXIV ©SQUARE ENIX · STGY Tools is unofficial</p>
+			<p>© SQUARE ENIX · STGY Tools is unofficial</p>
 		</footer>
 	);
 }
