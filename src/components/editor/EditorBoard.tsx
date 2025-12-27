@@ -221,12 +221,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 							opacity: editingTextIndex === index ? 0.3 : 1,
 						}}
 					>
-						<ObjectRenderer
-							object={obj}
-							index={index}
-							showBoundingBox={false}
-							selected={false}
-						/>
+						<ObjectRenderer object={obj} index={index} selected={false} />
 					</g>
 				))}
 

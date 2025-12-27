@@ -79,7 +79,6 @@
 				"UNKNOWN": "Failed to generate short link"
 			}
 		},
-		"showBoundingBox": "Show bounding box",
 		"expandBoard": "Expand",
 		"expandModal": {
 			"description": "Expanded board view"

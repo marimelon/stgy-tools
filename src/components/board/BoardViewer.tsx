@@ -12,7 +12,6 @@ interface BoardViewerProps {
 	scale?: number;
 	/** trueの場合、コンテナ幅に合わせて自動スケール */
 	responsive?: boolean;
-	showBoundingBox?: boolean;
 	selectedIndex?: number | null;
 	onSelectObject?: (index: number | null, object: BoardObject | null) => void;
 }
@@ -21,7 +20,6 @@ export function BoardViewer({
 	boardData,
 	scale = 1,
 	responsive = false,
-	showBoundingBox = false,
 	selectedIndex = null,
 	onSelectObject,
 }: BoardViewerProps) {
@@ -75,7 +73,6 @@ export function BoardViewer({
 					key={index}
 					object={obj}
 					index={index}
-					showBoundingBox={showBoundingBox}
 					selected={selectedIndex === index}
 					onSelect={handleSelect}
 				/>

@@ -71,12 +71,7 @@ function ObjectPreview({ objectId }: { objectId: number }) {
 				role="img"
 				aria-label={`Object preview: ${name}`}
 			>
-				<ObjectRenderer
-					object={object}
-					index={0}
-					showBoundingBox={false}
-					selected={false}
-				/>
+				<ObjectRenderer object={object} index={0} selected={false} />
 			</svg>
 			<div className="mt-2 text-center">
 				<div className="text-xs font-mono text-muted-foreground">

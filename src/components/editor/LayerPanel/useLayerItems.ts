@@ -59,7 +59,9 @@ export function useLayerItems({
 					// グループ内のオブジェクトを追加（折りたたまれていなければ）
 					if (!group.collapsed) {
 						// 元の配列を変更しないようにコピーしてからソート
-						const sortedIndices = [...group.objectIndices].sort((a, b) => a - b);
+						const sortedIndices = [...group.objectIndices].sort(
+							(a, b) => a - b,
+						);
 						const lastIndex = sortedIndices[sortedIndices.length - 1];
 						for (const idx of sortedIndices) {
 							items.push({

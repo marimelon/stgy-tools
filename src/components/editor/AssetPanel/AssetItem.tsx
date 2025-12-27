@@ -62,7 +62,6 @@ export function AssetItem({ asset, onApply, onContextMenu }: AssetItemProps) {
 							key={`${asset.id}-${asset.objects.length - 1 - index}`}
 							object={obj}
 							index={asset.objects.length - 1 - index}
-							showBoundingBox={false}
 							selected={false}
 						/>
 					))}

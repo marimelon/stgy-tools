@@ -2,7 +2,7 @@ import type { BoardObject } from "@/lib/stgy";
 import { ObjectIds } from "@/lib/stgy";
 import { getObjectBoundingBox } from "./bounding-box";
 import { getStrategy } from "./strategies";
-import { BoundingBox, DebugInfo, SelectionIndicator } from "./ui-components";
+import { SelectionIndicator } from "./ui-components";
 import { buildTransform } from "./utils";
 
 // Re-export for external use
@@ -11,7 +11,6 @@ export { getObjectBoundingBox } from "./bounding-box";
 interface ObjectRendererProps {
 	object: BoardObject;
 	index: number;
-	showBoundingBox?: boolean;
 	selected?: boolean;
 	onSelect?: (index: number) => void;
 }
@@ -19,7 +18,6 @@ interface ObjectRendererProps {
 export function ObjectRenderer({
 	object,
 	index,
-	showBoundingBox = false,
 	selected = false,
 	onSelect,
 }: ObjectRendererProps) {
@@ -102,21 +100,6 @@ export function ObjectRenderer({
 		>
 			{content}
 			{selectionIndicator}
-			{showBoundingBox && (
-				<>
-					<BoundingBox
-						x={position.x}
-						y={position.y}
-						width={bbox.width * scale}
-						height={bbox.height * scale}
-						offsetX={(bbox.offsetX ?? 0) * scale}
-						offsetY={(bbox.offsetY ?? 0) * scale}
-						rotation={effectiveRotation}
-						objectId={objectId}
-					/>
-					<DebugInfo object={object} />
-				</>
-			)}
 		</g>
 	);
 }

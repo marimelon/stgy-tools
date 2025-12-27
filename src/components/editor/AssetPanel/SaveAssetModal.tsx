@@ -86,7 +86,6 @@ export function SaveAssetModal({ onClose }: SaveAssetModalProps) {
 										key={key}
 										object={obj}
 										index={originalIndex}
-										showBoundingBox={false}
 										selected={false}
 									/>
 								);

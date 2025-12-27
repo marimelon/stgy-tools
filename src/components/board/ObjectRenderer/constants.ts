@@ -196,9 +196,6 @@ export const COLORS = {
 	WAYMARK_YELLOW: "#cccc33",
 	WAYMARK_BLUE: "#3366cc",
 	WAYMARK_PURPLE: "#cc33cc",
-	// デバッグ
-	DEBUG_GREEN: "#00ff00",
-	DEBUG_RED: "#ff0000",
 	// 選択
 	SELECTION: "#00bfff",
 } as const;

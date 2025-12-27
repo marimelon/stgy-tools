@@ -79,7 +79,6 @@
 				"UNKNOWN": "短縮リンクの生成に失敗しました"
 			}
 		},
-		"showBoundingBox": "バウンディングボックスを表示",
 		"expandBoard": "拡大表示",
 		"expandModal": {
 			"description": "ボードの拡大表示"

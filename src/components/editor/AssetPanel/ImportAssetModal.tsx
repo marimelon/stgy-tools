@@ -192,7 +192,6 @@ export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
 											key={key}
 											object={obj}
 											index={originalIndex}
-											showBoundingBox={false}
 											selected={false}
 										/>
 									);

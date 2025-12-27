@@ -12,7 +12,6 @@ import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Footer } from "@/components/ui/Footer";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -194,14 +193,12 @@ function App() {
 	}, [resolvedStgy, shortId]);
 	const [boardData, setBoardData] = useState<BoardData | null>(null);
 	const [error, setError] = useState<string | null>(null);
-	const [showBoundingBox, setShowBoundingBox] = useState(false);
 	const [isExpandModalOpen, setIsExpandModalOpen] = useState(false);
 	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 	const [selectedObject, setSelectedObject] = useState<BoardObject | null>(
 		null,
 	);
 	const stgyInputId = useId();
-	const showBboxId = useId();
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	// 短縮リンク生成
@@ -400,22 +397,7 @@ function App() {
 						<div className="flex gap-4 flex-col lg:flex-row">
 							{/* ボードビューアー - モバイルでは1番目、デスクトップでは中央 */}
 							<div className="p-4 bg-card border border-border rounded-lg order-1 lg:order-2 lg:w-[540px] flex-shrink-0">
-								<div className="mb-3 flex items-center justify-between">
-									<div className="flex items-center gap-2">
-										<Checkbox
-											id={showBboxId}
-											checked={showBoundingBox}
-											onCheckedChange={(checked) =>
-												setShowBoundingBox(checked === true)
-											}
-										/>
-										<Label
-											htmlFor={showBboxId}
-											className="text-sm cursor-pointer"
-										>
-											{t("viewer.showBoundingBox")}
-										</Label>
-									</div>
+								<div className="mb-3 flex items-center justify-end">
 									<button
 										type="button"
 										className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
@@ -428,7 +410,6 @@ function App() {
 								<BoardViewer
 									boardData={boardData}
 									responsive
-									showBoundingBox={showBoundingBox}
 									selectedIndex={selectedIndex}
 									onSelectObject={handleSelectObject}
 								/>
