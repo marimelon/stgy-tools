@@ -324,7 +324,7 @@ function App() {
 		<div className="min-h-screen bg-background text-foreground">
 			<AppHeader currentPage="viewer" title={t("viewer.pageTitle")} />
 
-			<main className="p-4 max-w-6xl mx-auto">
+			<main className="p-4 max-w-5xl mx-auto">
 				<div className="mb-6 space-y-3">
 					<div className="flex items-center justify-between">
 						<Label htmlFor={stgyInputId}>{t("viewer.inputLabel")}</Label>
@@ -365,94 +365,98 @@ function App() {
 
 				{boardData && (
 					<div className="space-y-4">
-						{/* ボード情報 */}
-						<div className="p-4 bg-card border border-border rounded-lg">
-							<div className="flex items-center justify-between mb-3">
-								<h2 className="text-lg font-semibold font-display">
-									{t("viewer.boardInfo.title")}
-								</h2>
-								<div className="flex items-center gap-2">
-									{featureFlags.shortLinksEnabled && (
-										<button
-											type="button"
-											className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-											onClick={handleGenerateShortLink}
-											disabled={isGeneratingShortLink}
-											title={t("viewer.shortLink.generate")}
-										>
-											{isGeneratingShortLink ? (
-												<Loader2 className="w-3.5 h-3.5 animate-spin" />
-											) : copiedShortLink ? (
-												<Check className="w-3.5 h-3.5" />
-											) : (
-												<Link className="w-3.5 h-3.5" />
-											)}
+						{/* ボード情報ヘッダー（コンパクト） */}
+						<div className="flex flex-wrap items-center justify-between gap-2 p-2 sm:p-3 bg-card border border-border rounded-lg">
+							<div className="flex items-center gap-2 sm:gap-4 text-sm min-w-0">
+								<span className="font-medium truncate">
+									{boardData.name || t("viewer.boardInfo.unnamed")}
+								</span>
+								<span className="text-muted-foreground whitespace-nowrap">
+									<span className="hidden xs:inline">
+										{t("viewer.boardInfo.objectCount")}:{" "}
+									</span>
+									<span className="font-mono text-primary">
+										{boardData.objects.length}
+									</span>
+								</span>
+								<span className="text-muted-foreground hidden md:inline">
+									{t("viewer.boardInfo.background")}:{" "}
+									<span className="font-medium text-foreground">
+										{t(`background.${boardData.backgroundId}`)}
+									</span>
+								</span>
+							</div>
+							<div className="flex items-center gap-1 sm:gap-2">
+								{featureFlags.shortLinksEnabled && (
+									<button
+										type="button"
+										className="flex items-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+										onClick={handleGenerateShortLink}
+										disabled={isGeneratingShortLink}
+										title={t("viewer.shortLink.generate")}
+									>
+										{isGeneratingShortLink ? (
+											<Loader2 className="w-4 h-4 animate-spin" />
+										) : copiedShortLink ? (
+											<Check className="w-4 h-4" />
+										) : (
+											<Link className="w-4 h-4" />
+										)}
+										<span className="hidden sm:inline">
 											{copiedShortLink
 												? t("viewer.shortLink.copied")
 												: t("viewer.shortLink.generate")}
-										</button>
-									)}
-									<button
-										type="button"
-										className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/30 hover:border-accent/50 rounded-lg transition-all"
-										onClick={handleEditInEditor}
-									>
-										<Pencil className="w-3.5 h-3.5" />
-										{t("imageGenerator.editInEditor")}
+										</span>
 									</button>
-								</div>
+								)}
+								<button
+									type="button"
+									className="flex items-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/30 hover:border-accent/50 rounded-lg transition-all"
+									onClick={handleEditInEditor}
+									title={t("imageGenerator.editInEditor")}
+								>
+									<Pencil className="w-4 h-4" />
+									<span className="hidden sm:inline">
+										{t("imageGenerator.editInEditor")}
+									</span>
+								</button>
+								<button
+									type="button"
+									className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+									onClick={() => setIsExpandModalOpen(true)}
+									title={t("viewer.expandBoard")}
+								>
+									<Maximize2 className="w-4 h-4" />
+								</button>
 							</div>
-							<dl className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-								<div>
-									<dt className="text-muted-foreground">
-										{t("viewer.boardInfo.name")}
-									</dt>
-									<dd className="font-medium">
-										{boardData.name || t("viewer.boardInfo.unnamed")}
-									</dd>
-								</div>
-								<div>
-									<dt className="text-muted-foreground">
-										{t("viewer.boardInfo.objectCount")}
-									</dt>
-									<dd className="font-medium font-mono text-primary">
-										{boardData.objects.length}
-									</dd>
-								</div>
-								<div>
-									<dt className="text-muted-foreground">
-										{t("viewer.boardInfo.background")}
-									</dt>
-									<dd className="font-medium">
-										{t(`background.${boardData.backgroundId}`)}
-									</dd>
-								</div>
-							</dl>
 						</div>
 
-						<div className="flex gap-4 flex-col lg:flex-row">
-							{/* ボードビューアー - モバイルでは1番目、デスクトップでは中央 */}
-							<div className="p-4 bg-card border border-border rounded-lg order-1 lg:order-2 lg:w-[540px] flex-shrink-0">
-								<div className="mb-3 flex items-center justify-end">
-									<button
-										type="button"
-										className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-										onClick={() => setIsExpandModalOpen(true)}
-										title={t("viewer.expandBoard")}
-									>
-										<Maximize2 className="w-4 h-4" />
-									</button>
-								</div>
+						{/* メインボードビューアー（最大化表示） */}
+						<div className="flex justify-center">
+							<div className="w-full max-w-4xl">
 								<BoardViewer
 									boardData={boardData}
 									responsive
+									maxWidth={896}
+									selectedIndex={selectedIndex}
+									onSelectObject={handleSelectObject}
+								/>
+							</div>
+						</div>
+
+						{/* 詳細パネル（ボード下部に横並び） */}
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+							{/* オブジェクト一覧 */}
+							<div className="h-[300px] md:h-[350px]">
+								<ObjectListPanel
+									objects={boardData.objects}
 									selectedIndex={selectedIndex}
 									onSelectObject={handleSelectObject}
 								/>
 							</div>
 
-							{/* 選択オブジェクト情報 - モバイルでは2番目、デスクトップでは右 */}
-							<div className="p-4 bg-card border border-border rounded-lg order-2 lg:order-3 flex-1 lg:min-w-[200px] lg:max-w-[320px]">
+							{/* 選択オブジェクト情報 */}
+							<div className="p-4 bg-card border border-border rounded-lg">
 								<h2 className="text-lg font-semibold mb-3 font-display">
 									{t("viewer.selectedObject.title")}
 								</h2>
@@ -466,15 +470,6 @@ function App() {
 										{t("viewer.selectedObject.clickToSelect")}
 									</p>
 								)}
-							</div>
-
-							{/* オブジェクト一覧 - モバイルでは3番目（最後）、デスクトップでは左 */}
-							<div className="w-full lg:w-[240px] h-[250px] lg:h-[420px] flex-shrink-0 order-3 lg:order-1">
-								<ObjectListPanel
-									objects={boardData.objects}
-									selectedIndex={selectedIndex}
-									onSelectObject={handleSelectObject}
-								/>
 							</div>
 						</div>
 					</div>

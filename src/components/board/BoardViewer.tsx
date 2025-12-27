@@ -12,6 +12,8 @@ interface BoardViewerProps {
 	scale?: number;
 	/** trueの場合、コンテナ幅に合わせて自動スケール */
 	responsive?: boolean;
+	/** レスポンシブモード時の最大幅（デフォルト: CANVAS_WIDTH） */
+	maxWidth?: number;
 	selectedIndex?: number | null;
 	onSelectObject?: (index: number | null, object: BoardObject | null) => void;
 }
@@ -20,6 +22,7 @@ export function BoardViewer({
 	boardData,
 	scale = 1,
 	responsive = false,
+	maxWidth,
 	selectedIndex = null,
 	onSelectObject,
 }: BoardViewerProps) {
@@ -42,11 +45,12 @@ export function BoardViewer({
 
 	// レスポンシブモード: コンテナ幅に合わせて自動スケール
 	// 固定モード: scale値で固定サイズ
+	const effectiveMaxWidth = maxWidth ?? CANVAS_WIDTH;
 	const svgProps = responsive
 		? {
 				width: "100%",
 				height: "auto",
-				style: { backgroundColor: "#1a1a1a", maxWidth: CANVAS_WIDTH },
+				style: { backgroundColor: "#1a1a1a", maxWidth: effectiveMaxWidth },
 			}
 		: {
 				width: CANVAS_WIDTH * scale,
