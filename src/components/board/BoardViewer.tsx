@@ -49,7 +49,6 @@ export function BoardViewer({
 	const svgProps = responsive
 		? {
 				width: "100%",
-				height: "auto",
 				style: { backgroundColor: "#1a1a1a", maxWidth: effectiveMaxWidth },
 			}
 		: {
