@@ -2,6 +2,7 @@ import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import {
 	AlertCircle,
 	Check,
+	Copy,
 	Link,
 	Loader2,
 	Maximize2,
@@ -205,6 +206,9 @@ function App() {
 	const [isGeneratingShortLink, setIsGeneratingShortLink] = useState(false);
 	const [copiedShortLink, setCopiedShortLink] = useState(false);
 
+	// stgyコードコピー
+	const [copiedStgyCode, setCopiedStgyCode] = useState(false);
+
 	// Editorで編集ボタンのハンドラー
 	const handleEditInEditor = useCallback(() => {
 		if (!stgyInput.trim() || !boardData) return;
@@ -230,6 +234,18 @@ function App() {
 			setIsGeneratingShortLink(false);
 		}
 	}, [stgyInput, boardData]);
+
+	// stgyコードをコピー
+	const handleCopyStgyCode = useCallback(async () => {
+		if (!stgyInput.trim()) return;
+		try {
+			await navigator.clipboard.writeText(stgyInput.trim());
+			setCopiedStgyCode(true);
+			setTimeout(() => setCopiedStgyCode(false), 2000);
+		} catch {
+			// クリップボードAPIが利用できない場合は何もしない
+		}
+	}, [stgyInput]);
 
 	// 入力変更ハンドラー（サンプルコードフラグを更新）
 	const handleInputChange = useCallback(
@@ -310,12 +326,32 @@ function App() {
 
 			<main className="p-4 max-w-6xl mx-auto">
 				<div className="mb-6 space-y-3">
-					<Label htmlFor={stgyInputId}>{t("viewer.inputLabel")}</Label>
+					<div className="flex items-center justify-between">
+						<Label htmlFor={stgyInputId}>{t("viewer.inputLabel")}</Label>
+						<button
+							type="button"
+							onClick={handleCopyStgyCode}
+							disabled={!boardData}
+							className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						>
+							{copiedStgyCode ? (
+								<>
+									<Check className="size-3.5" />
+									{t("common.copied")}
+								</>
+							) : (
+								<>
+									<Copy className="size-3.5" />
+									{t("common.copy")}
+								</>
+							)}
+						</button>
+					</div>
 					<Textarea
 						id={stgyInputId}
 						value={stgyInput}
 						onChange={handleInputChange}
-						className="h-24 font-mono text-sm"
+						className="h-12 font-mono text-sm"
 						placeholder={t("viewer.inputPlaceholder")}
 					/>
 				</div>
