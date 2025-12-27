@@ -202,6 +202,33 @@ function App() {
 	const stgyInputId = useId();
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+	// ボードサイズのリサイズ機能
+	const [boardWidth, setBoardWidth] = useState<number | null>(null);
+	const boardContainerRef = useRef<HTMLDivElement>(null);
+	const isResizing = useRef(false);
+
+	const handleResizeStart = useCallback((e: React.MouseEvent) => {
+		e.preventDefault();
+		isResizing.current = true;
+
+		const handleMouseMove = (moveEvent: MouseEvent) => {
+			if (!isResizing.current || !boardContainerRef.current) return;
+			const containerRect = boardContainerRef.current.getBoundingClientRect();
+			const newWidth = moveEvent.clientX - containerRect.left;
+			// 最小幅200px、最大幅896px
+			setBoardWidth(Math.max(200, Math.min(896, newWidth)));
+		};
+
+		const handleMouseUp = () => {
+			isResizing.current = false;
+			document.removeEventListener("mousemove", handleMouseMove);
+			document.removeEventListener("mouseup", handleMouseUp);
+		};
+
+		document.addEventListener("mousemove", handleMouseMove);
+		document.addEventListener("mouseup", handleMouseUp);
+	}, []);
+
 	// 短縮リンク生成
 	const [isGeneratingShortLink, setIsGeneratingShortLink] = useState(false);
 	const [copiedShortLink, setCopiedShortLink] = useState(false);
@@ -431,23 +458,40 @@ function App() {
 							</div>
 						</div>
 
-						{/* メインボードビューアー（ビューポート高さに収まるサイズ） */}
+						{/* メインボードビューアー（リサイズ可能） */}
 						<div className="flex justify-center">
 							<div
-								className="w-full max-w-4xl"
+								ref={boardContainerRef}
+								className="flex items-stretch"
 								style={{
-									// ボードの高さがビューポート高さの70%に収まるように幅を制限
-									// アスペクト比 512:384 に基づいて計算
-									maxWidth: "min(896px, calc(70vh * 512 / 384))",
+									// ユーザー指定の幅、またはデフォルト計算値
+									width: boardWidth
+										? `${boardWidth}px`
+										: "min(896px, calc(70vh * 512 / 384))",
+									maxWidth: "896px",
 								}}
 							>
 								<BoardViewer
 									boardData={boardData}
 									responsive
-									maxWidth={896}
+									maxWidth={boardWidth ?? 896}
 									selectedIndex={selectedIndex}
 									onSelectObject={handleSelectObject}
 								/>
+							</div>
+							{/* リサイズハンドル（ボード外側） */}
+							<div
+								role="slider"
+								aria-label={t("viewer.resizeBoard")}
+								aria-valuemin={200}
+								aria-valuemax={896}
+								aria-valuenow={boardWidth ?? 600}
+								tabIndex={0}
+								className="w-3 cursor-ew-resize flex items-center justify-center group ml-1"
+								onMouseDown={handleResizeStart}
+								title={t("viewer.resizeBoard")}
+							>
+								<div className="w-1.5 h-16 bg-muted-foreground/40 group-hover:bg-primary rounded-full transition-colors" />
 							</div>
 						</div>
 

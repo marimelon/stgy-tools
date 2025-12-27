@@ -80,6 +80,7 @@
 			}
 		},
 		"expandBoard": "拡大表示",
+		"resizeBoard": "ドラッグでサイズ変更",
 		"expandModal": {
 			"description": "ボードの拡大表示"
 		},

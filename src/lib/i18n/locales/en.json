@@ -80,6 +80,7 @@
 			}
 		},
 		"expandBoard": "Expand",
+		"resizeBoard": "Drag to resize",
 		"expandModal": {
 			"description": "Expanded board view"
 		},
