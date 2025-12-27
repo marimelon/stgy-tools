@@ -156,6 +156,9 @@ function EditorPage() {
 	// Key to force re-render EditorProvider when switching boards
 	const [editorKey, setEditorKey] = useState(0);
 
+	// Ref to prevent multiple initialization attempts
+	const initializingRef = useRef(false);
+
 	// Board operations from useBoards
 	const {
 		boards,
@@ -382,6 +385,10 @@ function EditorPage() {
 	useEffect(() => {
 		// Wait for loading to complete, skip if error or memory-only mode
 		if (isLoading || isInitialized || storageError || isMemoryOnlyMode) return;
+
+		// Prevent multiple initialization attempts (race condition with boards update)
+		if (initializingRef.current) return;
+		initializingRef.current = true;
 
 		const initializeEditor = async () => {
 			// Check for stgy code in URL query parameter (from Image Generator page)
