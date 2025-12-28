@@ -72,6 +72,19 @@ export function BoardManagerModal({
 
 	const handleDeleteBoard = (id: string) => {
 		deleteBoard(id);
+
+		// 現在開いているボードを削除した場合、別のボードを開く（モーダルは閉じない）
+		if (id === currentBoardId) {
+			// 削除対象以外のボードを探す
+			const remainingBoards = boards.filter((b) => b.id !== id);
+			if (remainingBoards.length > 0) {
+				// 最新のボードを開く
+				onOpenBoard(remainingBoards[0].id);
+			} else {
+				// ボードがなくなった場合は新規作成
+				onCreateNewBoard();
+			}
+		}
 	};
 
 	const handleCreateNew = () => {
