@@ -181,7 +181,7 @@
 }
 
 .panel-header {
-  padding: 12px;
+  padding: 6px 12px;
   border-bottom: 1px solid var(--color-border-default);
   background: linear-gradient(180deg, var(--color-bg-elevated) 0%, var(--color-bg-base) 100%);
 }
