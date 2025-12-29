@@ -7,14 +7,25 @@
 
 import { ChevronDown } from "lucide-react";
 import {
+	createContext,
 	type MouseEvent,
 	type ReactNode,
+	useContext,
 	useEffect,
 	useLayoutEffect,
 	useRef,
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
+
+/** ドロップダウンメニューのコンテキスト */
+interface DropdownMenuContextValue {
+	closeMenu: () => void;
+}
+
+const DropdownMenuContext = createContext<DropdownMenuContextValue | null>(
+	null,
+);
 
 interface DropdownMenuProps {
 	/** トリガーボタンのラベル */
@@ -142,17 +153,21 @@ export function DropdownMenu({
 
 			{isOpen &&
 				createPortal(
-					<div
-						ref={menuRef}
-						className="fixed bg-slate-800 border border-slate-600 rounded shadow-lg z-[9999] min-w-max"
-						style={{
-							top: menuPosition.top,
-							left: menuPosition.left,
-							visibility: isPositioned ? "visible" : "hidden",
-						}}
+					<DropdownMenuContext.Provider
+						value={{ closeMenu: () => setIsOpen(false) }}
 					>
-						{children}
-					</div>,
+						<div
+							ref={menuRef}
+							className="fixed bg-slate-800 border border-slate-600 rounded shadow-lg z-[9999] min-w-max"
+							style={{
+								top: menuPosition.top,
+								left: menuPosition.left,
+								visibility: isPositioned ? "visible" : "hidden",
+							}}
+						>
+							{children}
+						</div>
+					</DropdownMenuContext.Provider>,
 					document.body,
 				)}
 		</div>
@@ -182,10 +197,17 @@ export function DropdownItem({
 	title,
 	icon,
 }: DropdownItemProps) {
+	const context = useContext(DropdownMenuContext);
+
+	const handleClick = () => {
+		onClick?.();
+		context?.closeMenu();
+	};
+
 	return (
 		<button
 			type="button"
-			onClick={onClick}
+			onClick={handleClick}
 			disabled={disabled}
 			title={title}
 			className="w-full px-3 py-2 text-sm text-left text-slate-200 hover:bg-slate-700 disabled:text-slate-500 disabled:hover:bg-transparent flex items-center gap-2 whitespace-nowrap"
