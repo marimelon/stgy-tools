@@ -17,6 +17,7 @@ export { EditorToolbar } from "./EditorToolbar";
 export { ErrorToast } from "./ErrorToast";
 export type { ExportModalProps } from "./ExportModal";
 export { ExportModal } from "./ExportModal";
+export { FocusModeIndicator } from "./FocusModeIndicator";
 export type {
 	CheckboxProps,
 	NumberInputProps,

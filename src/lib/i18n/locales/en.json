@@ -160,7 +160,9 @@
 		"unlockGroup": "Unlock group",
 		"lockChanged": "Lock changed",
 		"groupLockChanged": "Group lock changed",
-		"editGroupName": "Edit group name"
+		"editGroupName": "Edit group name",
+		"focusGroup": "Focus Group",
+		"exitFocus": "Exit Focus"
 	},
 	"layerContextMenu": {
 		"copy": "Copy",
@@ -184,7 +186,9 @@
 		"lockAll": "Lock All",
 		"unlockAll": "Unlock All",
 		"collapse": "Collapse",
-		"expand": "Expand"
+		"expand": "Expand",
+		"focusGroup": "Focus Group",
+		"exitFocus": "Exit Focus"
 	},
 	"historyPanel": {
 		"title": "History",
@@ -346,7 +350,9 @@
 			"maxTotalObjects": "Maximum {{max}} objects allowed",
 			"maxTotalObjectsExceeded": "Maximum {{max}} objects allowed (current: {{current}}, adding: {{adding}})",
 			"maxObjectType": "Maximum {{max}} {{name}} allowed"
-		}
+		},
+		"focusMode": "Focused: {{groupName}}",
+		"exitFocus": "Exit Focus"
 	},
 	"alignment": {
 		"title": "Align & Distribute",

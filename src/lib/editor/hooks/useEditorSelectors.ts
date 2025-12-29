@@ -25,6 +25,12 @@ export interface UseEditorSelectorsReturn {
 	selectedGroup: ObjectGroup | undefined;
 	/** 整列可能か（2つ以上選択中） */
 	canAlign: boolean;
+	/** フォーカス中のグループID */
+	focusedGroupId: string | null;
+	/** フォーカスモードかどうか */
+	isFocusMode: boolean;
+	/** フォーカス中のグループ */
+	focusedGroup: ObjectGroup | undefined;
 }
 
 /**
@@ -53,6 +59,14 @@ export function useEditorSelectors({
 		);
 	}, [state.selectedIndices, state.groups]);
 
+	const focusedGroupId = state.focusedGroupId;
+	const isFocusMode = focusedGroupId !== null;
+
+	const focusedGroup = useMemo(() => {
+		if (focusedGroupId === null) return undefined;
+		return state.groups.find((g) => g.id === focusedGroupId);
+	}, [focusedGroupId, state.groups]);
+
 	return {
 		canUndo,
 		canRedo,
@@ -60,5 +74,8 @@ export function useEditorSelectors({
 		canGroup,
 		selectedGroup,
 		canAlign,
+		focusedGroupId,
+		isFocusMode,
+		focusedGroup,
 	};
 }

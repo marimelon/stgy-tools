@@ -160,7 +160,9 @@
 		"unlockGroup": "グループのロック解除",
 		"lockChanged": "ロック状態変更",
 		"groupLockChanged": "グループロック状態変更",
-		"editGroupName": "グループ名を編集"
+		"editGroupName": "グループ名を編集",
+		"focusGroup": "グループにフォーカス",
+		"exitFocus": "フォーカス解除"
 	},
 	"layerContextMenu": {
 		"copy": "コピー",
@@ -184,7 +186,9 @@
 		"lockAll": "すべてロック",
 		"unlockAll": "すべてロック解除",
 		"collapse": "折りたたむ",
-		"expand": "展開する"
+		"expand": "展開する",
+		"focusGroup": "グループにフォーカス",
+		"exitFocus": "フォーカス解除"
 	},
 	"historyPanel": {
 		"title": "履歴",
@@ -346,7 +350,9 @@
 			"maxTotalObjects": "オブジェクトは最大{{max}}個までです",
 			"maxTotalObjectsExceeded": "オブジェクトは最大{{max}}個までです（現在{{current}}個、追加{{adding}}個）",
 			"maxObjectType": "{{name}}は最大{{max}}個までです"
-		}
+		},
+		"focusMode": "フォーカス中: {{groupName}}",
+		"exitFocus": "フォーカス解除"
 	},
 	"alignment": {
 		"title": "整列・配置",

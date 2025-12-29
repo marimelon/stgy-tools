@@ -37,9 +37,14 @@ export function handleUngroup(
 ): EditorState {
 	const newGroups = state.groups.filter((g) => g.id !== payload.groupId);
 
+	// フォーカス中のグループが解除された場合、フォーカスをクリア
+	const newFocusedGroupId =
+		state.focusedGroupId === payload.groupId ? null : state.focusedGroupId;
+
 	return {
 		...state,
 		groups: newGroups,
+		focusedGroupId: newFocusedGroupId,
 		...pushHistory({ ...state, groups: newGroups }, "グループ解除"),
 	};
 }
@@ -99,9 +104,15 @@ export function handleRemoveFromGroup(
 	const newIndices = group.objectIndices.filter((i) => i !== objectIndex);
 
 	let newGroups: typeof state.groups;
+	let newFocusedGroupId = state.focusedGroupId;
+
 	if (newIndices.length < 2) {
 		// 残りが1つ以下ならグループ自体を削除
 		newGroups = state.groups.filter((g) => g.id !== group.id);
+		// フォーカス中のグループが削除された場合、フォーカスをクリア
+		if (state.focusedGroupId === group.id) {
+			newFocusedGroupId = null;
+		}
 	} else {
 		// グループを更新
 		newGroups = state.groups.map((g) =>
@@ -112,6 +123,7 @@ export function handleRemoveFromGroup(
 	return {
 		...state,
 		groups: newGroups,
+		focusedGroupId: newFocusedGroupId,
 		...pushHistory({ ...state, groups: newGroups }, "グループから除外"),
 	};
 }
@@ -129,5 +141,49 @@ export function handleSetGridSettings(
 			...state.gridSettings,
 			...payload.settings,
 		},
+	};
+}
+
+/**
+ * フォーカスグループを設定
+ */
+export function handleSetFocusGroup(
+	state: EditorState,
+	payload: { groupId: string | null },
+): EditorState {
+	const { groupId } = payload;
+
+	// フォーカス解除の場合
+	if (groupId === null) {
+		return {
+			...state,
+			focusedGroupId: null,
+		};
+	}
+
+	// グループが存在するか検証
+	const groupExists = state.groups.some((g) => g.id === groupId);
+	if (!groupExists) {
+		return state;
+	}
+
+	// フォーカス設定時、フォーカス外のオブジェクトが選択されていたら選択解除
+	const focusedGroup = state.groups.find((g) => g.id === groupId);
+	const newSelectedIndices = focusedGroup
+		? state.selectedIndices.filter((idx) =>
+				focusedGroup.objectIndices.includes(idx),
+			)
+		: state.selectedIndices;
+
+	// グループが折りたたまれていたら展開する
+	const newGroups = state.groups.map((g) =>
+		g.id === groupId ? { ...g, collapsed: false } : g,
+	);
+
+	return {
+		...state,
+		focusedGroupId: groupId,
+		selectedIndices: newSelectedIndices,
+		groups: newGroups,
 	};
 }

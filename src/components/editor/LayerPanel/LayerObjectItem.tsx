@@ -18,6 +18,8 @@ interface LayerObjectItemProps {
 	isDragging: boolean;
 	dropTarget: DropTarget | null;
 	draggedGroupId: string | null;
+	/** フォーカスモードでフォーカス外のオブジェクトかどうか */
+	isOutsideFocus?: boolean;
 	onDragStart: (e: DragEvent<HTMLDivElement>, index: number) => void;
 	onDragOver: (e: DragEvent<HTMLDivElement>, index: number) => void;
 	onDragEnd: () => void;
@@ -46,6 +48,7 @@ export function LayerObjectItem({
 	isDragging,
 	dropTarget,
 	draggedGroupId,
+	isOutsideFocus = false,
 	onDragStart,
 	onDragOver,
 	onDragEnd,
@@ -87,7 +90,7 @@ export function LayerObjectItem({
 				onDrop={onDrop}
 				onClick={(e) => onSelect(index, e)}
 				onContextMenu={(e) => onContextMenu(e, index, isInGroup, groupId)}
-				className={`layer-item select-none ${isInGroup ? "in-group" : ""} ${isLastInGroup ? "last-in-group" : ""} ${isDragging ? "opacity-50" : ""} ${isSelected ? "bg-accent/20 border-accent" : ""}`}
+				className={`layer-item select-none ${isInGroup ? "in-group" : ""} ${isLastInGroup ? "last-in-group" : ""} ${isDragging ? "opacity-50" : isOutsideFocus ? "opacity-40" : ""} ${isSelected ? "bg-accent/20 border-accent" : ""}`}
 			>
 				{/* ドラッグハンドル */}
 				<span className="cursor-grab active:cursor-grabbing text-muted-foreground">

@@ -55,10 +55,18 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		selectedGroup,
 		startTextEdit,
 		endTextEdit,
+		focusedGroup,
+		isFocusMode,
 	} = useEditor();
 
-	const { board, selectedIndices, gridSettings, clipboard, editingTextIndex } =
-		state;
+	const {
+		board,
+		selectedIndices,
+		gridSettings,
+		clipboard,
+		editingTextIndex,
+		focusedGroupId,
+	} = state;
 	const { backgroundId, objects } = board;
 
 	const svgRef = useRef<SVGSVGElement>(null);
@@ -138,6 +146,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		objects,
 		selectedIndices,
 		gridSettings,
+		focusedGroupId,
 		selectObject,
 		selectObjects,
 		selectGroup,
@@ -208,22 +217,32 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 				)}
 
 				{/* オブジェクト (逆順で描画してレイヤー順を正しくする) */}
-				{[...visibleObjects].reverse().map(({ obj, index }) => (
-					// biome-ignore lint/a11y/noStaticElementInteractions: SVG group elements require onClick for selection
-					<g
-						key={index}
-						onClick={(e) => handleObjectClick(index, e)}
-						onDoubleClick={(e) => handleObjectDoubleClick(index, e)}
-						onPointerDown={(e) => handleObjectPointerDown(index, e)}
-						onContextMenu={(e) => handleObjectContextMenu(index, e)}
-						style={{
-							cursor: "move",
-							opacity: editingTextIndex === index ? 0.3 : 1,
-						}}
-					>
-						<ObjectRenderer object={obj} index={index} selected={false} />
-					</g>
-				))}
+				{[...visibleObjects].reverse().map(({ obj, index }) => {
+					// フォーカスモードでフォーカス外のオブジェクトは薄く表示
+					const isOutsideFocus =
+						isFocusMode && !focusedGroup?.objectIndices.includes(index);
+					const opacity =
+						editingTextIndex === index ? 0.3 : isOutsideFocus ? 0.3 : 1;
+					const pointerEvents = isOutsideFocus ? "none" : "auto";
+
+					return (
+						// biome-ignore lint/a11y/noStaticElementInteractions: SVG group elements require onClick for selection
+						<g
+							key={index}
+							onClick={(e) => handleObjectClick(index, e)}
+							onDoubleClick={(e) => handleObjectDoubleClick(index, e)}
+							onPointerDown={(e) => handleObjectPointerDown(index, e)}
+							onContextMenu={(e) => handleObjectContextMenu(index, e)}
+							style={{
+								cursor: isOutsideFocus ? "default" : "move",
+								opacity,
+								pointerEvents,
+							}}
+						>
+							<ObjectRenderer object={obj} index={index} selected={false} />
+						</g>
+					);
+				})}
 
 				{/* 選択インジケーター (複数選択時のみ) */}
 				{selectedIndices.length > 1 &&

@@ -12,6 +12,12 @@ import type { MarqueeState } from "../types";
 export interface UseMarqueeSelectionParams {
 	svgRef: RefObject<SVGSVGElement | null>;
 	objects: BoardObject[];
+	/** フォーカス中のグループID（null = フォーカスなし） */
+	focusedGroupId: string | null;
+	/** オブジェクトが属するグループを取得 */
+	getGroupForObject: (
+		index: number,
+	) => { id: string; objectIndices: number[] } | undefined;
 	selectObjects: (indices: number[]) => void;
 	deselectAll: () => void;
 }
@@ -31,6 +37,8 @@ export interface UseMarqueeSelectionReturn {
 export function useMarqueeSelection({
 	svgRef,
 	objects,
+	focusedGroupId,
+	getGroupForObject,
 	selectObjects,
 	deselectAll,
 }: UseMarqueeSelectionParams): UseMarqueeSelectionReturn {
@@ -98,6 +106,12 @@ export function useMarqueeSelection({
 				const obj = objects[i];
 				if (!obj.flags.visible) continue;
 
+				// フォーカスモード中はフォーカス外のオブジェクトを除外
+				if (focusedGroupId !== null) {
+					const group = getGroupForObject(i);
+					if (group?.id !== focusedGroupId) continue;
+				}
+
 				const { x, y } = obj.position;
 				if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
 					indices.push(i);
@@ -105,7 +119,7 @@ export function useMarqueeSelection({
 			}
 			return indices;
 		},
-		[objects],
+		[objects, focusedGroupId, getGroupForObject],
 	);
 
 	/**

@@ -12,6 +12,7 @@ import {
 	EditorBoard,
 	EditorToolbar,
 	ErrorToast,
+	FocusModeIndicator,
 	HistoryPanel,
 	HistoryPanelActions,
 	LayerPanel,
@@ -580,7 +581,7 @@ function EditorContent({
 	useKeyboardShortcuts();
 
 	// Get editor state
-	const { state } = useEditor();
+	const { state, isFocusMode, focusedGroup, unfocus } = useEditor();
 
 	// インポート/エクスポートフック（encodeKeyの管理）
 	const { encodeKey, setEncodeKey } = useImportExport();
@@ -723,8 +724,18 @@ function EditorContent({
 					{/* 中央: キャンバス */}
 					<div
 						ref={containerRef}
-						className="canvas-container h-full flex items-center justify-center overflow-auto p-4"
+						className="canvas-container h-full flex items-center justify-center overflow-auto p-4 relative"
 					>
+						{/* フォーカスモードインジケーター */}
+						{isFocusMode && focusedGroup && (
+							<FocusModeIndicator
+								groupName={
+									focusedGroup.name ||
+									`Group (${focusedGroup.objectIndices.length})`
+								}
+								onExit={unfocus}
+							/>
+						)}
 						<EditorBoard scale={scale} />
 					</div>
 				</ResizableLayout>

@@ -64,6 +64,8 @@ export interface UseEditorActionsReturn {
 	selectAll: () => void;
 	startTextEdit: (index: number) => void;
 	endTextEdit: (save: boolean, text?: string) => void;
+	focusGroup: (groupId: string) => void;
+	unfocus: () => void;
 }
 
 /**
@@ -280,9 +282,23 @@ export function useEditorActions({
 	);
 
 	const selectAll = useCallback(() => {
+		// フォーカスモード中はフォーカス中グループ内のみを選択
+		if (state.focusedGroupId !== null) {
+			const focusedGroup = state.groups.find(
+				(g) => g.id === state.focusedGroupId,
+			);
+			if (focusedGroup) {
+				dispatch({
+					type: "SELECT_OBJECTS",
+					indices: focusedGroup.objectIndices,
+				});
+				return;
+			}
+		}
+		// 通常モードは全選択
 		const allIndices = state.board.objects.map((_, i) => i);
 		dispatch({ type: "SELECT_OBJECTS", indices: allIndices });
-	}, [dispatch, state.board.objects]);
+	}, [dispatch, state.board.objects, state.focusedGroupId, state.groups]);
 
 	const startTextEdit = useCallback(
 		(index: number) => {
@@ -305,6 +321,17 @@ export function useEditorActions({
 		},
 		[dispatch, state.editingTextIndex, state.board.objects],
 	);
+
+	const focusGroup = useCallback(
+		(groupId: string) => {
+			dispatch({ type: "SET_FOCUS_GROUP", groupId });
+		},
+		[dispatch],
+	);
+
+	const unfocus = useCallback(() => {
+		dispatch({ type: "SET_FOCUS_GROUP", groupId: null });
+	}, [dispatch]);
 
 	return {
 		setBoard,
@@ -340,5 +367,7 @@ export function useEditorActions({
 		selectAll,
 		startTextEdit,
 		endTextEdit,
+		focusGroup,
+		unfocus,
 	};
 }

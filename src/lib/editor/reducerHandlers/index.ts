@@ -9,11 +9,12 @@ export {
 	handleCopyObjects,
 	handlePasteObjects,
 } from "./handlers/clipboard";
-// グループ・グリッド
+// グループ・グリッド・フォーカス
 export {
 	handleGroupObjects,
 	handleRemoveFromGroup,
 	handleRenameGroup,
+	handleSetFocusGroup,
 	handleSetGridSettings,
 	handleToggleGroupCollapse,
 	handleUngroup,

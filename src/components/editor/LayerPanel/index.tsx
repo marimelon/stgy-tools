@@ -42,6 +42,10 @@ export function LayerPanel() {
 		groupSelected,
 		moveLayer,
 		canGroup,
+		focusedGroupId,
+		isFocusMode,
+		focusGroup,
+		unfocus,
 	} = useEditor();
 	const { board, selectedIndices, groups, clipboard } = state;
 	const { objects } = board;
@@ -248,6 +252,8 @@ export function LayerPanel() {
 			toggleGroupCollapse: (groupId: string) => {
 				toggleGroupCollapse(groupId);
 			},
+			focusGroup,
+			unfocus,
 		}),
 		[
 			copySelected,
@@ -267,6 +273,8 @@ export function LayerPanel() {
 			toggleGroupCollapse,
 			commitHistory,
 			t,
+			focusGroup,
+			unfocus,
 		],
 	);
 
@@ -303,6 +311,8 @@ export function LayerPanel() {
 										isAllUnlocked={isGroupAllUnlocked(group)}
 										dropTarget={dropTarget}
 										shouldStartEditing={editingGroupId === group.id}
+										isFocused={focusedGroupId === group.id}
+										isOutsideFocus={isFocusMode && focusedGroupId !== group.id}
 										onDragStart={handleGroupDragStart}
 										onDragOver={handleDragOver}
 										onDragEnd={handleDragEnd}
@@ -315,6 +325,8 @@ export function LayerPanel() {
 										onRename={handleRenameGroup}
 										onContextMenu={openGroupMenu}
 										onEditingStarted={handleEditingStarted}
+										onFocus={focusGroup}
+										onUnfocus={unfocus}
 									/>
 								);
 							}
@@ -322,6 +334,13 @@ export function LayerPanel() {
 							if (item.type === "object" && item.index !== undefined) {
 								const index = item.index;
 								const obj = objects[index];
+
+								// フォーカスモードで、このオブジェクトがフォーカス中のグループに属していない場合
+								const focusedGroup = focusedGroupId
+									? groups.find((g) => g.id === focusedGroupId)
+									: null;
+								const isObjectOutsideFocus =
+									isFocusMode && !focusedGroup?.objectIndices.includes(index);
 
 								return (
 									<LayerObjectItem
@@ -335,6 +354,7 @@ export function LayerPanel() {
 										isDragging={draggedIndex === index}
 										dropTarget={dropTarget}
 										draggedGroupId={draggedGroupId}
+										isOutsideFocus={isObjectOutsideFocus}
 										onDragStart={handleDragStart}
 										onDragOver={handleDragOver}
 										onDragEnd={handleDragEnd}
@@ -377,6 +397,7 @@ export function LayerPanel() {
 				canGroup={canGroup}
 				isGroupAllVisible={isGroupAllVisible}
 				isGroupAllLocked={isGroupAllLocked}
+				focusedGroupId={focusedGroupId}
 				actions={contextMenuActions}
 			/>
 		</div>

@@ -33,6 +33,8 @@ export interface UseDragInteractionParams {
 	objects: BoardObject[];
 	selectedIndices: number[];
 	gridSettings: GridSettings;
+	/** フォーカス中のグループID（null = フォーカスなし） */
+	focusedGroupId: string | null;
 	selectObject: (index: number, additive?: boolean) => void;
 	selectGroup: (groupId: string) => void;
 	getGroupForObject: (
@@ -61,6 +63,7 @@ export function useDragInteraction({
 	objects,
 	selectedIndices,
 	gridSettings,
+	focusedGroupId,
 	selectObject,
 	selectGroup,
 	getGroupForObject,
@@ -71,21 +74,45 @@ export function useDragInteraction({
 	const [dragState, setDragState] = useState<DragState | null>(null);
 
 	/**
+	 * フォーカスモード中に、指定インデックスがフォーカス外かどうかを判定
+	 */
+	const isOutsideFocus = useCallback(
+		(index: number): boolean => {
+			if (focusedGroupId === null) return false;
+			const focusedGroup = getGroupForObject(index);
+			// フォーカス中のグループに属していない場合はフォーカス外
+			return focusedGroup?.id !== focusedGroupId;
+		},
+		[focusedGroupId, getGroupForObject],
+	);
+
+	/**
 	 * オブジェクトクリック（グループ対応）
 	 */
 	const handleObjectClick = useCallback(
 		(index: number, e: React.MouseEvent) => {
 			e.stopPropagation();
+
+			// フォーカスモード中、フォーカス外のオブジェクトはクリック無視
+			if (isOutsideFocus(index)) return;
+
 			const additive = e.shiftKey;
 
 			const group = getGroupForObject(index);
-			if (group && !additive) {
+			// フォーカスモード中は個別オブジェクト選択（グループ選択しない）
+			if (group && !additive && focusedGroupId === null) {
 				selectGroup(group.id);
 			} else {
 				selectObject(index, additive);
 			}
 		},
-		[selectObject, getGroupForObject, selectGroup],
+		[
+			selectObject,
+			getGroupForObject,
+			selectGroup,
+			isOutsideFocus,
+			focusedGroupId,
+		],
 	);
 
 	/**
@@ -97,6 +124,9 @@ export function useDragInteraction({
 	const handleObjectPointerDown = useCallback(
 		(index: number, e: React.PointerEvent) => {
 			if (e.button !== 0) return;
+
+			// フォーカスモード中、フォーカス外のオブジェクトはドラッグ無視
+			if (isOutsideFocus(index)) return;
 
 			const svg = svgRef.current;
 			if (!svg) return;
@@ -126,7 +156,8 @@ export function useDragInteraction({
 				} else {
 					// 選択中のオブジェクトがクリック位置にない場合は、
 					// クリックされたオブジェクトを選択
-					if (group && !additive) {
+					// フォーカスモード中は個別オブジェクト選択（グループ選択しない）
+					if (group && !additive && focusedGroupId === null) {
 						selectGroup(group.id);
 						indicesToMove = group.objectIndices;
 					} else {
@@ -171,6 +202,8 @@ export function useDragInteraction({
 			selectObject,
 			getGroupForObject,
 			selectGroup,
+			isOutsideFocus,
+			focusedGroupId,
 		],
 	);
 

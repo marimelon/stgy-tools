@@ -35,6 +35,8 @@ import {
 	handleSelectObjects,
 	// ボード
 	handleSetBoard,
+	// フォーカス
+	handleSetFocusGroup,
 	handleSetGridSettings,
 	// テキスト編集
 	handleStartTextEdit,
@@ -155,6 +157,9 @@ export function editorReducer(
 		case "SET_GRID_SETTINGS":
 			return handleSetGridSettings(state, { settings: action.settings });
 
+		case "SET_FOCUS_GROUP":
+			return handleSetFocusGroup(state, { groupId: action.groupId });
+
 		case "ALIGN_OBJECTS":
 			return handleAlignObjects(state, {
 				indices: action.indices,
@@ -246,5 +251,6 @@ export function createInitialStateWithOptions(
 		isDirty: false,
 		editingTextIndex: null,
 		lastError: null,
+		focusedGroupId: null,
 	};
 }

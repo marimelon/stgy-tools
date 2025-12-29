@@ -108,6 +108,10 @@ export interface EditorContextValue {
 	startTextEdit: (index: number) => void;
 	/** テキスト編集を終了 */
 	endTextEdit: (save: boolean, text?: string) => void;
+	/** グループにフォーカス */
+	focusGroup: (groupId: string) => void;
+	/** フォーカスを解除 */
+	unfocus: () => void;
 
 	// 計算済み状態
 	/** Undoが可能か */
@@ -122,6 +126,12 @@ export interface EditorContextValue {
 	selectedGroup: ObjectGroup | undefined;
 	/** 整列可能か（2つ以上選択中） */
 	canAlign: boolean;
+	/** フォーカス中のグループID */
+	focusedGroupId: string | null;
+	/** フォーカスモードかどうか */
+	isFocusMode: boolean;
+	/** フォーカス中のグループ */
+	focusedGroup: ObjectGroup | undefined;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);

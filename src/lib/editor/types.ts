@@ -172,6 +172,8 @@ export interface EditorState {
 	editingTextIndex: number | null;
 	/** 最後のエラー（UIで表示後クリア） */
 	lastError: EditorError | null;
+	/** フォーカス中のグループID（null = フォーカスなし） */
+	focusedGroupId: string | null;
 }
 
 /**
@@ -220,7 +222,8 @@ export type EditorAction =
 	| { type: "JUMP_TO_HISTORY"; index: number }
 	| { type: "CLEAR_HISTORY" }
 	| { type: "SET_ERROR"; error: EditorError }
-	| { type: "CLEAR_ERROR" };
+	| { type: "CLEAR_ERROR" }
+	| { type: "SET_FOCUS_GROUP"; groupId: string | null };
 
 /**
  * ボードメタデータ更新用の部分型

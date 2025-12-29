@@ -7,6 +7,7 @@ import {
 	ChevronRight,
 	Eye,
 	EyeOff,
+	Focus,
 	GripVertical,
 	Lock,
 	LockOpen,
@@ -28,6 +29,10 @@ interface LayerGroupHeaderProps {
 	dropTarget: DropTarget | null;
 	/** 外部から編集モードを開始するためのフラグ（コンテキストメニュー用） */
 	shouldStartEditing?: boolean;
+	/** このグループがフォーカス中かどうか */
+	isFocused?: boolean;
+	/** フォーカスモードで他のグループがフォーカスされている場合 */
+	isOutsideFocus?: boolean;
 	onDragStart: (e: DragEvent<HTMLDivElement>, groupId: string) => void;
 	onDragOver: (e: DragEvent<HTMLDivElement>, index: number) => void;
 	onDragEnd: () => void;
@@ -41,6 +46,10 @@ interface LayerGroupHeaderProps {
 	onContextMenu: (e: React.MouseEvent, group: ObjectGroup) => void;
 	/** 編集モード開始後のクリアコールバック */
 	onEditingStarted?: () => void;
+	/** フォーカスボタンクリック時のコールバック */
+	onFocus?: (groupId: string) => void;
+	/** フォーカス解除ボタンクリック時のコールバック */
+	onUnfocus?: () => void;
 }
 
 /**
@@ -56,6 +65,8 @@ export function LayerGroupHeader({
 	isAllUnlocked,
 	dropTarget,
 	shouldStartEditing,
+	isFocused = false,
+	isOutsideFocus = false,
 	onDragStart,
 	onDragOver,
 	onDragEnd,
@@ -68,6 +79,8 @@ export function LayerGroupHeader({
 	onRename,
 	onContextMenu,
 	onEditingStarted,
+	onFocus,
+	onUnfocus,
 }: LayerGroupHeaderProps) {
 	const { t } = useTranslation();
 	const firstIndex = Math.min(...group.objectIndices);
@@ -160,7 +173,7 @@ export function LayerGroupHeader({
 				onDrop={onDrop}
 				onClick={(e) => onSelect(group.id, e)}
 				onContextMenu={(e) => onContextMenu(e, group)}
-				className={`layer-item select-none ${isDragging ? "opacity-50" : ""} ${isAllSelected ? "bg-purple-500/15 border-purple-500" : ""}`}
+				className={`layer-item select-none ${isDragging ? "opacity-50" : isOutsideFocus ? "opacity-40" : ""} ${isFocused ? "bg-blue-500/20 border-blue-500" : isAllSelected ? "bg-purple-500/15 border-purple-500" : ""}`}
 			>
 				{/* ドラッグハンドル */}
 				<span className="cursor-grab active:cursor-grabbing text-muted-foreground">
@@ -253,6 +266,31 @@ export function LayerGroupHeader({
 							}
 						>
 							{isAllLocked ? <Lock size={14} /> : <LockOpen size={14} />}
+						</button>
+
+						{/* フォーカスボタン */}
+						<button
+							type="button"
+							onClick={(e) => {
+								e.stopPropagation();
+								if (isFocused) {
+									onUnfocus?.();
+								} else {
+									onFocus?.(group.id);
+								}
+							}}
+							className={
+								isFocused
+									? "text-blue-400"
+									: "text-muted-foreground hover:text-foreground"
+							}
+							title={
+								isFocused
+									? t("layerPanel.exitFocus")
+									: t("layerPanel.focusGroup")
+							}
+						>
+							<Focus size={14} />
 						</button>
 
 						{/* グループ解除ボタン */}

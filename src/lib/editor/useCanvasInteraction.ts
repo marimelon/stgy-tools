@@ -28,6 +28,8 @@ export interface UseCanvasInteractionParams {
 	selectedIndices: number[];
 	/** グリッド設定 */
 	gridSettings: GridSettings;
+	/** フォーカス中のグループID（null = フォーカスなし） */
+	focusedGroupId: string | null;
 	/** オブジェクト選択 */
 	selectObject: (index: number, additive?: boolean) => void;
 	/** 複数オブジェクト選択 */
@@ -91,6 +93,7 @@ export function useCanvasInteraction({
 	objects,
 	selectedIndices,
 	gridSettings,
+	focusedGroupId,
 	selectObject,
 	selectObjects,
 	selectGroup,
@@ -112,6 +115,8 @@ export function useCanvasInteraction({
 	} = useMarqueeSelection({
 		svgRef,
 		objects,
+		focusedGroupId,
+		getGroupForObject,
 		selectObjects,
 		deselectAll,
 	});
@@ -130,6 +135,7 @@ export function useCanvasInteraction({
 		objects,
 		selectedIndices,
 		gridSettings,
+		focusedGroupId,
 		selectObject,
 		selectGroup,
 		getGroupForObject,

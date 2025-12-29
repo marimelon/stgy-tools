@@ -31,6 +31,8 @@ export function useKeyboardShortcuts() {
 		ungroup,
 		canGroup,
 		selectedGroup,
+		isFocusMode,
+		unfocus,
 	} = useEditor();
 
 	const { selectedIndices } = state;
@@ -144,10 +146,16 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// Escape: 選択解除
+		// Escape: フォーカス解除 → 選択解除
 		if (e.key === "Escape") {
+			e.preventDefault();
+			// フォーカスモード中は先にフォーカスを解除
+			if (isFocusMode) {
+				unfocus();
+				return;
+			}
+			// 選択がある場合は選択解除
 			if (hasSelection) {
-				e.preventDefault();
 				deselectAll();
 			}
 			return;
@@ -197,7 +205,7 @@ export const KEYBOARD_SHORTCUTS = [
 	{ key: "Ctrl+G", description: "グループ化" },
 	{ key: "Ctrl+Shift+G", description: "グループ解除" },
 	{ key: "Delete", description: "削除" },
-	{ key: "Escape", description: "選択解除" },
+	{ key: "Escape", description: "フォーカス解除/選択解除" },
 	{ key: "↑↓←→", description: "1px移動" },
 	{ key: "Shift+↑↓←→", description: "10px移動" },
 ] as const;

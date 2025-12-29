@@ -25,6 +25,8 @@ interface LayerContextMenuProps {
 	/** グループ状態ヘルパー */
 	isGroupAllVisible: (group: ObjectGroup) => boolean;
 	isGroupAllLocked: (group: ObjectGroup) => boolean;
+	/** フォーカス中のグループID */
+	focusedGroupId: string | null;
 	/** アクション */
 	actions: {
 		copy: () => void;
@@ -41,6 +43,8 @@ interface LayerContextMenuProps {
 		moveLayer: (direction: "front" | "back" | "forward" | "backward") => void;
 		startRenameGroup: (groupId: string) => void;
 		toggleGroupCollapse: (groupId: string) => void;
+		focusGroup: (groupId: string) => void;
+		unfocus: () => void;
 	};
 }
 
@@ -73,6 +77,7 @@ export function LayerContextMenu({
 	canGroup,
 	isGroupAllVisible,
 	isGroupAllLocked,
+	focusedGroupId,
 	actions,
 }: LayerContextMenuProps) {
 	const { t } = useTranslation();
@@ -301,6 +306,7 @@ export function LayerContextMenu({
 			const { group } = target;
 			const allVisible = isGroupAllVisible(group);
 			const allLocked = isGroupAllLocked(group);
+			const isFocused = focusedGroupId === group.id;
 
 			const items: MenuItemOrDivider[] = [
 				{
@@ -315,6 +321,21 @@ export function LayerContextMenu({
 					shortcut: `${modKey}${isMac ? "⇧" : "Shift+"}G`,
 					onClick: () => {
 						actions.ungroup(group.id);
+						onClose();
+					},
+				},
+				{ type: "divider" },
+				// フォーカス/フォーカス解除
+				{
+					label: isFocused
+						? t("layerContextMenu.exitFocus")
+						: t("layerContextMenu.focusGroup"),
+					onClick: () => {
+						if (isFocused) {
+							actions.unfocus();
+						} else {
+							actions.focusGroup(group.id);
+						}
 						onClose();
 					},
 				},
@@ -372,6 +393,7 @@ export function LayerContextMenu({
 		singleSelection,
 		isGroupAllVisible,
 		isGroupAllLocked,
+		focusedGroupId,
 		actions,
 		onClose,
 	]);
