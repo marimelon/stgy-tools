@@ -50,7 +50,8 @@
 		"retry": "再試行",
 		"boardActions": "ボード操作",
 		"openInViewer": "Viewerで開く",
-		"editInEditor": "Editorで編集"
+		"editInEditor": "Editorで編集",
+		"downloadImage": "ダウンロード"
 	},
 	"language": {
 		"label": "言語",

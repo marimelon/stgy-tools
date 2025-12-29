@@ -50,7 +50,8 @@
 		"retry": "Retry",
 		"boardActions": "Board Actions",
 		"openInViewer": "Open in Viewer",
-		"editInEditor": "Edit in Editor"
+		"editInEditor": "Edit in Editor",
+		"downloadImage": "Download"
 	},
 	"language": {
 		"label": "Language",

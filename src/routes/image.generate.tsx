@@ -4,7 +4,7 @@
  */
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Check, Copy, Loader2, Pencil } from "lucide-react";
+import { Check, Copy, Download, Loader2, Pencil } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board/BoardViewer";
@@ -307,6 +307,34 @@ function ImageGeneratePage() {
 		// Navigate to Editor with stgy code as query parameter
 		navigate({ to: "/editor", search: { stgy: code.trim() } });
 	}, [code, boardData, navigate]);
+
+	// Download image handler
+	const handleDownloadImage = useCallback(async () => {
+		if (!generatedUrl) return;
+
+		try {
+			const response = await fetch(generatedUrl);
+			const blob = await response.blob();
+			const url = window.URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = url;
+
+			// Determine file extension based on format
+			const extension = format === "svg" ? "svg" : "png";
+			const filename = boardName
+				? `${boardName}.${extension}`
+				: `strategy-board.${extension}`;
+
+			link.download = filename;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			window.URL.revokeObjectURL(url);
+		} catch {
+			// Fallback: open in new tab if download fails
+			window.open(generatedUrl, "_blank");
+		}
+	}, [generatedUrl, format, boardName]);
 
 	// 短縮URLチェックボックス変更ハンドラー
 	const handleShortUrlChange = useCallback(
@@ -671,15 +699,27 @@ function ImageGeneratePage() {
 													)}
 												</button>
 											</div>
-											{/* Editorで編集ボタン */}
-											<button
-												type="button"
-												className="flex items-center gap-1.5 px-3 py-1.5 text-xs md:text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/30 hover:border-accent/50 rounded-lg transition-all mb-1"
-												onClick={handleEditInEditor}
-											>
-												<Pencil className="w-3.5 h-3.5" />
-												{t("imageGenerator.editInEditor")}
-											</button>
+											{/* アクションボタン */}
+											<div className="flex items-center gap-2 mb-1">
+												{/* ダウンロードボタン */}
+												<button
+													type="button"
+													className="flex items-center gap-1.5 px-3 py-1.5 text-xs md:text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-lg transition-all"
+													onClick={handleDownloadImage}
+												>
+													<Download className="w-3.5 h-3.5" />
+													{t("imageGenerator.downloadImage")}
+												</button>
+												{/* Editorで編集ボタン */}
+												<button
+													type="button"
+													className="flex items-center gap-1.5 px-3 py-1.5 text-xs md:text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/30 hover:border-accent/50 rounded-lg transition-all"
+													onClick={handleEditInEditor}
+												>
+													<Pencil className="w-3.5 h-3.5" />
+													{t("imageGenerator.editInEditor")}
+												</button>
+											</div>
 										</div>
 										<div className="bg-secondary/30 rounded-lg p-2 md:p-4 flex justify-center items-center min-h-[150px] md:min-h-[200px] lg:min-h-[280px] overflow-auto border border-border/50">
 											{previewMode === "preview" ? (
