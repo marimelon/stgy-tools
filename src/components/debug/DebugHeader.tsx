@@ -9,6 +9,7 @@ const debugPages = [
 	{ path: "/debug", label: "Objects" },
 	{ path: "/debug-render", label: "Render" },
 	{ path: "/debug-stgy", label: "stgy" },
+	{ path: "/debug-screenshot", label: "Screenshot" },
 ] as const;
 
 export function DebugHeader({ title, description }: DebugHeaderProps) {
