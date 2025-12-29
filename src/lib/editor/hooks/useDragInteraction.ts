@@ -12,7 +12,7 @@ import {
 	EditParamIds,
 	OBJECT_EDIT_PARAMS,
 } from "@/lib/stgy";
-import { calculateRotation, screenToSVG, snapToGrid } from "../coordinates";
+import { calculateRotation, screenToSVG } from "../coordinates";
 import type {
 	CircularModeState,
 	DragState,
@@ -49,6 +49,13 @@ export interface UseDragInteractionParams {
 	) => { id: string; objectIndices: number[] } | undefined;
 	updateObject: (index: number, updates: Partial<BoardObject>) => void;
 	moveObjects: (indices: number[], deltaX: number, deltaY: number) => void;
+	/** グリッドスナップ付きバッチ移動（パフォーマンス最適化） */
+	moveObjectsWithSnap: (
+		startPositions: Map<number, Position>,
+		deltaX: number,
+		deltaY: number,
+		gridSize: number,
+	) => void;
 	/** 円周上でオブジェクトを移動 */
 	moveObjectOnCircle: (index: number, angle: number) => void;
 	commitHistory: (description: string) => void;
@@ -79,6 +86,7 @@ export function useDragInteraction({
 	getGroupForObject,
 	updateObject,
 	moveObjects,
+	moveObjectsWithSnap,
 	moveObjectOnCircle,
 	commitHistory,
 }: UseDragInteractionParams): UseDragInteractionReturn {
@@ -319,14 +327,13 @@ export function useDragInteraction({
 				const deltaY = currentPointer.y - startPointer.y;
 
 				if (gridSettings.enabled && startPositions.size > 0) {
-					for (const [idx, startPos] of startPositions) {
-						const newPos = {
-							x: startPos.x + deltaX,
-							y: startPos.y + deltaY,
-						};
-						const snappedPos = snapToGrid(newPos, gridSettings.size);
-						updateObject(idx, { position: snappedPos });
-					}
+					// バッチ更新で1回のstate更新に最適化
+					moveObjectsWithSnap(
+						startPositions,
+						deltaX,
+						deltaY,
+						gridSettings.size,
+					);
 				} else {
 					moveObjects(selectedIndices, deltaX, deltaY);
 					setDragState({
@@ -364,6 +371,7 @@ export function useDragInteraction({
 			gridSettings,
 			selectedIndices,
 			moveObjects,
+			moveObjectsWithSnap,
 			circularMode,
 			moveObjectOnCircle,
 		],

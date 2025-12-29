@@ -13,9 +13,23 @@ import {
 } from "@/components/board";
 import {
 	type EditorBoardProps,
+	useBoard,
+	useCanGroup,
 	useCanvasInteraction,
-	useEditor,
+	useCircularMode,
+	useClipboard,
+	useEditingTextIndex,
+	useEditorActions,
+	useFocusedGroup,
+	useFocusedGroupId,
+	useGridSettings,
+	useGroups,
+	useIsCircularMode,
+	useIsFocusMode,
+	useSelectedGroup,
+	useSelectedIndices,
 } from "@/lib/editor";
+import type { ObjectGroup } from "@/lib/editor/types";
 import { ObjectIds } from "@/lib/stgy";
 import { CircularGuideOverlay } from "./CircularGuideOverlay";
 import { CircularHandles } from "./CircularHandles";
@@ -35,17 +49,35 @@ const CANVAS_HEIGHT = 384;
  */
 export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 	const { t } = useTranslation();
+
+	// State
+	const board = useBoard();
+	const selectedIndices = useSelectedIndices();
+	const gridSettings = useGridSettings();
+	const clipboard = useClipboard();
+	const editingTextIndex = useEditingTextIndex();
+	const focusedGroupId = useFocusedGroupId();
+	const groups = useGroups();
+
+	// Derived state
+	const canGroup = useCanGroup();
+	const selectedGroup = useSelectedGroup();
+	const focusedGroup = useFocusedGroup();
+	const isFocusMode = useIsFocusMode();
+	const circularMode = useCircularMode();
+	const isCircularMode = useIsCircularMode();
+
+	// Actions
 	const {
-		state,
 		selectObject,
 		selectObjects,
 		deselectAll,
 		updateObject,
 		commitHistory,
-		addObject,
-		getGroupForObject,
+		addObjectById,
 		selectGroup,
 		moveObjects,
+		moveObjectsWithSnap,
 		copySelected,
 		paste,
 		duplicateSelected,
@@ -54,30 +86,23 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		ungroup,
 		moveLayer,
 		selectAll,
-		canGroup,
-		selectedGroup,
 		startTextEdit,
 		endTextEdit,
-		focusedGroup,
-		isFocusMode,
-		// 円形モード
-		circularMode,
-		isCircularMode,
 		exitCircularMode,
 		updateCircularCenter,
 		updateCircularRadius,
 		moveObjectOnCircle,
-	} = useEditor();
+	} = useEditorActions();
 
-	const {
-		board,
-		selectedIndices,
-		gridSettings,
-		clipboard,
-		editingTextIndex,
-		focusedGroupId,
-	} = state;
 	const { backgroundId, objects } = board;
+
+	// オブジェクトが属するグループを取得するヘルパー関数
+	const getGroupForObject = useCallback(
+		(index: number): ObjectGroup | undefined => {
+			return groups.find((g) => g.objectIndices.includes(index));
+		},
+		[groups],
+	);
 
 	const svgRef = useRef<SVGSVGElement>(null);
 
@@ -164,9 +189,10 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		getGroupForObject,
 		updateObject,
 		moveObjects,
+		moveObjectsWithSnap,
 		moveObjectOnCircle,
 		commitHistory,
-		addObject,
+		addObject: addObjectById,
 		deselectAll,
 	});
 

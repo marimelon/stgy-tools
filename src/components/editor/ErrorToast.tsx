@@ -5,7 +5,7 @@
 import { AlertCircle, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useEditor } from "@/lib/editor";
+import { useEditorActions, useLastError } from "@/lib/editor";
 import type { EditorError } from "@/lib/editor/types";
 
 /** トースト表示時間 (ms) */
@@ -13,13 +13,14 @@ const TOAST_DURATION = 3000;
 
 export function ErrorToast() {
 	const { t } = useTranslation();
-	const { state, dispatch } = useEditor();
+	const lastError = useLastError();
+	const { clearError } = useEditorActions();
 	const [visibleError, setVisibleError] = useState<EditorError | null>(null);
 
 	useEffect(() => {
-		if (state.lastError) {
-			setVisibleError(state.lastError);
-			dispatch({ type: "CLEAR_ERROR" });
+		if (lastError) {
+			setVisibleError(lastError);
+			clearError();
 
 			const timer = setTimeout(() => {
 				setVisibleError(null);
@@ -27,7 +28,7 @@ export function ErrorToast() {
 
 			return () => clearTimeout(timer);
 		}
-	}, [state.lastError, dispatch]);
+	}, [lastError, clearError]);
 
 	if (!visibleError) return null;
 

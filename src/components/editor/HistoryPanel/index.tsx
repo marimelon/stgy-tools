@@ -7,7 +7,7 @@
 import { Trash2 } from "lucide-react";
 import { useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useEditor } from "@/lib/editor";
+import { useEditorActions, useHistory } from "@/lib/editor";
 import { HistoryItem } from "./HistoryItem";
 
 /**
@@ -15,8 +15,8 @@ import { HistoryItem } from "./HistoryItem";
  */
 export function HistoryPanel() {
 	const { t } = useTranslation();
-	const { state, jumpToHistory } = useEditor();
-	const { history, historyIndex } = state;
+	const { history, historyIndex } = useHistory();
+	const { jumpToHistory } = useEditorActions();
 	const listRef = useRef<HTMLDivElement>(null);
 
 	// キーボードナビゲーション（新しい履歴が上なので、↑で新しい方へ、↓で古い方へ）
@@ -82,8 +82,9 @@ export function HistoryPanel() {
  */
 export function HistoryPanelActions() {
 	const { t } = useTranslation();
-	const { state, clearHistory } = useEditor();
-	const hasHistory = state.history.length > 1;
+	const { history } = useHistory();
+	const { clearHistory } = useEditorActions();
+	const hasHistory = history.length > 1;
 
 	const handleClear = () => {
 		if (window.confirm(t("historyPanel.clearConfirm"))) {

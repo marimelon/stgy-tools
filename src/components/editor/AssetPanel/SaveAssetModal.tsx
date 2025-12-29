@@ -16,7 +16,7 @@ import {
 	calculatePreviewViewBox,
 	useAssets,
 } from "@/lib/assets";
-import { useEditor } from "@/lib/editor";
+import { useBoard, useSelectedIndices } from "@/lib/editor";
 
 interface SaveAssetModalProps {
 	/** 閉じるときのコールバック */
@@ -28,16 +28,17 @@ interface SaveAssetModalProps {
  */
 export function SaveAssetModal({ onClose }: SaveAssetModalProps) {
 	const { t } = useTranslation();
-	const { state } = useEditor();
+	const board = useBoard();
+	const selectedIndices = useSelectedIndices();
 	const { createAsset } = useAssets();
 	const nameInputId = useId();
 
 	const [name, setName] = useState("");
 
 	// 選択されたオブジェクトを取得
-	const selectedObjects = state.selectedIndices
-		.filter((i) => i >= 0 && i < state.board.objects.length)
-		.map((i) => state.board.objects[i]);
+	const selectedObjects = selectedIndices
+		.filter((i) => i >= 0 && i < board.objects.length)
+		.map((i) => board.objects[i]);
 
 	// プレビュー用のバウンディングボックスとviewBoxを計算
 	const bounds = calculateAssetBounds(selectedObjects);

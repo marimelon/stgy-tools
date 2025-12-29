@@ -13,7 +13,12 @@ import {
 	type StoredAsset,
 	useAssets,
 } from "@/lib/assets";
-import { canAddObjects, useEditor } from "@/lib/editor";
+import {
+	canAddObjects,
+	useBoard,
+	useEditorActions,
+	useSelectedIndices,
+} from "@/lib/editor";
 import { AssetContextMenu } from "./AssetContextMenu";
 import { AssetItem } from "./AssetItem";
 import { ExportAssetModal } from "./ExportAssetModal";
@@ -30,7 +35,9 @@ interface ContextMenuState {
  */
 export function AssetPanel() {
 	const { t } = useTranslation();
-	const { state, dispatch, commitHistory } = useEditor();
+	const board = useBoard();
+	const { addObject, selectObjects, groupObjects, setError, commitHistory } =
+		useEditorActions();
 	const {
 		assets,
 		isLoading,
@@ -70,14 +77,11 @@ export function AssetPanel() {
 	// アセットをキャンバスに配置
 	const handleApplyAsset = (asset: StoredAsset) => {
 		// バリデーション
-		const validation = canAddObjects(state.board, asset.objects);
+		const validation = canAddObjects(board, asset.objects);
 		if (!validation.canAdd) {
-			dispatch({
-				type: "SET_ERROR",
-				error: {
-					key: validation.errorKey ?? "editor.errors.unknown",
-					params: validation.errorParams,
-				},
+			setError({
+				key: validation.errorKey ?? "editor.errors.unknown",
+				params: validation.errorParams,
 			});
 			return;
 		}
@@ -90,20 +94,20 @@ export function AssetPanel() {
 			targetPosition,
 		);
 
-		// オブジェクトを追加（ADD_OBJECTは先頭に追加するため逆順で追加）
+		// オブジェクトを追加（addObjectは先頭に追加するため逆順で追加）
 		for (let i = offsetObjects.length - 1; i >= 0; i--) {
-			dispatch({ type: "ADD_OBJECT", object: offsetObjects[i] });
+			addObject(offsetObjects[i]);
 		}
 
 		// 追加後のインデックスは 0 から N-1（先頭に追加されるため）
 		const newIndices = offsetObjects.map((_, i) => i);
 
 		// 追加したオブジェクトを選択
-		dispatch({ type: "SELECT_OBJECTS", indices: newIndices });
+		selectObjects(newIndices);
 
 		// 複数オブジェクトの場合はグループ化
 		if (newIndices.length >= 2) {
-			dispatch({ type: "GROUP_OBJECTS", indices: newIndices });
+			groupObjects(newIndices);
 		}
 
 		// 履歴をコミット
@@ -268,8 +272,8 @@ function EmptyState({ hasAssets }: { hasAssets: boolean }) {
  */
 export function AssetPanelActions() {
 	const { t } = useTranslation();
-	const { state } = useEditor();
-	const canSave = state.selectedIndices.length > 0;
+	const selectedIndices = useSelectedIndices();
+	const canSave = selectedIndices.length > 0;
 
 	const handleSaveClick = () => {
 		window.dispatchEvent(new CustomEvent("openSaveAssetModal"));

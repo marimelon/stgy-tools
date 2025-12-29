@@ -47,6 +47,13 @@ export interface UseCanvasInteractionParams {
 	updateObject: (index: number, updates: Partial<BoardObject>) => void;
 	/** オブジェクト移動 */
 	moveObjects: (indices: number[], deltaX: number, deltaY: number) => void;
+	/** グリッドスナップ付きバッチ移動（パフォーマンス最適化） */
+	moveObjectsWithSnap: (
+		startPositions: Map<number, Position>,
+		deltaX: number,
+		deltaY: number,
+		gridSize: number,
+	) => void;
 	/** 円周上でオブジェクトを移動 */
 	moveObjectOnCircle: (index: number, angle: number) => void;
 	/** 履歴をコミット */
@@ -106,6 +113,7 @@ export function useCanvasInteraction({
 	getGroupForObject,
 	updateObject,
 	moveObjects,
+	moveObjectsWithSnap,
 	moveObjectOnCircle,
 	commitHistory,
 	addObject,
@@ -149,6 +157,7 @@ export function useCanvasInteraction({
 		getGroupForObject,
 		updateObject,
 		moveObjects,
+		moveObjectsWithSnap,
 		moveObjectOnCircle,
 		commitHistory,
 	});

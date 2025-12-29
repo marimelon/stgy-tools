@@ -37,7 +37,21 @@ import {
 } from "lucide-react";
 import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { GRID_SIZES, useEditor, useImportExport } from "@/lib/editor";
+import {
+	GRID_SIZES,
+	useBoard,
+	useCanAlign,
+	useCanGroup,
+	useCanRedo,
+	useCanUndo,
+	useClipboard,
+	useEditorActions,
+	useGridSettings,
+	useImportExport,
+	useIsDirty,
+	useSelectedGroup,
+	useSelectedIndices,
+} from "@/lib/editor";
 import { ExportModal } from "./ExportModal";
 import { ImportModal } from "./ImportModal";
 import { PanelSettingsDropdown } from "./PanelSettingsDropdown";
@@ -98,12 +112,24 @@ export function EditorToolbar({
 	const toolbarRef = useRef<HTMLDivElement>(null);
 	const toolbarSize = useToolbarSize(toolbarRef);
 
+	// State
+	const board = useBoard();
+	const selectedIndices = useSelectedIndices();
+	const clipboard = useClipboard();
+	const gridSettings = useGridSettings();
+	const isDirty = useIsDirty();
+
+	// Derived state
+	const canUndo = useCanUndo();
+	const canRedo = useCanRedo();
+	const canGroup = useCanGroup();
+	const canAlign = useCanAlign();
+	const selectedGroup = useSelectedGroup();
+
+	// Actions
 	const {
-		state,
 		undo,
 		redo,
-		canUndo,
-		canRedo,
 		deleteSelected,
 		duplicateSelected,
 		copySelected,
@@ -112,12 +138,9 @@ export function EditorToolbar({
 		moveLayer,
 		groupSelected,
 		ungroup,
-		canGroup,
-		selectedGroup,
 		setGridSettings,
-		alignObjects,
-		canAlign,
-	} = useEditor();
+		alignSelected,
+	} = useEditorActions();
 
 	const {
 		showImportModal,
@@ -139,9 +162,9 @@ export function EditorToolbar({
 		copyToClipboard,
 	} = useImportExport();
 
-	const hasSelection = state.selectedIndices.length > 0;
-	const hasSingleSelection = state.selectedIndices.length === 1;
-	const hasClipboard = state.clipboard !== null && state.clipboard.length > 0;
+	const hasSelection = selectedIndices.length > 0;
+	const hasSingleSelection = selectedIndices.length === 1;
+	const hasClipboard = clipboard !== null && clipboard.length > 0;
 
 	// インポート処理
 	const handleImport = () => {
@@ -172,8 +195,8 @@ export function EditorToolbar({
 	// エクスポートコード（モーダル表示時のみ計算）
 	const exportedCode = useMemo(() => {
 		if (!showExportModal) return "";
-		return generateExportCode(state.board);
-	}, [showExportModal, state.board, generateExportCode]);
+		return generateExportCode(board);
+	}, [showExportModal, board, generateExportCode]);
 
 	// コピー処理
 	const handleCopyExport = () => {
@@ -321,63 +344,63 @@ export function EditorToolbar({
 						{toolbarSize === "large" ? (
 							<div className="flex items-center gap-1 flex-shrink-0">
 								<ToolbarButton
-									onClick={() => alignObjects("left")}
+									onClick={() => alignSelected("left")}
 									disabled={!canAlign}
 									title={t("alignment.alignLeft")}
 								>
 									<AlignStartVertical size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
-									onClick={() => alignObjects("center")}
+									onClick={() => alignSelected("center")}
 									disabled={!canAlign}
 									title={t("alignment.alignCenterH")}
 								>
 									<AlignCenterVertical size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
-									onClick={() => alignObjects("right")}
+									onClick={() => alignSelected("right")}
 									disabled={!canAlign}
 									title={t("alignment.alignRight")}
 								>
 									<AlignEndVertical size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
-									onClick={() => alignObjects("top")}
+									onClick={() => alignSelected("top")}
 									disabled={!canAlign}
 									title={t("alignment.alignTop")}
 								>
 									<AlignStartHorizontal size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
-									onClick={() => alignObjects("middle")}
+									onClick={() => alignSelected("middle")}
 									disabled={!canAlign}
 									title={t("alignment.alignCenterV")}
 								>
 									<AlignCenterHorizontal size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
-									onClick={() => alignObjects("bottom")}
+									onClick={() => alignSelected("bottom")}
 									disabled={!canAlign}
 									title={t("alignment.alignBottom")}
 								>
 									<AlignEndHorizontal size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
-									onClick={() => alignObjects("distribute-h")}
+									onClick={() => alignSelected("distribute-h")}
 									disabled={!canAlign}
 									title={t("alignment.distributeH")}
 								>
 									<AlignHorizontalSpaceAround size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
-									onClick={() => alignObjects("distribute-v")}
+									onClick={() => alignSelected("distribute-v")}
 									disabled={!canAlign}
 									title={t("alignment.distributeV")}
 								>
 									<AlignVerticalSpaceAround size={ICON_SIZE} />
 								</ToolbarButton>
 								<ToolbarButton
-									onClick={() => alignObjects("circular")}
+									onClick={() => alignSelected("circular")}
 									disabled={!canAlign}
 									title={t("alignment.circular")}
 								>
@@ -386,7 +409,7 @@ export function EditorToolbar({
 							</div>
 						) : (
 							<div className="flex-shrink-0">
-								<AlignmentMenu onAlign={alignObjects} canAlign={canAlign} />
+								<AlignmentMenu onAlign={alignSelected} canAlign={canAlign} />
 							</div>
 						)}
 
@@ -397,23 +420,23 @@ export function EditorToolbar({
 							<div className="flex items-center gap-2 flex-shrink-0">
 								<ToolbarButton
 									onClick={() =>
-										setGridSettings({ enabled: !state.gridSettings.enabled })
+										setGridSettings({ enabled: !gridSettings.enabled })
 									}
 									title={
-										state.gridSettings.enabled
+										gridSettings.enabled
 											? t("toolbar.disableGridSnap")
 											: t("toolbar.enableGridSnap")
 									}
-									active={state.gridSettings.enabled}
+									active={gridSettings.enabled}
 								>
 									<Grid3x3 size={ICON_SIZE} />
 								</ToolbarButton>
 								<select
-									value={state.gridSettings.size}
+									value={gridSettings.size}
 									onChange={(e) =>
 										setGridSettings({ size: Number(e.target.value) })
 									}
-									disabled={!state.gridSettings.enabled}
+									disabled={!gridSettings.enabled}
 									className="h-8 px-2 text-sm bg-input border border-border rounded-md text-foreground disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-ring"
 									title={t("toolbar.gridSize")}
 								>
@@ -425,18 +448,18 @@ export function EditorToolbar({
 								</select>
 								<label
 									className={`flex items-center gap-1.5 text-xs cursor-pointer font-medium ${
-										state.gridSettings.enabled
+										gridSettings.enabled
 											? "text-foreground"
 											: "text-muted-foreground"
 									}`}
 								>
 									<input
 										type="checkbox"
-										checked={state.gridSettings.showGrid}
+										checked={gridSettings.showGrid}
 										onChange={(e) =>
 											setGridSettings({ showGrid: e.target.checked })
 										}
-										disabled={!state.gridSettings.enabled}
+										disabled={!gridSettings.enabled}
 										className="w-3.5 h-3.5 rounded accent-accent"
 									/>
 									{t("toolbar.show")}
@@ -445,7 +468,7 @@ export function EditorToolbar({
 						) : (
 							<div className="flex-shrink-0">
 								<GridSettingsMenu
-									gridSettings={state.gridSettings}
+									gridSettings={gridSettings}
 									onGridSettingsChange={setGridSettings}
 								/>
 							</div>
@@ -472,9 +495,9 @@ export function EditorToolbar({
 								onUngroup={() => selectedGroup && ungroup(selectedGroup.id)}
 								canGroup={canGroup}
 								hasSelectedGroup={!!selectedGroup}
-								onAlign={alignObjects}
+								onAlign={alignSelected}
 								canAlign={canAlign}
-								gridSettings={state.gridSettings}
+								gridSettings={gridSettings}
 								onGridSettingsChange={setGridSettings}
 							/>
 						</div>
@@ -490,7 +513,7 @@ export function EditorToolbar({
 
 				{/* 保存状態表示 */}
 				<div className="ml-auto text-right text-xs flex-shrink-0 whitespace-nowrap flex items-center gap-2 text-muted-foreground font-mono">
-					{state.isDirty && (
+					{isDirty && (
 						<span
 							className="status-dot dirty"
 							title={t("toolbar.unsavedChanges")}
@@ -521,7 +544,7 @@ export function EditorToolbar({
 			{/* エクスポートモーダル */}
 			{showExportModal && (
 				<ExportModal
-					board={state.board}
+					board={board}
 					exportedCode={exportedCode}
 					encodeKey={encodeKey}
 					onEncodeKeyChange={setEncodeKey}

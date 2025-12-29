@@ -31,12 +31,18 @@ import { useBoards } from "@/lib/boards";
 import type { StoredBoard } from "@/lib/boards/schema";
 import {
 	createEmptyBoard,
-	EditorProvider,
+	EditorStoreProvider,
 	type GridSettings,
 	type ObjectGroup,
 	recalculateBoardSize,
-	useEditor,
+	useBoard,
+	useEditorActions,
+	useFocusedGroup,
+	useGridSettings,
+	useGroups,
 	useImportExport,
+	useIsDirty,
+	useIsFocusMode,
 	useKeyboardShortcuts,
 } from "@/lib/editor";
 import { PanelProvider } from "@/lib/panel";
@@ -459,7 +465,7 @@ function EditorPage() {
 
 	return (
 		<PanelProvider>
-			<EditorProvider
+			<EditorStoreProvider
 				key={editorKey}
 				initialBoard={initialBoard}
 				initialGroups={initialGroups}
@@ -508,7 +514,7 @@ function EditorPage() {
 						setEditorKey((prev) => prev + 1);
 					}}
 				/>
-			</EditorProvider>
+			</EditorStoreProvider>
 
 			{/* Board Manager Modal */}
 			{!isMemoryOnlyMode && (
@@ -581,7 +587,13 @@ function EditorContent({
 	useKeyboardShortcuts();
 
 	// Get editor state
-	const { state, isFocusMode, focusedGroup, unfocus } = useEditor();
+	const board = useBoard();
+	const groups = useGroups();
+	const gridSettings = useGridSettings();
+	const isDirty = useIsDirty();
+	const isFocusMode = useIsFocusMode();
+	const focusedGroup = useFocusedGroup();
+	const { unfocus } = useEditorActions();
 
 	// インポート/エクスポートフック（encodeKeyの管理）
 	const { encodeKey, setEncodeKey } = useImportExport();
@@ -597,7 +609,7 @@ function EditorContent({
 
 	// Save current board when dirty (skip in memory-only mode)
 	useEffect(() => {
-		if (!currentBoardId || !state.isDirty || isMemoryOnlyMode) return;
+		if (!currentBoardId || !isDirty || isMemoryOnlyMode) return;
 
 		// Clear previous timeout
 		if (saveTimeoutRef.current) {
@@ -606,17 +618,11 @@ function EditorContent({
 
 		// Debounce save
 		saveTimeoutRef.current = setTimeout(() => {
-			const { width, height } = recalculateBoardSize(state.board);
-			const boardToSave = { ...state.board, width, height };
+			const { width, height } = recalculateBoardSize(board);
+			const boardToSave = { ...board, width, height };
 			const stgyCode = encodeStgy(boardToSave, encodeKey ?? 0);
 
-			onSaveBoard(
-				state.board.name,
-				stgyCode,
-				encodeKey ?? 0,
-				state.groups,
-				state.gridSettings,
-			);
+			onSaveBoard(board.name, stgyCode, encodeKey ?? 0, groups, gridSettings);
 			setLastSavedAt(new Date());
 		}, 1000);
 
@@ -627,10 +633,10 @@ function EditorContent({
 		};
 	}, [
 		currentBoardId,
-		state.isDirty,
-		state.board,
-		state.groups,
-		state.gridSettings,
+		isDirty,
+		board,
+		groups,
+		gridSettings,
 		encodeKey,
 		isMemoryOnlyMode,
 		onSaveBoard,

@@ -7,7 +7,16 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useEditor } from "@/lib/editor";
+import {
+	useBoard,
+	useCanGroup,
+	useClipboard,
+	useEditorActions,
+	useFocusedGroupId,
+	useGroups,
+	useIsFocusMode,
+	useSelectedIndices,
+} from "@/lib/editor";
 import type { ObjectGroup } from "@/lib/editor/types";
 import { LayerContextMenu } from "./LayerContextMenu";
 import { LayerGroupHeader } from "./LayerGroupHeader";
@@ -21,17 +30,28 @@ import { useLayerItems } from "./useLayerItems";
  */
 export function LayerPanel() {
 	const { t } = useTranslation();
+
+	// State
+	const board = useBoard();
+	const selectedIndices = useSelectedIndices();
+	const groups = useGroups();
+	const clipboard = useClipboard();
+
+	// Derived state
+	const canGroup = useCanGroup();
+	const focusedGroupId = useFocusedGroupId();
+	const isFocusMode = useIsFocusMode();
+
+	// Actions
 	const {
-		state,
-		dispatch,
 		selectObject,
 		updateObject,
+		updateObjectsBatch,
 		commitHistory,
 		selectGroup,
 		ungroup,
 		renameGroup,
 		toggleGroupCollapse,
-		getGroupForObject,
 		reorderLayer,
 		reorderGroup,
 		removeFromGroup,
@@ -41,14 +61,19 @@ export function LayerPanel() {
 		deleteSelected,
 		groupSelected,
 		moveLayer,
-		canGroup,
-		focusedGroupId,
-		isFocusMode,
 		focusGroup,
 		unfocus,
-	} = useEditor();
-	const { board, selectedIndices, groups, clipboard } = state;
+	} = useEditorActions();
+
 	const { objects } = board;
+
+	// オブジェクトが属するグループを取得するヘルパー関数
+	const getGroupForObject = useCallback(
+		(index: number): ObjectGroup | undefined => {
+			return groups.find((g) => g.objectIndices.includes(index));
+		},
+		[groups],
+	);
 
 	// コンテキストメニュー
 	const { menuState, openObjectMenu, openGroupMenu, closeMenu } =
@@ -108,14 +133,12 @@ export function LayerPanel() {
 			);
 			const newVisible = !allVisible;
 
-			dispatch({
-				type: "UPDATE_OBJECTS_BATCH",
-				indices: group.objectIndices,
-				updates: { flags: { visible: newVisible } },
+			updateObjectsBatch(group.objectIndices, {
+				flags: { visible: newVisible },
 			});
 			commitHistory(t("layerPanel.groupVisibilityChanged"));
 		},
-		[objects, dispatch, commitHistory, t],
+		[objects, updateObjectsBatch, commitHistory, t],
 	);
 
 	// オブジェクトのロック/ロック解除トグル
@@ -138,14 +161,12 @@ export function LayerPanel() {
 			);
 			const newLocked = !allLocked;
 
-			dispatch({
-				type: "UPDATE_OBJECTS_BATCH",
-				indices: group.objectIndices,
-				updates: { flags: { locked: newLocked } },
+			updateObjectsBatch(group.objectIndices, {
+				flags: { locked: newLocked },
 			});
 			commitHistory(t("layerPanel.groupLockChanged"));
 		},
-		[objects, dispatch, commitHistory, t],
+		[objects, updateObjectsBatch, commitHistory, t],
 	);
 
 	// オブジェクト選択

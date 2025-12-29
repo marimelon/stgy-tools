@@ -7,18 +7,22 @@
 
 import { Bug, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useDebugMode, useEditor, useObjectPaletteState } from "@/lib/editor";
+import {
+	useDebugMode,
+	useEditorActions,
+	useObjectPaletteState,
+} from "@/lib/editor";
 import { HIDDEN_OBJECT_IDS, OBJECT_CATEGORIES } from "./categories";
 import { ObjectPaletteItem } from "./ObjectPaletteItem";
 
 export function ObjectPalette() {
 	const { t } = useTranslation();
-	const { addObject } = useEditor();
+	const { addObjectById } = useEditorActions();
 	const { debugMode } = useDebugMode();
 	const { expandedCategories, toggleCategory } = useObjectPaletteState();
 
 	const handleAddObject = (objectId: number) => {
-		addObject(objectId);
+		addObjectById(objectId);
 	};
 
 	return (

@@ -24,8 +24,12 @@ export {
 	screenToSVG,
 	snapToGrid,
 } from "./coordinates";
-export type { EditorContextValue } from "./EditorContext";
-export { EditorProvider, useEditor } from "./EditorContext";
+
+// TanStack Store Provider
+export {
+	EditorStoreProvider,
+	useEditorStoreContext,
+} from "./EditorStoreProvider";
 export {
 	calculateTextBoardSize,
 	createDefaultObject,
@@ -33,6 +37,46 @@ export {
 	duplicateObject,
 	recalculateBoardSize,
 } from "./factory";
+export type { EditorActions } from "./hooks/useEditorActions";
+// Actions Hook
+export { useEditorActions } from "./hooks/useEditorActions";
+
+// Derived Hooks
+export {
+	useCanAlign,
+	useCanGroup,
+	useCanRedo,
+	useCanUndo,
+	useCircularModeDerived,
+	useCircularModeState,
+	useFocusedGroup,
+	useFocusModeDerived,
+	useHistoryCapabilities,
+	useIsCircularMode,
+	useIsFocusMode,
+	useSelectedGroup,
+	useSelectedObjects,
+	useSelectionDerived,
+} from "./hooks/useEditorDerived";
+// Store Hooks
+export {
+	selectors,
+	useBoard,
+	useCircularMode,
+	useClipboard,
+	useEditingTextIndex,
+	useEditorSelector,
+	useEditorSelectorShallow,
+	useEditorState,
+	useFocusedGroupId,
+	useGridSettings,
+	useGroups,
+	useHistory,
+	useIsDirty,
+	useLastError,
+	useObjects,
+	useSelectedIndices,
+} from "./hooks/useEditorStore";
 export type { CreateInitialStateOptions } from "./reducer";
 export {
 	createInitialState,
@@ -41,6 +85,15 @@ export {
 } from "./reducer";
 export type { ValidationResult } from "./reducerHandlers/businessLogic/validation";
 export { canAddObjects } from "./reducerHandlers/businessLogic/validation";
+// Store
+export {
+	createEditorStore,
+	getEditorStore,
+	getEditorStoreSafe,
+	isEditorStoreInitialized,
+	resetEditorStore,
+} from "./store/editorStore";
+export type { EditorStore, EditorStoreOptions } from "./store/types";
 export type {
 	AlignmentType,
 	BatchUpdatePayload,

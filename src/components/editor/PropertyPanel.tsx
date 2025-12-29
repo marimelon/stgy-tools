@@ -5,7 +5,14 @@
  */
 
 import { useCallback } from "react";
-import { useEditor } from "@/lib/editor";
+import {
+	useBoard,
+	useCircularMode,
+	useEditorActions,
+	useIsCircularMode,
+	useSelectedIndices,
+	useSelectedObjects,
+} from "@/lib/editor";
 import { BatchPropertyPanel } from "./BatchPropertyPanel";
 import { BoardPropertyPanel } from "./BoardPropertyPanel";
 import { CircularPropertyPanel } from "./CircularPropertyPanel";
@@ -19,20 +26,19 @@ import { ObjectPropertyPanel } from "./ObjectPropertyPanel";
  * 複数オブジェクト選択時はバッチ編集パネルを表示
  */
 export function PropertyPanel() {
+	const board = useBoard();
+	const selectedIndices = useSelectedIndices();
+	const selectedObjects = useSelectedObjects();
+	const isCircularMode = useIsCircularMode();
+	const circularMode = useCircularMode();
 	const {
-		state,
-		selectedObjects,
 		updateObject,
-		updateObjectsBatch,
+		updateSelectedObjectsBatch,
 		commitHistory,
 		updateBoardMeta,
-		// 円形モード
-		isCircularMode,
-		circularMode,
 		updateCircularCenter,
 		updateCircularRadius,
-	} = useEditor();
-	const { selectedIndices, board } = state;
+	} = useEditorActions();
 
 	// 単一選択判定
 	const selectedObject =
@@ -72,7 +78,7 @@ export function PropertyPanel() {
 		return (
 			<BatchPropertyPanel
 				objects={selectedObjects}
-				onUpdate={updateObjectsBatch}
+				onUpdate={updateSelectedObjectsBatch}
 				onCommitHistory={commitHistory}
 			/>
 		);

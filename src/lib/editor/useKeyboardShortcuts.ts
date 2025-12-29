@@ -3,7 +3,19 @@
  */
 
 import { useEffect } from "react";
-import { useEditor } from "./EditorContext";
+import { useEditorActions } from "./hooks/useEditorActions";
+import {
+	useCanGroup,
+	useCanRedo,
+	useCanUndo,
+	useIsCircularMode,
+	useIsFocusMode,
+	useSelectedGroup,
+} from "./hooks/useEditorDerived";
+import {
+	useEditingTextIndex,
+	useSelectedIndices,
+} from "./hooks/useEditorStore";
 
 /** 移動量 */
 const MOVE_STEP = 1;
@@ -13,12 +25,22 @@ const MOVE_STEP_LARGE = 10;
  * キーボードショートカットを有効化するフック
  */
 export function useKeyboardShortcuts() {
+	// State
+	const selectedIndices = useSelectedIndices();
+	const editingTextIndex = useEditingTextIndex();
+
+	// Derived state
+	const canUndo = useCanUndo();
+	const canRedo = useCanRedo();
+	const canGroup = useCanGroup();
+	const selectedGroup = useSelectedGroup();
+	const isFocusMode = useIsFocusMode();
+	const isCircularMode = useIsCircularMode();
+
+	// Actions
 	const {
-		state,
 		undo,
 		redo,
-		canUndo,
-		canRedo,
 		deleteSelected,
 		duplicateSelected,
 		copySelected,
@@ -29,15 +51,10 @@ export function useKeyboardShortcuts() {
 		commitHistory,
 		groupSelected,
 		ungroup,
-		canGroup,
-		selectedGroup,
-		isFocusMode,
 		unfocus,
-		isCircularMode,
 		exitCircularMode,
-	} = useEditor();
+	} = useEditorActions();
 
-	const { selectedIndices } = state;
 	const hasSelection = selectedIndices.length > 0;
 
 	/**
@@ -54,7 +71,7 @@ export function useKeyboardShortcuts() {
 	 */
 	const handleKeyDown = (e: KeyboardEvent) => {
 		// テキスト編集中は無視
-		if (state.editingTextIndex !== null) {
+		if (editingTextIndex !== null) {
 			return;
 		}
 
