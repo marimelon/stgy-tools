@@ -48,6 +48,21 @@ export interface MarqueeState {
 	currentPoint: Position;
 }
 
+/**
+ * 円形配置モード状態
+ * 円形配置実行後の編集モードで使用
+ */
+export interface CircularModeState {
+	/** 円の中心位置 */
+	center: Position;
+	/** 円の半径 */
+	radius: number;
+	/** 参加オブジェクトのインデックス */
+	participatingIndices: number[];
+	/** 各オブジェクトの角度（index → angle in radians） */
+	objectAngles: Map<number, number>;
+}
+
 // ============================================
 // コンポーネントProps
 // ============================================
@@ -175,6 +190,8 @@ export interface EditorState {
 	lastError: EditorError | null;
 	/** フォーカス中のグループID（null = フォーカスなし） */
 	focusedGroupId: string | null;
+	/** 円形配置モード状態（null = モード無効） */
+	circularMode: CircularModeState | null;
 }
 
 /**
@@ -224,7 +241,17 @@ export type EditorAction =
 	| { type: "CLEAR_HISTORY" }
 	| { type: "SET_ERROR"; error: EditorError }
 	| { type: "CLEAR_ERROR" }
-	| { type: "SET_FOCUS_GROUP"; groupId: string | null };
+	| { type: "SET_FOCUS_GROUP"; groupId: string | null }
+	| {
+			type: "ENTER_CIRCULAR_MODE";
+			center: Position;
+			radius: number;
+			indices: number[];
+	  }
+	| { type: "EXIT_CIRCULAR_MODE" }
+	| { type: "UPDATE_CIRCULAR_CENTER"; center: Position }
+	| { type: "UPDATE_CIRCULAR_RADIUS"; radius: number }
+	| { type: "MOVE_OBJECT_ON_CIRCLE"; index: number; angle: number };
 
 /**
  * ボードメタデータ更新用の部分型

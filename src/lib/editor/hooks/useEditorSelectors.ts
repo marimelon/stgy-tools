@@ -6,7 +6,7 @@
 
 import { useMemo } from "react";
 import type { BoardObject } from "@/lib/stgy";
-import type { EditorState, ObjectGroup } from "../types";
+import type { CircularModeState, EditorState, ObjectGroup } from "../types";
 
 export interface UseEditorSelectorsParams {
 	state: EditorState;
@@ -31,6 +31,10 @@ export interface UseEditorSelectorsReturn {
 	isFocusMode: boolean;
 	/** フォーカス中のグループ */
 	focusedGroup: ObjectGroup | undefined;
+	/** 円形配置モードかどうか */
+	isCircularMode: boolean;
+	/** 円形配置モード状態 */
+	circularMode: CircularModeState | null;
 }
 
 /**
@@ -67,6 +71,10 @@ export function useEditorSelectors({
 		return state.groups.find((g) => g.id === focusedGroupId);
 	}, [focusedGroupId, state.groups]);
 
+	// 円形配置モード
+	const circularMode = state.circularMode;
+	const isCircularMode = circularMode !== null;
+
 	return {
 		canUndo,
 		canRedo,
@@ -77,5 +85,7 @@ export function useEditorSelectors({
 		focusedGroupId,
 		isFocusMode,
 		focusedGroup,
+		isCircularMode,
+		circularMode,
 	};
 }

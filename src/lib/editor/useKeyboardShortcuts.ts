@@ -33,6 +33,8 @@ export function useKeyboardShortcuts() {
 		selectedGroup,
 		isFocusMode,
 		unfocus,
+		isCircularMode,
+		exitCircularMode,
 	} = useEditor();
 
 	const { selectedIndices } = state;
@@ -146,10 +148,15 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// Escape: フォーカス解除 → 選択解除
+		// Escape: 円形モード解除 → フォーカス解除 → 選択解除
 		if (e.key === "Escape") {
 			e.preventDefault();
-			// フォーカスモード中は先にフォーカスを解除
+			// 円形モード中は先に円形モードを終了
+			if (isCircularMode) {
+				exitCircularMode();
+				return;
+			}
+			// フォーカスモード中は次にフォーカスを解除
 			if (isFocusMode) {
 				unfocus();
 				return;

@@ -66,6 +66,16 @@ export interface UseEditorActionsReturn {
 	endTextEdit: (save: boolean, text?: string) => void;
 	focusGroup: (groupId: string) => void;
 	unfocus: () => void;
+	// 円形配置モード
+	enterCircularMode: (
+		center: Position,
+		radius: number,
+		indices: number[],
+	) => void;
+	exitCircularMode: () => void;
+	updateCircularCenter: (center: Position) => void;
+	updateCircularRadius: (radius: number) => void;
+	moveObjectOnCircle: (index: number, angle: number) => void;
 }
 
 /**
@@ -333,6 +343,39 @@ export function useEditorActions({
 		dispatch({ type: "SET_FOCUS_GROUP", groupId: null });
 	}, [dispatch]);
 
+	// 円形配置モード
+	const enterCircularMode = useCallback(
+		(center: Position, radius: number, indices: number[]) => {
+			dispatch({ type: "ENTER_CIRCULAR_MODE", center, radius, indices });
+		},
+		[dispatch],
+	);
+
+	const exitCircularMode = useCallback(() => {
+		dispatch({ type: "EXIT_CIRCULAR_MODE" });
+	}, [dispatch]);
+
+	const updateCircularCenter = useCallback(
+		(center: Position) => {
+			dispatch({ type: "UPDATE_CIRCULAR_CENTER", center });
+		},
+		[dispatch],
+	);
+
+	const updateCircularRadius = useCallback(
+		(radius: number) => {
+			dispatch({ type: "UPDATE_CIRCULAR_RADIUS", radius });
+		},
+		[dispatch],
+	);
+
+	const moveObjectOnCircle = useCallback(
+		(index: number, angle: number) => {
+			dispatch({ type: "MOVE_OBJECT_ON_CIRCLE", index, angle });
+		},
+		[dispatch],
+	);
+
 	return {
 		setBoard,
 		selectObject,
@@ -369,5 +412,10 @@ export function useEditorActions({
 		endTextEdit,
 		focusGroup,
 		unfocus,
+		enterCircularMode,
+		exitCircularMode,
+		updateCircularCenter,
+		updateCircularRadius,
+		moveObjectOnCircle,
 	};
 }

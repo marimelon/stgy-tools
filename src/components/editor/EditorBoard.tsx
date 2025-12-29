@@ -17,6 +17,9 @@ import {
 	useEditor,
 } from "@/lib/editor";
 import { ObjectIds } from "@/lib/stgy";
+import { CircularGuideOverlay } from "./CircularGuideOverlay";
+import { CircularHandles } from "./CircularHandles";
+import { CircularModeIndicator } from "./CircularModeIndicator";
 import { ContextMenu, type ContextMenuState } from "./ContextMenu";
 import { GridOverlay, SelectionIndicator } from "./GridOverlay";
 import { InlineTextEditor } from "./InlineTextEditor";
@@ -57,6 +60,13 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		endTextEdit,
 		focusedGroup,
 		isFocusMode,
+		// 円形モード
+		circularMode,
+		isCircularMode,
+		exitCircularMode,
+		updateCircularCenter,
+		updateCircularRadius,
+		moveObjectOnCircle,
 	} = useEditor();
 
 	const {
@@ -147,12 +157,14 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		selectedIndices,
 		gridSettings,
 		focusedGroupId,
+		circularMode,
 		selectObject,
 		selectObjects,
 		selectGroup,
 		getGroupForObject,
 		updateObject,
 		moveObjects,
+		moveObjectOnCircle,
 		commitHistory,
 		addObject,
 		deselectAll,
@@ -352,6 +364,28 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 						);
 					})()}
 
+				{/* 円形配置モードガイド */}
+				{isCircularMode && circularMode && (
+					<>
+						<CircularGuideOverlay
+							center={circularMode.center}
+							radius={circularMode.radius}
+						/>
+						<CircularHandles
+							center={circularMode.center}
+							radius={circularMode.radius}
+							onCenterDrag={updateCircularCenter}
+							onCenterDragEnd={() =>
+								commitHistory(t("circularMode.centerChanged"))
+							}
+							onRadiusDrag={updateCircularRadius}
+							onRadiusDragEnd={() =>
+								commitHistory(t("circularMode.radiusChanged"))
+							}
+						/>
+					</>
+				)}
+
 				{/* マーキー選択矩形 */}
 				{marqueeRect && (
 					<rect
@@ -367,6 +401,14 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 					/>
 				)}
 			</svg>
+
+			{/* 円形配置モードインジケーター */}
+			{isCircularMode && circularMode && (
+				<CircularModeIndicator
+					objectCount={circularMode.participatingIndices.length}
+					onExit={exitCircularMode}
+				/>
+			)}
 
 			{/* コンテキストメニュー */}
 			<ContextMenu

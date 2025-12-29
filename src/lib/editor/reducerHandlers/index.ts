@@ -4,6 +4,14 @@
 
 // 整列
 export { handleAlignObjects } from "./handlers/alignment";
+// 円形配置モード
+export {
+	handleEnterCircularMode,
+	handleExitCircularMode,
+	handleMoveObjectOnCircle,
+	handleUpdateCircularCenter,
+	handleUpdateCircularRadius,
+} from "./handlers/circularMode";
 // クリップボード
 export {
 	handleCopyObjects,

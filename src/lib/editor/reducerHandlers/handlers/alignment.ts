@@ -2,7 +2,11 @@
  * 整列操作ハンドラー
  */
 
-import type { AlignmentType, EditorState } from "../../types";
+import type {
+	AlignmentType,
+	CircularModeState,
+	EditorState,
+} from "../../types";
 import { cloneBoard, pushHistory, updateObjectInBoard } from "../utils";
 
 /** 整列タイプの説明 */
@@ -133,11 +137,16 @@ export function handleAlignObjects(
 			const centroidY = sumY / positions.length;
 
 			// 最大距離を半径とする（現在の広がりを維持）
-			const radius = Math.max(
+			// 最小半径は50に制限
+			const calculatedRadius = Math.max(
 				...positions.map((p) =>
 					Math.sqrt((p.x - centroidX) ** 2 + (p.y - centroidY) ** 2),
 				),
 			);
+			const circularRadius = Math.max(50, calculatedRadius);
+
+			// 各オブジェクトの角度を計算・保存
+			const objectAngles = new Map<number, number>();
 
 			// 各オブジェクトの元の角度を保持したまま、半径だけを揃えて円周上に配置
 			for (let i = 0; i < validIndices.length; i++) {
@@ -145,15 +154,30 @@ export function handleAlignObjects(
 				const pos = positions[i];
 				// 現在の角度を計算
 				const angle = Math.atan2(pos.y - centroidY, pos.x - centroidX);
+				objectAngles.set(idx, angle);
 				// 同じ角度で半径を揃える
 				newBoard = updateObjectInBoard(newBoard, idx, {
 					position: {
-						x: centroidX + radius * Math.cos(angle),
-						y: centroidY + radius * Math.sin(angle),
+						x: centroidX + circularRadius * Math.cos(angle),
+						y: centroidY + circularRadius * Math.sin(angle),
 					},
 				});
 			}
-			break;
+
+			// 円形配置モードを有効化
+			const circularModeState: CircularModeState = {
+				center: { x: centroidX, y: centroidY },
+				radius: circularRadius,
+				participatingIndices: validIndices,
+				objectAngles,
+			};
+
+			return {
+				...state,
+				board: newBoard,
+				circularMode: circularModeState,
+				...pushHistory(state, ALIGNMENT_DESCRIPTIONS[alignment]),
+			};
 		}
 	}
 

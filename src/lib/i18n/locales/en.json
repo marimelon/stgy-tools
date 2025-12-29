@@ -352,7 +352,18 @@
 			"maxObjectType": "Maximum {{max}} {{name}} allowed"
 		},
 		"focusMode": "Focused: {{groupName}}",
-		"exitFocus": "Exit Focus"
+		"exitFocus": "Exit Focus",
+		"circularMode": "Circular Mode ({{count}} objects)",
+		"exitCircularMode": "Exit Circular Mode"
+	},
+	"circularMode": {
+		"title": "Circular Arrangement",
+		"objectCount": "{{count}} objects",
+		"center": "Center Position",
+		"radius": "Radius",
+		"radiusLabel": "Radius",
+		"centerChanged": "Center position changed",
+		"radiusChanged": "Radius changed"
 	},
 	"alignment": {
 		"title": "Align & Distribute",

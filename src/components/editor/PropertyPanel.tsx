@@ -8,6 +8,7 @@ import { useCallback } from "react";
 import { useEditor } from "@/lib/editor";
 import { BatchPropertyPanel } from "./BatchPropertyPanel";
 import { BoardPropertyPanel } from "./BoardPropertyPanel";
+import { CircularPropertyPanel } from "./CircularPropertyPanel";
 import { ObjectPropertyPanel } from "./ObjectPropertyPanel";
 
 /**
@@ -25,6 +26,11 @@ export function PropertyPanel() {
 		updateObjectsBatch,
 		commitHistory,
 		updateBoardMeta,
+		// 円形モード
+		isCircularMode,
+		circularMode,
+		updateCircularCenter,
+		updateCircularRadius,
 	} = useEditor();
 	const { selectedIndices, board } = state;
 
@@ -46,6 +52,20 @@ export function PropertyPanel() {
 		},
 		[selectedIndex, updateObject],
 	);
+
+	// 円形配置モード時は円形プロパティパネルを表示
+	if (isCircularMode && circularMode) {
+		return (
+			<CircularPropertyPanel
+				center={circularMode.center}
+				radius={circularMode.radius}
+				objectCount={circularMode.participatingIndices.length}
+				onCenterChange={updateCircularCenter}
+				onRadiusChange={updateCircularRadius}
+				onCommitHistory={commitHistory}
+			/>
+		);
+	}
 
 	// 複数選択時はバッチ編集パネルを表示
 	if (isMultipleSelection) {

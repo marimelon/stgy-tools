@@ -4,25 +4,22 @@
 
 import type { BoardData } from "@/lib/stgy";
 import {
-	// ユーティリティ
 	generateHistoryId,
 	handleAddObject,
-	// 整列
 	handleAlignObjects,
-	// 履歴
 	handleClearHistory,
 	handleCommitHistory,
-	// クリップボード
 	handleCopyObjects,
 	handleDeleteObjects,
 	handleDeselectAll,
 	handleDuplicateObjects,
 	handleEndTextEdit,
-	// グループ・グリッド
+	handleEnterCircularMode,
+	handleExitCircularMode,
 	handleGroupObjects,
 	handleJumpToHistory,
-	// レイヤー
 	handleMoveLayer,
+	handleMoveObjectOnCircle,
 	handleMoveObjects,
 	handlePasteObjects,
 	handleRedo,
@@ -30,21 +27,18 @@ import {
 	handleRenameGroup,
 	handleReorderGroup,
 	handleReorderLayer,
-	// 選択系
 	handleSelectObject,
 	handleSelectObjects,
-	// ボード
 	handleSetBoard,
-	// フォーカス
 	handleSetFocusGroup,
 	handleSetGridSettings,
-	// テキスト編集
 	handleStartTextEdit,
 	handleToggleGroupCollapse,
 	handleUndo,
 	handleUngroup,
 	handleUpdateBoardMeta,
-	// オブジェクト操作
+	handleUpdateCircularCenter,
+	handleUpdateCircularRadius,
 	handleUpdateObject,
 	handleUpdateObjectsBatch,
 } from "./reducerHandlers";
@@ -193,6 +187,28 @@ export function editorReducer(
 		case "CLEAR_ERROR":
 			return { ...state, lastError: null };
 
+		case "ENTER_CIRCULAR_MODE":
+			return handleEnterCircularMode(state, {
+				center: action.center,
+				radius: action.radius,
+				indices: action.indices,
+			});
+
+		case "EXIT_CIRCULAR_MODE":
+			return handleExitCircularMode(state);
+
+		case "UPDATE_CIRCULAR_CENTER":
+			return handleUpdateCircularCenter(state, { center: action.center });
+
+		case "UPDATE_CIRCULAR_RADIUS":
+			return handleUpdateCircularRadius(state, { radius: action.radius });
+
+		case "MOVE_OBJECT_ON_CIRCLE":
+			return handleMoveObjectOnCircle(state, {
+				index: action.index,
+				angle: action.angle,
+			});
+
 		default:
 			return state;
 	}
@@ -252,5 +268,6 @@ export function createInitialStateWithOptions(
 		editingTextIndex: null,
 		lastError: null,
 		focusedGroupId: null,
+		circularMode: null,
 	};
 }

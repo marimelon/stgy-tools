@@ -10,6 +10,7 @@ import { screenToSVG } from "./coordinates";
 import { useDragInteraction } from "./hooks/useDragInteraction";
 import { useMarqueeSelection } from "./hooks/useMarqueeSelection";
 import type {
+	CircularModeState,
 	DragState,
 	GridSettings,
 	MarqueeState,
@@ -30,6 +31,8 @@ export interface UseCanvasInteractionParams {
 	gridSettings: GridSettings;
 	/** フォーカス中のグループID（null = フォーカスなし） */
 	focusedGroupId: string | null;
+	/** 円形配置モード状態（null = モードなし） */
+	circularMode: CircularModeState | null;
 	/** オブジェクト選択 */
 	selectObject: (index: number, additive?: boolean) => void;
 	/** 複数オブジェクト選択 */
@@ -44,6 +47,8 @@ export interface UseCanvasInteractionParams {
 	updateObject: (index: number, updates: Partial<BoardObject>) => void;
 	/** オブジェクト移動 */
 	moveObjects: (indices: number[], deltaX: number, deltaY: number) => void;
+	/** 円周上でオブジェクトを移動 */
+	moveObjectOnCircle: (index: number, angle: number) => void;
 	/** 履歴をコミット */
 	commitHistory: (description: string) => void;
 	/** オブジェクト追加 */
@@ -94,12 +99,14 @@ export function useCanvasInteraction({
 	selectedIndices,
 	gridSettings,
 	focusedGroupId,
+	circularMode,
 	selectObject,
 	selectObjects,
 	selectGroup,
 	getGroupForObject,
 	updateObject,
 	moveObjects,
+	moveObjectOnCircle,
 	commitHistory,
 	addObject,
 	deselectAll,
@@ -136,11 +143,13 @@ export function useCanvasInteraction({
 		selectedIndices,
 		gridSettings,
 		focusedGroupId,
+		circularMode,
 		selectObject,
 		selectGroup,
 		getGroupForObject,
 		updateObject,
 		moveObjects,
+		moveObjectOnCircle,
 		commitHistory,
 	});
 

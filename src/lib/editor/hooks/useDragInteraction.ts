@@ -13,7 +13,12 @@ import {
 	OBJECT_EDIT_PARAMS,
 } from "@/lib/stgy";
 import { calculateRotation, screenToSVG, snapToGrid } from "../coordinates";
-import type { DragState, GridSettings, ResizeHandle } from "../types";
+import type {
+	CircularModeState,
+	DragState,
+	GridSettings,
+	ResizeHandle,
+} from "../types";
 import { isPointInObject } from "./hit-testing";
 
 /**
@@ -35,6 +40,8 @@ export interface UseDragInteractionParams {
 	gridSettings: GridSettings;
 	/** フォーカス中のグループID（null = フォーカスなし） */
 	focusedGroupId: string | null;
+	/** 円形配置モード状態（null = モードなし） */
+	circularMode: CircularModeState | null;
 	selectObject: (index: number, additive?: boolean) => void;
 	selectGroup: (groupId: string) => void;
 	getGroupForObject: (
@@ -42,6 +49,8 @@ export interface UseDragInteractionParams {
 	) => { id: string; objectIndices: number[] } | undefined;
 	updateObject: (index: number, updates: Partial<BoardObject>) => void;
 	moveObjects: (indices: number[], deltaX: number, deltaY: number) => void;
+	/** 円周上でオブジェクトを移動 */
+	moveObjectOnCircle: (index: number, angle: number) => void;
 	commitHistory: (description: string) => void;
 }
 
@@ -64,11 +73,13 @@ export function useDragInteraction({
 	selectedIndices,
 	gridSettings,
 	focusedGroupId,
+	circularMode,
 	selectObject,
 	selectGroup,
 	getGroupForObject,
 	updateObject,
 	moveObjects,
+	moveObjectOnCircle,
 	commitHistory,
 }: UseDragInteractionParams): UseDragInteractionReturn {
 	const [dragState, setDragState] = useState<DragState | null>(null);
@@ -293,6 +304,17 @@ export function useDragInteraction({
 			} = dragState;
 
 			if (mode === "drag") {
+				// 円形モード中で、ドラッグ対象が円形配置に参加している場合
+				// 円周上のみに移動を制約
+				if (circularMode?.participatingIndices.includes(objectIndex)) {
+					const angle = Math.atan2(
+						currentPointer.y - circularMode.center.y,
+						currentPointer.x - circularMode.center.x,
+					);
+					moveObjectOnCircle(objectIndex, angle);
+					return;
+				}
+
 				const deltaX = currentPointer.x - startPointer.x;
 				const deltaY = currentPointer.y - startPointer.y;
 
@@ -336,7 +358,15 @@ export function useDragInteraction({
 				}
 			}
 		},
-		[dragState, updateObject, gridSettings, selectedIndices, moveObjects],
+		[
+			dragState,
+			updateObject,
+			gridSettings,
+			selectedIndices,
+			moveObjects,
+			circularMode,
+			moveObjectOnCircle,
+		],
 	);
 
 	/**

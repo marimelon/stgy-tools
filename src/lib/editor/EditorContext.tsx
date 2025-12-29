@@ -23,6 +23,7 @@ import { createInitialStateWithOptions, editorReducer } from "./reducer";
 import type {
 	AlignmentType,
 	BatchUpdatePayload,
+	CircularModeState,
 	EditorAction,
 	EditorState,
 	GridSettings,
@@ -113,6 +114,22 @@ export interface EditorContextValue {
 	/** フォーカスを解除 */
 	unfocus: () => void;
 
+	// 円形配置モード
+	/** 円形配置モードに入る */
+	enterCircularMode: (
+		center: Position,
+		radius: number,
+		indices: number[],
+	) => void;
+	/** 円形配置モードを終了 */
+	exitCircularMode: () => void;
+	/** 円の中心を更新 */
+	updateCircularCenter: (center: Position) => void;
+	/** 円の半径を更新 */
+	updateCircularRadius: (radius: number) => void;
+	/** オブジェクトを円周上で移動 */
+	moveObjectOnCircle: (index: number, angle: number) => void;
+
 	// 計算済み状態
 	/** Undoが可能か */
 	canUndo: boolean;
@@ -132,6 +149,10 @@ export interface EditorContextValue {
 	isFocusMode: boolean;
 	/** フォーカス中のグループ */
 	focusedGroup: ObjectGroup | undefined;
+	/** 円形配置モードかどうか */
+	isCircularMode: boolean;
+	/** 円形配置モード状態 */
+	circularMode: CircularModeState | null;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);

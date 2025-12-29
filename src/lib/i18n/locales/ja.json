@@ -352,7 +352,18 @@
 			"maxObjectType": "{{name}}は最大{{max}}個までです"
 		},
 		"focusMode": "フォーカス中: {{groupName}}",
-		"exitFocus": "フォーカス解除"
+		"exitFocus": "フォーカス解除",
+		"circularMode": "円形配置モード ({{count}}個)",
+		"exitCircularMode": "円形配置モードを終了"
+	},
+	"circularMode": {
+		"title": "円形配置",
+		"objectCount": "{{count}}個のオブジェクト",
+		"center": "中心位置",
+		"radius": "半径",
+		"radiusLabel": "半径",
+		"centerChanged": "中心位置変更",
+		"radiusChanged": "半径変更"
 	},
 	"alignment": {
 		"title": "整列・配置",
