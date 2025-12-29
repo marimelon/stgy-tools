@@ -138,20 +138,32 @@ export function createAlignmentActions(store: EditorStore) {
 					break;
 				}
 				case "circular": {
-					// 重心を計算（選択オブジェクトの平均座標）
-					const sumX = positions.reduce((sum, p) => sum + p.x, 0);
-					const sumY = positions.reduce((sum, p) => sum + p.y, 0);
-					const centroidX = sumX / positions.length;
-					const centroidY = sumY / positions.length;
+					// 円の中心と半径を決定
+					let circleCenterX: number;
+					let circleCenterY: number;
+					let circularRadius: number;
 
-					// 最大距離を半径とする（現在の広がりを維持）
-					// 最小半径は50に制限
-					const calculatedRadius = Math.max(
-						...positions.map((p) =>
-							Math.sqrt((p.x - centroidX) ** 2 + (p.y - centroidY) ** 2),
-						),
-					);
-					const circularRadius = Math.max(50, calculatedRadius);
+					if (state.circularMode) {
+						// 既に円形モード中の場合は、既存の中心と半径を維持
+						circleCenterX = state.circularMode.center.x;
+						circleCenterY = state.circularMode.center.y;
+						circularRadius = state.circularMode.radius;
+					} else {
+						// 新規: バウンディングボックスの中心を使用（安定した結果のため）
+						circleCenterX = centerX;
+						circleCenterY = centerY;
+
+						// 中心からの最大距離を半径とする
+						// 最小半径は50に制限
+						const calculatedRadius = Math.max(
+							...positions.map((p) =>
+								Math.sqrt(
+									(p.x - circleCenterX) ** 2 + (p.y - circleCenterY) ** 2,
+								),
+							),
+						);
+						circularRadius = Math.max(50, calculatedRadius);
+					}
 
 					// 各オブジェクトの角度を計算・保存
 					const objectAngles = new Map<number, number>();
@@ -161,20 +173,23 @@ export function createAlignmentActions(store: EditorStore) {
 						const idx = validIndices[i];
 						const pos = positions[i];
 						// 現在の角度を計算
-						const angle = Math.atan2(pos.y - centroidY, pos.x - centroidX);
+						const angle = Math.atan2(
+							pos.y - circleCenterY,
+							pos.x - circleCenterX,
+						);
 						objectAngles.set(idx, angle);
 						// 同じ角度で半径を揃える
 						newBoard = updateObjectInBoard(newBoard, idx, {
 							position: {
-								x: centroidX + circularRadius * Math.cos(angle),
-								y: centroidY + circularRadius * Math.sin(angle),
+								x: circleCenterX + circularRadius * Math.cos(angle),
+								y: circleCenterY + circularRadius * Math.sin(angle),
 							},
 						});
 					}
 
 					// 円形配置モードを有効化
 					const circularModeState: CircularModeState = {
-						center: { x: centroidX, y: centroidY },
+						center: { x: circleCenterX, y: circleCenterY },
 						radius: circularRadius,
 						participatingIndices: validIndices,
 						objectAngles,
