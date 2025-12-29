@@ -21,6 +21,7 @@ import {
 	ArrowDownToLine,
 	ArrowUp,
 	ArrowUpToLine,
+	Circle,
 	ClipboardPaste,
 	Copy,
 	CopyPlus,
@@ -374,6 +375,13 @@ export function EditorToolbar({
 									title={t("alignment.distributeV")}
 								>
 									<AlignVerticalSpaceAround size={ICON_SIZE} />
+								</ToolbarButton>
+								<ToolbarButton
+									onClick={() => alignObjects("circular")}
+									disabled={!canAlign}
+									title={t("alignment.circular")}
+								>
+									<Circle size={ICON_SIZE} />
 								</ToolbarButton>
 							</div>
 						) : (

@@ -15,6 +15,7 @@ const ALIGNMENT_DESCRIPTIONS: Record<AlignmentType, string> = {
 	bottom: "下揃え",
 	"distribute-h": "水平方向に均等配置",
 	"distribute-v": "垂直方向に均等配置",
+	circular: "円形配置",
 };
 
 /**
@@ -121,6 +122,36 @@ export function handleAlignObjects(
 						position: { ...newBoard.objects[idx].position, y: minY + step * i },
 					});
 				}
+			}
+			break;
+		}
+		case "circular": {
+			// 重心を計算（選択オブジェクトの平均座標）
+			const sumX = positions.reduce((sum, p) => sum + p.x, 0);
+			const sumY = positions.reduce((sum, p) => sum + p.y, 0);
+			const centroidX = sumX / positions.length;
+			const centroidY = sumY / positions.length;
+
+			// 最大距離を半径とする（現在の広がりを維持）
+			const radius = Math.max(
+				...positions.map((p) =>
+					Math.sqrt((p.x - centroidX) ** 2 + (p.y - centroidY) ** 2),
+				),
+			);
+
+			// 各オブジェクトの元の角度を保持したまま、半径だけを揃えて円周上に配置
+			for (let i = 0; i < validIndices.length; i++) {
+				const idx = validIndices[i];
+				const pos = positions[i];
+				// 現在の角度を計算
+				const angle = Math.atan2(pos.y - centroidY, pos.x - centroidX);
+				// 同じ角度で半径を揃える
+				newBoard = updateObjectInBoard(newBoard, idx, {
+					position: {
+						x: centroidX + radius * Math.cos(angle),
+						y: centroidY + radius * Math.sin(angle),
+					},
+				});
 			}
 			break;
 		}

@@ -14,6 +14,7 @@ import {
 	AlignStartHorizontal,
 	AlignStartVertical,
 	AlignVerticalSpaceAround,
+	Circle,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -83,6 +84,12 @@ const ALIGNMENT_OPTIONS: {
 		type: "distribute-v",
 		i18nKey: "alignment.distributeV",
 		icon: <AlignVerticalSpaceAround size={ICON_SIZE} />,
+		group: "distribute",
+	},
+	{
+		type: "circular",
+		i18nKey: "alignment.circular",
+		icon: <Circle size={ICON_SIZE} />,
 		group: "distribute",
 	},
 ];

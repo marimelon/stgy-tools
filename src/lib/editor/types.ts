@@ -136,7 +136,8 @@ export type AlignmentType =
 	| "middle"
 	| "bottom"
 	| "distribute-h"
-	| "distribute-v";
+	| "distribute-v"
+	| "circular";
 
 /**
  * エラー情報

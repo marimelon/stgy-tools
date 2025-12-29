@@ -364,6 +364,7 @@
 		"alignBottom": "Align Bottom",
 		"distributeH": "Distribute Horizontally",
 		"distributeV": "Distribute Vertically",
+		"circular": "Arrange in Circle",
 		"horizontal": "Horizontal",
 		"vertical": "Vertical",
 		"distribute": "Distribute"

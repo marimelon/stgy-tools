@@ -364,6 +364,7 @@
 		"alignBottom": "下揃え",
 		"distributeH": "水平方向に均等配置",
 		"distributeV": "垂直方向に均等配置",
+		"circular": "円形に配置",
 		"horizontal": "水平方向",
 		"vertical": "垂直方向",
 		"distribute": "均等配置"
