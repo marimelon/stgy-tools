@@ -9,6 +9,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board/BoardViewer";
 import { AppHeader } from "@/components/ui/AppHeader";
+import { Footer } from "@/components/ui/Footer";
 
 import {
 	generateCanonicalLink,
@@ -866,6 +867,8 @@ function ImageGeneratePage() {
 					</div>
 				</div>
 			</div>
+
+			<Footer />
 		</div>
 	);
 }
