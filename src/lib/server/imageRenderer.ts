@@ -8,6 +8,7 @@
 
 import type { BoardData } from "@/lib/stgy/types";
 import { getGlobalEnv } from "./cloudflareContext";
+import { createDefaultMetadata, embedMetadata } from "./pngMetadata";
 import { renderSvgToPng } from "./resvgWrapper";
 import { renderBoardToSVG } from "./svgRenderer";
 
@@ -23,7 +24,7 @@ export interface ImageRenderOptions {
 	width?: number;
 	/** ボード名をタイトルバーとして表示するか */
 	showTitle?: boolean;
-	/** stgyコード（外部サーバー委譲時に使用） */
+	/** stgyコード（外部サーバー委譲時およびメタデータ埋め込みに使用） */
 	stgyCode?: string;
 }
 
@@ -89,7 +90,9 @@ export async function renderImage(
 	}
 
 	// ローカルでPNG生成
-	return renderLocalPng(boardData, width, showTitle);
+	return renderLocalPng(boardData, width, showTitle, {
+		stgyCode: options.stgyCode,
+	});
 }
 
 /**
@@ -113,18 +116,30 @@ async function renderLocalPng(
 	boardData: BoardData,
 	width: number,
 	showTitle: boolean,
+	options?: {
+		stgyCode?: string;
+	},
 ): Promise<ImageRenderResult> {
 	// まずSVGを生成
 	const svg = await renderBoardToSVG(boardData, { showTitle });
 
 	// resvgでPNGに変換
-	const pngBuffer = await renderSvgToPng(svg, {
+	let pngBuffer = await renderSvgToPng(svg, {
 		background: "#1a1a1a",
 		fitTo: {
 			mode: "width",
 			value: width,
 		},
 	});
+
+	// メタデータ埋め込み（stgyCodeがある場合は常に埋め込む）
+	if (options?.stgyCode) {
+		const metadata = createDefaultMetadata(
+			options.stgyCode,
+			boardData.name || undefined,
+		);
+		pngBuffer = embedMetadata(pngBuffer, metadata);
+	}
 
 	return {
 		data: pngBuffer,
