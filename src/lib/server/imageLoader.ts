@@ -163,6 +163,7 @@ export async function loadBackgroundImage(
 
 /**
  * Cloudflare Workers 用: 背景画像読み込み
+ * backgrounds-hr/ を優先し、なければ backgrounds/ にフォールバック
  */
 async function loadBackgroundCloudflare(
 	backgroundId: number,
@@ -175,39 +176,44 @@ async function loadBackgroundCloudflare(
 		return null;
 	}
 
-	try {
-		const assetUrl = new URL(
-			`/backgrounds/${backgroundId}.png`,
-			"https://assets.local",
-		);
-		const response = await assets.fetch(new Request(assetUrl));
-		if (!response.ok) {
-			console.error(
-				`[imageLoader] Failed to fetch background ${backgroundId}: ${response.status}`,
-			);
-			return null;
+	// HR版を優先、なければ通常版にフォールバック
+	const bgPaths = [
+		`/backgrounds-hr/${backgroundId}.png`,
+		`/backgrounds/${backgroundId}.png`,
+	];
+
+	for (const bgPath of bgPaths) {
+		try {
+			const assetUrl = new URL(bgPath, "https://assets.local");
+			const response = await assets.fetch(new Request(assetUrl));
+			if (response.ok) {
+				const arrayBuffer = await response.arrayBuffer();
+				const base64 = arrayBufferToBase64(arrayBuffer);
+				const dataUri = `data:image/png;base64,${base64}`;
+				backgroundCache.set(backgroundId, dataUri);
+				return dataUri;
+			}
+		} catch {
+			// このパスでは見つからない、次を試す
 		}
-		const arrayBuffer = await response.arrayBuffer();
-		const base64 = arrayBufferToBase64(arrayBuffer);
-		const dataUri = `data:image/png;base64,${base64}`;
-		backgroundCache.set(backgroundId, dataUri);
-		return dataUri;
-	} catch (error) {
-		console.error(
-			`[imageLoader] Error loading background ${backgroundId}:`,
-			error,
-		);
-		return null;
 	}
+
+	console.error(`[imageLoader] Background ${backgroundId} not found`);
+	return null;
 }
 
 /**
  * Node.js 用: 背景画像読み込み
+ * backgrounds-hr/ を優先し、なければ backgrounds/ にフォールバック
  */
 async function loadBackgroundNode(
 	backgroundId: number,
 ): Promise<string | null> {
+	// Nitroビルド（.output/public）と開発環境（public）の両方に対応
+	// HR版を優先、なければ通常版にフォールバック
 	const possibleDirs = [
+		join(process.cwd(), ".output", "public", "backgrounds-hr"),
+		join(process.cwd(), "public", "backgrounds-hr"),
 		join(process.cwd(), ".output", "public", "backgrounds"),
 		join(process.cwd(), "public", "backgrounds"),
 	];
