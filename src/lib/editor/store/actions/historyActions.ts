@@ -231,6 +231,43 @@ export function createHistoryActions(store: EditorStore) {
 		}));
 	};
 
+	/**
+	 * デバッグパネルからボードを更新
+	 * グループ・選択を調整しつつ履歴に追加
+	 */
+	const updateBoardFromDebug = (board: BoardData) => {
+		store.setState((state) => {
+			const objectCount = board.objects.length;
+
+			// グループインデックスの調整（オブジェクト数変更対応）
+			const newGroups = state.groups
+				.map((group) => ({
+					...group,
+					objectIndices: group.objectIndices.filter((idx) => idx < objectCount),
+				}))
+				.filter((group) => group.objectIndices.length > 0);
+
+			// 選択インデックスの調整
+			const newSelectedIndices = state.selectedIndices.filter(
+				(idx) => idx < objectCount,
+			);
+
+			const newState = {
+				...state,
+				board,
+				groups: newGroups,
+				selectedIndices: newSelectedIndices,
+				isDirty: true,
+				circularMode: null, // デバッグ編集時は円形配置モードをリセット
+			};
+
+			return {
+				...newState,
+				...pushHistory(newState, "Debug panel edit"),
+			};
+		});
+	};
+
 	return {
 		setBoard,
 		updateBoardMeta,
@@ -239,6 +276,7 @@ export function createHistoryActions(store: EditorStore) {
 		redo,
 		jumpToHistory,
 		clearHistory,
+		updateBoardFromDebug,
 	};
 }
 

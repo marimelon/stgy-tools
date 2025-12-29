@@ -8,7 +8,8 @@ export type PanelId =
 	| "layerPanel"
 	| "propertyPanel"
 	| "historyPanel"
-	| "assetPanel";
+	| "assetPanel"
+	| "debugPanel";
 
 /** パネル配置スロット */
 export type PanelSlot = "left" | "right";
@@ -39,5 +40,6 @@ export const DEFAULT_PANEL_LAYOUT: PanelLayoutConfig = {
 		layerPanel: { slot: "right", order: 1, visible: true, collapsed: false },
 		propertyPanel: { slot: "right", order: 0, visible: true, collapsed: false },
 		historyPanel: { slot: "right", order: 2, visible: false, collapsed: false },
+		debugPanel: { slot: "right", order: 3, visible: false, collapsed: false },
 	},
 };

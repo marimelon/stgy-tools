@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import {
 	AssetPanel,
 	AssetPanelActions,
+	DebugPanel,
 	DuplicateBoardModal,
 	EditorBoard,
 	EditorToolbar,
@@ -720,6 +721,7 @@ function EditorContent({
 						layerPanel: <LayerPanel />,
 						propertyPanel: <PropertyPanel />,
 						historyPanel: <HistoryPanel />,
+						debugPanel: <DebugPanel />,
 					}}
 					panelActions={{
 						objectPalette: <ObjectPaletteActions />,

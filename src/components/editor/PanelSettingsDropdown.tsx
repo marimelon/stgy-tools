@@ -23,6 +23,7 @@ import {
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
+	DEFAULT_PANEL_LAYOUT,
 	type PanelConfig,
 	type PanelId,
 	type PanelSlot,
@@ -112,13 +113,8 @@ export function PanelSettingsDropdown() {
 		};
 	}, [isOpen]);
 
-	const panelIds: PanelId[] = [
-		"objectPalette",
-		"assetPanel",
-		"layerPanel",
-		"propertyPanel",
-		"historyPanel",
-	];
+	// DEFAULT_PANEL_LAYOUTから動的にパネルIDを取得
+	const panelIds = Object.keys(DEFAULT_PANEL_LAYOUT.panels) as PanelId[];
 
 	// スロット内の表示中パネルをソート順で取得（メモ化）
 	const getVisiblePanelsInSlot = useCallback(

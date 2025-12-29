@@ -10,6 +10,7 @@ export { BoardPropertyPanel } from "./BoardPropertyPanel";
 export type { ColorPaletteProps } from "./ColorPalette";
 // カラーパレット
 export { ColorPalette } from "./ColorPalette";
+export { DebugPanel } from "./DebugPanel";
 export type { DuplicateBoardModalProps } from "./DuplicateBoardModal";
 export { DuplicateBoardModal } from "./DuplicateBoardModal";
 export { EditorBoard } from "./EditorBoard";

@@ -435,7 +435,8 @@
 		"layerPanel": "Layers",
 		"propertyPanel": "Properties",
 		"assetPanel": "Assets",
-		"historyPanel": "History"
+		"historyPanel": "History",
+		"debugPanel": "Debug"
 	},
 	"panelSettings": {
 		"title": "Panel Settings",
@@ -448,7 +449,8 @@
 		"assetPanel": "Asset Panel",
 		"layerPanel": "Layer Panel",
 		"propertyPanel": "Property Panel",
-		"historyPanel": "History Panel"
+		"historyPanel": "History Panel",
+		"debugPanel": "Debug Panel"
 	},
 	"boardManager": {
 		"title": "Board Manager",

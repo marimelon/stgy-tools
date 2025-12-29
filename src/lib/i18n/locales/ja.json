@@ -435,7 +435,8 @@
 		"layerPanel": "レイヤー",
 		"propertyPanel": "プロパティ",
 		"assetPanel": "アセット",
-		"historyPanel": "履歴"
+		"historyPanel": "履歴",
+		"debugPanel": "デバッグ"
 	},
 	"panelSettings": {
 		"title": "パネル設定",
@@ -448,7 +449,8 @@
 		"assetPanel": "アセットパネル",
 		"layerPanel": "レイヤーパネル",
 		"propertyPanel": "プロパティパネル",
-		"historyPanel": "履歴パネル"
+		"historyPanel": "履歴パネル",
+		"debugPanel": "デバッグパネル"
 	},
 	"boardManager": {
 		"title": "ボード管理",
