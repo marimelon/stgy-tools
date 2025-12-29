@@ -22,23 +22,21 @@ import { DEFAULT_PANEL_LAYOUT } from "./types";
 const STORAGE_KEY = "strategy-board-panel-layout";
 
 /**
- * 古い展開パネル組み合わせベースのlocalStorageキーを削除
- * 新しい形式: editor-{left|right}-sidebar-{number}
- * 古い形式: editor-{left|right}-sidebar-{panelId1}-{panelId2}-...
+ * 古い数字のみのlocalStorageキーを削除
+ * 旧形式: editor-{left|right}-sidebar-{number}（異なるパネル構成でキーが衝突する問題があった）
+ * 現形式: editor-{left|right}-sidebar-{panelId1}-{panelId2}-...（パネルIDベース）
  */
 function cleanupLegacySidebarKeys(): void {
 	if (typeof window === "undefined") return;
 
 	const keysToRemove: string[] = [];
-	const validKeyPattern = /^editor-(left|right)-sidebar-\d+$/;
+	// 数字のみの旧形式を削除対象にする
+	const legacyKeyPattern = /^editor-(left|right)-sidebar-\d+$/;
 
 	for (let i = 0; i < localStorage.length; i++) {
 		const key = localStorage.key(i);
-		if (key?.startsWith("editor-") && key.includes("-sidebar-")) {
-			// 新しい形式（数字のみ）でなければ削除対象
-			if (!validKeyPattern.test(key)) {
-				keysToRemove.push(key);
-			}
+		if (key && legacyKeyPattern.test(key)) {
+			keysToRemove.push(key);
 		}
 	}
 

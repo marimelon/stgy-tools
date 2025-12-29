@@ -39,13 +39,16 @@ export function SidebarGroup({
 }: SidebarGroupProps) {
 	const { togglePanelCollapsed } = usePanelLayout();
 
-	// 展開中のパネル数
-	const expandedCount = panels.filter(([, config]) => !config.collapsed).length;
+	// 展開中のパネルを取得
+	const expandedPanels = panels.filter(([, config]) => !config.collapsed);
+	const expandedCount = expandedPanels.length;
+
+	// 展開中パネルのIDをキーに含める（異なるパネル組み合わせで別々のレイアウトを保存）
+	const expandedPanelIds = expandedPanels.map(([id]) => id).join("-");
 
 	// レイアウトの保存・復元
-	// 固定キー + パネル数形式で保存（展開パネルの組み合わせでキーが散乱するのを防ぐ）
 	const { defaultLayout, onLayoutChange } = useDefaultLayout({
-		id: `${storageId}-${expandedCount}`,
+		id: `${storageId}-${expandedPanelIds}`,
 		storage: localStorage,
 	});
 
