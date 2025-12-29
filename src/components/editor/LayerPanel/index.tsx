@@ -8,13 +8,13 @@
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-	useBoard,
 	useCanGroup,
 	useClipboard,
 	useEditorActions,
 	useFocusedGroupId,
 	useGroups,
 	useIsFocusMode,
+	useObjects,
 	useSelectedIndices,
 } from "@/lib/editor";
 import type { ObjectGroup } from "@/lib/editor/types";
@@ -31,8 +31,8 @@ import { useLayerItems } from "./useLayerItems";
 export function LayerPanel() {
 	const { t } = useTranslation();
 
-	// State
-	const board = useBoard();
+	// State（オブジェクト移動で再レンダリングしないようuseObjectsを使用）
+	const objects = useObjects();
 	const selectedIndices = useSelectedIndices();
 	const groups = useGroups();
 	const clipboard = useClipboard();
@@ -64,8 +64,6 @@ export function LayerPanel() {
 		focusGroup,
 		unfocus,
 	} = useEditorActions();
-
-	const { objects } = board;
 
 	// オブジェクトが属するグループを取得するヘルパー関数
 	const getGroupForObject = useCallback(

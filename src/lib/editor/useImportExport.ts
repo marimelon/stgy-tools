@@ -11,6 +11,7 @@ import {
 	parseBoardData,
 } from "@/lib/stgy";
 import { recalculateBoardSize } from "./factory";
+import { getEditorStore } from "./store/editorStore";
 
 /**
  * インポート結果
@@ -59,8 +60,8 @@ export interface UseImportExportReturn {
 	encodeKey: number | null;
 	/** エンコードキーを設定 */
 	setEncodeKey: (key: number | null) => void;
-	/** エクスポートコードを生成 */
-	generateExportCode: (board: BoardData) => string;
+	/** エクスポートコードを生成（ストアから最新のboardを取得） */
+	generateExportCode: () => string;
 	/** クリップボードにコピー */
 	copyToClipboard: (text: string) => Promise<void>;
 }
@@ -132,8 +133,10 @@ export function useImportExport(): UseImportExportReturn {
 		setShowExportModal(false);
 	};
 
-	// エクスポートコード生成
-	const generateExportCode = (board: BoardData): string => {
+	// エクスポートコード生成（ストアから最新のboardを取得）
+	const generateExportCode = (): string => {
+		const store = getEditorStore();
+		const board = store.state.board;
 		const { width, height } = recalculateBoardSize(board);
 		const exportBoard = {
 			...board,

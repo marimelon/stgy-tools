@@ -39,7 +39,6 @@ import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	GRID_SIZES,
-	useBoard,
 	useCanAlign,
 	useCanGroup,
 	useCanRedo,
@@ -113,7 +112,6 @@ export function EditorToolbar({
 	const toolbarSize = useToolbarSize(toolbarRef);
 
 	// State
-	const board = useBoard();
 	const selectedIndices = useSelectedIndices();
 	const clipboard = useClipboard();
 	const gridSettings = useGridSettings();
@@ -195,8 +193,8 @@ export function EditorToolbar({
 	// エクスポートコード（モーダル表示時のみ計算）
 	const exportedCode = useMemo(() => {
 		if (!showExportModal) return "";
-		return generateExportCode(board);
-	}, [showExportModal, board, generateExportCode]);
+		return generateExportCode();
+	}, [showExportModal, generateExportCode]);
 
 	// コピー処理
 	const handleCopyExport = () => {
@@ -544,7 +542,6 @@ export function EditorToolbar({
 			{/* エクスポートモーダル */}
 			{showExportModal && (
 				<ExportModal
-					board={board}
 					exportedCode={exportedCode}
 					encodeKey={encodeKey}
 					onEncodeKeyChange={setEncodeKey}

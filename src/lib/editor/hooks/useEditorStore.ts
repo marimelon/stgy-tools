@@ -126,9 +126,23 @@ export const selectors = {
 // 便利なフック
 // ============================================
 
-/** ボードを取得 */
+/**
+ * ボードを取得
+ * 注意: オブジェクト移動時など頻繁に再レンダリングが発生します
+ * 特定のプロパティのみ必要な場合は、useBoardName, useBackgroundId, useObjects を使用してください
+ */
 export function useBoard(): BoardData {
 	return useEditorSelector(selectors.board);
+}
+
+/** ボード名を取得（オブジェクト移動で再レンダリングしない） */
+export function useBoardName(): string {
+	return useEditorSelector(selectors.boardName);
+}
+
+/** 背景IDを取得（オブジェクト移動で再レンダリングしない） */
+export function useBackgroundId(): number {
+	return useEditorSelector(selectors.backgroundId);
 }
 
 /** オブジェクト配列を取得 */

@@ -13,7 +13,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import type { BackgroundId, BoardData } from "@/lib/stgy";
+import { useBackgroundId, useBoardName } from "@/lib/editor";
+import type { BackgroundId } from "@/lib/stgy";
 import { BackgroundId as BgId } from "@/lib/stgy";
 import { PropertySection } from "./FormInputs";
 
@@ -32,8 +33,6 @@ const BACKGROUND_IDS: BackgroundId[] = [
  * ボードプロパティパネルのProps
  */
 export interface BoardPropertyPanelProps {
-	/** ボードデータ */
-	board: BoardData;
 	/** メタデータ更新時のコールバック */
 	onUpdateMeta: (updates: {
 		name?: string;
@@ -45,13 +44,19 @@ export interface BoardPropertyPanelProps {
 
 /**
  * ボードプロパティパネル
+ *
+ * オブジェクト移動時の再レンダリングを避けるため、
+ * board全体ではなくuseBoardName/useBackgroundIdを使用
  */
 export function BoardPropertyPanel({
-	board,
 	onUpdateMeta,
 	onCommitHistory,
 }: BoardPropertyPanelProps) {
 	const { t } = useTranslation();
+
+	// 細粒度のセレクタを使用（オブジェクト移動で再レンダリングしない）
+	const boardName = useBoardName();
+	const backgroundId = useBackgroundId();
 
 	return (
 		<div className="h-full overflow-y-auto">
@@ -60,7 +65,7 @@ export function BoardPropertyPanel({
 				<PropertySection title={t("boardPanel.boardName")}>
 					<Input
 						type="text"
-						value={board.name}
+						value={boardName}
 						onChange={(e) => onUpdateMeta({ name: e.target.value })}
 						onBlur={() => onCommitHistory(t("boardPanel.boardNameChanged"))}
 						placeholder={t("boardPanel.boardNamePlaceholder")}
@@ -70,7 +75,7 @@ export function BoardPropertyPanel({
 				{/* 背景 */}
 				<PropertySection title={t("boardPanel.background")}>
 					<Select
-						value={String(board.backgroundId)}
+						value={String(backgroundId)}
 						onValueChange={(value) => {
 							onUpdateMeta({ backgroundId: Number(value) as BackgroundId });
 							onCommitHistory(t("boardPanel.backgroundChanged"));

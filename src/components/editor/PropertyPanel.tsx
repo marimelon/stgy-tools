@@ -6,7 +6,6 @@
 
 import { useCallback } from "react";
 import {
-	useBoard,
 	useCircularMode,
 	useEditorActions,
 	useIsCircularMode,
@@ -26,7 +25,6 @@ import { ObjectPropertyPanel } from "./ObjectPropertyPanel";
  * 複数オブジェクト選択時はバッチ編集パネルを表示
  */
 export function PropertyPanel() {
-	const board = useBoard();
 	const selectedIndices = useSelectedIndices();
 	const selectedObjects = useSelectedObjects();
 	const isCircularMode = useIsCircularMode();
@@ -98,7 +96,6 @@ export function PropertyPanel() {
 	// 未選択時はボード情報を表示
 	return (
 		<BoardPropertyPanel
-			board={board}
 			onUpdateMeta={updateBoardMeta}
 			onCommitHistory={commitHistory}
 		/>

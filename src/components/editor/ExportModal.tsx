@@ -26,10 +26,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { recalculateBoardSize } from "@/lib/editor";
+import { recalculateBoardSize, useBoard } from "@/lib/editor";
 import { useDebugMode } from "@/lib/editor/useDebugMode";
 import { createShortLinkFn } from "@/lib/server/shortLinks/serverFn";
-import { type BoardData, encodeStgy } from "@/lib/stgy";
+import { encodeStgy } from "@/lib/stgy";
 
 /** 共有リンク用の固定キー */
 const SHARE_LINK_KEY = 61;
@@ -38,8 +38,6 @@ const SHARE_LINK_KEY = 61;
  * エクスポートモーダルのProps
  */
 export interface ExportModalProps {
-	/** ボードデータ */
-	board: BoardData;
 	/** エクスポートされたコード */
 	exportedCode: string;
 	/** エンコードキー */
@@ -56,9 +54,10 @@ export interface ExportModalProps {
 
 /**
  * エクスポートモーダル
+ *
+ * 共有リンク生成時のみboardを使用するため、モーダル内でuseBoard()を呼び出し
  */
 export function ExportModal({
-	board,
 	exportedCode,
 	encodeKey,
 	onEncodeKeyChange,
@@ -68,6 +67,7 @@ export function ExportModal({
 }: ExportModalProps) {
 	const { t } = useTranslation();
 	const { debugMode } = useDebugMode();
+	const board = useBoard(); // 共有リンク生成時のみ使用
 	const keyInputId = useId();
 	const codeTextareaId = useId();
 	const [copied, setCopied] = useState(false);

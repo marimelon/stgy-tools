@@ -15,7 +15,7 @@ import {
 } from "@/lib/assets";
 import {
 	canAddObjects,
-	useBoard,
+	getEditorStore,
 	useEditorActions,
 	useSelectedIndices,
 } from "@/lib/editor";
@@ -35,7 +35,6 @@ interface ContextMenuState {
  */
 export function AssetPanel() {
 	const { t } = useTranslation();
-	const board = useBoard();
 	const { addObject, selectObjects, groupObjects, setError, commitHistory } =
 		useEditorActions();
 	const {
@@ -76,7 +75,8 @@ export function AssetPanel() {
 
 	// アセットをキャンバスに配置
 	const handleApplyAsset = (asset: StoredAsset) => {
-		// バリデーション
+		// バリデーション（コールバック実行時に最新のboardを取得）
+		const board = getEditorStore().state.board;
 		const validation = canAddObjects(board, asset.objects);
 		if (!validation.canAdd) {
 			setError({

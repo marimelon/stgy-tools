@@ -61,7 +61,9 @@ export {
 // Store Hooks
 export {
 	selectors,
+	useBackgroundId,
 	useBoard,
+	useBoardName,
 	useCircularMode,
 	useClipboard,
 	useEditingTextIndex,
