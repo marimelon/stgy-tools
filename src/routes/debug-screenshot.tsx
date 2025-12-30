@@ -57,7 +57,7 @@ export const Route = createFileRoute("/debug-screenshot")({
 });
 
 /** サンプルファイルパス */
-const SAMPLE_SCREENSHOT = "/screenshots/1.png";
+const SAMPLE_SCREENSHOT = "/assets/screenshots/1.png";
 const SAMPLE_STGY_CODE =
 	"[stgy:a-eFMQJgHhwm3PyeNb0MaapuluKTcgLk0bRyPO-2b-Gb4eCiP3kAQE9Tirq-tzLyXbmsjShbHzif29GZ9TVpMdTxJGlmEzLHHccbjk2WC]";
 
