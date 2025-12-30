@@ -2,7 +2,8 @@
  * 履歴状態更新ユーティリティ
  */
 
-import type { BoardData, HistoryEntry, ObjectGroup } from "../../types";
+import type { BoardData } from "@/lib/stgy";
+import type { HistoryEntry, ObjectGroup } from "../../types";
 import { MAX_HISTORY_SIZE } from "../../types";
 import { generateHistoryId } from "../utils";
 

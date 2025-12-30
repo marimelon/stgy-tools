@@ -7,6 +7,7 @@
 
 import { Fragment, type ReactNode } from "react";
 import {
+	type Layout,
 	Panel,
 	Group as PanelGroup,
 	Separator as PanelResizeHandle,
@@ -132,8 +133,8 @@ function renderPanelsWithGroup(
 	panelComponents: Record<PanelId, ReactNode>,
 	panelActions: Partial<Record<PanelId, ReactNode>> | undefined,
 	togglePanelCollapsed: (panelId: PanelId) => void,
-	defaultLayout: number[] | undefined,
-	onLayoutChange: (layout: number[]) => void,
+	defaultLayout: Layout | undefined,
+	onLayoutChange: (layout: Layout) => void,
 ) {
 	const elements: ReactNode[] = [];
 

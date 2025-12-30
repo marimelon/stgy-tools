@@ -2,7 +2,12 @@
  * Utility functions for asset operations
  */
 
-import type { BoardData, BoardObject, Position } from "@/lib/stgy";
+import {
+	BackgroundId,
+	type BoardData,
+	type BoardObject,
+	type Position,
+} from "@/lib/stgy";
 import type { AssetBounds, StoredAsset } from "./schema";
 
 /**
@@ -95,7 +100,7 @@ export function assetToBoardData(asset: StoredAsset): BoardData {
 		width: 512,
 		height: 384,
 		name: asset.name,
-		backgroundId: 0,
+		backgroundId: BackgroundId.None,
 		objects: asset.objects,
 	};
 }

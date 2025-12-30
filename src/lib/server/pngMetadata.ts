@@ -6,27 +6,16 @@
 
 import { decodeSync, encodeSync, type ITxtChunk } from "png-chunk-itxt";
 
-// png-chunks-extract / png-chunks-encode の型定義
-declare module "png-chunks-extract" {
-	interface PngChunk {
-		name: string;
-		data: Uint8Array;
-	}
-	function extractChunks(data: Uint8Array): PngChunk[];
-	export = extractChunks;
-}
-
-declare module "png-chunks-encode" {
-	interface PngChunk {
-		name: string;
-		data: Uint8Array;
-	}
-	function encodeChunks(chunks: PngChunk[]): Uint8Array;
-	export = encodeChunks;
-}
-
+// @ts-expect-error - png-chunks-encode has no type definitions
 import encodeChunks from "png-chunks-encode";
+// @ts-expect-error - png-chunks-extract has no type definitions
 import extractChunks from "png-chunks-extract";
+
+// png-chunks-extract / png-chunks-encode の型定義
+interface PngChunk {
+	name: string;
+	data: Uint8Array;
+}
 
 /** デフォルトのソフトウェア名 */
 const DEFAULT_SOFTWARE = "STGY Tools";
@@ -114,7 +103,7 @@ export function embedMetadata(
 	metadata: PngMetadata,
 ): Uint8Array {
 	// 1. PNGからチャンクを抽出
-	const chunks = extractChunks(pngBuffer);
+	const chunks: PngChunk[] = extractChunks(pngBuffer);
 
 	// 2. メタデータをiTXtチャンクに変換
 	const textChunks: Array<{ name: string; data: Uint8Array }> = [];
@@ -156,7 +145,7 @@ export function embedMetadata(
  * @returns 抽出されたメタデータ
  */
 export function extractMetadata(pngBuffer: Uint8Array): ExtractedPngMetadata {
-	const chunks = extractChunks(pngBuffer);
+	const chunks: PngChunk[] = extractChunks(pngBuffer);
 	const result: ExtractedPngMetadata = {};
 
 	// iTXtチャンクを探してデコード

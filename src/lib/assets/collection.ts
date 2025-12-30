@@ -7,6 +7,7 @@ import { dexieCollectionOptions } from "tanstack-dexie-db-collection";
 import { storedAssetSchema } from "./schema";
 
 export const assetsCollection = createCollection(
+	// @ts-expect-error - tanstack-dexie-db-collection uses older @tanstack/db types
 	dexieCollectionOptions({
 		id: "assets",
 		schema: storedAssetSchema,

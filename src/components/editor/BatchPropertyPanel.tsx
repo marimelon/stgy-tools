@@ -443,9 +443,9 @@ function ObjectSpecificParams({
 								: "";
 
 					const isMixedValue = isMixed(value);
-					const displayValue = isMixedValue
+					const displayValue: number = isMixedValue
 						? paramDef.defaultValue
-						: (value ?? paramDef.defaultValue);
+						: ((value as number | undefined) ?? paramDef.defaultValue);
 
 					return (
 						<div key={paramId} className="space-y-2">

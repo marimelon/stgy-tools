@@ -80,7 +80,7 @@ export function ExportModal({
 	const generateShareCode = (): string => {
 		const { width, height } = recalculateBoardSize(board);
 		const exportBoard = { ...board, width, height };
-		return encodeStgy(exportBoard, SHARE_LINK_KEY);
+		return encodeStgy(exportBoard, { key: SHARE_LINK_KEY });
 	};
 
 	const handleCopy = () => {

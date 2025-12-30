@@ -52,41 +52,34 @@ export function useBoards(options: UseBoardsOptions = {}) {
 	const [error, setError] = useState<BoardsError | null>(null);
 
 	// Live Query: Get all boards
-	const {
-		data,
-		isLoading,
-		error: queryError,
-	} = useLiveQuery((q) => q.from({ board: boardsCollection }));
+	const { data, isLoading, isError, status } = useLiveQuery((q) =>
+		q.from({ board: boardsCollection }),
+	);
 
 	// Handle query errors
 	useEffect(() => {
-		if (queryError) {
-			const errorMessage =
-				queryError instanceof Error ? queryError.message : String(queryError);
-
+		if (isError) {
 			// Detect IndexedDB unavailability (common in private browsing)
 			if (
-				errorMessage.includes("IndexedDB") ||
-				errorMessage.includes("IDBDatabase") ||
-				errorMessage.includes("access denied") ||
-				errorMessage.includes("QuotaExceededError")
+				status.includes("IndexedDB") ||
+				status.includes("IDBDatabase") ||
+				status.includes("access denied") ||
+				status.includes("QuotaExceededError")
 			) {
 				setError({
 					type: "indexeddb_unavailable",
-					message: errorMessage,
-					originalError: queryError,
+					message: status,
 				});
 			} else {
 				setError({
 					type: "load_failed",
-					message: errorMessage,
-					originalError: queryError,
+					message: status,
 				});
 			}
 		} else {
 			setError(null);
 		}
-	}, [queryError]);
+	}, [isError, status]);
 
 	// Client-side filtering and sorting
 	const boards = (data ?? [])
@@ -173,7 +166,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				if (updates.groups !== undefined) draft.groups = updates.groups;
 				if (updates.gridSettings !== undefined)
 					draft.gridSettings = updates.gridSettings;
-				if (contentHash !== undefined) draft.contentHash = contentHash;
+				if (contentHash != null) draft.contentHash = contentHash;
 				draft.updatedAt = new Date().toISOString();
 			});
 		},

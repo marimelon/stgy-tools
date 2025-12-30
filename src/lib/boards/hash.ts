@@ -10,7 +10,10 @@ import { decodeStgy } from "@/lib/stgy";
 export async function generateHashFromBinary(
 	binary: Uint8Array,
 ): Promise<string> {
-	const hashBuffer = await crypto.subtle.digest("SHA-256", binary);
+	const hashBuffer = await crypto.subtle.digest(
+		"SHA-256",
+		binary as BufferSource,
+	);
 	const hashArray = Array.from(new Uint8Array(hashBuffer));
 	return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }

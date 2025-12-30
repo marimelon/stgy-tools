@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type UserConfig } from "vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
@@ -40,28 +40,30 @@ async function getPlugins() {
 	return plugins;
 }
 
-export default defineConfig(async () => ({
-	plugins: await getPlugins(),
-	// ビルドターゲットを定義として埋め込む
-	define: {
-		"import.meta.env.BUILD_TARGET": JSON.stringify(buildTarget),
-	},
-	resolve: {
-		alias:
-			buildTarget === "cloudflare"
-				? {
-						// Cloudflare ビルド時は @resvg/resvg-js を空のモジュールにエイリアス
-						"@resvg/resvg-js": "@cf-wasm/resvg",
-					}
-				: {},
-	},
-	// Node.js ビルド時のみ SSR 設定
-	...(buildTarget === "node" && {
-		ssr: {
-			external: ["@resvg/resvg-js"],
+export default defineConfig(async (): Promise<UserConfig> => {
+	return {
+		plugins: await getPlugins(),
+		// ビルドターゲットを定義として埋め込む
+		define: {
+			"import.meta.env.BUILD_TARGET": JSON.stringify(buildTarget),
 		},
-		optimizeDeps: {
-			exclude: ["@resvg/resvg-js"],
+		resolve: {
+			alias:
+				buildTarget === "cloudflare"
+					? {
+							// Cloudflare ビルド時は @resvg/resvg-js を空のモジュールにエイリアス
+							"@resvg/resvg-js": "@cf-wasm/resvg",
+						}
+					: {},
 		},
-	}),
-}));
+		// Node.js ビルド時のみ SSR 設定
+		...(buildTarget === "node" && {
+			ssr: {
+				external: ["@resvg/resvg-js"],
+			},
+			optimizeDeps: {
+				exclude: ["@resvg/resvg-js"],
+			},
+		}),
+	};
+});

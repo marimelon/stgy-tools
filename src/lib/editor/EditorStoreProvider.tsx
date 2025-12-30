@@ -7,7 +7,8 @@
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 import type { BoardData } from "@/lib/stgy";
 import { createInitialStateWithOptions } from "./reducer";
-import { createEditorStore, type EditorStore } from "./store/editorStore";
+import { createEditorStore } from "./store/editorStore";
+import type { EditorStore } from "./store/types";
 import type { GridSettings, ObjectGroup } from "./types";
 
 /** StoreContext */

@@ -7,6 +7,7 @@ import { dexieCollectionOptions } from "tanstack-dexie-db-collection";
 import { storedBoardSchema } from "./schema";
 
 export const boardsCollection = createCollection(
+	// @ts-expect-error - tanstack-dexie-db-collection uses older @tanstack/db types
 	dexieCollectionOptions({
 		id: "boards",
 		schema: storedBoardSchema,

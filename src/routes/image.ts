@@ -170,7 +170,7 @@ export const Route = createFileRoute("/image")({
 					);
 
 					// 5. レスポンスを返す
-					return new Response(result.data, {
+					return new Response(result.data as BodyInit, {
 						headers: {
 							"Content-Type": result.contentType,
 							"Content-Disposition": contentDisposition,

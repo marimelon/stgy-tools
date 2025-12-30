@@ -218,7 +218,7 @@ function EditorPage() {
 			if (!memoryOnly && !isMemoryOnlyMode) {
 				const { width, height } = recalculateBoardSize(newBoard);
 				const boardToSave = { ...newBoard, width, height };
-				const stgyCode = encodeStgy(boardToSave, 0);
+				const stgyCode = encodeStgy(boardToSave, { key: 0 });
 
 				const newBoardId = await createBoard(
 					newBoard.name,

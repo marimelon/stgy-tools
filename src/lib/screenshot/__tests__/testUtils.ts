@@ -46,7 +46,7 @@ export function comparePixels(
 	const diffPixelCount = pixelmatch(
 		img1.data,
 		img2.data,
-		null, // 差分画像は生成しない
+		undefined, // 差分画像は生成しない
 		width,
 		height,
 		{ threshold },

@@ -26,7 +26,7 @@ import { comparePixels, parsePng } from "@/lib/screenshot/__tests__/testUtils";
 import { renderSvgToPng } from "@/lib/server/resvgWrapper";
 import { renderBoardToSVG } from "@/lib/server/svgRenderer";
 import type { BoardData, BoardObject } from "@/lib/stgy/types";
-import { ObjectIds } from "@/lib/stgy/types";
+import { BackgroundId, ObjectIds } from "@/lib/stgy/types";
 
 // ====================================================================
 // 共通計算ロジックの単体テスト
@@ -231,7 +231,7 @@ function createTestBoardData(objects: BoardObject[]): BoardData {
 		width: 512,
 		height: 384,
 		name: "Test Board",
-		backgroundId: 0,
+		backgroundId: BackgroundId.None,
 		objects,
 	};
 }
@@ -400,7 +400,7 @@ describe("Server rendering consistency", () => {
 
 	it("should apply transforms correctly", async () => {
 		const boardData = createTestBoardData([
-			createObject(ObjectIds.Waymark_A, {
+			createObject(ObjectIds.WaymarkA, {
 				position: { x: 256, y: 192 },
 				rotation: 45,
 				size: 150,

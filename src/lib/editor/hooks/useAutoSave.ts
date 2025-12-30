@@ -73,7 +73,7 @@ export function useAutoSave(options: UseAutoSaveOptions) {
 
 			const { width, height } = recalculateBoardSize(board);
 			const boardToSave = { ...board, width, height };
-			const stgyCode = encodeStgy(boardToSave, encodeKey ?? 0);
+			const stgyCode = encodeStgy(boardToSave, { key: encodeKey ?? 0 });
 
 			onSave(board.name, stgyCode, encodeKey ?? 0, groups, gridSettings);
 			setLastSavedAt(new Date());

@@ -54,7 +54,7 @@ describe("hash", () => {
 				backgroundId: 1,
 				objects: [],
 			};
-			const stgyCode = encodeStgy(board, 0);
+			const stgyCode = encodeStgy(board, { key: 0 });
 
 			const hash = await generateContentHash(stgyCode);
 
@@ -96,9 +96,9 @@ describe("hash", () => {
 			};
 
 			// Encode with different keys
-			const stgyCode0 = encodeStgy(board, 0);
-			const stgyCode10 = encodeStgy(board, 10);
-			const stgyCode63 = encodeStgy(board, 63);
+			const stgyCode0 = encodeStgy(board, { key: 0 });
+			const stgyCode10 = encodeStgy(board, { key: 10 });
+			const stgyCode63 = encodeStgy(board, { key: 63 });
 
 			// The encoded strings should be different
 			expect(stgyCode0).not.toBe(stgyCode10);
@@ -132,8 +132,8 @@ describe("hash", () => {
 				objects: [],
 			};
 
-			const stgyCode1 = encodeStgy(board1, 0);
-			const stgyCode2 = encodeStgy(board2, 0);
+			const stgyCode1 = encodeStgy(board1, { key: 0 });
+			const stgyCode2 = encodeStgy(board2, { key: 0 });
 
 			const hash1 = await generateContentHash(stgyCode1);
 			const hash2 = await generateContentHash(stgyCode2);

@@ -4,7 +4,6 @@
  */
 
 // TanStack Start のデフォルトエントリをインポート
-// @ts-expect-error TanStack Start のエントリポイント
 import tanstackEntry from "@tanstack/react-start/server-entry";
 import {
 	type CloudflareEnv,
@@ -29,6 +28,7 @@ export default {
 		console.log("[server-entry] ASSETS available:", !!env?.ASSETS);
 
 		// TanStack Start のハンドラーを呼び出す
+		// @ts-expect-error TanStack Start with Cloudflare Workers env and ctx
 		return tanstackEntry.fetch(request, env, ctx);
 	},
 };
