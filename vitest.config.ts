@@ -5,7 +5,8 @@ export default defineConfig({
   plugins: [viteTsConfigPaths()],
   test: {
     globals: true,
-    environment: "node",
-    include: ["src/**/*.test.ts"],
+    environment: "jsdom",
+    include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    setupFiles: ["./src/__tests__/setup.ts"],
   },
 });

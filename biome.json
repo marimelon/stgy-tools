@@ -27,6 +27,22 @@
 			"recommended": true
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["**/__tests__/**/*.test.tsx", "**/__tests__/**/*.test.ts"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noNonNullAssertion": "off"
+					},
+					"a11y": {
+						"noSvgWithoutTitle": "off",
+						"useKeyWithClickEvents": "off"
+					}
+				}
+			}
+		}
+	],
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
