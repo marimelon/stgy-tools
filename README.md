@@ -21,6 +21,14 @@ A strategy board viewer/editor for FFXIV (Final Fantasy XIV). Decodes `[stgy:a..
 pnpm install
 ```
 
+### Asset Setup
+
+Download game assets (icons and backgrounds) from [XIVAPI v2](https://v2.xivapi.com/api/docs):
+
+```bash
+npx tsx scripts/setup-assets.ts
+```
+
 ## Commands
 
 ### Development
