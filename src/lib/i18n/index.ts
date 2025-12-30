@@ -14,7 +14,7 @@ i18n
 	.use(initReactI18next)
 	.init({
 		resources,
-		fallbackLng: "ja",
+		fallbackLng: "en",
 		supportedLngs: ["ja", "en"],
 		interpolation: {
 			escapeValue: false, // React already escapes values

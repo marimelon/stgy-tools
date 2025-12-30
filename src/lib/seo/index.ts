@@ -11,7 +11,7 @@ export const SITE_CONFIG = {
 		"FFXIV ストラテジーボードを表示・編集するツール。stgyコードの読み込み・作成に対応。",
 	url: "https://stgy.m4e.dev",
 	locale: {
-		default: "ja",
+		default: "en",
 		supported: ["ja", "en"] as const,
 	},
 } as const;
@@ -175,9 +175,7 @@ export function getLocalizedSeo(
 	)
 		? lang
 		: null;
-	const isJa =
-		normalizedLang === "ja" ||
-		(!normalizedLang && SITE_CONFIG.locale.default === "ja");
+	const isJa = normalizedLang === "ja";
 	return {
 		title: isJa ? seo.titleJa : seo.title,
 		description: isJa ? seo.descriptionJa : seo.description,

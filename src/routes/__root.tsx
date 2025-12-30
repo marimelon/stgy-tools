@@ -23,15 +23,15 @@ const jsonLdScript = JSON.stringify(generateWebApplicationSchema());
 
 export const Route = createRootRoute({
 	beforeLoad: ({ search }) => {
-		// SSRでi18nの言語を設定
+		// SSRでi18nの言語を設定（URLにlangパラメータがある場合のみ）
 		const langParam = (search as { lang?: string }).lang;
 		const supportedLangs = SITE_CONFIG.locale.supported;
 		const isSupported = supportedLangs.includes(
 			langParam as (typeof supportedLangs)[number],
 		);
-		const lang = isSupported ? langParam : SITE_CONFIG.locale.default;
-		if (i18n.language !== lang) {
-			i18n.changeLanguage(lang);
+		// URLにlangがある場合のみi18nを同期（なければlocalStorageの設定を維持）
+		if (isSupported && i18n.language !== langParam) {
+			i18n.changeLanguage(langParam);
 		}
 	},
 	head: () => ({
@@ -124,20 +124,33 @@ const initialStyle = {
 };
 
 function RootDocument() {
+	const { i18n } = useTranslation();
+
 	// SSRでも動作するようにURLの検索パラメータから言語を取得
 	const search = useRouterState({
 		select: (s) => s.location.search as { lang?: string },
 	});
-	// サポートされている言語のみ認識、それ以外はデフォルト言語にフォールバック
+
+	// サポートされている言語のみ認識
 	const supportedLangs = SITE_CONFIG.locale.supported;
-	const isSupported = supportedLangs.includes(
+	const isUrlLangSupported = supportedLangs.includes(
 		search.lang as (typeof supportedLangs)[number],
 	);
-	const lang = isSupported ? (search.lang as "ja" | "en") : "ja";
 
-	// i18nの言語も同期（クライアントサイドのみ）
-	const { i18n } = useTranslation();
-	if (typeof window !== "undefined" && i18n.language !== lang) {
+	// html lang属性の決定: URLパラメータ > i18nの現在の言語 > デフォルト
+	const currentI18nLang = i18n.language.split("-")[0] as "ja" | "en";
+	const lang = isUrlLangSupported
+		? (search.lang as "ja" | "en")
+		: supportedLangs.includes(currentI18nLang)
+			? currentI18nLang
+			: "en";
+
+	// URLにlangがある場合のみi18nを同期（クライアントサイドのみ）
+	if (
+		typeof window !== "undefined" &&
+		isUrlLangSupported &&
+		i18n.language !== lang
+	) {
 		i18n.changeLanguage(lang);
 	}
 
