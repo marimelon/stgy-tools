@@ -97,17 +97,6 @@ src/
 └── ui/                 # Shared UI components
 ```
 
-## Documentation
-
-See the `docs/` directory for detailed specifications:
-
-- `docs/spec.md` - stgy format specification
-- `docs/viewer-spec.md` - Viewer UI specification
-- `docs/editor-spec.md` - Editor UI specification
-- `docs/panel-spec.md` - Panel system specification
-- `docs/image-render-spec.md` - Image generation API specification
-- `docs/csv-spec.md` - CSV data structure specification
-
 ## Language Switching
 
 Switch languages via URL query parameter:
