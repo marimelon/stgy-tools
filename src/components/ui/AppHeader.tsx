@@ -3,7 +3,7 @@
  * 全ページで統一されたナビゲーションを提供
  */
 
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -75,12 +75,22 @@ function NavLink({
  */
 function LanguageSelector() {
 	const { i18n, t } = useTranslation();
+	const location = useLocation();
+	const navigate = useNavigate();
 
 	const changeLanguage = useCallback(
 		(lang: string) => {
 			i18n.changeLanguage(lang);
+			// URLのlangパラメータも更新
+			const searchParams = new URLSearchParams(location.search);
+			searchParams.set("lang", lang);
+			navigate({
+				to: location.pathname,
+				search: Object.fromEntries(searchParams.entries()),
+				replace: true,
+			});
 		},
-		[i18n],
+		[i18n, location.pathname, location.search, navigate],
 	);
 
 	return (
