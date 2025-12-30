@@ -85,7 +85,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		deleteSelected,
 		groupSelected,
 		ungroup,
-		moveLayer,
+		moveSelectedLayer,
 		selectAll,
 		startTextEdit,
 		endTextEdit,
@@ -511,7 +511,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 					delete: deleteSelected,
 					group: groupSelected,
 					ungroup: () => selectedGroup && ungroup(selectedGroup.id),
-					moveLayer,
+					moveLayer: moveSelectedLayer,
 					selectAll,
 				}}
 			/>

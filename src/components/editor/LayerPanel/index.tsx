@@ -60,7 +60,7 @@ export function LayerPanel() {
 		duplicateSelected,
 		deleteSelected,
 		groupSelected,
-		moveLayer,
+		moveSelectedLayer,
 		focusGroup,
 		unfocus,
 	} = useEditorActions();
@@ -264,7 +264,7 @@ export function LayerPanel() {
 			},
 			moveLayer: (direction: "front" | "back" | "forward" | "backward") => {
 				if (selectedIndices.length === 1) {
-					moveLayer(direction);
+					moveSelectedLayer(direction);
 				}
 			},
 			startRenameGroup: handleStartRenameGroup,
@@ -286,7 +286,7 @@ export function LayerPanel() {
 			handleToggleLock,
 			handleToggleGroupVisibility,
 			handleToggleGroupLock,
-			moveLayer,
+			moveSelectedLayer,
 			selectedIndices,
 			handleStartRenameGroup,
 			toggleGroupCollapse,

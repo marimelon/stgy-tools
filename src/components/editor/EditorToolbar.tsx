@@ -133,7 +133,7 @@ export function EditorToolbar({
 		copySelected,
 		paste,
 		setBoard,
-		moveLayer,
+		moveSelectedLayer,
 		groupSelected,
 		ungroup,
 		setGridSettings,
@@ -287,28 +287,28 @@ export function EditorToolbar({
 						{/* レイヤー操作 */}
 						<div className="flex items-center gap-1 flex-shrink-0">
 							<ToolbarButton
-								onClick={() => moveLayer("front")}
+								onClick={() => moveSelectedLayer("front")}
 								disabled={!hasSingleSelection}
 								title={t("toolbar.bringToFront")}
 							>
 								<ArrowUpToLine size={ICON_SIZE} />
 							</ToolbarButton>
 							<ToolbarButton
-								onClick={() => moveLayer("forward")}
+								onClick={() => moveSelectedLayer("forward")}
 								disabled={!hasSingleSelection}
 								title={t("toolbar.bringForward")}
 							>
 								<ArrowUp size={ICON_SIZE} />
 							</ToolbarButton>
 							<ToolbarButton
-								onClick={() => moveLayer("backward")}
+								onClick={() => moveSelectedLayer("backward")}
 								disabled={!hasSingleSelection}
 								title={t("toolbar.sendBackward")}
 							>
 								<ArrowDown size={ICON_SIZE} />
 							</ToolbarButton>
 							<ToolbarButton
-								onClick={() => moveLayer("back")}
+								onClick={() => moveSelectedLayer("back")}
 								disabled={!hasSingleSelection}
 								title={t("toolbar.sendToBack")}
 							>
@@ -487,7 +487,7 @@ export function EditorToolbar({
 						<Divider />
 						<div className="flex-shrink-0">
 							<MoreMenu
-								onMoveLayer={moveLayer}
+								onMoveLayer={moveSelectedLayer}
 								hasSingleSelection={hasSingleSelection}
 								onGroup={groupSelected}
 								onUngroup={() => selectedGroup && ungroup(selectedGroup.id)}
