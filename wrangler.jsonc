@@ -14,9 +14,17 @@
     "binding": "ASSETS"
   },
   "vars": {
-    "EXTERNAL_IMAGE_RENDERER_URL": "https://stgy.m4e.dev/image",
+    "EXTERNAL_IMAGE_RENDERER_URL": "https://stgy2.m4e.dev/image",
     "SHORT_LINKS_ENABLED": "true"
   },
+  "workers_dev": true,
+  "preview_urls": true,
+  "routes": [
+    {
+      "pattern": "stgy1.m4e.dev",
+      "custom_domain": true
+    }
+  ],
   "observability": {
     "logs": {
       "enabled": true,
