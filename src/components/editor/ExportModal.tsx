@@ -7,6 +7,7 @@ import {
 	Check,
 	Copy,
 	ExternalLink,
+	Eye,
 	Key,
 	Link2,
 	Loader2,
@@ -267,18 +268,31 @@ export function ExportModal({
 				</div>
 
 				<DialogFooter className="flex-col sm:flex-row gap-2">
-					<Button
-						variant="outline"
-						onClick={() => {
-							const url = `/image/generate?stgy=${encodeURIComponent(exportedCode)}`;
-							window.open(url, "_blank");
-						}}
-						disabled={!exportedCode}
-						className="sm:mr-auto"
-					>
-						<ExternalLink className="size-4" />
-						{t("exportModal.openImageGenerator")}
-					</Button>
+					<div className="flex gap-2 sm:mr-auto">
+						<Button
+							variant="outline"
+							onClick={() => {
+								const shareCode = generateShareCode();
+								const url = `/?stgy=${encodeURIComponent(shareCode)}`;
+								window.open(url, "_blank");
+							}}
+							disabled={!exportedCode}
+						>
+							<Eye className="size-4" />
+							{t("exportModal.openViewer")}
+						</Button>
+						<Button
+							variant="outline"
+							onClick={() => {
+								const url = `/image/generate?stgy=${encodeURIComponent(exportedCode)}`;
+								window.open(url, "_blank");
+							}}
+							disabled={!exportedCode}
+						>
+							<ExternalLink className="size-4" />
+							{t("exportModal.openImageGenerator")}
+						</Button>
+					</div>
 					<Button variant="ghost" onClick={onClose}>
 						{t("exportModal.close")}
 					</Button>
