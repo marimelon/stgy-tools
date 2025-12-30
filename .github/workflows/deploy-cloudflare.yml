@@ -11,8 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
-      - name: Checkout
+      - name: Checkout with submodules
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.ASSETS_PAT }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
