@@ -108,6 +108,7 @@ export function CircularHandles({
 			/>
 
 			{/* 中心ハンドル（ダイヤモンド形） */}
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction */}
 			<rect
 				x={center.x - HANDLE_SIZE / 2}
 				y={center.y - HANDLE_SIZE / 2}
@@ -118,12 +119,14 @@ export function CircularHandles({
 				strokeWidth={2}
 				transform={`rotate(45, ${center.x}, ${center.y})`}
 				style={{ cursor: "move" }}
+				onClick={(e) => e.stopPropagation()}
 				onPointerDown={handleCenterPointerDown}
 				onPointerMove={handlePointerMove}
 				onPointerUp={handlePointerUp}
 			/>
 
 			{/* 半径ハンドル（円形） */}
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction */}
 			<circle
 				cx={radiusHandleX}
 				cy={radiusHandleY}
@@ -132,6 +135,7 @@ export function CircularHandles({
 				stroke="#fff"
 				strokeWidth={2}
 				style={{ cursor: "ew-resize" }}
+				onClick={(e) => e.stopPropagation()}
 				onPointerDown={handleRadiusPointerDown}
 				onPointerMove={handlePointerMove}
 				onPointerUp={handlePointerUp}

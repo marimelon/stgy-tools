@@ -101,6 +101,7 @@ export function SelectionHandles({
 			/>
 
 			{/* 回転ハンドル (円形) */}
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction */}
 			<circle
 				cx={offsetX}
 				cy={rotateHandleY}
@@ -109,11 +110,13 @@ export function SelectionHandles({
 				stroke="#fff"
 				strokeWidth="1"
 				style={{ cursor: "grab" }}
+				onClick={(e) => e.stopPropagation()}
 				onPointerDown={(e) => handlePointerDown("rotate", e)}
 			/>
 
 			{/* 四隅のリサイズハンドル */}
 			{corners.map(({ handle, cx, cy }) => (
+				// biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction
 				<rect
 					key={handle}
 					x={cx - HANDLE_SIZE / 2}
@@ -124,6 +127,7 @@ export function SelectionHandles({
 					stroke="#fff"
 					strokeWidth="1"
 					style={{ cursor: getResizeCursor(handle, rotation) }}
+					onClick={(e) => e.stopPropagation()}
 					onPointerDown={(e) => handlePointerDown(handle, e)}
 				/>
 			))}

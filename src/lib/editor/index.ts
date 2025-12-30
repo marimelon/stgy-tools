@@ -90,6 +90,7 @@ export type {
 	UseLongPressReturn,
 } from "./hooks/useLongPress";
 export { useLongPress } from "./hooks/useLongPress";
+export { useSVGHandleEvents } from "./hooks/useSVGHandleEvents";
 export type { CreateInitialStateOptions } from "./reducer";
 export {
 	createInitialState,
