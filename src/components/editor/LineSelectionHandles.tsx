@@ -115,6 +115,7 @@ export function LineSelectionHandles({
 			/>
 
 			{/* 始点ハンドル（四角） */}
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction */}
 			<rect
 				x={startX - HANDLE_SIZE / 2}
 				y={startY - HANDLE_SIZE / 2}
@@ -124,12 +125,14 @@ export function LineSelectionHandles({
 				stroke="#fff"
 				strokeWidth={HANDLE_STROKE_WIDTH}
 				style={{ cursor: "move" }}
+				onClick={(e) => e.stopPropagation()}
 				onPointerDown={handleStartPointerDown}
 				onPointerMove={handlePointerMove}
 				onPointerUp={handlePointerUp}
 			/>
 
 			{/* 終点ハンドル（丸） */}
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction */}
 			<circle
 				cx={endX}
 				cy={endY}
@@ -138,6 +141,7 @@ export function LineSelectionHandles({
 				stroke="#fff"
 				strokeWidth={HANDLE_STROKE_WIDTH}
 				style={{ cursor: "move" }}
+				onClick={(e) => e.stopPropagation()}
 				onPointerDown={handleEndPointerDown}
 				onPointerMove={handlePointerMove}
 				onPointerUp={handlePointerUp}
