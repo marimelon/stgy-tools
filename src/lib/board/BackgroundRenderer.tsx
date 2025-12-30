@@ -17,7 +17,7 @@ interface BackgroundRendererProps {
 /**
  * 背景レンダラー
  * BackgroundId に対応する画像を表示
- * - クライアント: /backgrounds-hr/{id}.png を優先、なければ /backgrounds/{id}.png にフォールバック
+ * - クライアント: /assets/backgrounds-hr/{id}.png を優先、なければ /assets/backgrounds/{id}.png にフォールバック
  * - サーバー: imageDataUri (Base64) を使用
  */
 export function BackgroundRenderer({
@@ -44,8 +44,8 @@ export function BackgroundRenderer({
 	const href =
 		imageDataUri ??
 		(useHr
-			? `/backgrounds-hr/${backgroundId}.png`
-			: `/backgrounds/${backgroundId}.png`);
+			? `/assets/backgrounds-hr/${backgroundId}.png`
+			: `/assets/backgrounds/${backgroundId}.png`);
 
 	return (
 		<image

@@ -61,7 +61,10 @@ async function preloadImagesCloudflare(objectIds: number[]): Promise<void> {
 	const results = await Promise.all(
 		objectIds.map(async (objectId) => {
 			// HR版を優先、なければ通常版にフォールバック
-			const iconPaths = [`/icons-hr/${objectId}.png`, `/icons/${objectId}.png`];
+			const iconPaths = [
+				`/assets/icons-hr/${objectId}.png`,
+				`/assets/icons/${objectId}.png`,
+			];
 
 			for (const iconPath of iconPaths) {
 				try {
@@ -178,8 +181,8 @@ async function loadBackgroundCloudflare(
 
 	// HR版を優先、なければ通常版にフォールバック
 	const bgPaths = [
-		`/backgrounds-hr/${backgroundId}.png`,
-		`/backgrounds/${backgroundId}.png`,
+		`/assets/backgrounds-hr/${backgroundId}.png`,
+		`/assets/backgrounds/${backgroundId}.png`,
 	];
 
 	for (const bgPath of bgPaths) {

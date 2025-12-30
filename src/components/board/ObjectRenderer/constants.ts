@@ -6,7 +6,7 @@ import { ObjectIds } from "@/lib/stgy";
 
 /**
  * カスタムアイコン対応オブジェクトIDのセット
- * 画像ファイルは /public/icons/{objectId}.png に配置
+ * 画像ファイルは /public/assets/icons/{objectId}.png に配置
  * 注: ConeAoE, LineAoE, Line はパラメータ反映のため常にSVGでレンダリング（画像はサイドバーアイコンのみ）
  */
 export const CUSTOM_ICON_IDS = new Set<number>([
@@ -563,7 +563,7 @@ export const COLOR_CHANGEABLE_OBJECT_IDS = new Set<number>([
 
 /**
  * 高解像度(HR)画像が存在するオブジェクトID
- * 画像ファイルは /public/icons-hr/{objectId}.png に配置
+ * 画像ファイルは /public/assets/icons-hr/{objectId}.png に配置
  */
 export const HR_ICON_IDS = new Set<number>([
 	4, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
@@ -585,11 +585,11 @@ export const HR_ICON_IDS = new Set<number>([
 
 /**
  * オブジェクトIDに対応するアイコンパスを取得
- * HR画像が存在すれば /icons-hr/、なければ /icons/ を返す
+ * HR画像が存在すれば /assets/icons-hr/、なければ /assets/icons/ を返す
  */
 export function getIconPath(objectId: number): string {
 	if (HR_ICON_IDS.has(objectId)) {
-		return `/icons-hr/${objectId}.png`;
+		return `/assets/icons-hr/${objectId}.png`;
 	}
-	return `/icons/${objectId}.png`;
+	return `/assets/icons/${objectId}.png`;
 }

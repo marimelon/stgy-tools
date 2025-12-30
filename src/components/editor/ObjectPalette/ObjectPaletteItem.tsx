@@ -85,7 +85,7 @@ export function ObjectPaletteItem({
 			>
 				{hasPaletteIcon ? (
 					<img
-						src={`/palette-icons/${objectId}.png`}
+						src={`/assets/palette-icons/${objectId}.png`}
 						alt=""
 						aria-hidden="true"
 						style={{
