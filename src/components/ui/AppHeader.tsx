@@ -44,20 +44,34 @@ function NavLink({
 	to,
 	active,
 	stgy,
+	lang,
 	children,
 }: {
 	to: string;
 	active: boolean;
 	stgy?: string;
+	lang?: string;
 	children: React.ReactNode;
 }) {
-	// stgyを引き継ぐべきパスの場合のみsearchパラメータを付与
+	// stgyを引き継ぐべきパスの場合のみstgyパラメータを付与
 	const shouldPreserveStgy = stgy && STGY_PRESERVE_PATHS.includes(to);
+
+	// searchパラメータを構築
+	const search = useMemo(() => {
+		const params: Record<string, string> = {};
+		if (shouldPreserveStgy && stgy) {
+			params.stgy = stgy;
+		}
+		if (lang) {
+			params.lang = lang;
+		}
+		return Object.keys(params).length > 0 ? params : undefined;
+	}, [shouldPreserveStgy, stgy, lang]);
 
 	return (
 		<Link
 			to={to}
-			search={shouldPreserveStgy ? { stgy } : undefined}
+			search={search}
 			className={cn(
 				"text-sm font-medium transition-colors",
 				active
@@ -122,6 +136,18 @@ function useCurrentStgy(): string | undefined {
 }
 
 /**
+ * 現在のURLからlangパラメータを取得するフック
+ */
+function useCurrentLang(): string | undefined {
+	const location = useLocation();
+
+	return useMemo(() => {
+		const searchParams = new URLSearchParams(location.search);
+		return searchParams.get("lang") ?? undefined;
+	}, [location.search]);
+}
+
+/**
  * 共通ヘッダー
  */
 export function AppHeader({
@@ -134,6 +160,7 @@ export function AppHeader({
 }: AppHeaderProps) {
 	const { t } = useTranslation();
 	const stgy = useCurrentStgy();
+	const lang = useCurrentLang();
 
 	return (
 		<header className={cn("app-header p-4", className)}>
@@ -148,16 +175,27 @@ export function AppHeader({
 
 				{/* ナビゲーション */}
 				<nav className="flex items-center gap-3 md:gap-4">
-					<NavLink to="/" active={currentPage === "viewer"} stgy={stgy}>
+					<NavLink
+						to="/"
+						active={currentPage === "viewer"}
+						stgy={stgy}
+						lang={lang}
+					>
 						{t("nav.viewer")}
 					</NavLink>
-					<NavLink to="/editor" active={currentPage === "editor"} stgy={stgy}>
+					<NavLink
+						to="/editor"
+						active={currentPage === "editor"}
+						stgy={stgy}
+						lang={lang}
+					>
 						{t("nav.editor")}
 					</NavLink>
 					<NavLink
 						to="/image/generate"
 						active={currentPage === "image"}
 						stgy={stgy}
+						lang={lang}
 					>
 						{t("nav.imageGenerator")}
 					</NavLink>
@@ -180,6 +218,7 @@ export function CompactAppHeader({
 }: AppHeaderProps) {
 	const { t } = useTranslation();
 	const stgy = useCurrentStgy();
+	const lang = useCurrentLang();
 
 	return (
 		<header
@@ -196,16 +235,27 @@ export function CompactAppHeader({
 
 			{/* ナビゲーション */}
 			<nav className="flex items-center gap-3 md:gap-4">
-				<NavLink to="/" active={currentPage === "viewer"} stgy={stgy}>
+				<NavLink
+					to="/"
+					active={currentPage === "viewer"}
+					stgy={stgy}
+					lang={lang}
+				>
 					{t("nav.viewer")}
 				</NavLink>
-				<NavLink to="/editor" active={currentPage === "editor"} stgy={stgy}>
+				<NavLink
+					to="/editor"
+					active={currentPage === "editor"}
+					stgy={stgy}
+					lang={lang}
+				>
 					{t("nav.editor")}
 				</NavLink>
 				<NavLink
 					to="/image/generate"
 					active={currentPage === "image"}
 					stgy={stgy}
+					lang={lang}
 				>
 					{t("nav.imageGenerator")}
 				</NavLink>
