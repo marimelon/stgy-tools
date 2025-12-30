@@ -85,6 +85,11 @@ export {
 	useObjects,
 	useSelectedIndices,
 } from "./hooks/useEditorStore";
+export type {
+	UseLongPressParams,
+	UseLongPressReturn,
+} from "./hooks/useLongPress";
+export { useLongPress } from "./hooks/useLongPress";
 export type { CreateInitialStateOptions } from "./reducer";
 export {
 	createInitialState,

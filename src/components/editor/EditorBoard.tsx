@@ -26,6 +26,7 @@ import {
 	useGroups,
 	useIsCircularMode,
 	useIsFocusMode,
+	useLongPress,
 	useSelectedGroup,
 	useSelectedIndices,
 } from "@/lib/editor";
@@ -167,15 +168,15 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 	const {
 		marqueeState,
 		handleBackgroundClick,
-		handleBackgroundPointerDown,
+		handleBackgroundPointerDown: originalBackgroundPointerDown,
 		handleDragOver,
 		handleDrop,
 		handleObjectClick,
-		handleObjectPointerDown,
+		handleObjectPointerDown: originalObjectPointerDown,
 		handleRotateStart,
 		handleResizeStart,
-		handlePointerMove,
-		handlePointerUp,
+		handlePointerMove: originalPointerMove,
+		handlePointerUp: originalPointerUp,
 	} = useCanvasInteraction({
 		svgRef,
 		objects,
@@ -195,6 +196,64 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		addObject: addObjectById,
 		deselectAll,
 	});
+
+	// 長押しフック（タッチデバイス用コンテキストメニュー）
+	const handleLongPress = useCallback(
+		(clientX: number, clientY: number, objectIndex: number | null) => {
+			// 未選択のオブジェクトを長押しした場合は選択する
+			if (objectIndex !== null && !selectedIndices.includes(objectIndex)) {
+				selectObject(objectIndex);
+			}
+
+			setContextMenu({
+				isOpen: true,
+				x: clientX,
+				y: clientY,
+				targetIndex: objectIndex,
+			});
+		},
+		[selectedIndices, selectObject],
+	);
+
+	const { startLongPress, moveLongPress, cancelLongPress } = useLongPress({
+		onLongPress: handleLongPress,
+	});
+
+	// 長押し対応のポインターダウン（背景）
+	const handleBackgroundPointerDown = useCallback(
+		(e: React.PointerEvent) => {
+			startLongPress(e, null);
+			originalBackgroundPointerDown(e);
+		},
+		[startLongPress, originalBackgroundPointerDown],
+	);
+
+	// 長押し対応のポインターダウン（オブジェクト）
+	const handleObjectPointerDown = useCallback(
+		(index: number, e: React.PointerEvent) => {
+			startLongPress(e, index);
+			originalObjectPointerDown(index, e);
+		},
+		[startLongPress, originalObjectPointerDown],
+	);
+
+	// 長押し対応のポインター移動
+	const handlePointerMove = useCallback(
+		(e: React.PointerEvent) => {
+			moveLongPress(e);
+			originalPointerMove(e);
+		},
+		[moveLongPress, originalPointerMove],
+	);
+
+	// 長押し対応のポインターアップ
+	const handlePointerUp = useCallback(
+		(e: React.PointerEvent) => {
+			cancelLongPress();
+			originalPointerUp(e);
+		},
+		[cancelLongPress, originalPointerUp],
+	);
 
 	// 可視オブジェクトのみ取得
 	const visibleObjects = objects
@@ -235,6 +294,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 				onDragOver={handleDragOver}
 				onDrop={handleDrop}
 				className="bg-slate-800"
+				style={{ touchAction: "none" }}
 				role="application"
 				aria-label="Strategy Board Editor"
 			>
