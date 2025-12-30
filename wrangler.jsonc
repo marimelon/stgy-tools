@@ -21,7 +21,7 @@
   "preview_urls": true,
   "routes": [
     {
-      "pattern": "stgy1.m4e.dev",
+      "pattern": "stgy.m4e.dev",
       "custom_domain": true
     }
   ],
