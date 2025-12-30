@@ -36,13 +36,10 @@ import {
 	type GridSettings,
 	type ObjectGroup,
 	recalculateBoardSize,
-	useBoard,
+	useAutoSave,
 	useEditorActions,
 	useFocusedGroup,
-	useGridSettings,
-	useGroups,
 	useImportExport,
-	useIsDirty,
 	useIsFocusMode,
 	useKeyboardShortcuts,
 } from "@/lib/editor";
@@ -588,10 +585,6 @@ function EditorContent({
 	useKeyboardShortcuts();
 
 	// Get editor state
-	const board = useBoard();
-	const groups = useGroups();
-	const gridSettings = useGridSettings();
-	const isDirty = useIsDirty();
 	const isFocusMode = useIsFocusMode();
 	const focusedGroup = useFocusedGroup();
 	const { unfocus } = useEditorActions();
@@ -604,44 +597,13 @@ function EditorContent({
 		setEncodeKey(initialEncodeKey);
 	}, [initialEncodeKey, setEncodeKey]);
 
-	// Auto-save to IndexedDB
-	const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
-	const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-	// Save current board when dirty (skip in memory-only mode)
-	useEffect(() => {
-		if (!currentBoardId || !isDirty || isMemoryOnlyMode) return;
-
-		// Clear previous timeout
-		if (saveTimeoutRef.current) {
-			clearTimeout(saveTimeoutRef.current);
-		}
-
-		// Debounce save
-		saveTimeoutRef.current = setTimeout(() => {
-			const { width, height } = recalculateBoardSize(board);
-			const boardToSave = { ...board, width, height };
-			const stgyCode = encodeStgy(boardToSave, encodeKey ?? 0);
-
-			onSaveBoard(board.name, stgyCode, encodeKey ?? 0, groups, gridSettings);
-			setLastSavedAt(new Date());
-		}, 1000);
-
-		return () => {
-			if (saveTimeoutRef.current) {
-				clearTimeout(saveTimeoutRef.current);
-			}
-		};
-	}, [
+	// TanStack Store Effect を使用した自動保存
+	const { lastSavedAt } = useAutoSave({
 		currentBoardId,
-		isDirty,
-		board,
-		groups,
-		gridSettings,
 		encodeKey,
 		isMemoryOnlyMode,
-		onSaveBoard,
-	]);
+		onSave: onSaveBoard,
+	});
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [scale, setScale] = useState(1);

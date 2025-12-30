@@ -37,6 +37,12 @@ export {
 	duplicateObject,
 	recalculateBoardSize,
 } from "./factory";
+// Auto-save Hook
+export type {
+	SaveBoardCallback,
+	UseAutoSaveOptions,
+} from "./hooks/useAutoSave";
+export { useAutoSave } from "./hooks/useAutoSave";
 export type { EditorActions } from "./hooks/useEditorActions";
 // Actions Hook
 export { useEditorActions } from "./hooks/useEditorActions";
