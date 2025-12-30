@@ -99,10 +99,10 @@ async function preloadImagesNode(objectIds: number[]): Promise<void> {
 	// Nitroビルド（.output/public）と開発環境（public）の両方に対応
 	// HR版を優先、なければ通常版にフォールバック
 	const possibleDirs = [
-		join(process.cwd(), ".output", "public", "icons-hr"),
-		join(process.cwd(), "public", "icons-hr"),
-		join(process.cwd(), ".output", "public", "icons"),
-		join(process.cwd(), "public", "icons"),
+		join(process.cwd(), ".output", "public", "assets", "icons-hr"),
+		join(process.cwd(), "public", "assets", "icons-hr"),
+		join(process.cwd(), ".output", "public", "assets", "icons"),
+		join(process.cwd(), "public", "assets", "icons"),
 	];
 
 	const results = await Promise.all(
@@ -215,10 +215,10 @@ async function loadBackgroundNode(
 	// Nitroビルド（.output/public）と開発環境（public）の両方に対応
 	// HR版を優先、なければ通常版にフォールバック
 	const possibleDirs = [
-		join(process.cwd(), ".output", "public", "backgrounds-hr"),
-		join(process.cwd(), "public", "backgrounds-hr"),
-		join(process.cwd(), ".output", "public", "backgrounds"),
-		join(process.cwd(), "public", "backgrounds"),
+		join(process.cwd(), ".output", "public", "assets", "backgrounds-hr"),
+		join(process.cwd(), "public", "assets", "backgrounds-hr"),
+		join(process.cwd(), ".output", "public", "assets", "backgrounds"),
+		join(process.cwd(), "public", "assets", "backgrounds"),
 	];
 
 	for (const dir of possibleDirs) {
