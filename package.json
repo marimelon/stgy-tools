@@ -1,6 +1,7 @@
 {
   "name": "strategy-board-editor",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "BUILD_TARGET=node vite dev --port 3000",

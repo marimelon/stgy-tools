@@ -109,4 +109,20 @@ Switch languages via URL query parameter:
 
 ## License
 
-Private
+This project is licensed under the [MIT License](LICENSE).
+
+### Resource Attribution (© SQUARE ENIX)
+
+Some resources in this repository contain content from FINAL FANTASY XIV:
+
+- Test fixtures (`src/lib/screenshot/__tests__/__fixtures__/`)
+
+FINAL FANTASY is a registered trademark of Square Enix Holdings Co., Ltd.
+
+© SQUARE ENIX
+
+For more information, see the [FINAL FANTASY XIV Materials Usage License](https://support.na.square-enix.com/rule.php?id=5382&la=1&tag=authc).
+
+---
+
+This project is not affiliated with, endorsed by, or in any way officially connected with SQUARE ENIX CO., LTD.
