@@ -1,5 +1,10 @@
 import { useId } from "react";
-import { OBJECT_BBOX_SIZES } from "@/lib/board";
+import {
+	DEFAULT_PARAMS,
+	getConeBoundingBox,
+	getDonutConeBoundingBox,
+	OBJECT_BBOX_SIZES,
+} from "@/lib/board";
 import type { Color } from "@/lib/stgy";
 import { ObjectIds } from "@/lib/stgy";
 import {
@@ -34,8 +39,7 @@ import {
 	StackIcon,
 	StackLineIcon,
 } from "../../icons";
-import { getConeBoundingBox, getDonutConeBoundingBox } from "../bounding-box";
-import { COLORS, DEFAULT_PARAMS, getIconPath, SIZES } from "../constants";
+import { COLORS, getIconPath, SIZES } from "../constants";
 import {
 	colorToRgba,
 	renderOriginalIconIfEnabled,

@@ -1,16 +1,17 @@
 import {
+	calculateLineEndpoint,
 	DEFAULT_BBOX_SIZE,
+	DEFAULT_PARAMS,
 	getConeBoundingBox,
 	getDonutConeBoundingBox,
 	OBJECT_BBOX_SIZES,
 } from "@/lib/board";
 import { ObjectIds } from "@/lib/stgy";
-import { CONE_RADIUS, DEFAULT_PARAMS, TEXT } from "./constants";
+import type { Position } from "@/lib/stgy/types";
+import { CONE_RADIUS, TEXT } from "./constants";
 
 // 共通モジュールからre-export（テスト互換性のため）
 export { getConeBoundingBox, getDonutConeBoundingBox };
-
-type Position = { x: number; y: number };
 
 /**
  * オブジェクトのバウンディングボックスサイズとオフセットを取得
@@ -82,12 +83,11 @@ export function getObjectBoundingBox(
 
 	// Line: 始点(position)から終点(param1/10, param2/10)への線
 	if (objectId === ObjectIds.Line && position) {
-		const endX = (param1 ?? position.x * 10 + 2560) / 10;
-		const endY = (param2 ?? position.y * 10) / 10;
-		const lineThickness = param3 ?? 6;
+		const endpoint = calculateLineEndpoint(position, param1, param2);
+		const lineThickness = param3 ?? DEFAULT_PARAMS.LINE_THICKNESS;
 		// position基準の相対座標で計算
-		const relEndX = endX - position.x;
-		const relEndY = endY - position.y;
+		const relEndX = endpoint.x - position.x;
+		const relEndY = endpoint.y - position.y;
 		// 始点(0,0)と終点を含むバウンディングボックス
 		const minX = Math.min(0, relEndX);
 		const maxX = Math.max(0, relEndX);

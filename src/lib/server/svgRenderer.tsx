@@ -6,11 +6,17 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import {
 	BackgroundRenderer,
+	buildFullTransform,
 	CANVAS_HEIGHT,
 	CANVAS_WIDTH,
+	calculateDonutInnerRadius,
+	calculateLineEndpoint,
+	colorToRgba,
 	DEFAULT_BBOX_SIZE,
-	getConeBoundingBox,
-	getDonutConeBoundingBox,
+	DEFAULT_PARAMS,
+	generateDonutPath,
+	isColorChanged,
+	isLineAoEParamsChanged,
 	OBJECT_BBOX_SIZES,
 } from "@/lib/board";
 import type { BoardData, BoardObject, Color } from "@/lib/stgy/types";
@@ -31,59 +37,6 @@ export interface RenderOptions {
 
 /** タイトルバーの高さ */
 const TITLE_BAR_HEIGHT = 32;
-
-/**
- * デフォルトの色（この色の場合はオリジナル画像を使用）
- */
-const DEFAULT_OBJECT_COLOR: Color = { r: 255, g: 100, b: 0, opacity: 0 };
-
-/**
- * デフォルトのパラメータ値
- */
-const DEFAULT_PARAMS = {
-	LINE_HEIGHT: 128, // 直線範囲攻撃の縦幅デフォルト
-	LINE_WIDTH: 128, // 直線範囲攻撃の横幅デフォルト
-};
-
-/**
- * 色がデフォルトから変更されているかチェック
- */
-function isColorChanged(color: Color): boolean {
-	return (
-		color.r !== DEFAULT_OBJECT_COLOR.r ||
-		color.g !== DEFAULT_OBJECT_COLOR.g ||
-		color.b !== DEFAULT_OBJECT_COLOR.b ||
-		color.opacity !== DEFAULT_OBJECT_COLOR.opacity
-	);
-}
-
-/**
- * 直線範囲攻撃のパラメータがデフォルトから変更されているかチェック
- * 縦幅・横幅パラメータを持つのはLineAoEのみ（Lineは異なるパラメータ構成）
- */
-function isLineAoEParamsChanged(
-	objectId: number,
-	param1?: number,
-	param2?: number,
-): boolean {
-	// LineAoEのみが縦幅・横幅パラメータを持つ
-	if (objectId !== ObjectIds.LineAoE) {
-		return false;
-	}
-	const height = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
-	const width = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
-	return (
-		height !== DEFAULT_PARAMS.LINE_HEIGHT || width !== DEFAULT_PARAMS.LINE_WIDTH
-	);
-}
-
-/**
- * 色をRGBA文字列に変換
- */
-function colorToRgba(color: Color): string {
-	const alpha = 1 - color.opacity / 100;
-	return `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
-}
 
 /**
  * AoEオブジェクトのIDセット
@@ -234,14 +187,11 @@ function renderColoredAoE(
 		}
 		case ObjectIds.DonutAoE: {
 			// ドーナツ型AoE（中央に穴あき、角度対応）
-			const coneAngle = param1 ?? 360; // 範囲角度（10-360度）
+			const coneAngle = param1 ?? DEFAULT_PARAMS.FULL_CIRCLE_ANGLE;
 			const outerRadius = 256; // クライアント側と同じサイズ
-			const donutRange = param2 ?? 50; // 0-240: 0=穴なし, 240=最大
-			// Line param3=8 と同じ太さを最小として残す（クライアント側と同じ計算）
-			const MIN_THICKNESS_RATIO = 1 / 10;
-			const minThickness = outerRadius * MIN_THICKNESS_RATIO;
-			const maxInnerRadius = outerRadius - minThickness;
-			const innerRadius = maxInnerRadius * (donutRange / 240);
+			const donutRange = param2 ?? DEFAULT_PARAMS.DONUT_RANGE;
+			// 共通関数で内径を計算（Line param3=8 と同じ太さを最小として残す）
+			const innerRadius = calculateDonutInnerRadius(outerRadius, donutRange);
 			const maskId = `donut-mask-${Math.random().toString(36).slice(2, 9)}`;
 
 			// オリジナル画像をBase64で取得
@@ -278,47 +228,12 @@ function renderColoredAoE(
 			}
 
 			// 360度未満の場合は扇形ドーナツを画像+maskで描画
-			// バウンディングボックスの中心がオブジェクト座標に来るようにオフセット計算
-			const bbox =
-				innerRadius <= 0
-					? getConeBoundingBox(coneAngle, outerRadius)
-					: getDonutConeBoundingBox(coneAngle, outerRadius, innerRadius);
-			const offsetX = -(bbox.minX + bbox.width / 2);
-			const offsetY = -(bbox.minY + bbox.height / 2);
-
-			const startRad = -Math.PI / 2;
-			const endRad = startRad + (coneAngle * Math.PI) / 180;
-
-			// 外弧の開始点と終了点（オフセット適用）
-			const outerX1 = offsetX + Math.cos(startRad) * outerRadius;
-			const outerY1 = offsetY + Math.sin(startRad) * outerRadius;
-			const outerX2 = offsetX + Math.cos(endRad) * outerRadius;
-			const outerY2 = offsetY + Math.sin(endRad) * outerRadius;
-
-			// 内弧の開始点と終了点（オフセット適用）
-			const innerX1 = offsetX + Math.cos(startRad) * innerRadius;
-			const innerY1 = offsetY + Math.sin(startRad) * innerRadius;
-			const innerX2 = offsetX + Math.cos(endRad) * innerRadius;
-			const innerY2 = offsetY + Math.sin(endRad) * innerRadius;
-
-			const largeArc = coneAngle > 180 ? 1 : 0;
-
-			// 内径が0の場合は扇形（内穴なし）
-			const maskPath =
-				innerRadius <= 0
-					? [
-							`M ${offsetX} ${offsetY}`,
-							`L ${outerX1} ${outerY1}`,
-							`A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`,
-							"Z",
-						].join(" ")
-					: [
-							`M ${outerX1} ${outerY1}`,
-							`A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`,
-							`L ${innerX2} ${innerY2}`,
-							`A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerX1} ${innerY1}`,
-							"Z",
-						].join(" ");
+			// 共通のパス生成関数を使用
+			const {
+				path: maskPath,
+				offsetX,
+				offsetY,
+			} = generateDonutPath(coneAngle, outerRadius, innerRadius);
 
 			return (
 				<g transform={transform} opacity={opacity}>
@@ -358,14 +273,17 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 	// バウンディングボックスサイズ取得（共通モジュールから）
 	const bboxSize = OBJECT_BBOX_SIZES[objectId] ?? DEFAULT_BBOX_SIZE;
 
-	// フリップ変換
-	const flipX = flags.flipHorizontal ? -1 : 1;
-	const flipY = flags.flipVertical ? -1 : 1;
-
 	// 透過度をSVGのopacityに変換 (color.opacity: 0=不透明, 100=透明)
 	const opacity = 1 - color.opacity / 100;
 
-	const transform = `translate(${position.x}, ${position.y}) rotate(${rotation}) scale(${scale * flipX}, ${scale * flipY})`;
+	const transform = buildFullTransform(
+		position.x,
+		position.y,
+		rotation,
+		scale,
+		flags.flipHorizontal,
+		flags.flipVertical,
+	);
 
 	// テキストオブジェクトは特別処理
 	if (objectId === ObjectIds.Text && object.text) {
@@ -396,16 +314,15 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 	// param1, param2 は座標を10倍した整数値（小数第一位まで対応）
 	// param3 は線の太さ（デフォルト6）
 	if (objectId === ObjectIds.Line) {
-		const endX = (param1 ?? position.x * 10 + 2560) / 10;
-		const endY = (param2 ?? position.y * 10) / 10;
-		const lineThickness = object.param3 ?? 6;
+		const endpoint = calculateLineEndpoint(position, param1, param2);
+		const lineThickness = object.param3 ?? DEFAULT_PARAMS.LINE_THICKNESS;
 		const lineFill = colorToRgba(color);
 		return (
 			<line
 				x1={position.x}
 				y1={position.y}
-				x2={endX}
-				y2={endY}
+				x2={endpoint.x}
+				y2={endpoint.y}
 				stroke={lineFill}
 				strokeWidth={lineThickness}
 				strokeLinecap="butt"

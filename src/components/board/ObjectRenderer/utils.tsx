@@ -1,13 +1,19 @@
-import { OBJECT_BBOX_SIZES } from "@/lib/board";
+import {
+	buildTransform,
+	colorToRgba,
+	isColorChanged,
+	isLineAoEParamsChanged,
+	OBJECT_BBOX_SIZES,
+} from "@/lib/board";
 import type { Color } from "@/lib/stgy";
-import { ObjectIds } from "@/lib/stgy";
 import {
 	COLOR_CHANGEABLE_OBJECT_IDS,
 	CUSTOM_ICON_IDS,
-	DEFAULT_OBJECT_COLOR,
-	DEFAULT_PARAMS,
 	getIconPath,
 } from "./constants";
+
+// Re-export from @/lib/board for backwards compatibility
+export { buildTransform, colorToRgba, isColorChanged, isLineAoEParamsChanged };
 
 /**
  * オリジナル画像（PNG）を使用するかチェック
@@ -17,70 +23,6 @@ import {
 export function useOriginalIcons(): boolean {
 	if (typeof window === "undefined") return true;
 	return localStorage.getItem("useFallbackSvg") !== "true";
-}
-
-/**
- * 色がデフォルトから変更されているかチェック
- */
-export function isColorChanged(color: Color): boolean {
-	return (
-		color.r !== DEFAULT_OBJECT_COLOR.r ||
-		color.g !== DEFAULT_OBJECT_COLOR.g ||
-		color.b !== DEFAULT_OBJECT_COLOR.b ||
-		color.opacity !== DEFAULT_OBJECT_COLOR.opacity
-	);
-}
-
-/**
- * 直線範囲攻撃のパラメータがデフォルトから変更されているかチェック
- * 縦幅・横幅パラメータを持つのはLineAoEのみ（Lineは異なるパラメータ構成）
- */
-export function isLineAoEParamsChanged(
-	objectId: number,
-	param1?: number,
-	param2?: number,
-): boolean {
-	// LineAoEのみが縦幅・横幅パラメータを持つ
-	if (objectId !== ObjectIds.LineAoE) {
-		return false;
-	}
-	// param1（縦幅）またはparam2（横幅）がデフォルトから変更されているか
-	const height = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
-	const width = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
-	return (
-		height !== DEFAULT_PARAMS.LINE_HEIGHT || width !== DEFAULT_PARAMS.LINE_WIDTH
-	);
-}
-
-/**
- * SVG transform属性を構築
- */
-export function buildTransform(
-	x: number,
-	y: number,
-	rotation: number,
-	scale: number,
-	flipH: boolean,
-	flipV: boolean,
-): string {
-	const parts = [`translate(${x}, ${y})`];
-	if (rotation !== 0) {
-		parts.push(`rotate(${rotation})`);
-	}
-	const scaleX = flipH ? -scale : scale;
-	const scaleY = flipV ? -scale : scale;
-	if (scaleX !== 1 || scaleY !== 1) {
-		parts.push(`scale(${scaleX}, ${scaleY})`);
-	}
-	return parts.join(" ");
-}
-
-/**
- * Color型をrgba文字列に変換
- */
-export function colorToRgba(color: Color): string {
-	const alpha = 1 - color.opacity / 100;
-	return `rgba(${color.r}, ${color.g}, ${color.b}, ${alpha})`;
 }
 
 /**

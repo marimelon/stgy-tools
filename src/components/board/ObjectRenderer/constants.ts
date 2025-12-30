@@ -207,11 +207,8 @@ export const TEXT = {
 	DEFAULT_HEIGHT: 20,
 } as const;
 
-/** デフォルトのパラメータ値 */
-export const DEFAULT_PARAMS = {
-	LINE_HEIGHT: 128, // 直線範囲攻撃の縦幅デフォルト
-	LINE_WIDTH: 128, // 直線範囲攻撃の横幅デフォルト
-} as const;
+// Re-export from @/lib/board for backwards compatibility
+export { DEFAULT_PARAMS } from "@/lib/board";
 
 // ========================================
 // ルックアップテーブル
@@ -551,13 +548,8 @@ export const JOB_ROLE_COLORS: Record<string, string> = {
 	caster: "#cc33cc", // キャスターDPSは紫
 };
 
-/** デフォルトの色（この色の場合はオリジナル画像を使用） */
-export const DEFAULT_OBJECT_COLOR = {
-	r: 255,
-	g: 100,
-	b: 0,
-	opacity: 0,
-} as const;
+// Re-export from @/lib/board for backwards compatibility
+export { DEFAULT_OBJECT_COLOR } from "@/lib/board";
 
 /**
  * 色変更が有効なオブジェクトID
