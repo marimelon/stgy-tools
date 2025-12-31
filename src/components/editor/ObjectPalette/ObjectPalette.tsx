@@ -15,7 +15,7 @@ import { ObjectPaletteItem } from "./ObjectPaletteItem";
 export function ObjectPalette() {
 	const { t } = useTranslation();
 	const { addObjectById } = useEditorActions();
-	const { debugMode } = useDebugMode();
+	const debugMode = useDebugMode();
 	const { expandedCategories, toggleCategory } = useObjectPaletteState();
 
 	const handleAddObject = (objectId: number) => {

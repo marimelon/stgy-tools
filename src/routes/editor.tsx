@@ -52,7 +52,7 @@ import {
 	SITE_CONFIG,
 } from "@/lib/seo";
 import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
-import { SettingsProvider } from "@/lib/settings";
+import { SettingsStoreProvider } from "@/lib/settings";
 import {
 	type BoardData,
 	decodeStgy,
@@ -468,7 +468,7 @@ function EditorPage() {
 	}
 
 	return (
-		<SettingsProvider>
+		<SettingsStoreProvider>
 			<PanelStoreProvider>
 				<EditorStoreProvider
 					key={editorKey}
@@ -552,7 +552,7 @@ function EditorPage() {
 					/>
 				)}
 			</PanelStoreProvider>
-		</SettingsProvider>
+		</SettingsStoreProvider>
 	);
 }
 

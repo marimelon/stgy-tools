@@ -4,11 +4,12 @@
 
 import { Bug } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useDebugMode } from "@/lib/settings";
+import { useDebugMode, useSettingsActions } from "@/lib/settings";
 
 export function ObjectPaletteActions() {
 	const { t } = useTranslation();
-	const { debugMode, toggleDebugMode } = useDebugMode();
+	const debugMode = useDebugMode();
+	const { toggleDebugMode } = useSettingsActions();
 
 	return (
 		<button

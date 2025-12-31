@@ -65,7 +65,7 @@ export function ObjectPropertyPanel({
 	onCommitHistory,
 }: ObjectPropertyPanelProps) {
 	const { t } = useTranslation();
-	const { debugMode } = useDebugMode();
+	const debugMode = useDebugMode();
 
 	const handleChange = (updates: Partial<BoardObject>) => {
 		onUpdate(updates);

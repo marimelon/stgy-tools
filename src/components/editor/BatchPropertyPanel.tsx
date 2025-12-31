@@ -68,7 +68,7 @@ export function BatchPropertyPanel({
 	onCommitHistory,
 }: BatchPropertyPanelProps) {
 	const { t } = useTranslation();
-	const { debugMode } = useDebugMode();
+	const debugMode = useDebugMode();
 
 	// 共通プロパティ値を計算
 	const batchValues = useMemo(

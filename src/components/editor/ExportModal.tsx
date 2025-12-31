@@ -67,7 +67,7 @@ export function ExportModal({
 	shortLinksEnabled = false,
 }: ExportModalProps) {
 	const { t } = useTranslation();
-	const { debugMode } = useDebugMode();
+	const debugMode = useDebugMode();
 	const board = useBoard(); // 共有リンク生成時のみ使用
 	const keyInputId = useId();
 	const codeTextareaId = useId();

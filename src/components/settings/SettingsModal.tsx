@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useSettings } from "@/lib/settings";
+import { useAppSettings, useSettingsActions } from "@/lib/settings";
 import { ShortcutsList } from "./ShortcutsList";
 
 /** 設定モーダルのProps */
@@ -31,7 +31,8 @@ type TabId = "general" | "shortcuts";
  */
 export function SettingsModal({ onClose }: SettingsModalProps) {
 	const { t } = useTranslation();
-	const { settings, updateSettings, resetSettings } = useSettings();
+	const settings = useAppSettings();
+	const { updateSettings, resetSettings } = useSettingsActions();
 	const [activeTab, setActiveTab] = useState<TabId>("general");
 
 	return (
