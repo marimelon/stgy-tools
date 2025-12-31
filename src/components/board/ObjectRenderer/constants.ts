@@ -202,10 +202,65 @@ export const COLORS = {
 
 /** テキスト関連定数 */
 export const TEXT = {
-	CHAR_WIDTH: 10,
+	/** 半角文字の幅（fontSize=14の約0.5倍） */
+	HALF_WIDTH_CHAR: 7,
+	/** 全角文字の幅（fontSize=14の約1.0倍） */
+	FULL_WIDTH_CHAR: 14,
+	/** 最小BBox幅 */
 	MIN_BBOX_WIDTH: 40,
+	/** デフォルト高さ */
 	DEFAULT_HEIGHT: 20,
 } as const;
+
+/**
+ * 文字が全角かどうかを判定
+ * CJK文字、全角記号、全角英数字などを全角として扱う
+ * 半角カタカナ (U+FF61-U+FF9F) は半角として扱う
+ */
+export function isFullWidthChar(char: string): boolean {
+	const code = char.codePointAt(0);
+	if (code === undefined) return false;
+
+	// 半角カタカナは半角扱い (U+FF61-U+FF9F)
+	if (code >= 0xff61 && code <= 0xff9f) {
+		return false;
+	}
+
+	return (
+		// CJK統合漢字
+		(code >= 0x4e00 && code <= 0x9fff) ||
+		// ひらがな
+		(code >= 0x3040 && code <= 0x309f) ||
+		// カタカナ
+		(code >= 0x30a0 && code <= 0x30ff) ||
+		// 全角英数字・記号 (半角カタカナは上で除外済み)
+		(code >= 0xff00 && code <= 0xffef) ||
+		// CJK記号・句読点
+		(code >= 0x3000 && code <= 0x303f) ||
+		// CJK統合漢字拡張A
+		(code >= 0x3400 && code <= 0x4dbf) ||
+		// CJK統合漢字拡張B (サロゲートペア)
+		(code >= 0x20000 && code <= 0x2a6df) ||
+		// CJK統合漢字拡張C-F
+		(code >= 0x2a700 && code <= 0x2ebef) ||
+		// CJK互換漢字補助
+		(code >= 0x2f800 && code <= 0x2fa1f)
+	);
+}
+
+/**
+ * テキストの表示幅を計算（ピクセル単位）
+ * 全角文字と半角文字で異なる幅を使用
+ */
+export function calculateTextWidth(text: string): number {
+	let width = 0;
+	for (const char of text) {
+		width += isFullWidthChar(char)
+			? TEXT.FULL_WIDTH_CHAR
+			: TEXT.HALF_WIDTH_CHAR;
+	}
+	return width;
+}
 
 // Re-export from @/lib/board for backwards compatibility
 export { DEFAULT_PARAMS } from "@/lib/board";

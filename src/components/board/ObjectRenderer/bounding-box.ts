@@ -8,7 +8,7 @@ import {
 } from "@/lib/board";
 import { ObjectIds } from "@/lib/stgy";
 import type { Position } from "@/lib/stgy/types";
-import { CONE_RADIUS, TEXT } from "./constants";
+import { CONE_RADIUS, calculateTextWidth, TEXT } from "./constants";
 
 // 共通モジュールからre-export（テスト互換性のため）
 export { getConeBoundingBox, getDonutConeBoundingBox };
@@ -74,10 +74,11 @@ export function getObjectBoundingBox(
 		};
 	}
 
-	// テキスト（動的計算）
+	// テキスト（動的計算 - 全角/半角を考慮）
 	if (objectId === ObjectIds.Text) {
-		const textLength = text?.length ?? 4;
-		const width = Math.max(textLength * TEXT.CHAR_WIDTH, TEXT.MIN_BBOX_WIDTH);
+		const width = text
+			? Math.max(calculateTextWidth(text), TEXT.MIN_BBOX_WIDTH)
+			: TEXT.MIN_BBOX_WIDTH;
 		return { width, height: TEXT.DEFAULT_HEIGHT };
 	}
 
