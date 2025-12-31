@@ -48,8 +48,6 @@ describe("hash", () => {
 			// Create a simple board and encode it
 			const board: BoardData = {
 				version: 2,
-				width: 512,
-				height: 384,
 				name: "Test",
 				backgroundId: 1,
 				objects: [],
@@ -74,8 +72,6 @@ describe("hash", () => {
 			// Create a board
 			const board: BoardData = {
 				version: 2,
-				width: 512,
-				height: 384,
 				name: "Test Board",
 				backgroundId: 2,
 				objects: [
@@ -116,8 +112,6 @@ describe("hash", () => {
 		it("should produce different hash for different content", async () => {
 			const board1: BoardData = {
 				version: 2,
-				width: 512,
-				height: 384,
 				name: "Board 1",
 				backgroundId: 1,
 				objects: [],
@@ -125,8 +119,6 @@ describe("hash", () => {
 
 			const board2: BoardData = {
 				version: 2,
-				width: 512,
-				height: 384,
 				name: "Board 2",
 				backgroundId: 1,
 				objects: [],

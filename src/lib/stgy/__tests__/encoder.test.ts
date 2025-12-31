@@ -14,8 +14,6 @@ describe("encoder", () => {
 	it("should round-trip a simple board", () => {
 		const testBoard: BoardData = {
 			version: 2,
-			width: 512,
-			height: 384,
 			name: "Test",
 			backgroundId: BackgroundId.None,
 			objects: [
@@ -49,8 +47,6 @@ describe("encoder", () => {
 
 		// Verify
 		expect(parsed.version).toBe(testBoard.version);
-		expect(parsed.width).toBe(testBoard.width);
-		expect(parsed.height).toBe(testBoard.height);
 		expect(parsed.name).toBe(testBoard.name);
 		expect(parsed.objects.length).toBe(testBoard.objects.length);
 	});
@@ -58,8 +54,6 @@ describe("encoder", () => {
 	it("should serialize and deserialize binary correctly", () => {
 		const testBoard: BoardData = {
 			version: 2,
-			width: 512,
-			height: 384,
 			name: "Test",
 			backgroundId: BackgroundId.None,
 			objects: [],
@@ -76,8 +70,7 @@ describe("encoder", () => {
 
 		const parsed = parseBoardData(binary);
 		expect(parsed.version).toBe(2);
-		expect(parsed.width).toBe(512);
-		expect(parsed.height).toBe(384);
+		expect(parsed.name).toBe("Test");
 	});
 
 	it("should round-trip existing sample stgy", () => {
@@ -130,8 +123,6 @@ describe("encoder", () => {
 
 		const testBoard: BoardData = {
 			version: 2,
-			width: 512,
-			height: 384,
 			name: "Test",
 			backgroundId: BackgroundId.None,
 			objects: [
@@ -172,8 +163,6 @@ describe("encoder", () => {
 	it("should encode and decode empty board", () => {
 		const emptyBoard: BoardData = {
 			version: 2,
-			width: 512,
-			height: 384,
 			name: "",
 			backgroundId: BackgroundId.None,
 			objects: [],

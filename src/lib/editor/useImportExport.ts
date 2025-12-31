@@ -10,7 +10,6 @@ import {
 	extractKeyFromStgy,
 	parseBoardData,
 } from "@/lib/stgy";
-import { recalculateBoardSize } from "./factory";
 import { getEditorStore } from "./store/editorStore";
 
 /**
@@ -137,14 +136,8 @@ export function useImportExport(): UseImportExportReturn {
 	const generateExportCode = (): string => {
 		const store = getEditorStore();
 		const board = store.state.board;
-		const { width, height } = recalculateBoardSize(board);
-		const exportBoard = {
-			...board,
-			width,
-			height,
-		};
 		return encodeStgy(
-			exportBoard,
+			board,
 			encodeKey !== null ? { key: encodeKey } : undefined,
 		);
 	};

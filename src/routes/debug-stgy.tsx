@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { recalculateBoardSize } from "@/lib/editor";
 import { generateDebugPageMeta } from "@/lib/seo";
 import {
 	type CompareResult,
@@ -61,9 +60,8 @@ function StgyDebugPage() {
 		if (!boardData) return null;
 		try {
 			const key = extractKeyFromStgy(inputCode.trim());
-			const { width, height } = recalculateBoardSize(boardData);
-			const adjustedBoard = { ...boardData, width, height };
-			return encodeStgy(adjustedBoard, { key });
+			// ラウンドトリップテストでは元のサイズを保持（recalculateBoardSizeを呼ばない）
+			return encodeStgy(boardData, { key });
 		} catch (e) {
 			console.error("Encode error:", e);
 			return null;
@@ -162,12 +160,12 @@ function StgyDebugPage() {
 								value={debugInfo.header.version.toString()}
 							/>
 							<InfoRow
-								label="Width"
-								value={debugInfo.header.width.toString()}
+								label="Content Length"
+								value={`${debugInfo.header.contentLength} (0x${debugInfo.header.contentLength.toString(16)})`}
 							/>
 							<InfoRow
-								label="Height"
-								value={debugInfo.header.height.toString()}
+								label="Section Length"
+								value={`${debugInfo.header.sectionContentLength} (0x${debugInfo.header.sectionContentLength.toString(16)})`}
 							/>
 						</Section>
 

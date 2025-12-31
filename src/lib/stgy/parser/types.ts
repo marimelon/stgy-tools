@@ -21,6 +21,8 @@ export interface ParseContext {
 	param2s: number[];
 	param3s: number[];
 	sizePaddingByte: number | undefined;
+	/** セクションコンテンツ先頭の空フィールド数 (ラウンドトリップ用) */
+	emptyFieldCount: number;
 }
 
 /**
@@ -41,5 +43,6 @@ export function createParseContext(): ParseContext {
 		param2s: [],
 		param3s: [],
 		sizePaddingByte: undefined,
+		emptyFieldCount: 0,
 	};
 }

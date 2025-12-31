@@ -18,8 +18,6 @@ describe("factory", () => {
 		it("デフォルト値で空のボードを生成", () => {
 			const board = createEmptyBoard();
 			expect(board.version).toBe(2);
-			expect(board.width).toBe(512);
-			expect(board.height).toBe(384);
 			expect(board.name).toBe("");
 			expect(board.backgroundId).toBe(BackgroundId.None);
 			expect(board.objects).toEqual([]);
@@ -103,62 +101,19 @@ describe("factory", () => {
 		});
 	});
 
-	describe("calculateTextBoardSize", () => {
-		it("空のテキスト", () => {
-			const size = calculateTextBoardSize(0);
-			expect(size.width).toBe(104);
-			expect(size.height).toBe(92);
-		});
-
-		it("10文字のテキスト", () => {
-			const size = calculateTextBoardSize(10);
-			expect(size.width).toBe(144); // 104 + 10*4
-			expect(size.height).toBe(132); // 92 + 10*4
-		});
-
-		it("100文字のテキスト", () => {
-			const size = calculateTextBoardSize(100);
-			expect(size.width).toBe(504); // 104 + 100*4
-			expect(size.height).toBe(492); // 92 + 100*4
+	describe("calculateTextBoardSize (deprecated)", () => {
+		it("常にデフォルトキャンバスサイズを返す", () => {
+			// @deprecated: stgyバイナリフォーマットにはボードサイズは含まれない
+			expect(calculateTextBoardSize(0)).toEqual({ width: 512, height: 384 });
+			expect(calculateTextBoardSize(10)).toEqual({ width: 512, height: 384 });
+			expect(calculateTextBoardSize(100)).toEqual({ width: 512, height: 384 });
 		});
 	});
 
-	describe("recalculateBoardSize", () => {
-		it("オブジェクトがない場合は現在のサイズを維持", () => {
+	describe("recalculateBoardSize (deprecated)", () => {
+		it("常にデフォルトキャンバスサイズを返す", () => {
+			// @deprecated: stgyバイナリフォーマットにはボードサイズは含まれない
 			const board = createEmptyBoard();
-			const size = recalculateBoardSize(board);
-			expect(size).toEqual({ width: 512, height: 384 });
-		});
-
-		it("単一のテキストオブジェクトの場合はテキスト長から計算", () => {
-			const board = createEmptyBoard();
-			const textObj = createDefaultObject(ObjectIds.Text);
-			textObj.text = "Hello"; // 5文字
-			board.objects = [textObj];
-
-			const size = recalculateBoardSize(board);
-			expect(size.width).toBe(124); // 104 + 5*4
-			expect(size.height).toBe(112); // 92 + 5*4
-		});
-
-		it("非表示オブジェクトは無視", () => {
-			const board = createEmptyBoard();
-			const textObj = createDefaultObject(ObjectIds.Text);
-			textObj.text = "Hidden";
-			textObj.flags.visible = false;
-			board.objects = [textObj];
-
-			const size = recalculateBoardSize(board);
-			expect(size).toEqual({ width: 512, height: 384 });
-		});
-
-		it("複数オブジェクトの場合は現在のサイズを維持", () => {
-			const board = createEmptyBoard();
-			board.objects = [
-				createDefaultObject(ObjectIds.Tank),
-				createDefaultObject(ObjectIds.Healer),
-			];
-
 			const size = recalculateBoardSize(board);
 			expect(size).toEqual({ width: 512, height: 384 });
 		});

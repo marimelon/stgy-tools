@@ -76,14 +76,13 @@ export enum BackgroundId {
 
 /**
  * ボードデータ
+ *
+ * 注意: stgyバイナリフォーマットにはボードサイズ（幅/高さ）は含まれていません。
+ * キャンバスサイズは固定値(512x384)または描画時に計算されます。
  */
 export interface BoardData {
 	/** バージョン (= 2) */
 	version: number;
-	/** ボード幅 */
-	width: number;
-	/** ボード高さ */
-	height: number;
 	/** ボード名 */
 	name: string;
 	/** 背景ID */
@@ -92,6 +91,8 @@ export interface BoardData {
 	objects: BoardObject[];
 	/** サイズ配列後のパディングバイト (ラウンドトリップ用、内部使用) */
 	_sizePaddingByte?: number;
+	/** セクションコンテンツ先頭の空フィールド数 (ラウンドトリップ用、内部使用) */
+	_emptyFieldCount?: number;
 }
 
 /**

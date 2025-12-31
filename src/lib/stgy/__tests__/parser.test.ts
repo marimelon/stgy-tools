@@ -13,15 +13,14 @@ describe("parser", () => {
 
 			expect(boardData).toBeDefined();
 			expect(boardData.version).toBe(2);
-			expect(boardData.width).toBeGreaterThan(0);
-			expect(boardData.height).toBeGreaterThan(0);
+			expect(boardData.name).toBeDefined();
+			expect(boardData.backgroundId).toBeDefined();
 		});
 
-		it("should parse board dimensions", () => {
+		it("should parse board metadata", () => {
 			const binary = decodeStgy(sampleStgyString);
 			const boardData = parseBoardData(binary);
 
-			console.log("Board dimensions:", boardData.width, "x", boardData.height);
 			console.log("Board name:", boardData.name);
 			console.log("Background ID:", boardData.backgroundId);
 			console.log("Object count:", boardData.objects.length);

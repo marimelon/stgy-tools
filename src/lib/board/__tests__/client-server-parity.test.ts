@@ -228,8 +228,6 @@ describe("Shared calculation logic", () => {
 function createTestBoardData(objects: BoardObject[]): BoardData {
 	return {
 		version: 1,
-		width: 512,
-		height: 384,
 		name: "Test Board",
 		backgroundId: BackgroundId.None,
 		objects,

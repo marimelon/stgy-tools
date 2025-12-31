@@ -46,8 +46,10 @@ export interface DecodeDebugInfo {
 	fields: FieldInfo[];
 	header: {
 		version: number;
-		width: number;
-		height: number;
+		/** StrategyBoard.length (ヘッダー後のコンテンツ長) */
+		contentLength: number;
+		/** SectionContent.length */
+		sectionContentLength: number;
 	};
 }
 
@@ -103,7 +105,8 @@ function parseFlags(value: number): Record<string, boolean> {
  */
 function parseFields(data: Uint8Array): FieldInfo[] {
 	const fields: FieldInfo[] = [];
-	let offset = 24; // ヘッダースキップ
+	// ヘッダー(16) + セクションヘッダー(4) = 20バイトスキップ
+	let offset = 20;
 
 	while (offset + 4 <= data.length) {
 		const fieldId = data[offset] | (data[offset + 1] << 8);
@@ -342,19 +345,24 @@ export function decodeStgyDebug(stgyString: string): DecodeDebugInfo {
 	// 解凍
 	const decompressedData = pako.inflate(compressedData);
 
-	// ヘッダー解析
+	// ヘッダー解析 (xivdev仕様準拠)
+	// - 0x00-0x03: version (u32)
+	// - 0x04-0x07: StrategyBoard.length (u32) - ヘッダー後のコンテンツ長
+	// - 0x08-0x0F: padding (8バイト)
+	// - 0x10-0x11: SectionType (u16)
+	// - 0x12-0x13: SectionContent.length (u16)
 	const header = {
 		version:
 			decompressedData[0] |
 			(decompressedData[1] << 8) |
 			(decompressedData[2] << 16) |
 			(decompressedData[3] << 24),
-		width:
+		contentLength:
 			decompressedData[4] |
 			(decompressedData[5] << 8) |
 			(decompressedData[6] << 16) |
 			(decompressedData[7] << 24),
-		height: decompressedData[20] | (decompressedData[21] << 8),
+		sectionContentLength: decompressedData[18] | (decompressedData[19] << 8),
 	};
 
 	// フィールド解析

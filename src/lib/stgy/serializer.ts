@@ -2,6 +2,15 @@
  * stgy バイナリシリアライザー
  *
  * BoardDataをバイナリデータにシリアライズする (parser.tsの逆処理)
+ *
+ * バイナリフォーマット (xivdev仕様準拠):
+ * - StrategyBoard ヘッダー (16バイト):
+ *   - 0x00-0x03: tag (u32) - バージョン
+ *   - 0x04-0x07: length (u32) - ヘッダー後のコンテンツ長
+ *   - 0x08-0x0F: padding (8バイト)
+ * - Sections (0x10以降):
+ *   - Content section: SectionType(0x00) + length + TypeContainers
+ *   - Background section: SectionType(0x03) + TypedArray<u16>
  */
 
 import {
@@ -11,6 +20,12 @@ import {
 	TEXT_OBJECT_ID,
 } from "./constants";
 import type { BoardData, ObjectFlags } from "./types";
+
+/** セクションタイプ */
+const SectionType = {
+	CONTENT: 0x00,
+	BACKGROUND: 0x03,
+} as const;
 
 /**
  * バイナリライター
@@ -98,22 +113,17 @@ function serializeFlags(flags: ObjectFlags): number {
 }
 
 /**
- * BoardDataをバイナリにシリアライズ
+ * フィールドコンテンツをシリアライズ（SectionContent内のTypeContainers）
  */
-export function serializeBoardData(board: BoardData): Uint8Array {
-	const writer = new BinaryWriter();
-
-	// ヘッダー (24バイト)
-	writer.writeUint32(board.version); // version
-	writer.writeUint32(board.width); // width
-	writer.writeUint32(0); // unused
-	writer.writeUint32(0); // unused
-	writer.writeUint16(0); // unused
-	writer.writeUint16(board.height); // height
-	writer.writeUint32(0); // unused
-
+function serializeFields(board: BoardData, writer: BinaryWriter): void {
 	const objects = board.objects;
 	const objectCount = objects.length;
+
+	// 空フィールド (ラウンドトリップ用)
+	const emptyFieldCount = board._emptyFieldCount ?? 0;
+	for (let i = 0; i < emptyFieldCount; i++) {
+		writer.writeUint16(0); // FieldId 0 (Empty)
+	}
 
 	// Field 1: ボード名
 	if (board.name.length > 0) {
@@ -247,14 +257,49 @@ export function serializeBoardData(board: BoardData): Uint8Array {
 			writer.writeUint16(obj.param3 ?? 0);
 		}
 	}
+}
 
-	// Field 3: 終端マーカー + backgroundId (最後に書く)
-	// 注: テキストオブジェクトのテキストは Field 2 の直後に書いている
-	// 元のフォーマットはlength=1を使用 (パーサーはlength<=8で終端マーカーと判定)
-	writer.writeUint16(FieldIds.TEXT_TERMINATOR); // fieldId
-	writer.writeUint16(1); // length = 1 (元のフォーマットに合わせる)
-	writer.writeUint16(1); // = 1
-	writer.writeUint16(board.backgroundId);
+/**
+ * BoardDataをバイナリにシリアライズ
+ */
+export function serializeBoardData(board: BoardData): Uint8Array {
+	// 1. まずフィールドコンテンツをシリアライズして長さを計算
+	const contentWriter = new BinaryWriter();
+	serializeFields(board, contentWriter);
+	const contentData = contentWriter.toUint8Array();
+
+	// Content section の長さ (TypeContainersの長さのみ、SectionType/lengthを除く)
+	const sectionContentLength = contentData.length;
+
+	// Background section: SectionType(2) + DataType(2) + count(2) + backgroundId(2) = 8バイト
+	const backgroundSectionLength = 8;
+
+	// 総コンテンツ長 = Content section (SectionType + length + content) + Background section
+	// Content section: 2 + 2 + sectionContentLength
+	// Background section: 8
+	const totalContentLength =
+		2 + 2 + sectionContentLength + backgroundSectionLength;
+
+	// 2. 最終的なバイナリを書き込み
+	const writer = new BinaryWriter();
+
+	// StrategyBoard ヘッダー (16バイト)
+	writer.writeUint32(board.version); // tag/version
+	writer.writeUint32(totalContentLength); // length (ヘッダー後のコンテンツ長)
+	writer.writeUint32(0); // padding
+	writer.writeUint32(0); // padding
+
+	// Content section
+	writer.writeUint16(SectionType.CONTENT); // SectionType = 0x00
+	writer.writeUint16(sectionContentLength); // SectionContent.length
+	writer.writeBytes(contentData); // TypeContainers
+
+	// Background section
+	// 注: SectionType.BACKGROUND (0x03) と FieldId 3 (TEXT_TERMINATOR) は同じ値
+	writer.writeUint16(SectionType.BACKGROUND); // SectionType = 0x03
+	writer.writeUint16(1); // DataType = 1 (WORD)
+	writer.writeUint16(1); // count = 1
+	writer.writeUint16(board.backgroundId); // backgroundId
 
 	return writer.toUint8Array();
 }

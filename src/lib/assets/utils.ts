@@ -92,13 +92,10 @@ export function calculatePreviewViewBox(
 
 /**
  * Convert StoredAsset to BoardData for stgy encoding
- * Uses dummy board metadata for compatibility
  */
 export function assetToBoardData(asset: StoredAsset): BoardData {
 	return {
 		version: 2,
-		width: 512,
-		height: 384,
 		name: asset.name,
 		backgroundId: BackgroundId.None,
 		objects: asset.objects,

@@ -13,14 +13,16 @@ import {
 	ObjectIds,
 } from "@/lib/stgy";
 
+/** デフォルトのキャンバスサイズ (描画用、バイナリフォーマットには含まれない) */
+export const DEFAULT_CANVAS_WIDTH = 512;
+export const DEFAULT_CANVAS_HEIGHT = 384;
+
 /**
  * 空のボードを生成
  */
 export function createEmptyBoard(name = ""): BoardData {
 	return {
 		version: 2,
-		width: 512,
-		height: 384,
 		name,
 		backgroundId: BackgroundId.None,
 		objects: [],
@@ -115,44 +117,23 @@ export function duplicateObject(
 }
 
 /**
- * テキストオブジェクトのテキスト長からボードサイズを計算
- * オリジナルアプリの計算式: width = 104 + textLength * 4, height = 92 + textLength * 4
- * @param textLength テキストの文字数
+ * @deprecated stgyバイナリフォーマットにはボードサイズは含まれないため、この関数は不要になりました。
+ * キャンバスサイズはDEFAULT_CANVAS_WIDTH/DEFAULT_CANVAS_HEIGHTを使用してください。
  */
-export function calculateTextBoardSize(textLength: number): {
+export function calculateTextBoardSize(_textLength: number): {
 	width: number;
 	height: number;
 } {
-	// 4バイト境界に合わせる
-	const width = 104 + textLength * 4;
-	const height = 92 + textLength * 4;
-	return { width, height };
+	return { width: DEFAULT_CANVAS_WIDTH, height: DEFAULT_CANVAS_HEIGHT };
 }
 
 /**
- * ボードのサイズをコンテンツに基づいて再計算
- * テキストオブジェクトのみのボードはテキスト長からサイズを計算
- * それ以外は全オブジェクトのバウンディングボックスから計算
- * @param board ボードデータ
+ * @deprecated stgyバイナリフォーマットにはボードサイズは含まれないため、この関数は不要になりました。
+ * キャンバスサイズはDEFAULT_CANVAS_WIDTH/DEFAULT_CANVAS_HEIGHTを使用してください。
  */
-export function recalculateBoardSize(board: BoardData): {
+export function recalculateBoardSize(_board: BoardData): {
 	width: number;
 	height: number;
 } {
-	const objects = board.objects.filter((o) => o.flags.visible);
-
-	if (objects.length === 0) {
-		return { width: board.width, height: board.height };
-	}
-
-	// テキストオブジェクトのみの場合、テキスト長から計算
-	const textObjects = objects.filter((o) => o.objectId === ObjectIds.Text);
-	if (textObjects.length === objects.length && textObjects.length === 1) {
-		const textLength = textObjects[0].text?.length ?? 0;
-		return calculateTextBoardSize(textLength);
-	}
-
-	// 複数オブジェクトや非テキストオブジェクトの場合は現在のサイズを維持
-	// TODO: バウンディングボックス計算を実装
-	return { width: board.width, height: board.height };
+	return { width: DEFAULT_CANVAS_WIDTH, height: DEFAULT_CANVAS_HEIGHT };
 }
