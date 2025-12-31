@@ -115,7 +115,8 @@ export function useDragInteraction({
 			// フォーカスモード中、フォーカス外のオブジェクトはクリック無視
 			if (isOutsideFocus(index)) return;
 
-			const additive = e.shiftKey;
+			// Shift, Command (Mac), Ctrl (Windows) で追加選択
+			const additive = e.shiftKey || e.metaKey || e.ctrlKey;
 
 			const group = getGroupForObject(index);
 			// フォーカスモード中は個別オブジェクト選択（グループ選択しない）
@@ -153,7 +154,8 @@ export function useDragInteraction({
 			e.stopPropagation();
 			e.preventDefault();
 
-			const additive = e.shiftKey;
+			// Shift, Command (Mac), Ctrl (Windows) で追加選択
+			const additive = e.shiftKey || e.metaKey || e.ctrlKey;
 			const startPointer = screenToSVG(e, svg);
 
 			const group = getGroupForObject(index);

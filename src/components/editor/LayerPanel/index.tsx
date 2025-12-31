@@ -170,7 +170,8 @@ export function LayerPanel() {
 	// オブジェクト選択
 	const handleSelectObject = useCallback(
 		(index: number, e: React.MouseEvent) => {
-			const additive = e.shiftKey;
+			// Shift, Command (Mac), Ctrl (Windows) で追加選択
+			const additive = e.shiftKey || e.metaKey || e.ctrlKey;
 			selectObject(index, additive);
 		},
 		[selectObject],
