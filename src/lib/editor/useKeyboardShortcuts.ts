@@ -53,9 +53,11 @@ export function useKeyboardShortcuts() {
 		ungroup,
 		unfocus,
 		exitCircularMode,
+		moveSelectedLayer,
 	} = useEditorActions();
 
 	const hasSelection = selectedIndices.length > 0;
+	const hasSingleSelection = selectedIndices.length === 1;
 
 	/**
 	 * オブジェクトを移動
@@ -185,6 +187,24 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
+		// Ctrl/Cmd + ]: 前面へ / Ctrl/Cmd + Shift + ]: 最前面へ
+		if (isMod && e.key === "]") {
+			if (hasSingleSelection) {
+				e.preventDefault();
+				moveSelectedLayer(isShift ? "front" : "forward");
+			}
+			return;
+		}
+
+		// Ctrl/Cmd + [: 背面へ / Ctrl/Cmd + Shift + [: 最背面へ
+		if (isMod && e.key === "[") {
+			if (hasSingleSelection) {
+				e.preventDefault();
+				moveSelectedLayer(isShift ? "back" : "backward");
+			}
+			return;
+		}
+
 		// 矢印キー: 移動
 		if (hasSelection) {
 			const step = isShift ? MOVE_STEP_LARGE : MOVE_STEP;
@@ -228,6 +248,10 @@ export const KEYBOARD_SHORTCUTS = [
 	{ key: "Ctrl+A", description: "全選択" },
 	{ key: "Ctrl+G", description: "グループ化" },
 	{ key: "Ctrl+Shift+G", description: "グループ解除" },
+	{ key: "Ctrl+]", description: "前面へ" },
+	{ key: "Ctrl+[", description: "背面へ" },
+	{ key: "Ctrl+Shift+]", description: "最前面へ" },
+	{ key: "Ctrl+Shift+[", description: "最背面へ" },
 	{ key: "Delete", description: "削除" },
 	{ key: "Escape", description: "フォーカス解除/選択解除" },
 	{ key: "↑↓←→", description: "1px移動" },
