@@ -2,10 +2,10 @@
  * パネル設定の永続化テスト
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, waitFor } from "@testing-library/react";
 import { createElement } from "react";
-import { Store } from "@tanstack/store";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { PanelStore } from "../store/types";
 import { DEFAULT_PANEL_LAYOUT, type PanelLayoutConfig } from "../types";
 
 const STORAGE_KEY = "strategy-board-panel-layout";
@@ -53,14 +53,12 @@ describe("Panel persistence", () => {
 
 			function TestComponent() {
 				const store = usePanelStoreContext();
-				capturedState = store.state;
+				capturedState = store.state as PanelLayoutConfig;
 				return null;
 			}
 
 			render(
-				createElement(PanelStoreProvider, {
-					children: createElement(TestComponent),
-				}),
+				createElement(PanelStoreProvider, null, createElement(TestComponent)),
 			);
 
 			await waitFor(() => {
@@ -68,7 +66,7 @@ describe("Panel persistence", () => {
 			});
 
 			// デフォルト設定と一致
-			expect(capturedState?.panels.objectPalette).toEqual(
+			expect(capturedState!.panels.objectPalette).toEqual(
 				DEFAULT_PANEL_LAYOUT.panels.objectPalette,
 			);
 		});
@@ -98,14 +96,12 @@ describe("Panel persistence", () => {
 
 			function TestComponent() {
 				const store = usePanelStoreContext();
-				capturedState = store.state;
+				capturedState = store.state as PanelLayoutConfig;
 				return null;
 			}
 
 			render(
-				createElement(PanelStoreProvider, {
-					children: createElement(TestComponent),
-				}),
+				createElement(PanelStoreProvider, null, createElement(TestComponent)),
 			);
 
 			await waitFor(() => {
@@ -113,9 +109,9 @@ describe("Panel persistence", () => {
 			});
 
 			// 保存した設定が読み込まれている
-			expect(capturedState?.panels.objectPalette.slot).toBe("right");
-			expect(capturedState?.panels.objectPalette.visible).toBe(false);
-			expect(capturedState?.panels.objectPalette.collapsed).toBe(true);
+			expect(capturedState!.panels.objectPalette.slot).toBe("right");
+			expect(capturedState!.panels.objectPalette.visible).toBe(false);
+			expect(capturedState!.panels.objectPalette.collapsed).toBe(true);
 		});
 
 		it("不正なJSONは無視してデフォルトを返す", async () => {
@@ -131,14 +127,12 @@ describe("Panel persistence", () => {
 
 			function TestComponent() {
 				const store = usePanelStoreContext();
-				capturedState = store.state;
+				capturedState = store.state as PanelLayoutConfig;
 				return null;
 			}
 
 			render(
-				createElement(PanelStoreProvider, {
-					children: createElement(TestComponent),
-				}),
+				createElement(PanelStoreProvider, null, createElement(TestComponent)),
 			);
 
 			await waitFor(() => {
@@ -146,7 +140,7 @@ describe("Panel persistence", () => {
 			});
 
 			// デフォルト設定にフォールバック
-			expect(capturedState?.panels.objectPalette).toEqual(
+			expect(capturedState!.panels.objectPalette).toEqual(
 				DEFAULT_PANEL_LAYOUT.panels.objectPalette,
 			);
 		});
@@ -179,7 +173,12 @@ describe("Panel persistence", () => {
 						visible: false,
 						collapsed: false,
 					},
-					assetPanel: { slot: "left", order: 1, visible: true, collapsed: true },
+					assetPanel: {
+						slot: "left",
+						order: 1,
+						visible: true,
+						collapsed: true,
+					},
 					// debugPanelがない
 				},
 			};
@@ -194,14 +193,12 @@ describe("Panel persistence", () => {
 
 			function TestComponent() {
 				const store = usePanelStoreContext();
-				capturedState = store.state;
+				capturedState = store.state as PanelLayoutConfig;
 				return null;
 			}
 
 			render(
-				createElement(PanelStoreProvider, {
-					children: createElement(TestComponent),
-				}),
+				createElement(PanelStoreProvider, null, createElement(TestComponent)),
 			);
 
 			await waitFor(() => {
@@ -209,7 +206,7 @@ describe("Panel persistence", () => {
 			});
 
 			// debugPanelがデフォルト値で補完されている
-			expect(capturedState?.panels.debugPanel).toEqual(
+			expect(capturedState!.panels.debugPanel).toEqual(
 				DEFAULT_PANEL_LAYOUT.panels.debugPanel,
 			);
 		});
@@ -237,14 +234,12 @@ describe("Panel persistence", () => {
 
 			function TestComponent() {
 				const store = usePanelStoreContext();
-				capturedState = store.state;
+				capturedState = store.state as PanelLayoutConfig;
 				return null;
 			}
 
 			render(
-				createElement(PanelStoreProvider, {
-					children: createElement(TestComponent),
-				}),
+				createElement(PanelStoreProvider, null, createElement(TestComponent)),
 			);
 
 			await waitFor(() => {
@@ -252,8 +247,8 @@ describe("Panel persistence", () => {
 			});
 
 			// collapsedがfalseで補完されている
-			expect(capturedState?.panels.objectPalette.collapsed).toBe(false);
-			expect(capturedState?.panels.layerPanel.collapsed).toBe(false);
+			expect(capturedState!.panels.objectPalette.collapsed).toBe(false);
+			expect(capturedState!.panels.layerPanel.collapsed).toBe(false);
 		});
 	});
 
@@ -267,7 +262,7 @@ describe("Panel persistence", () => {
 				"../store/actions/layoutActions"
 			);
 
-			let store: Store<PanelLayoutConfig> | null = null;
+			let store: PanelStore | null = null;
 
 			function TestComponent() {
 				store = usePanelStoreContext();
@@ -275,9 +270,7 @@ describe("Panel persistence", () => {
 			}
 
 			render(
-				createElement(PanelStoreProvider, {
-					children: createElement(TestComponent),
-				}),
+				createElement(PanelStoreProvider, null, createElement(TestComponent)),
 			);
 
 			await waitFor(() => {
@@ -303,4 +296,3 @@ describe("Panel persistence", () => {
 		});
 	});
 });
-

@@ -10,8 +10,3 @@ export type PanelState = PanelLayoutConfig;
 
 /** Panel Store 型 */
 export type PanelStore = Store<PanelState>;
-
-/** Panel Store 初期化オプション */
-export interface PanelStoreOptions {
-	initialState: PanelState;
-}

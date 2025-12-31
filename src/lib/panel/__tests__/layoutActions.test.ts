@@ -2,8 +2,8 @@
  * パネルレイアウトアクションのテスト
  */
 
-import { beforeEach, describe, expect, it } from "vitest";
 import { Store } from "@tanstack/store";
+import { beforeEach, describe, expect, it } from "vitest";
 import { createLayoutActions } from "../store/actions/layoutActions";
 import type { PanelState } from "../store/types";
 import { DEFAULT_PANEL_LAYOUT, type PanelId } from "../types";
@@ -236,4 +236,3 @@ describe("layoutActions", () => {
 		});
 	});
 });
-
