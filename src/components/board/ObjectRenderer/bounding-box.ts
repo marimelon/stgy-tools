@@ -81,25 +81,20 @@ export function getObjectBoundingBox(
 		return { width, height: TEXT.DEFAULT_HEIGHT };
 	}
 
-	// Line: 始点(position)から終点(param1/10, param2/10)への線
+	// Line: ローカル座標系（長さ×太さ）で計算し、回転で向きを決める
 	if (objectId === ObjectIds.Line && position) {
 		const endpoint = calculateLineEndpoint(position, param1, param2);
 		const lineThickness = param3 ?? DEFAULT_PARAMS.LINE_THICKNESS;
-		// position基準の相対座標で計算
-		const relEndX = endpoint.x - position.x;
-		const relEndY = endpoint.y - position.y;
-		// 始点(0,0)と終点を含むバウンディングボックス
-		const minX = Math.min(0, relEndX);
-		const maxX = Math.max(0, relEndX);
-		const minY = Math.min(0, relEndY);
-		const maxY = Math.max(0, relEndY);
-		const width = Math.max(maxX - minX, lineThickness);
-		const height = Math.max(maxY - minY, lineThickness);
+		// 線の長さを計算
+		const dx = endpoint.x - position.x;
+		const dy = endpoint.y - position.y;
+		const lineLength = Math.sqrt(dx * dx + dy * dy);
+		// 長さ×太さのBBox、中心は線の中点（始点から長さの半分）
 		return {
-			width,
-			height,
-			offsetX: (minX + maxX) / 2,
-			offsetY: (minY + maxY) / 2,
+			width: Math.max(lineLength, lineThickness),
+			height: lineThickness,
+			offsetX: lineLength / 2,
+			offsetY: 0,
 		};
 	}
 
