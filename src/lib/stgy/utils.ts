@@ -32,3 +32,35 @@ export function getPadding4(length: number): number {
 export function getPadding2(length: number): number {
 	return length % BYTE_ALIGNMENT_2;
 }
+
+/**
+ * UTF-8文字列のバイト数を返す
+ */
+export function getUtf8ByteLength(str: string): number {
+	return new TextEncoder().encode(str).length;
+}
+
+/**
+ * UTF-8で指定バイト数以下になるように文字列を切り詰める
+ * マルチバイト文字の途中で切れないように、文字単位で処理する
+ */
+export function truncateToUtf8Bytes(str: string, maxBytes: number): string {
+	const encoder = new TextEncoder();
+	const totalBytes = encoder.encode(str).length;
+	if (totalBytes <= maxBytes) {
+		return str;
+	}
+
+	// 文字単位で切り詰め（マルチバイト文字の途中で切れないように）
+	let result = "";
+	let currentBytes = 0;
+	for (const char of str) {
+		const charBytes = encoder.encode(char).length;
+		if (currentBytes + charBytes > maxBytes) {
+			break;
+		}
+		result += char;
+		currentBytes += charBytes;
+	}
+	return result;
+}

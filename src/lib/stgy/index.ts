@@ -14,6 +14,7 @@ export {
 	KEY_CHAR_INDEX,
 	KEY_MASK,
 	MAX_CIPHER_KEY,
+	MAX_TEXT_BYTES,
 	MIN_STGY_PAYLOAD_LENGTH,
 	STGY_PREFIX,
 	STGY_SUFFIX,
@@ -51,4 +52,11 @@ export {
 	ObjectNames,
 } from "./types";
 // Utils
-export { getPadding2, getPadding4, padTo2Bytes, padTo4Bytes } from "./utils";
+export {
+	getPadding2,
+	getPadding4,
+	getUtf8ByteLength,
+	padTo2Bytes,
+	padTo4Bytes,
+	truncateToUtf8Bytes,
+} from "./utils";

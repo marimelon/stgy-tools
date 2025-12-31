@@ -5,7 +5,9 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { useDebugMode } from "@/lib/settings";
 import type { BoardObject } from "@/lib/stgy";
+import { MAX_TEXT_BYTES, truncateToUtf8Bytes } from "@/lib/stgy";
 
 interface InlineTextEditorProps {
 	/** 編集対象のオブジェクト */
@@ -18,6 +20,7 @@ interface InlineTextEditorProps {
  * インラインテキストエディタ
  */
 export function InlineTextEditor({ object, onEndEdit }: InlineTextEditorProps) {
+	const debugMode = useDebugMode();
 	const [text, setText] = useState(object.text ?? "");
 	const inputRef = useRef<HTMLInputElement>(null);
 
@@ -70,7 +73,14 @@ export function InlineTextEditor({ object, onEndEdit }: InlineTextEditorProps) {
 				ref={inputRef}
 				type="text"
 				value={text}
-				onChange={(e) => setText(e.target.value)}
+				onChange={(e) => {
+					let newText = e.target.value;
+					// デバッグモードでない場合は30バイトに制限
+					if (!debugMode) {
+						newText = truncateToUtf8Bytes(newText, MAX_TEXT_BYTES);
+					}
+					setText(newText);
+				}}
 				onKeyDown={handleKeyDown}
 				onBlur={handleBlur}
 				style={{

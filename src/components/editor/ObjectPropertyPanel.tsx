@@ -16,9 +16,12 @@ import {
 	DEFAULT_FLIP_FLAGS,
 	EDIT_PARAMS,
 	EditParamIds,
+	getUtf8ByteLength,
+	MAX_TEXT_BYTES,
 	OBJECT_EDIT_PARAMS,
 	OBJECT_FLIP_FLAGS,
 	ObjectIds,
+	truncateToUtf8Bytes,
 } from "@/lib/stgy";
 import { ColorPalette } from "./ColorPalette";
 import {
@@ -339,7 +342,14 @@ export function ObjectPropertyPanel({
 						<Input
 							type="text"
 							value={object.text ?? ""}
-							onChange={(e) => handleChange({ text: e.target.value })}
+							onChange={(e) => {
+								let newText = e.target.value;
+								// デバッグモードでない場合は30バイトに制限
+								if (!debugMode) {
+									newText = truncateToUtf8Bytes(newText, MAX_TEXT_BYTES);
+								}
+								handleChange({ text: newText });
+							}}
 							onBlur={(e) => {
 								// 空文字の場合はデフォルトテキストに戻す
 								if (e.target.value.trim() === "") {
@@ -348,6 +358,12 @@ export function ObjectPropertyPanel({
 								onCommitHistory(t("propertyPanel.textChanged"));
 							}}
 						/>
+						{/* バイト数表示（デバッグモード時のみ） */}
+						{debugMode && (
+							<div className="text-xs text-muted-foreground mt-1">
+								{getUtf8ByteLength(object.text ?? "")} / {MAX_TEXT_BYTES} bytes
+							</div>
+						)}
 					</PropertySection>
 				)}
 
