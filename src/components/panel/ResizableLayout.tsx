@@ -13,7 +13,13 @@ import {
 	Separator as PanelResizeHandle,
 	useDefaultLayout,
 } from "react-resizable-panels";
-import { type PanelId, usePanelLayout } from "@/lib/panel";
+import {
+	type PanelId,
+	useLeftHiddenPanels,
+	useLeftPanels,
+	useRightHiddenPanels,
+	useRightPanels,
+} from "@/lib/panel";
 import {
 	CENTER_PANEL_CONFIG,
 	RESIZE_HANDLE_STYLES,
@@ -38,8 +44,10 @@ export function ResizableLayout({
 	panelActions,
 	children,
 }: ResizableLayoutProps) {
-	const { leftPanels, rightPanels, leftHiddenPanels, rightHiddenPanels } =
-		usePanelLayout();
+	const leftPanels = useLeftPanels();
+	const rightPanels = useRightPanels();
+	const leftHiddenPanels = useLeftHiddenPanels();
+	const rightHiddenPanels = useRightHiddenPanels();
 
 	const hasLeftSidebar = leftPanels.length > 0;
 	const hasRightSidebar = rightPanels.length > 0;

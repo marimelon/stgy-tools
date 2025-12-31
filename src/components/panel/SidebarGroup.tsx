@@ -13,8 +13,7 @@ import {
 	Separator as PanelResizeHandle,
 	useDefaultLayout,
 } from "react-resizable-panels";
-import type { PanelConfig, PanelId } from "@/lib/panel";
-import { usePanelLayout } from "@/lib/panel";
+import { type PanelConfig, type PanelId, usePanelActions } from "@/lib/panel";
 import { PANEL_CONFIG, RESIZE_HANDLE_STYLES } from "./constants";
 import { PanelHeader } from "./PanelHeader";
 
@@ -38,7 +37,7 @@ export function SidebarGroup({
 	panelActions,
 	storageId,
 }: SidebarGroupProps) {
-	const { togglePanelCollapsed } = usePanelLayout();
+	const { togglePanelCollapsed } = usePanelActions();
 
 	// 展開中のパネルを取得
 	const expandedPanels = panels.filter(([, config]) => !config.collapsed);

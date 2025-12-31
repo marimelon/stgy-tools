@@ -44,7 +44,7 @@ import {
 	useIsFocusMode,
 	useKeyboardShortcuts,
 } from "@/lib/editor";
-import { PanelProvider } from "@/lib/panel";
+import { PanelStoreProvider } from "@/lib/panel";
 import {
 	generateCanonicalLink,
 	generateHreflangLinks,
@@ -469,7 +469,7 @@ function EditorPage() {
 
 	return (
 		<SettingsProvider>
-			<PanelProvider>
+			<PanelStoreProvider>
 				<EditorStoreProvider
 					key={editorKey}
 					initialBoard={initialBoard}
@@ -551,7 +551,7 @@ function EditorPage() {
 						onCreateNew={handleCreateNewFromImport}
 					/>
 				)}
-			</PanelProvider>
+			</PanelStoreProvider>
 		</SettingsProvider>
 	);
 }

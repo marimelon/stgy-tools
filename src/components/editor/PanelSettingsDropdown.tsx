@@ -27,7 +27,8 @@ import {
 	type PanelConfig,
 	type PanelId,
 	type PanelSlot,
-	usePanelLayout,
+	useConfig,
+	usePanelActions,
 } from "@/lib/panel";
 
 /** アイコンサイズ */
@@ -41,13 +42,13 @@ const MENU_WIDTH = 320;
  */
 export function PanelSettingsDropdown() {
 	const { t } = useTranslation();
+	const config = useConfig();
 	const {
-		config,
 		togglePanelVisibility,
 		updatePanelSlot,
 		resetToDefault,
 		reorderPanel,
-	} = usePanelLayout();
+	} = usePanelActions();
 	const [isOpen, setIsOpen] = useState(false);
 	const [isPositioned, setIsPositioned] = useState(false);
 	const buttonRef = useRef<HTMLButtonElement>(null);
