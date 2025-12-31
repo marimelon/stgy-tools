@@ -40,7 +40,7 @@ export { ImportModal } from "./ImportModal";
 export { LayerPanel } from "./LayerPanel";
 export type { ModalProps } from "./Modal";
 export { Modal } from "./Modal";
-export { ObjectPalette, ObjectPaletteActions } from "./ObjectPalette";
+export { ObjectPalette } from "./ObjectPalette";
 export type { ObjectPropertyPanelProps } from "./ObjectPropertyPanel";
 export { ObjectPropertyPanel } from "./ObjectPropertyPanel";
 export { PropertyPanel } from "./PropertyPanel";

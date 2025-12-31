@@ -18,7 +18,6 @@ import {
 	HistoryPanelActions,
 	LayerPanel,
 	ObjectPalette,
-	ObjectPaletteActions,
 	PropertyPanel,
 } from "@/components/editor";
 import {
@@ -694,7 +693,6 @@ function EditorContent({
 						debugPanel: <DebugPanel />,
 					}}
 					panelActions={{
-						objectPalette: <ObjectPaletteActions />,
 						assetPanel: <AssetPanelActions />,
 						historyPanel: <HistoryPanelActions />,
 					}}

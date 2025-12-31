@@ -139,8 +139,7 @@
 		"lockChanged": "Lock changed"
 	},
 	"objectPalette": {
-		"title": "Objects",
-		"debugMode": "Debug Mode"
+		"title": "Objects"
 	},
 	"layerPanel": {
 		"title": "Layers",

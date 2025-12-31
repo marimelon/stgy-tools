@@ -21,16 +21,6 @@ export function createSettingsActions(store: SettingsStore) {
 	};
 
 	/**
-	 * デバッグモードを切り替え
-	 */
-	const toggleDebugMode = () => {
-		store.setState((state) => ({
-			...state,
-			debugMode: !state.debugMode,
-		}));
-	};
-
-	/**
 	 * デバッグモードを設定
 	 */
 	const setDebugMode = (enabled: boolean) => {
@@ -49,7 +39,6 @@ export function createSettingsActions(store: SettingsStore) {
 
 	return {
 		updateSettings,
-		toggleDebugMode,
 		setDebugMode,
 		resetSettings,
 	};
