@@ -66,14 +66,12 @@ export function AssetPanel() {
 		};
 	}, []);
 
-	// 検索フィルタ
 	const filteredAssets = searchQuery
 		? assets.filter((asset) =>
 				asset.name.toLowerCase().includes(searchQuery.toLowerCase()),
 			)
 		: assets;
 
-	// アセットをキャンバスに配置
 	const handleApplyAsset = (asset: StoredAsset) => {
 		// バリデーション（コールバック実行時に最新のboardを取得）
 		const board = getEditorStore().state.board;
@@ -86,7 +84,6 @@ export function AssetPanel() {
 			return;
 		}
 
-		// キャンバス中央に配置
 		const targetPosition = { x: 256, y: 192 };
 		const offsetObjects = offsetObjectsToPosition(
 			asset.objects,
@@ -102,19 +99,15 @@ export function AssetPanel() {
 		// 追加後のインデックスは 0 から N-1（先頭に追加されるため）
 		const newIndices = offsetObjects.map((_, i) => i);
 
-		// 追加したオブジェクトを選択
 		selectObjects(newIndices);
 
-		// 複数オブジェクトの場合はグループ化
 		if (newIndices.length >= 2) {
 			groupObjects(newIndices);
 		}
 
-		// 履歴をコミット
 		commitHistory(t("assetPanel.toast.assetApplied", { name: asset.name }));
 	};
 
-	// 右クリックメニュー表示
 	const handleContextMenu = (e: MouseEvent, asset: StoredAsset) => {
 		setContextMenu({
 			asset,
@@ -122,22 +115,18 @@ export function AssetPanel() {
 		});
 	};
 
-	// 名前変更
 	const handleRename = (asset: StoredAsset, newName: string) => {
 		updateAsset(asset.id, { name: newName });
 	};
 
-	// 複製
 	const handleDuplicate = (asset: StoredAsset) => {
 		duplicateAsset(asset.id);
 	};
 
-	// エクスポート
 	const handleExport = (asset: StoredAsset) => {
 		setExportAsset(asset);
 	};
 
-	// 削除
 	const handleDelete = (asset: StoredAsset) => {
 		deleteAsset(asset.id);
 	};

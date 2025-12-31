@@ -104,7 +104,6 @@ export function useAssets(options: UseAssetsOptions = {}) {
 			return sortDirection === "desc" ? -comparison : comparison;
 		});
 
-	// Undo state for delete
 	const [deletedAsset, setDeletedAsset] = useState<StoredAsset | null>(null);
 	const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -189,7 +188,6 @@ export function useAssets(options: UseAssetsOptions = {}) {
 		[assets],
 	);
 
-	// Undo delete
 	const undoDelete = useCallback(() => {
 		if (!deletedAsset) return;
 
@@ -235,7 +233,6 @@ export function useAssets(options: UseAssetsOptions = {}) {
 		[assets],
 	);
 
-	// Get a single asset by ID
 	const getAsset = useCallback(
 		(id: string): StoredAsset | undefined => {
 			return assets.find((a) => a.id === id);

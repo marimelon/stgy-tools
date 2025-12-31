@@ -97,7 +97,6 @@ export function createLayoutActions(store: PanelStore) {
 			// 境界チェック
 			if (targetIndex < 0 || targetIndex >= sameslotPanels.length) return state;
 
-			// order値をswap
 			const [currentId] = sameslotPanels[currentIndex];
 			const [targetId] = sameslotPanels[targetIndex];
 

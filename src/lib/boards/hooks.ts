@@ -101,7 +101,6 @@ export function useBoards(options: UseBoardsOptions = {}) {
 			return sortDirection === "desc" ? -comparison : comparison;
 		});
 
-	// Undo state for delete
 	const [deletedBoard, setDeletedBoard] = useState<StoredBoard | null>(null);
 	const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -199,7 +198,6 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		[boards],
 	);
 
-	// Undo delete
 	const undoDelete = useCallback(() => {
 		if (!deletedBoard) return;
 
@@ -245,7 +243,6 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		[boards],
 	);
 
-	// Get a single board by ID
 	const getBoard = useCallback(
 		(id: string): StoredBoard | undefined => {
 			return boards.find((b) => b.id === id);

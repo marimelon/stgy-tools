@@ -94,7 +94,6 @@ export function BoardPropertyPanel({
 	const guideLinesId = useId();
 	const borderId = useId();
 
-	// Helper to update overlay settings
 	const updateOverlaySettings = (updates: Partial<OverlaySettings>) => {
 		setGridSettings({
 			overlaySettings: {

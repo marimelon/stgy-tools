@@ -93,11 +93,5 @@ export function migrateAsset(asset: unknown): StoredAsset | null {
 		return result.data;
 	}
 
-	// Future: Add migration logic for older versions here
-	// Example:
-	// if (isVersion1Asset(asset)) {
-	//   return migrateV1ToV2(asset);
-	// }
-
 	return null;
 }
