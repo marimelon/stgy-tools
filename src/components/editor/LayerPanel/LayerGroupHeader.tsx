@@ -173,7 +173,7 @@ export function LayerGroupHeader({
 				onDrop={onDrop}
 				onClick={(e) => onSelect(group.id, e)}
 				onContextMenu={(e) => onContextMenu(e, group)}
-				className={`layer-item select-none ${isDragging ? "opacity-50" : isOutsideFocus ? "opacity-40" : ""} ${isFocused ? "bg-blue-500/20 border-blue-500" : isAllSelected ? "bg-purple-500/15 border-purple-500" : ""}`}
+				className={`layer-item select-none ${isDragging ? "opacity-50" : isOutsideFocus ? "opacity-40" : ""} ${isFocused ? "focused" : isAllSelected ? "group-selected" : ""}`}
 			>
 				{/* ドラッグハンドル */}
 				<span className="cursor-grab active:cursor-grabbing text-muted-foreground">

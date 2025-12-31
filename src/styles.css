@@ -77,9 +77,10 @@
   --color-error: oklch(0.62 0.22 25);
 
   --color-selection-bg: oklch(0.72 0.16 190 / 0.22);
-  --color-selection-border: oklch(0.72 0.16 190);
+  --color-selection-bg-hover: oklch(0.72 0.16 190 / 0.35);
+  --color-selection-border: oklch(0.72 0.16 190 / 0.5);
   --color-group-bg: oklch(0.62 0.2 300 / 0.18);
-  --color-group-border: oklch(0.62 0.2 300);
+  --color-group-border: oklch(0.62 0.2 300 / 0.5);
   --color-group-line: oklch(0.62 0.2 300 / 0.4);
 
   --font-display: 'Rajdhani', 'Noto Sans JP', sans-serif;
@@ -250,14 +251,40 @@
   background: var(--color-bg-hover);
 }
 
+/* 選択状態 */
 .layer-item.selected {
   background: var(--color-selection-bg);
   border-color: var(--color-selection-border);
 }
 
+/* 選択中のホバー状態 - 選択を維持しつつ微妙に強調 */
+.layer-item.selected:hover {
+  background: var(--color-selection-bg-hover);
+  border-color: var(--color-selection-border);
+}
+
+/* グループ選択状態 */
 .layer-item.group-selected {
   background: var(--color-group-bg);
   border-color: var(--color-group-border);
+}
+
+/* グループ選択中のホバー状態 */
+.layer-item.group-selected:hover {
+  background: oklch(0.62 0.2 300 / 0.28);
+  border-color: var(--color-group-border);
+}
+
+/* フォーカス状態（グループのフォーカスモード） */
+.layer-item.focused {
+  background: oklch(0.6 0.15 250 / 0.2);
+  border-color: oklch(0.6 0.15 250 / 0.5);
+}
+
+/* フォーカス中のホバー状態 */
+.layer-item.focused:hover {
+  background: oklch(0.6 0.15 250 / 0.3);
+  border-color: oklch(0.6 0.15 250 / 0.5);
 }
 
 /* グループ内アイテムの縦線スタイル */

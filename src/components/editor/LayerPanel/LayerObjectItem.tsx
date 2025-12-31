@@ -90,7 +90,7 @@ export function LayerObjectItem({
 				onDrop={onDrop}
 				onClick={(e) => onSelect(index, e)}
 				onContextMenu={(e) => onContextMenu(e, index, isInGroup, groupId)}
-				className={`layer-item select-none ${isInGroup ? "in-group" : ""} ${isLastInGroup ? "last-in-group" : ""} ${isDragging ? "opacity-50" : isOutsideFocus ? "opacity-40" : ""} ${isSelected ? "bg-accent/20 border-accent" : ""}`}
+				className={`layer-item select-none ${isInGroup ? "in-group" : ""} ${isLastInGroup ? "last-in-group" : ""} ${isDragging ? "opacity-50" : isOutsideFocus ? "opacity-40" : ""} ${isSelected ? "selected" : ""}`}
 			>
 				{/* ドラッグハンドル */}
 				<span className="cursor-grab active:cursor-grabbing text-muted-foreground">
