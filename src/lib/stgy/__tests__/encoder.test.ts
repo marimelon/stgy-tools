@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { MAX_BOARD_NAME_LENGTH } from "../constants";
 import { decodeStgy } from "../decoder";
 import { encodeStgy } from "../encoder";
 import { parseBoardData } from "../parser";
@@ -214,5 +215,85 @@ describe("encoder", () => {
 			console.log(`  Original: ${originalBinary[firstDiff].toString(16)}`);
 			console.log(`  Serialized: ${serialized[firstDiff].toString(16)}`);
 		}
+	});
+
+	describe("board name length", () => {
+		it("should have MAX_BOARD_NAME_LENGTH set to 20", () => {
+			expect(MAX_BOARD_NAME_LENGTH).toBe(20);
+		});
+
+		it("should round-trip board name at max length (20 characters)", () => {
+			const maxLengthName = "A".repeat(MAX_BOARD_NAME_LENGTH);
+			expect(maxLengthName.length).toBe(20);
+
+			const board: BoardData = {
+				version: 2,
+				name: maxLengthName,
+				backgroundId: BackgroundId.None,
+				objects: [],
+			};
+
+			const encoded = encodeStgy(board);
+			const decoded = decodeStgy(encoded);
+			const parsed = parseBoardData(decoded);
+
+			expect(parsed.name).toBe(maxLengthName);
+		});
+
+		it("should round-trip board name exceeding max length (debug mode)", () => {
+			// debugMode では20文字を超えるボード名も許可される
+			const longName = "A".repeat(30);
+			expect(longName.length).toBe(30);
+
+			const board: BoardData = {
+				version: 2,
+				name: longName,
+				backgroundId: BackgroundId.None,
+				objects: [],
+			};
+
+			const encoded = encodeStgy(board);
+			const decoded = decodeStgy(encoded);
+			const parsed = parseBoardData(decoded);
+
+			expect(parsed.name).toBe(longName);
+		});
+
+		it("should round-trip Japanese board name at max length", () => {
+			// 日本語20文字（バイト数では60バイト以上になる）
+			const japaneseName = "あ".repeat(MAX_BOARD_NAME_LENGTH);
+			expect(japaneseName.length).toBe(20);
+
+			const board: BoardData = {
+				version: 2,
+				name: japaneseName,
+				backgroundId: BackgroundId.None,
+				objects: [],
+			};
+
+			const encoded = encodeStgy(board);
+			const decoded = decodeStgy(encoded);
+			const parsed = parseBoardData(decoded);
+
+			expect(parsed.name).toBe(japaneseName);
+		});
+
+		it("should round-trip mixed Japanese/ASCII board name", () => {
+			const mixedName = "テスト Board 日本語";
+			expect(mixedName.length).toBeLessThanOrEqual(MAX_BOARD_NAME_LENGTH);
+
+			const board: BoardData = {
+				version: 2,
+				name: mixedName,
+				backgroundId: BackgroundId.None,
+				objects: [],
+			};
+
+			const encoded = encodeStgy(board);
+			const decoded = decodeStgy(encoded);
+			const parsed = parseBoardData(decoded);
+
+			expect(parsed.name).toBe(mixedName);
+		});
 	});
 });

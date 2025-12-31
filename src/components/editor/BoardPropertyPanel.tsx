@@ -31,8 +31,9 @@ import {
 	useEditorActions,
 	useGridSettings,
 } from "@/lib/editor";
+import { useDebugMode } from "@/lib/settings";
 import type { BackgroundId } from "@/lib/stgy";
-import { BackgroundId as BgId } from "@/lib/stgy";
+import { BackgroundId as BgId, MAX_BOARD_NAME_LENGTH } from "@/lib/stgy";
 import { PropertySection } from "./FormInputs";
 
 /** オーバーレイタイプの翻訳キー */
@@ -77,6 +78,7 @@ export function BoardPropertyPanel({
 	onCommitHistory,
 }: BoardPropertyPanelProps) {
 	const { t } = useTranslation();
+	const debugMode = useDebugMode();
 
 	// 細粒度のセレクタを使用（オブジェクト移動で再レンダリングしない）
 	const boardName = useBoardName();
@@ -113,6 +115,7 @@ export function BoardPropertyPanel({
 						onChange={(e) => onUpdateMeta({ name: e.target.value })}
 						onBlur={() => onCommitHistory(t("boardPanel.boardNameChanged"))}
 						placeholder={t("boardPanel.boardNamePlaceholder")}
+						maxLength={debugMode ? undefined : MAX_BOARD_NAME_LENGTH}
 					/>
 				</PropertySection>
 

@@ -13,6 +13,8 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { StoredBoard } from "@/lib/boards";
+import { useDebugMode } from "@/lib/settings";
+import { MAX_BOARD_NAME_LENGTH } from "@/lib/stgy";
 import { BoardThumbnail } from "./BoardThumbnail";
 
 export interface BoardCardProps {
@@ -33,6 +35,7 @@ export function BoardCard({
 	onDelete,
 }: BoardCardProps) {
 	const { t } = useTranslation();
+	const debugMode = useDebugMode();
 	const [isEditing, setIsEditing] = useState(false);
 	const [editName, setEditName] = useState(board.name);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -114,6 +117,7 @@ export function BoardCard({
 						onChange={(e) => setEditName(e.target.value)}
 						onBlur={handleSaveEdit}
 						onKeyDown={handleKeyDown}
+						maxLength={debugMode ? undefined : MAX_BOARD_NAME_LENGTH}
 						className="w-full px-2 py-1 text-sm font-medium border border-border rounded bg-background"
 					/>
 				) : (

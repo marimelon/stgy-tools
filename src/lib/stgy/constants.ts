@@ -61,3 +61,6 @@ export const CRC32_FINAL_XOR = 0xffffffff;
 // ===== テキストオブジェクト =====
 export const TEXT_OBJECT_ID = 100;
 export const MAX_TEXT_BYTES = 30;
+
+// ===== ボード名 =====
+export const MAX_BOARD_NAME_LENGTH = 20;
