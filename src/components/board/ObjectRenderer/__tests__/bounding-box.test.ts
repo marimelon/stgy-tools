@@ -130,6 +130,77 @@ describe("bounding-box", () => {
 			expect(bbox.height).toBeGreaterThan(0);
 		});
 
+		it("Line: 水平線のBBoxは長さ×太さ", () => {
+			const position = { x: 100, y: 100 };
+			// 終点 (200, 100) -> 水平線 長さ100
+			const bbox = getObjectBoundingBox(
+				ObjectIds.Line,
+				2000, // endX * 10 = 200
+				1000, // endY * 10 = 100
+				10, // thickness
+				undefined,
+				position,
+			);
+			// 長さ100、太さ10
+			expect(bbox.width).toBeCloseTo(100, 5);
+			expect(bbox.height).toBe(10);
+			// offsetXは線の中点（長さの半分）
+			expect(bbox.offsetX).toBeCloseTo(50, 5);
+			expect(bbox.offsetY).toBe(0);
+		});
+
+		it("Line: 垂直線のBBoxは長さ×太さ", () => {
+			const position = { x: 100, y: 100 };
+			// 終点 (100, 200) -> 垂直線 長さ100
+			const bbox = getObjectBoundingBox(
+				ObjectIds.Line,
+				1000, // endX * 10 = 100
+				2000, // endY * 10 = 200
+				10, // thickness
+				undefined,
+				position,
+			);
+			// 長さ100、太さ10
+			expect(bbox.width).toBeCloseTo(100, 5);
+			expect(bbox.height).toBe(10);
+			expect(bbox.offsetX).toBeCloseTo(50, 5);
+			expect(bbox.offsetY).toBe(0);
+		});
+
+		it("Line: 斜め線のBBoxは長さ×太さ", () => {
+			const position = { x: 0, y: 0 };
+			// 終点 (30, 40) -> 斜め線 長さ50 (3-4-5三角形)
+			const bbox = getObjectBoundingBox(
+				ObjectIds.Line,
+				300, // endX * 10 = 30
+				400, // endY * 10 = 40
+				8, // thickness
+				undefined,
+				position,
+			);
+			// 長さ50、太さ8
+			expect(bbox.width).toBeCloseTo(50, 5);
+			expect(bbox.height).toBe(8);
+			expect(bbox.offsetX).toBeCloseTo(25, 5);
+			expect(bbox.offsetY).toBe(0);
+		});
+
+		it("Line: 長さ0の場合は太さがwidth", () => {
+			const position = { x: 100, y: 100 };
+			// 終点が始点と同じ
+			const bbox = getObjectBoundingBox(
+				ObjectIds.Line,
+				1000, // endX * 10 = 100
+				1000, // endY * 10 = 100
+				20, // thickness
+				undefined,
+				position,
+			);
+			// 長さ0なのでwidthは太さになる
+			expect(bbox.width).toBe(20);
+			expect(bbox.height).toBe(20);
+		});
+
 		it("LineAoE", () => {
 			const bbox = getObjectBoundingBox(ObjectIds.LineAoE, 200, 30);
 			expect(bbox.width).toBe(200); // length
