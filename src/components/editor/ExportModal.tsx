@@ -28,8 +28,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { recalculateBoardSize, useBoard } from "@/lib/editor";
-import { useDebugMode } from "@/lib/editor/useDebugMode";
 import { createShortLinkFn } from "@/lib/server/shortLinks/serverFn";
+import { useDebugMode } from "@/lib/settings";
 import { encodeStgy } from "@/lib/stgy";
 
 /** 共有リンク用の固定キー */

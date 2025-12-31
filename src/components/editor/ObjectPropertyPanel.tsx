@@ -8,7 +8,8 @@ import { useTranslation } from "react-i18next";
 import { COLOR_CHANGEABLE_OBJECT_IDS } from "@/components/board/ObjectRenderer/constants";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { hexToRgb, rgbToHex, useDebugMode } from "@/lib/editor";
+import { hexToRgb, rgbToHex } from "@/lib/editor";
+import { useDebugMode } from "@/lib/settings";
 import type { BoardObject } from "@/lib/stgy";
 import {
 	DEFAULT_EDIT_PARAMS,

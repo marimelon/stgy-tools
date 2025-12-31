@@ -142,7 +142,8 @@ export type {
 	UseCanvasInteractionReturn,
 } from "./useCanvasInteraction";
 export { useCanvasInteraction } from "./useCanvasInteraction";
-export { getDebugMode, setDebugMode, useDebugMode } from "./useDebugMode";
+// useDebugMode は @/lib/settings に移行済み
+// 後方互換性のため KEYBOARD_SHORTCUTS のみエクスポート継続
 export type { ImportResult, UseImportExportReturn } from "./useImportExport";
 export { useImportExport } from "./useImportExport";
 export {

@@ -30,13 +30,15 @@ import {
 	Grid3x3,
 	Group,
 	Redo2,
+	Settings,
 	Trash2,
 	Undo2,
 	Ungroup,
 	Upload,
 } from "lucide-react";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { SettingsModal } from "@/components/settings";
 import {
 	GRID_SIZES,
 	useCanAlign,
@@ -159,6 +161,9 @@ export function EditorToolbar({
 		generateExportCode,
 		copyToClipboard,
 	} = useImportExport();
+
+	// Settings modal state
+	const [showSettingsModal, setShowSettingsModal] = useState(false);
 
 	const hasSelection = selectedIndices.length > 0;
 	const hasSingleSelection = selectedIndices.length === 1;
@@ -509,6 +514,16 @@ export function EditorToolbar({
 					</>
 				)}
 
+				{/* 設定 */}
+				<div className="flex-shrink-0">
+					<ToolbarButton
+						onClick={() => setShowSettingsModal(true)}
+						title={t("settings.title")}
+					>
+						<Settings size={ICON_SIZE} />
+					</ToolbarButton>
+				</div>
+
 				{/* 保存状態表示 */}
 				<div className="ml-auto text-right text-xs flex-shrink-0 whitespace-nowrap flex items-center gap-2 text-muted-foreground font-mono">
 					{isDirty && (
@@ -549,6 +564,11 @@ export function EditorToolbar({
 					onClose={closeExportModal}
 					shortLinksEnabled={shortLinksEnabled}
 				/>
+			)}
+
+			{/* 設定モーダル */}
+			{showSettingsModal && (
+				<SettingsModal onClose={() => setShowSettingsModal(false)} />
 			)}
 		</>
 	);

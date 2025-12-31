@@ -7,11 +7,8 @@
 
 import { Bug, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-	useDebugMode,
-	useEditorActions,
-	useObjectPaletteState,
-} from "@/lib/editor";
+import { useEditorActions, useObjectPaletteState } from "@/lib/editor";
+import { useDebugMode } from "@/lib/settings";
 import { HIDDEN_OBJECT_IDS, OBJECT_CATEGORIES } from "./categories";
 import { ObjectPaletteItem } from "./ObjectPaletteItem";
 

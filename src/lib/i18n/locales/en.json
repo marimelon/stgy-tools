@@ -525,6 +525,35 @@
 			"warningNoSave": "* Changes will not be saved"
 		}
 	},
+	"settings": {
+		"title": "Settings",
+		"tabs": {
+			"general": "General",
+			"shortcuts": "Shortcuts"
+		},
+		"debugMode": "Debug Mode",
+		"debugModeDescription": "Show all object IDs and allow encode key configuration",
+		"reset": "Reset",
+		"shortcutsNote": "* On Mac, use {{modifier}} instead of Ctrl",
+		"shortcuts": {
+			"Ctrl+Z": "Undo",
+			"Ctrl+Y": "Redo",
+			"Ctrl+C": "Copy",
+			"Ctrl+V": "Paste",
+			"Ctrl+D": "Duplicate",
+			"Ctrl+A": "Select All",
+			"Ctrl+G": "Group",
+			"Ctrl+Shift+G": "Ungroup",
+			"Ctrl+]": "Bring Forward",
+			"Ctrl+[": "Send Backward",
+			"Ctrl+Shift+]": "Bring to Front",
+			"Ctrl+Shift+[": "Send to Back",
+			"Delete": "Delete",
+			"Escape": "Deselect/Exit Mode",
+			"↑↓←→": "Move 1px",
+			"Shift+↑↓←→": "Move 10px"
+		}
+	},
 	"object": {
 		"1": "Circle White Solid Field",
 		"2": "Circle White Tile Field",

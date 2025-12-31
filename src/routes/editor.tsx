@@ -52,6 +52,7 @@ import {
 	SITE_CONFIG,
 } from "@/lib/seo";
 import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
+import { SettingsProvider } from "@/lib/settings";
 import {
 	type BoardData,
 	decodeStgy,
@@ -467,89 +468,91 @@ function EditorPage() {
 	}
 
 	return (
-		<PanelProvider>
-			<EditorStoreProvider
-				key={editorKey}
-				initialBoard={initialBoard}
-				initialGroups={initialGroups}
-				initialGridSettings={initialGridSettings}
-			>
-				<EditorContent
-					initialEncodeKey={initialEncodeKey}
-					currentBoardId={currentBoardId}
-					isMemoryOnlyMode={isMemoryOnlyMode}
-					shortLinksEnabled={featureFlags.shortLinksEnabled}
-					onOpenBoardManager={() => setShowBoardManager(true)}
-					onSaveBoard={(name, stgyCode, encodeKey, groups, gridSettings) => {
-						if (currentBoardId && !isMemoryOnlyMode) {
-							void updateBoard(currentBoardId, {
+		<SettingsProvider>
+			<PanelProvider>
+				<EditorStoreProvider
+					key={editorKey}
+					initialBoard={initialBoard}
+					initialGroups={initialGroups}
+					initialGridSettings={initialGridSettings}
+				>
+					<EditorContent
+						initialEncodeKey={initialEncodeKey}
+						currentBoardId={currentBoardId}
+						isMemoryOnlyMode={isMemoryOnlyMode}
+						shortLinksEnabled={featureFlags.shortLinksEnabled}
+						onOpenBoardManager={() => setShowBoardManager(true)}
+						onSaveBoard={(name, stgyCode, encodeKey, groups, gridSettings) => {
+							if (currentBoardId && !isMemoryOnlyMode) {
+								void updateBoard(currentBoardId, {
+									name,
+									stgyCode,
+									encodeKey,
+									groups,
+									gridSettings,
+								});
+							}
+						}}
+						onCreateBoardFromImport={async (name, stgyCode, encodeKey) => {
+							// stgyCodeをデコードしてボードデータを取得
+							const decodedBoard = decodeBoardFromStgy(stgyCode);
+							if (!decodedBoard) {
+								console.warn("Failed to decode imported board");
+								return;
+							}
+
+							// 新しいボードをIndexedDBに保存
+							const newBoardId = await createBoard(
 								name,
 								stgyCode,
 								encodeKey,
-								groups,
-								gridSettings,
-							});
-						}
-					}}
-					onCreateBoardFromImport={async (name, stgyCode, encodeKey) => {
-						// stgyCodeをデコードしてボードデータを取得
-						const decodedBoard = decodeBoardFromStgy(stgyCode);
-						if (!decodedBoard) {
-							console.warn("Failed to decode imported board");
-							return;
-						}
+								[],
+								DEFAULT_GRID_SETTINGS,
+							);
 
-						// 新しいボードをIndexedDBに保存
-						const newBoardId = await createBoard(
-							name,
-							stgyCode,
-							encodeKey,
-							[],
-							DEFAULT_GRID_SETTINGS,
-						);
+							// 直接エディターを初期化（IndexedDBの反映を待たずに）
+							setCurrentBoardId(newBoardId);
+							setInitialBoard({ ...decodedBoard, name });
+							setInitialGroups([]);
+							setInitialGridSettings(DEFAULT_GRID_SETTINGS);
+							setInitialEncodeKey(encodeKey);
+							setEditorKey((prev) => prev + 1);
+						}}
+					/>
+				</EditorStoreProvider>
 
-						// 直接エディターを初期化（IndexedDBの反映を待たずに）
-						setCurrentBoardId(newBoardId);
-						setInitialBoard({ ...decodedBoard, name });
-						setInitialGroups([]);
-						setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-						setInitialEncodeKey(encodeKey);
-						setEditorKey((prev) => prev + 1);
-					}}
+				{/* Board Manager Modal */}
+				{!isMemoryOnlyMode && (
+					<BoardManagerModal
+						open={showBoardManager}
+						onClose={() => setShowBoardManager(false)}
+						currentBoardId={currentBoardId}
+						onOpenBoard={handleOpenBoard}
+						onCreateNewBoard={handleCreateNewBoard}
+					/>
+				)}
+
+				{/* Decode Error Dialog */}
+				<DecodeErrorDialog
+					open={decodeError !== null}
+					boardName={decodeError?.boardName ?? ""}
+					onClose={() => setDecodeError(null)}
+					onDelete={handleDeleteCorruptedBoard}
+					onOpenAnother={handleOpenAnotherBoard}
 				/>
-			</EditorStoreProvider>
 
-			{/* Board Manager Modal */}
-			{!isMemoryOnlyMode && (
-				<BoardManagerModal
-					open={showBoardManager}
-					onClose={() => setShowBoardManager(false)}
-					currentBoardId={currentBoardId}
-					onOpenBoard={handleOpenBoard}
-					onCreateNewBoard={handleCreateNewBoard}
-				/>
-			)}
-
-			{/* Decode Error Dialog */}
-			<DecodeErrorDialog
-				open={decodeError !== null}
-				boardName={decodeError?.boardName ?? ""}
-				onClose={() => setDecodeError(null)}
-				onDelete={handleDeleteCorruptedBoard}
-				onOpenAnother={handleOpenAnotherBoard}
-			/>
-
-			{/* Duplicate Board Modal */}
-			{pendingImport && (
-				<DuplicateBoardModal
-					open={true}
-					onClose={handleCancelImport}
-					existingBoard={pendingImport.existingBoard}
-					onOpenExisting={handleOpenExistingFromImport}
-					onCreateNew={handleCreateNewFromImport}
-				/>
-			)}
-		</PanelProvider>
+				{/* Duplicate Board Modal */}
+				{pendingImport && (
+					<DuplicateBoardModal
+						open={true}
+						onClose={handleCancelImport}
+						existingBoard={pendingImport.existingBoard}
+						onOpenExisting={handleOpenExistingFromImport}
+						onCreateNew={handleCreateNewFromImport}
+					/>
+				)}
+			</PanelProvider>
+		</SettingsProvider>
 	);
 }
 

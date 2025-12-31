@@ -7,7 +7,7 @@
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { COLOR_CHANGEABLE_OBJECT_IDS } from "@/components/board/ObjectRenderer/constants";
-import { hexToRgb, rgbToHex, useDebugMode } from "@/lib/editor";
+import { hexToRgb, rgbToHex } from "@/lib/editor";
 import {
 	type BatchPropertyValues,
 	computeBatchPropertyValues,
@@ -16,6 +16,7 @@ import {
 	isMixed,
 } from "@/lib/editor/batchUtils";
 import type { BatchUpdatePayload } from "@/lib/editor/types";
+import { useDebugMode } from "@/lib/settings";
 import type { BoardObject } from "@/lib/stgy";
 import {
 	DEFAULT_EDIT_PARAMS,

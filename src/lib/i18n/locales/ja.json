@@ -525,6 +525,35 @@
 			"warningNoSave": "※ 変更内容は保存されません"
 		}
 	},
+	"settings": {
+		"title": "設定",
+		"tabs": {
+			"general": "一般",
+			"shortcuts": "ショートカット"
+		},
+		"debugMode": "デバッグモード",
+		"debugModeDescription": "全オブジェクトIDの表示やエンコードキーの設定が可能になります",
+		"reset": "リセット",
+		"shortcutsNote": "※ Macでは {{modifier}} の代わりに ⌘ を使用",
+		"shortcuts": {
+			"Ctrl+Z": "元に戻す",
+			"Ctrl+Y": "やり直す",
+			"Ctrl+C": "コピー",
+			"Ctrl+V": "貼り付け",
+			"Ctrl+D": "複製",
+			"Ctrl+A": "全選択",
+			"Ctrl+G": "グループ化",
+			"Ctrl+Shift+G": "グループ解除",
+			"Ctrl+]": "前面へ",
+			"Ctrl+[": "背面へ",
+			"Ctrl+Shift+]": "最前面へ",
+			"Ctrl+Shift+[": "最背面へ",
+			"Delete": "削除",
+			"Escape": "選択解除/モード終了",
+			"↑↓←→": "1px移動",
+			"Shift+↑↓←→": "10px移動"
+		}
+	},
 	"object": {
 		"1": "円形白無地フィールド",
 		"2": "円形白タイルフィールド",

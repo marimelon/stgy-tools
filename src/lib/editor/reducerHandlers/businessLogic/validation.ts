@@ -2,6 +2,7 @@
  * オブジェクト配置数制限のバリデーション
  */
 
+import { getDebugMode } from "@/lib/settings";
 import {
 	type BoardData,
 	type BoardObject,
@@ -9,7 +10,6 @@ import {
 	OBJECT_LIMITS,
 	ObjectNames,
 } from "@/lib/stgy";
-import { getDebugMode } from "../../useDebugMode";
 
 export interface ValidationResult {
 	canAdd: boolean;

@@ -4,7 +4,7 @@
 
 import { Bug } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useDebugMode } from "@/lib/editor";
+import { useDebugMode } from "@/lib/settings";
 
 export function ObjectPaletteActions() {
 	const { t } = useTranslation();
