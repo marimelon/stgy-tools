@@ -105,6 +105,70 @@ export interface HistoryEntry {
 	description: string;
 }
 
+/** 編集用オーバーレイグリッドのタイプ */
+export type EditorOverlayType = "none" | "concentric" | "square";
+
+/** 利用可能なオーバーレイタイプ */
+export const EDITOR_OVERLAY_TYPES = ["none", "concentric", "square"] as const;
+
+/** キャンバス背景色のプリセット */
+export const CANVAS_COLORS = [
+	{ id: "slate-900", color: "#0f172a", label: "Dark" },
+	{ id: "slate-800", color: "#1e293b", label: "Default" },
+	{ id: "slate-700", color: "#334155", label: "Gray" },
+	{ id: "neutral-900", color: "#171717", label: "Black" },
+	{ id: "green-950", color: "#052e16", label: "Green" },
+	{ id: "blue-950", color: "#172554", label: "Blue" },
+] as const;
+
+export type CanvasColorId = (typeof CANVAS_COLORS)[number]["id"];
+
+/** オーバーレイ色プリセット */
+export const OVERLAY_COLORS = [
+	{ id: "cyan", color: "100, 200, 255", label: "Cyan" },
+	{ id: "red", color: "255, 100, 100", label: "Red" },
+	{ id: "green", color: "100, 255, 100", label: "Green" },
+	{ id: "yellow", color: "255, 255, 100", label: "Yellow" },
+	{ id: "white", color: "255, 255, 255", label: "White" },
+] as const;
+
+export type OverlayColorId = (typeof OVERLAY_COLORS)[number]["id"];
+
+/** 方眼グリッドサイズの選択肢 */
+export const OVERLAY_GRID_SIZES = [16, 24, 32, 48, 64] as const;
+export type OverlayGridSize = (typeof OVERLAY_GRID_SIZES)[number];
+
+/**
+ * オーバーレイ詳細設定
+ */
+export interface OverlaySettings {
+	/** 同心円の数 (3-10) */
+	circleCount: number;
+	/** 方眼グリッドサイズ (px) */
+	squareGridSize: OverlayGridSize;
+	/** オーバーレイ色ID */
+	colorId: OverlayColorId;
+	/** 透明度 (20-100) */
+	opacity: number;
+	/** 中心点マーカーを表示 */
+	showCenterMarker: boolean;
+	/** ガイドライン（8方向）を表示 */
+	showGuideLines: boolean;
+	/** 外周枠を表示 */
+	showBorder: boolean;
+}
+
+/** デフォルトのオーバーレイ設定 */
+export const DEFAULT_OVERLAY_SETTINGS: OverlaySettings = {
+	circleCount: 5,
+	squareGridSize: 32,
+	colorId: "cyan",
+	opacity: 40,
+	showCenterMarker: true,
+	showGuideLines: true,
+	showBorder: true,
+};
+
 /**
  * グリッド設定
  */
@@ -115,6 +179,14 @@ export interface GridSettings {
 	size: number;
 	/** グリッド線を表示 */
 	showGrid: boolean;
+	/** 編集用オーバーレイグリッドのタイプ */
+	overlayType: EditorOverlayType;
+	/** 背景を表示 */
+	showBackground: boolean;
+	/** キャンバス背景色（背景非表示時） */
+	canvasColor: CanvasColorId;
+	/** オーバーレイ詳細設定 */
+	overlaySettings: OverlaySettings;
 }
 
 /** 利用可能なグリッドサイズ */

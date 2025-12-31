@@ -10,7 +10,7 @@ import {
 	createInitialStateWithOptions,
 	editorReducer,
 } from "../reducer";
-import type { EditorState } from "../types";
+import { DEFAULT_OVERLAY_SETTINGS, type EditorState } from "../types";
 
 describe("reducer", () => {
 	let initialState: EditorState;
@@ -43,7 +43,15 @@ describe("reducer", () => {
 		it("オプション付きで初期状態を生成", () => {
 			const board = createEmptyBoard();
 			const groups = [{ id: "g1", objectIndices: [0, 1], collapsed: false }];
-			const gridSettings = { enabled: true, size: 32, showGrid: true };
+			const gridSettings = {
+				enabled: true,
+				size: 32,
+				showGrid: true,
+				overlayType: "none" as const,
+				showBackground: true,
+				canvasColor: "slate-800" as const,
+				overlaySettings: DEFAULT_OVERLAY_SETTINGS,
+			};
 
 			const state = createInitialStateWithOptions({
 				board,

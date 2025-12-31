@@ -303,8 +303,33 @@
 		"boardNameChanged": "ボード名変更",
 		"background": "背景",
 		"backgroundChanged": "背景変更",
+		"canvasColor": "キャンバス色",
 		"size": "サイズ",
 		"sizeNote": "※エクスポート時に自動計算されます"
+	},
+	"canvasColor": {
+		"slate-900": "ダーク",
+		"slate-800": "デフォルト",
+		"slate-700": "グレー",
+		"neutral-900": "ブラック",
+		"green-950": "グリーン",
+		"blue-950": "ブルー"
+	},
+	"overlaySettings": {
+		"title": "オーバーレイ設定",
+		"density": "密度",
+		"color": "色",
+		"opacity": "透明度",
+		"centerMarker": "中心点",
+		"guideLines": "ガイドライン",
+		"border": "外枠"
+	},
+	"overlayColor": {
+		"cyan": "シアン",
+		"red": "レッド",
+		"green": "グリーン",
+		"yellow": "イエロー",
+		"white": "ホワイト"
 	},
 	"background": {
 		"1": "設定なし",
@@ -334,6 +359,11 @@
 		"disableGridSnap": "グリッドスナップ無効化",
 		"gridSize": "グリッドサイズ",
 		"gridSettings": "グリッド設定",
+		"showBackground": "背景を表示",
+		"editorOverlay": "編集用オーバーレイ",
+		"overlayNone": "なし",
+		"overlayConcentric": "同心円グリッド",
+		"overlaySquare": "方眼グリッド",
 		"unsavedChanges": "未保存の変更があります",
 		"justNow": "たった今",
 		"secondsAgo": "秒前",

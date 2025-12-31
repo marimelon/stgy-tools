@@ -303,8 +303,33 @@
 		"boardNameChanged": "Board name changed",
 		"background": "Background",
 		"backgroundChanged": "Background changed",
+		"canvasColor": "Canvas Color",
 		"size": "Size",
 		"sizeNote": "* Automatically calculated on export"
+	},
+	"canvasColor": {
+		"slate-900": "Dark",
+		"slate-800": "Default",
+		"slate-700": "Gray",
+		"neutral-900": "Black",
+		"green-950": "Green",
+		"blue-950": "Blue"
+	},
+	"overlaySettings": {
+		"title": "Overlay Settings",
+		"density": "Density",
+		"color": "Color",
+		"opacity": "Opacity",
+		"centerMarker": "Center",
+		"guideLines": "Guide Lines",
+		"border": "Border"
+	},
+	"overlayColor": {
+		"cyan": "Cyan",
+		"red": "Red",
+		"green": "Green",
+		"yellow": "Yellow",
+		"white": "White"
 	},
 	"background": {
 		"1": "None",
@@ -334,6 +359,11 @@
 		"disableGridSnap": "Disable Grid Snap",
 		"gridSize": "Grid Size",
 		"gridSettings": "Grid Settings",
+		"showBackground": "Show Background",
+		"editorOverlay": "Editor Overlay",
+		"overlayNone": "None",
+		"overlayConcentric": "Concentric Grid",
+		"overlaySquare": "Square Grid",
 		"unsavedChanges": "Unsaved changes",
 		"justNow": "Just now",
 		"secondsAgo": " seconds ago",

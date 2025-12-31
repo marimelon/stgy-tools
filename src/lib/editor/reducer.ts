@@ -42,11 +42,12 @@ import {
 	handleUpdateObject,
 	handleUpdateObjectsBatch,
 } from "./reducerHandlers";
-import type {
-	EditorAction,
-	EditorState,
-	GridSettings,
-	ObjectGroup,
+import {
+	DEFAULT_OVERLAY_SETTINGS,
+	type EditorAction,
+	type EditorState,
+	type GridSettings,
+	type ObjectGroup,
 } from "./types";
 
 /**
@@ -215,10 +216,14 @@ export function editorReducer(
 }
 
 /** デフォルトのグリッド設定 */
-const DEFAULT_GRID_SETTINGS = {
+const DEFAULT_GRID_SETTINGS: GridSettings = {
 	enabled: false,
 	size: 16,
 	showGrid: false,
+	overlayType: "none",
+	showBackground: true,
+	canvasColor: "slate-800",
+	overlaySettings: DEFAULT_OVERLAY_SETTINGS,
 };
 
 /**

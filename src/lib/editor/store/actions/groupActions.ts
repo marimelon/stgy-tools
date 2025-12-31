@@ -146,6 +146,7 @@ export function createGroupActions(store: EditorStore) {
 				...state.gridSettings,
 				...settings,
 			},
+			isDirty: true,
 		}));
 	};
 

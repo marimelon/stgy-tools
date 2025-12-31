@@ -112,9 +112,11 @@ export type {
 	AlignmentType,
 	BatchUpdatePayload,
 	BoardMetaUpdates,
+	CanvasColorId,
 	DragState,
 	EditorAction,
 	EditorBoardProps,
+	EditorOverlayType,
 	EditorState,
 	GridSettings,
 	HandleType,
@@ -122,9 +124,19 @@ export type {
 	InteractionMode,
 	MarqueeState,
 	ObjectGroup,
+	OverlayColorId,
+	OverlayGridSize,
+	OverlaySettings,
 	ResizeHandle,
 } from "./types";
-export { GRID_SIZES } from "./types";
+export {
+	CANVAS_COLORS,
+	DEFAULT_OVERLAY_SETTINGS,
+	EDITOR_OVERLAY_TYPES,
+	GRID_SIZES,
+	OVERLAY_COLORS,
+	OVERLAY_GRID_SIZES,
+} from "./types";
 export type {
 	UseCanvasInteractionParams,
 	UseCanvasInteractionReturn,

@@ -12,6 +12,7 @@ import {
 	ObjectRenderer,
 } from "@/components/board";
 import {
+	CANVAS_COLORS,
 	type EditorBoardProps,
 	useBoard,
 	useCanGroup,
@@ -36,6 +37,7 @@ import { CircularGuideOverlay } from "./CircularGuideOverlay";
 import { CircularHandles } from "./CircularHandles";
 import { CircularModeIndicator } from "./CircularModeIndicator";
 import { ContextMenu, type ContextMenuState } from "./ContextMenu";
+import { EditorGridOverlay } from "./EditorGridOverlay";
 import { GridOverlay, SelectionIndicator } from "./GridOverlay";
 import { InlineTextEditor } from "./InlineTextEditor";
 import { LineSelectionHandles } from "./LineSelectionHandles";
@@ -278,6 +280,11 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 			}
 		: null;
 
+	// キャンバス背景色を取得
+	const canvasColorValue =
+		CANVAS_COLORS.find((c) => c.id === gridSettings.canvasColor)?.color ??
+		"#1e293b";
+
 	return (
 		<>
 			<svg
@@ -293,19 +300,28 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 				onContextMenu={handleBackgroundContextMenu}
 				onDragOver={handleDragOver}
 				onDrop={handleDrop}
-				className="bg-slate-800"
-				style={{ touchAction: "none" }}
+				style={{ touchAction: "none", backgroundColor: canvasColorValue }}
 				role="application"
 				aria-label="Strategy Board Editor"
 			>
-				{/* 背景 */}
-				<BackgroundRenderer
-					backgroundId={backgroundId}
+				{/* 背景（showBackgroundがtrueの場合のみ表示） */}
+				{gridSettings.showBackground && (
+					<BackgroundRenderer
+						backgroundId={backgroundId}
+						width={CANVAS_WIDTH}
+						height={CANVAS_HEIGHT}
+					/>
+				)}
+
+				{/* 編集用グリッドオーバーレイ（同心円/方眼） */}
+				<EditorGridOverlay
+					type={gridSettings.overlayType}
 					width={CANVAS_WIDTH}
 					height={CANVAS_HEIGHT}
+					settings={gridSettings.overlaySettings}
 				/>
 
-				{/* グリッド線 */}
+				{/* スナップ用グリッド線 */}
 				{gridSettings.enabled && gridSettings.showGrid && (
 					<GridOverlay
 						width={CANVAS_WIDTH}
@@ -356,6 +372,8 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 							obj.position,
 						);
 						const objScale = obj.size / 100;
+						// Lineオブジェクトはbboxが既に座標に基づいて計算されているためrotation=0
+						const rotation = obj.objectId === ObjectIds.Line ? 0 : obj.rotation;
 						return (
 							<SelectionIndicator
 								key={`selection-${index}`}
@@ -365,7 +383,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 								height={bbox.height * objScale}
 								offsetX={(bbox.offsetX ?? 0) * objScale}
 								offsetY={(bbox.offsetY ?? 0) * objScale}
-								rotation={obj.rotation}
+								rotation={rotation}
 							/>
 						);
 					})}

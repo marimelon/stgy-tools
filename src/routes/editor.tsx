@@ -32,6 +32,7 @@ import { useBoards } from "@/lib/boards";
 import type { StoredBoard } from "@/lib/boards/schema";
 import {
 	createEmptyBoard,
+	DEFAULT_OVERLAY_SETTINGS,
 	EditorStoreProvider,
 	type GridSettings,
 	type ObjectGroup,
@@ -113,6 +114,10 @@ const DEFAULT_GRID_SETTINGS: GridSettings = {
 	enabled: false,
 	size: 16,
 	showGrid: false,
+	overlayType: "none",
+	showBackground: true,
+	canvasColor: "slate-800",
+	overlaySettings: DEFAULT_OVERLAY_SETTINGS,
 };
 
 /**
