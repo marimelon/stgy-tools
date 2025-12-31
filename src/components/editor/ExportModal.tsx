@@ -13,7 +13,7 @@ import {
 	Loader2,
 	Share2,
 } from "lucide-react";
-import { useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,14 +39,10 @@ const SHARE_LINK_KEY = 61;
  * エクスポートモーダルのProps
  */
 export interface ExportModalProps {
-	/** エクスポートされたコード */
-	exportedCode: string;
 	/** エンコードキー */
 	encodeKey: number | null;
 	/** エンコードキー変更時のコールバック */
 	onEncodeKeyChange: (key: number | null) => void;
-	/** コピー時のコールバック */
-	onCopy: () => void;
 	/** 閉じる時のコールバック */
 	onClose: () => void;
 	/** 短縮リンク機能が有効かどうか */
@@ -56,19 +52,17 @@ export interface ExportModalProps {
 /**
  * エクスポートモーダル
  *
- * 共有リンク生成時のみboardを使用するため、モーダル内でuseBoard()を呼び出し
+ * モーダル内でuseBoard()を呼び出し、ボードの変更に反応してエクスポートコードを再生成
  */
 export function ExportModal({
-	exportedCode,
 	encodeKey,
 	onEncodeKeyChange,
-	onCopy,
 	onClose,
 	shortLinksEnabled = false,
 }: ExportModalProps) {
 	const { t } = useTranslation();
 	const debugMode = useDebugMode();
-	const board = useBoard(); // 共有リンク生成時のみ使用
+	const board = useBoard();
 	const keyInputId = useId();
 	const codeTextareaId = useId();
 	const [copied, setCopied] = useState(false);
@@ -76,15 +70,33 @@ export function ExportModal({
 	const [isGeneratingShortLink, setIsGeneratingShortLink] = useState(false);
 	const [copiedShortLink, setCopiedShortLink] = useState(false);
 
-	// 共有リンク用のstgyコードを生成（固定キー使用）
+	const exportedCode = useMemo(() => {
+		const { width, height } = recalculateBoardSize(board);
+		const exportBoard = { ...board, width, height };
+		return encodeStgy(
+			exportBoard,
+			encodeKey !== null ? { key: encodeKey } : undefined,
+		);
+	}, [board, encodeKey]);
+
 	const generateShareCode = (): string => {
 		const { width, height } = recalculateBoardSize(board);
 		const exportBoard = { ...board, width, height };
 		return encodeStgy(exportBoard, { key: SHARE_LINK_KEY });
 	};
 
-	const handleCopy = () => {
-		onCopy();
+	const handleCopy = async () => {
+		try {
+			await navigator.clipboard.writeText(exportedCode);
+		} catch {
+			// フォールバック
+			const textarea = document.createElement("textarea");
+			textarea.value = exportedCode;
+			document.body.appendChild(textarea);
+			textarea.select();
+			document.execCommand("copy");
+			document.body.removeChild(textarea);
+		}
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
 	};
@@ -101,7 +113,6 @@ export function ExportModal({
 		}
 	};
 
-	// 直接共有リンクをコピー（固定キー使用）
 	const handleCreateShareLink = async () => {
 		try {
 			const shareCode = generateShareCode();
@@ -114,7 +125,6 @@ export function ExportModal({
 		}
 	};
 
-	// 短縮リンクを作成（固定キー使用）
 	const handleCreateShortLink = async () => {
 		setIsGeneratingShortLink(true);
 		setCopiedShortLink(false);

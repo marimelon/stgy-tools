@@ -4,13 +4,7 @@
 
 import { useState } from "react";
 import type { BoardData } from "@/lib/stgy";
-import {
-	decodeStgy,
-	encodeStgy,
-	extractKeyFromStgy,
-	parseBoardData,
-} from "@/lib/stgy";
-import { getEditorStore } from "./store/editorStore";
+import { decodeStgy, extractKeyFromStgy, parseBoardData } from "@/lib/stgy";
 
 /**
  * インポート結果
@@ -59,27 +53,19 @@ export interface UseImportExportReturn {
 	encodeKey: number | null;
 	/** エンコードキーを設定 */
 	setEncodeKey: (key: number | null) => void;
-	/** エクスポートコードを生成（ストアから最新のboardを取得） */
-	generateExportCode: () => string;
-	/** クリップボードにコピー */
-	copyToClipboard: (text: string) => Promise<void>;
 }
 
 /**
  * インポート/エクスポート機能のカスタムフック
  */
 export function useImportExport(): UseImportExportReturn {
-	// インポート状態
 	const [showImportModal, setShowImportModal] = useState(false);
 	const [importText, setImportText] = useState("");
 	const [importError, setImportError] = useState<string | null>(null);
 	const [addToBoards, setAddToBoards] = useState(true);
-
-	// エクスポート状態
 	const [showExportModal, setShowExportModal] = useState(false);
 	const [encodeKey, setEncodeKey] = useState<number | null>(null);
 
-	// インポートモーダル操作
 	const openImportModal = () => {
 		setShowImportModal(true);
 	};
@@ -94,16 +80,11 @@ export function useImportExport(): UseImportExportReturn {
 		setAddToBoards(true);
 	};
 
-	// インポート実行
 	const executeImport = (): ImportResult => {
 		try {
 			setImportError(null);
 			const trimmedText = importText.trim();
-
-			// キーを抽出
 			const key = extractKeyFromStgy(trimmedText);
-
-			// デコード
 			const binary = decodeStgy(trimmedText);
 			const board = parseBoardData(binary);
 
@@ -123,7 +104,6 @@ export function useImportExport(): UseImportExportReturn {
 		}
 	};
 
-	// エクスポートモーダル操作
 	const openExportModal = () => {
 		setShowExportModal(true);
 	};
@@ -132,33 +112,7 @@ export function useImportExport(): UseImportExportReturn {
 		setShowExportModal(false);
 	};
 
-	// エクスポートコード生成（ストアから最新のboardを取得）
-	const generateExportCode = (): string => {
-		const store = getEditorStore();
-		const board = store.state.board;
-		return encodeStgy(
-			board,
-			encodeKey !== null ? { key: encodeKey } : undefined,
-		);
-	};
-
-	// クリップボードにコピー
-	const copyToClipboard = async (text: string): Promise<void> => {
-		try {
-			await navigator.clipboard.writeText(text);
-		} catch {
-			// フォールバック
-			const textarea = document.createElement("textarea");
-			textarea.value = text;
-			document.body.appendChild(textarea);
-			textarea.select();
-			document.execCommand("copy");
-			document.body.removeChild(textarea);
-		}
-	};
-
 	return {
-		// インポート
 		showImportModal,
 		openImportModal,
 		closeImportModal,
@@ -169,13 +123,10 @@ export function useImportExport(): UseImportExportReturn {
 		resetImport,
 		addToBoards,
 		setAddToBoards,
-		// エクスポート
 		showExportModal,
 		openExportModal,
 		closeExportModal,
 		encodeKey,
 		setEncodeKey,
-		generateExportCode,
-		copyToClipboard,
 	};
 }

@@ -36,7 +36,7 @@ import {
 	Ungroup,
 	Upload,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SettingsModal } from "@/components/settings";
 import {
@@ -158,8 +158,6 @@ export function EditorToolbar({
 		closeExportModal,
 		encodeKey,
 		setEncodeKey,
-		generateExportCode,
-		copyToClipboard,
 	} = useImportExport();
 
 	// Settings modal state
@@ -193,17 +191,6 @@ export function EditorToolbar({
 			closeImportModal();
 			resetImport();
 		}
-	};
-
-	// エクスポートコード（モーダル表示時のみ計算）
-	const exportedCode = useMemo(() => {
-		if (!showExportModal) return "";
-		return generateExportCode();
-	}, [showExportModal, generateExportCode]);
-
-	// コピー処理
-	const handleCopyExport = () => {
-		copyToClipboard(exportedCode);
 	};
 
 	return (
@@ -557,10 +544,8 @@ export function EditorToolbar({
 			{/* エクスポートモーダル */}
 			{showExportModal && (
 				<ExportModal
-					exportedCode={exportedCode}
 					encodeKey={encodeKey}
 					onEncodeKeyChange={setEncodeKey}
-					onCopy={handleCopyExport}
 					onClose={closeExportModal}
 					shortLinksEnabled={shortLinksEnabled}
 				/>
