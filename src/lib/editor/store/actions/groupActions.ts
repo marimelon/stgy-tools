@@ -2,6 +2,7 @@
  * グループ操作アクション
  */
 
+import i18n from "@/lib/i18n";
 import { generateGroupId, pushHistory } from "../../reducerHandlers/utils";
 import type { GridSettings, ObjectGroup } from "../../types";
 import type { EditorStore } from "../types";
@@ -27,7 +28,10 @@ export function createGroupActions(store: EditorStore) {
 			return {
 				...state,
 				groups: newGroups,
-				...pushHistory({ ...state, groups: newGroups }, "グループ化"),
+				...pushHistory(
+					{ ...state, groups: newGroups },
+					i18n.t("history.groupObjects"),
+				),
 			};
 		});
 	};
@@ -56,7 +60,10 @@ export function createGroupActions(store: EditorStore) {
 				...state,
 				groups: newGroups,
 				focusedGroupId: newFocusedGroupId,
-				...pushHistory({ ...state, groups: newGroups }, "グループ解除"),
+				...pushHistory(
+					{ ...state, groups: newGroups },
+					i18n.t("history.ungroupObjects"),
+				),
 			};
 		});
 	};
@@ -75,7 +82,10 @@ export function createGroupActions(store: EditorStore) {
 			return {
 				...state,
 				groups: newGroups,
-				...pushHistory({ ...state, groups: newGroups }, "グループ名変更"),
+				...pushHistory(
+					{ ...state, groups: newGroups },
+					i18n.t("history.renameGroup"),
+				),
 			};
 		});
 	};
@@ -131,7 +141,10 @@ export function createGroupActions(store: EditorStore) {
 				...state,
 				groups: newGroups,
 				focusedGroupId: newFocusedGroupId,
-				...pushHistory({ ...state, groups: newGroups }, "グループから除外"),
+				...pushHistory(
+					{ ...state, groups: newGroups },
+					i18n.t("history.removeFromGroup"),
+				),
 			};
 		});
 	};

@@ -2,6 +2,7 @@
  * 履歴・ボード操作アクション
  */
 
+import i18n from "@/lib/i18n";
 import type { BoardData } from "@/lib/stgy";
 import {
 	cloneBoard,
@@ -81,7 +82,7 @@ export function createHistoryActions(store: EditorStore) {
 					id: generateHistoryId(),
 					board: structuredClone(board),
 					groups: [],
-					description: "初期状態",
+					description: i18n.t("history.initial"),
 				},
 			],
 			historyIndex: 0,
@@ -224,7 +225,7 @@ export function createHistoryActions(store: EditorStore) {
 					id: generateHistoryId(),
 					board: structuredClone(state.board),
 					groups: structuredClone(state.groups),
-					description: "初期状態",
+					description: i18n.t("history.initial"),
 				},
 			],
 			historyIndex: 0,
@@ -263,7 +264,7 @@ export function createHistoryActions(store: EditorStore) {
 
 			return {
 				...newState,
-				...pushHistory(newState, "Debug panel edit"),
+				...pushHistory(newState, i18n.t("history.debugPanelEdit")),
 			};
 		});
 	};

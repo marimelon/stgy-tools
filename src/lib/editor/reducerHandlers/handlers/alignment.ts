@@ -2,6 +2,7 @@
  * 整列操作ハンドラー
  */
 
+import i18n from "@/lib/i18n";
 import type {
 	AlignmentType,
 	CircularModeState,
@@ -9,17 +10,17 @@ import type {
 } from "../../types";
 import { cloneBoard, pushHistory, updateObjectInBoard } from "../utils";
 
-/** 整列タイプの説明 */
-const ALIGNMENT_DESCRIPTIONS: Record<AlignmentType, string> = {
-	left: "左揃え",
-	center: "左右中央揃え",
-	right: "右揃え",
-	top: "上揃え",
-	middle: "上下中央揃え",
-	bottom: "下揃え",
-	"distribute-h": "水平方向に均等配置",
-	"distribute-v": "垂直方向に均等配置",
-	circular: "円形配置",
+/** 整列タイプの説明キー */
+const ALIGNMENT_DESCRIPTION_KEYS: Record<AlignmentType, string> = {
+	left: "history.alignLeft",
+	center: "history.alignCenterH",
+	right: "history.alignRight",
+	top: "history.alignTop",
+	middle: "history.alignCenterV",
+	bottom: "history.alignBottom",
+	"distribute-h": "history.distributeH",
+	"distribute-v": "history.distributeV",
+	circular: "history.circularArrangement",
 };
 
 /**
@@ -176,7 +177,7 @@ export function handleAlignObjects(
 				...state,
 				board: newBoard,
 				circularMode: circularModeState,
-				...pushHistory(state, ALIGNMENT_DESCRIPTIONS[alignment]),
+				...pushHistory(state, i18n.t(ALIGNMENT_DESCRIPTION_KEYS[alignment])),
 			};
 		}
 	}
@@ -184,6 +185,6 @@ export function handleAlignObjects(
 	return {
 		...state,
 		board: newBoard,
-		...pushHistory(state, ALIGNMENT_DESCRIPTIONS[alignment]),
+		...pushHistory(state, i18n.t(ALIGNMENT_DESCRIPTION_KEYS[alignment])),
 	};
 }

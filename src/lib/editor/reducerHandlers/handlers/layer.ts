@@ -2,6 +2,7 @@
  * レイヤー操作ハンドラー
  */
 
+import i18n from "@/lib/i18n";
 import type { EditorState } from "../../types";
 import { cloneBoard, pushHistory } from "../utils";
 
@@ -63,10 +64,10 @@ export function handleMoveLayer(
 	}));
 
 	const descriptions: Record<LayerDirection, string> = {
-		front: "最前面へ移動",
-		back: "最背面へ移動",
-		forward: "前面へ移動",
-		backward: "背面へ移動",
+		front: i18n.t("history.bringToFront"),
+		back: i18n.t("history.sendToBack"),
+		forward: i18n.t("history.bringForward"),
+		backward: i18n.t("history.sendBackward"),
 	};
 
 	return {
@@ -126,7 +127,10 @@ export function handleReorderLayer(
 		board: newBoard,
 		groups: updatedGroups,
 		selectedIndices: [adjustedToIndex],
-		...pushHistory({ ...state, groups: updatedGroups }, "レイヤー順序変更"),
+		...pushHistory(
+			{ ...state, groups: updatedGroups },
+			i18n.t("history.reorderLayers"),
+		),
 	};
 }
 
@@ -206,6 +210,9 @@ export function handleReorderGroup(
 		board: newBoard,
 		groups: updatedGroups,
 		selectedIndices: newGroupIndices,
-		...pushHistory({ ...state, groups: updatedGroups }, "グループ移動"),
+		...pushHistory(
+			{ ...state, groups: updatedGroups },
+			i18n.t("history.groupMove"),
+		),
 	};
 }

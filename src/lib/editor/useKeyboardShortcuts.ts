@@ -3,6 +3,7 @@
  */
 
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useEditorActions } from "./hooks/useEditorActions";
 import {
 	useCanGroup,
@@ -25,6 +26,8 @@ const MOVE_STEP_LARGE = 10;
  * キーボードショートカットを有効化するフック
  */
 export function useKeyboardShortcuts() {
+	const { t } = useTranslation();
+
 	// State
 	const selectedIndices = useSelectedIndices();
 	const editingTextIndex = useEditingTextIndex();
@@ -65,7 +68,7 @@ export function useKeyboardShortcuts() {
 	const handleMove = (deltaX: number, deltaY: number) => {
 		if (selectedIndices.length === 0) return;
 		moveObjects(selectedIndices, deltaX, deltaY);
-		commitHistory("オブジェクト移動");
+		commitHistory(t("history.moveObject"));
 	};
 
 	/**

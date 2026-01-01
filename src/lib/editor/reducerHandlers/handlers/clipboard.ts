@@ -2,6 +2,7 @@
  * クリップボード操作ハンドラー
  */
 
+import i18n from "@/lib/i18n";
 import type { EditorState } from "../../types";
 import { canAddObjects } from "../businessLogic/validation";
 import { cloneBoard, pushHistory } from "../utils";
@@ -64,6 +65,6 @@ export function handlePasteObjects(
 		board: newBoard,
 		selectedIndices: newIndices,
 		lastError: null,
-		...pushHistory(state, "オブジェクト貼り付け"),
+		...pushHistory(state, i18n.t("history.pasteObject")),
 	};
 }

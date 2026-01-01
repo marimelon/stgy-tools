@@ -2,6 +2,7 @@
  * 履歴・ボード操作ハンドラー
  */
 
+import i18n from "@/lib/i18n";
 import type { BoardData } from "@/lib/stgy";
 import type { CircularModeState, EditorState } from "../../types";
 import { cloneBoard, generateHistoryId, pushHistory } from "../utils";
@@ -76,7 +77,7 @@ export function handleSetBoard(
 				id: generateHistoryId(),
 				board: structuredClone(payload.board),
 				groups: [],
-				description: "初期状態",
+				description: i18n.t("history.initial"),
 			},
 		],
 		historyIndex: 0,
@@ -223,7 +224,7 @@ export function handleClearHistory(state: EditorState): EditorState {
 				id: generateHistoryId(),
 				board: structuredClone(state.board),
 				groups: structuredClone(state.groups),
-				description: "初期状態",
+				description: i18n.t("history.initial"),
 			},
 		],
 		historyIndex: 0,

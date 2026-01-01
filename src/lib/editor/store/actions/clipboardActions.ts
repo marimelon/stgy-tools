@@ -2,6 +2,7 @@
  * クリップボード操作アクション
  */
 
+import i18n from "@/lib/i18n";
 import type { Position } from "@/lib/stgy";
 import { canAddObjects } from "../../reducerHandlers/businessLogic/validation";
 import { cloneBoard, pushHistory } from "../../reducerHandlers/utils";
@@ -76,7 +77,7 @@ export function createClipboardActions(store: EditorStore) {
 				board: newBoard,
 				selectedIndices: newIndices,
 				lastError: null,
-				...pushHistory(state, "オブジェクト貼り付け"),
+				...pushHistory(state, i18n.t("history.pasteObject")),
 			};
 		});
 	};

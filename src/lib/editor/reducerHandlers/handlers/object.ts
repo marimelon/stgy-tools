@@ -2,6 +2,7 @@
  * オブジェクト操作ハンドラー
  */
 
+import i18n from "@/lib/i18n";
 import { type BoardObject, ObjectIds } from "@/lib/stgy";
 import { duplicateObject } from "../../factory";
 import type { BatchUpdatePayload, EditorState } from "../../types";
@@ -62,7 +63,10 @@ export function handleAddObject(
 		groups: updatedGroups,
 		selectedIndices: [0],
 		lastError: null,
-		...pushHistory({ ...state, groups: updatedGroups }, "オブジェクト追加"),
+		...pushHistory(
+			{ ...state, groups: updatedGroups },
+			i18n.t("history.addObject"),
+		),
 	};
 }
 
@@ -90,7 +94,10 @@ export function handleDeleteObjects(
 		board: newBoard,
 		groups: updatedGroups,
 		selectedIndices: [],
-		...pushHistory({ ...state, groups: updatedGroups }, "オブジェクト削除"),
+		...pushHistory(
+			{ ...state, groups: updatedGroups },
+			i18n.t("history.deleteObject"),
+		),
 	};
 }
 
@@ -140,7 +147,7 @@ export function handleDuplicateObjects(
 		board: newBoard,
 		selectedIndices: newIndices,
 		lastError: null,
-		...pushHistory(state, "オブジェクト複製"),
+		...pushHistory(state, i18n.t("history.duplicateObject")),
 	};
 }
 

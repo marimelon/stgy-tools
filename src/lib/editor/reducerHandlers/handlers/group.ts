@@ -2,6 +2,7 @@
  * グループ・グリッド操作ハンドラー
  */
 
+import i18n from "@/lib/i18n";
 import type { EditorState, GridSettings, ObjectGroup } from "../../types";
 import { generateGroupId, pushHistory } from "../utils";
 
@@ -24,7 +25,10 @@ export function handleGroupObjects(
 	return {
 		...state,
 		groups: newGroups,
-		...pushHistory({ ...state, groups: newGroups }, "グループ化"),
+		...pushHistory(
+			{ ...state, groups: newGroups },
+			i18n.t("history.groupObjects"),
+		),
 	};
 }
 
@@ -45,7 +49,10 @@ export function handleUngroup(
 		...state,
 		groups: newGroups,
 		focusedGroupId: newFocusedGroupId,
-		...pushHistory({ ...state, groups: newGroups }, "グループ解除"),
+		...pushHistory(
+			{ ...state, groups: newGroups },
+			i18n.t("history.ungroupObjects"),
+		),
 	};
 }
 
@@ -66,7 +73,10 @@ export function handleRenameGroup(
 	return {
 		...state,
 		groups: newGroups,
-		...pushHistory({ ...state, groups: newGroups }, "グループ名変更"),
+		...pushHistory(
+			{ ...state, groups: newGroups },
+			i18n.t("history.renameGroup"),
+		),
 	};
 }
 
@@ -124,7 +134,10 @@ export function handleRemoveFromGroup(
 		...state,
 		groups: newGroups,
 		focusedGroupId: newFocusedGroupId,
-		...pushHistory({ ...state, groups: newGroups }, "グループから除外"),
+		...pushHistory(
+			{ ...state, groups: newGroups },
+			i18n.t("history.removeFromGroup"),
+		),
 	};
 }
 

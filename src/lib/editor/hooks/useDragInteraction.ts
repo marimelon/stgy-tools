@@ -5,6 +5,7 @@
  */
 
 import { type RefObject, useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { BoardObject, Position } from "@/lib/stgy";
 import {
 	DEFAULT_EDIT_PARAMS,
@@ -90,6 +91,7 @@ export function useDragInteraction({
 	moveObjectOnCircle,
 	commitHistory,
 }: UseDragInteractionParams): UseDragInteractionReturn {
+	const { t } = useTranslation();
 	const [dragState, setDragState] = useState<DragState | null>(null);
 
 	/**
@@ -386,16 +388,16 @@ export function useDragInteraction({
 		if (!dragState) return;
 
 		const descriptions: Record<string, string> = {
-			drag: "オブジェクト移動",
-			rotate: "オブジェクト回転",
-			resize: "オブジェクトリサイズ",
+			drag: t("history.moveObject"),
+			rotate: t("history.rotateObject"),
+			resize: t("history.resizeObject"),
 		};
 		if (dragState.mode !== "none" && dragState.mode !== "marquee") {
 			commitHistory(descriptions[dragState.mode]);
 		}
 
 		setDragState(null);
-	}, [dragState, commitHistory]);
+	}, [dragState, commitHistory, t]);
 
 	return {
 		dragState,

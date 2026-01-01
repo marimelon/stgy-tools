@@ -2,6 +2,7 @@
  * エディター状態のReducer
  */
 
+import i18n from "@/lib/i18n";
 import type { BoardData } from "@/lib/stgy";
 import {
 	generateHistoryId,
@@ -265,7 +266,7 @@ export function createInitialStateWithOptions(
 				id: generateHistoryId(),
 				board: structuredClone(board),
 				groups: initialGroups,
-				description: "初期状態",
+				description: i18n.t("history.initial"),
 			},
 		],
 		historyIndex: 0,
