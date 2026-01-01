@@ -38,8 +38,6 @@ export interface DragState {
 	handle?: HandleType;
 	/** 操作対象のオブジェクトインデックス */
 	objectIndex: number;
-	/** 実際に移動・回転・リサイズが行われたか */
-	hasMoved?: boolean;
 }
 
 /** マーキー選択状態 */

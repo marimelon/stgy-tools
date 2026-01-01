@@ -264,6 +264,56 @@ describe("reducer", () => {
 	});
 
 	describe("UNDO/REDO", () => {
+		it("変更がなければ履歴を追加しない", () => {
+			// 初期状態で履歴コミットを試行
+			const state = editorReducer(initialState, {
+				type: "COMMIT_HISTORY",
+				description: "変更なし",
+			});
+			// 変更がないので履歴数は1のまま
+			expect(state.history).toHaveLength(1);
+			expect(state.historyIndex).toBe(0);
+		});
+
+		it("変更があれば履歴を追加する", () => {
+			// 変更を加える
+			let state = editorReducer(initialState, {
+				type: "UPDATE_OBJECT",
+				index: 0,
+				updates: { rotation: 45 },
+			});
+			// 履歴をコミット
+			state = editorReducer(state, {
+				type: "COMMIT_HISTORY",
+				description: "回転変更",
+			});
+			// 変更があるので履歴が追加される
+			expect(state.history).toHaveLength(2);
+			expect(state.historyIndex).toBe(1);
+		});
+
+		it("同じ状態への変更は履歴追加しない", () => {
+			// 変更を加えて履歴コミット
+			let state = editorReducer(initialState, {
+				type: "UPDATE_OBJECT",
+				index: 0,
+				updates: { rotation: 45 },
+			});
+			state = editorReducer(state, {
+				type: "COMMIT_HISTORY",
+				description: "回転変更1",
+			});
+			expect(state.history).toHaveLength(2);
+
+			// 同じ状態で再度コミットを試行
+			state = editorReducer(state, {
+				type: "COMMIT_HISTORY",
+				description: "回転変更2",
+			});
+			// 変更がないので履歴数は2のまま
+			expect(state.history).toHaveLength(2);
+		});
+
 		it("Undo/Redoの基本動作", () => {
 			// 変更を加える
 			let state = editorReducer(initialState, {

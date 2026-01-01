@@ -322,7 +322,6 @@ export function useDragInteraction({
 						currentPointer.x - circularMode.center.x,
 					);
 					moveObjectOnCircle(objectIndex, angle);
-					setDragState({ ...dragState, hasMoved: true });
 					return;
 				}
 
@@ -337,20 +336,17 @@ export function useDragInteraction({
 						deltaY,
 						gridSettings.size,
 					);
-					setDragState({ ...dragState, hasMoved: true });
 				} else {
 					moveObjects(selectedIndices, deltaX, deltaY);
 					setDragState({
 						...dragState,
 						startPointer: currentPointer,
-						hasMoved: true,
 					});
 				}
 			} else if (mode === "rotate") {
 				const center = startObjectState.position;
 				const newRotation = calculateRotation(center, currentPointer);
 				updateObject(objectIndex, { rotation: newRotation });
-				setDragState({ ...dragState, hasMoved: true });
 			} else if (mode === "resize") {
 				const distance = Math.sqrt(
 					(currentPointer.x - startObjectState.position.x) ** 2 +
@@ -368,7 +364,6 @@ export function useDragInteraction({
 						Math.max(min, Math.min(max, startObjectState.size * scaleFactor)),
 					);
 					updateObject(objectIndex, { size: newSize });
-					setDragState({ ...dragState, hasMoved: true });
 				}
 			}
 		},
@@ -395,12 +390,7 @@ export function useDragInteraction({
 			rotate: "オブジェクト回転",
 			resize: "オブジェクトリサイズ",
 		};
-		// 実際に移動・回転・リサイズが行われた場合のみ履歴をコミット
-		if (
-			dragState.mode !== "none" &&
-			dragState.mode !== "marquee" &&
-			dragState.hasMoved
-		) {
+		if (dragState.mode !== "none" && dragState.mode !== "marquee") {
 			commitHistory(descriptions[dragState.mode]);
 		}
 
