@@ -11,6 +11,7 @@ import {
 	getObjectBoundingBox,
 	ObjectRenderer,
 } from "@/components/board";
+import { calculateLineEndpoint } from "@/lib/board";
 import {
 	CANVAS_COLORS,
 	type EditorBoardProps,
@@ -372,8 +373,34 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 							obj.position,
 						);
 						const objScale = obj.size / 100;
-						// Lineオブジェクトはbboxが既に座標に基づいて計算されているためrotation=0
-						const rotation = obj.objectId === ObjectIds.Line ? 0 : obj.rotation;
+
+						// Lineオブジェクトは中点を基準にbboxを表示
+						if (obj.objectId === ObjectIds.Line) {
+							const endpoint = calculateLineEndpoint(
+								obj.position,
+								obj.param1,
+								obj.param2,
+							);
+							const centerX = (obj.position.x + endpoint.x) / 2;
+							const centerY = (obj.position.y + endpoint.y) / 2;
+							const dx = endpoint.x - obj.position.x;
+							const dy = endpoint.y - obj.position.y;
+							const lineRotation = (Math.atan2(dy, dx) * 180) / Math.PI;
+
+							return (
+								<SelectionIndicator
+									key={`selection-${index}`}
+									x={centerX}
+									y={centerY}
+									width={bbox.width * objScale}
+									height={bbox.height * objScale}
+									offsetX={0}
+									offsetY={0}
+									rotation={lineRotation}
+								/>
+							);
+						}
+
 						return (
 							<SelectionIndicator
 								key={`selection-${index}`}
@@ -383,7 +410,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 								height={bbox.height * objScale}
 								offsetX={(bbox.offsetX ?? 0) * objScale}
 								offsetY={(bbox.offsetY ?? 0) * objScale}
-								rotation={rotation}
+								rotation={obj.rotation}
 							/>
 						);
 					})}

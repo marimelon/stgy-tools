@@ -2,6 +2,7 @@
  * オブジェクト操作アクション
  */
 
+import { calculateLineEndpoint } from "@/lib/board";
 import i18n from "@/lib/i18n";
 import { type BoardObject, ObjectIds, type Position } from "@/lib/stgy";
 import { duplicateObject } from "../../factory";
@@ -278,23 +279,74 @@ export function createObjectActions(store: EditorStore) {
 
 				const obj = newBoard.objects[index];
 
-				// 更新を適用（ネストされたオブジェクトは適切にマージ）
-				newBoard.objects[index] = {
-					...obj,
-					...(updates.rotation !== undefined && { rotation: updates.rotation }),
-					...(updates.size !== undefined && { size: updates.size }),
-					...(updates.param1 !== undefined && { param1: updates.param1 }),
-					...(updates.param2 !== undefined && { param2: updates.param2 }),
-					...(updates.param3 !== undefined && { param3: updates.param3 }),
-					flags: {
-						...obj.flags,
-						...(updates.flags ?? {}),
-					},
-					color: {
-						...obj.color,
-						...(updates.color ?? {}),
-					},
-				};
+				// Lineオブジェクトのrotation更新は中点を軸に回転させる
+				if (obj.objectId === ObjectIds.Line && updates.rotation !== undefined) {
+					const startX = obj.position.x;
+					const startY = obj.position.y;
+					const endpoint = calculateLineEndpoint(
+						obj.position,
+						obj.param1,
+						obj.param2,
+					);
+
+					// 中点を計算
+					const centerX = (startX + endpoint.x) / 2;
+					const centerY = (startY + endpoint.y) / 2;
+
+					// 線の長さの半分
+					const dx = endpoint.x - startX;
+					const dy = endpoint.y - startY;
+					const halfLength = Math.sqrt(dx * dx + dy * dy) / 2;
+
+					// 新しい角度で座標を計算
+					const radians = (updates.rotation * Math.PI) / 180;
+					const offsetX = halfLength * Math.cos(radians);
+					const offsetY = halfLength * Math.sin(radians);
+
+					// 新しい始点・終点を計算
+					const newStartX = centerX - offsetX;
+					const newStartY = centerY - offsetY;
+					const newEndX = centerX + offsetX;
+					const newEndY = centerY + offsetY;
+
+					newBoard.objects[index] = {
+						...obj,
+						rotation: updates.rotation,
+						position: { x: newStartX, y: newStartY },
+						param1: Math.round(newEndX * 10),
+						param2: Math.round(newEndY * 10),
+						...(updates.size !== undefined && { size: updates.size }),
+						...(updates.param3 !== undefined && { param3: updates.param3 }),
+						flags: {
+							...obj.flags,
+							...(updates.flags ?? {}),
+						},
+						color: {
+							...obj.color,
+							...(updates.color ?? {}),
+						},
+					};
+				} else {
+					// 通常のオブジェクト更新
+					newBoard.objects[index] = {
+						...obj,
+						...(updates.rotation !== undefined && {
+							rotation: updates.rotation,
+						}),
+						...(updates.size !== undefined && { size: updates.size }),
+						...(updates.param1 !== undefined && { param1: updates.param1 }),
+						...(updates.param2 !== undefined && { param2: updates.param2 }),
+						...(updates.param3 !== undefined && { param3: updates.param3 }),
+						flags: {
+							...obj.flags,
+							...(updates.flags ?? {}),
+						},
+						color: {
+							...obj.color,
+							...(updates.color ?? {}),
+						},
+					};
+				}
 			}
 
 			return {
