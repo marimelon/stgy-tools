@@ -16,14 +16,21 @@ import { Slider } from "@/components/ui/slider";
 export function PropertySection({
 	title,
 	children,
+	rightContent,
 }: {
 	title: string;
 	children: ReactNode;
+	rightContent?: ReactNode;
 }) {
 	return (
 		<div className="mb-4">
-			<div className="text-xs font-medium mb-2 uppercase tracking-wide text-muted-foreground font-display">
-				{title}
+			<div className="flex items-center justify-between mb-2">
+				<span className="text-xs font-medium uppercase tracking-wide text-muted-foreground font-display">
+					{title}
+				</span>
+				{rightContent && (
+					<span className="text-xs text-muted-foreground">{rightContent}</span>
+				)}
 			</div>
 			{children}
 		</div>

@@ -107,7 +107,10 @@ export function BoardPropertyPanel({
 		<div className="h-full overflow-y-auto">
 			<div className="p-4 space-y-1">
 				{/* ボード名 */}
-				<PropertySection title={t("boardPanel.boardName")}>
+				<PropertySection
+					title={t("boardPanel.boardName")}
+					rightContent={`${boardName.length}/${MAX_BOARD_NAME_LENGTH}`}
+				>
 					<Input
 						type="text"
 						value={boardName}
