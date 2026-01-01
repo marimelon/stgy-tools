@@ -54,7 +54,11 @@ export function BoardCard({
 	};
 
 	const handleSaveEdit = () => {
-		const trimmed = editName.trim();
+		let trimmed = editName.trim();
+		// 確定時に文字数制限を適用
+		if (!debugMode && trimmed.length > MAX_BOARD_NAME_LENGTH) {
+			trimmed = trimmed.slice(0, MAX_BOARD_NAME_LENGTH);
+		}
 		if (trimmed && trimmed !== board.name) {
 			onRename(trimmed);
 		}
@@ -115,9 +119,17 @@ export function BoardCard({
 						type="text"
 						value={editName}
 						onChange={(e) => setEditName(e.target.value)}
+						onCompositionEnd={(e) => {
+							// IME確定時に文字数制限を適用
+							if (!debugMode) {
+								const value = e.currentTarget.value;
+								if (value.length > MAX_BOARD_NAME_LENGTH) {
+									setEditName(value.slice(0, MAX_BOARD_NAME_LENGTH));
+								}
+							}
+						}}
 						onBlur={handleSaveEdit}
 						onKeyDown={handleKeyDown}
-						maxLength={debugMode ? undefined : MAX_BOARD_NAME_LENGTH}
 						className="w-full px-2 py-1 text-sm font-medium border border-border rounded bg-background"
 					/>
 				) : (

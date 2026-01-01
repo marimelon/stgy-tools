@@ -3,11 +3,12 @@
  */
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	AssetPanel,
 	AssetPanelActions,
+	BoardTabs,
 	DebugPanel,
 	DuplicateBoardModal,
 	EditorBoard,
@@ -36,12 +37,16 @@ import {
 	type GridSettings,
 	type ObjectGroup,
 	recalculateBoardSize,
+	TabStoreProvider,
+	useActiveTabId,
 	useAutoSave,
 	useEditorActions,
 	useFocusedGroup,
 	useImportExport,
 	useIsFocusMode,
 	useKeyboardShortcuts,
+	useOpenTabs,
+	useTabActions,
 } from "@/lib/editor";
 import { PanelStoreProvider } from "@/lib/panel";
 import {
@@ -468,89 +473,110 @@ function EditorPage() {
 
 	return (
 		<SettingsStoreProvider>
-			<PanelStoreProvider>
-				<EditorStoreProvider
-					key={editorKey}
-					initialBoard={initialBoard}
-					initialGroups={initialGroups}
-					initialGridSettings={initialGridSettings}
-				>
-					<EditorContent
-						initialEncodeKey={initialEncodeKey}
-						currentBoardId={currentBoardId}
-						isMemoryOnlyMode={isMemoryOnlyMode}
-						shortLinksEnabled={featureFlags.shortLinksEnabled}
-						onOpenBoardManager={() => setShowBoardManager(true)}
-						onSaveBoard={(name, stgyCode, encodeKey, groups, gridSettings) => {
-							if (currentBoardId && !isMemoryOnlyMode) {
-								void updateBoard(currentBoardId, {
-									name,
-									stgyCode,
-									encodeKey,
-									groups,
-									gridSettings,
-								});
-							}
-						}}
-						onCreateBoardFromImport={async (name, stgyCode, encodeKey) => {
-							// stgyCodeをデコードしてボードデータを取得
-							const decodedBoard = decodeBoardFromStgy(stgyCode);
-							if (!decodedBoard) {
-								console.warn("Failed to decode imported board");
-								return;
-							}
-
-							// 新しいボードをIndexedDBに保存
-							const newBoardId = await createBoard(
+			<TabStoreProvider>
+				<PanelStoreProvider>
+					<EditorStoreProvider
+						key={editorKey}
+						initialBoard={initialBoard}
+						initialGroups={initialGroups}
+						initialGridSettings={initialGridSettings}
+					>
+						<EditorWithTabs
+							boards={boards}
+							initialEncodeKey={initialEncodeKey}
+							currentBoardId={currentBoardId}
+							isMemoryOnlyMode={isMemoryOnlyMode}
+							shortLinksEnabled={featureFlags.shortLinksEnabled}
+							onOpenBoardManager={() => setShowBoardManager(true)}
+							onSaveBoard={(
 								name,
 								stgyCode,
 								encodeKey,
-								[],
-								DEFAULT_GRID_SETTINGS,
-							);
+								groups,
+								gridSettings,
+							) => {
+								if (currentBoardId && !isMemoryOnlyMode) {
+									void updateBoard(currentBoardId, {
+										name,
+										stgyCode,
+										encodeKey,
+										groups,
+										gridSettings,
+									});
+								}
+							}}
+							onCreateBoardFromImport={async (name, stgyCode, encodeKey) => {
+								// stgyCodeをデコードしてボードデータを取得
+								const decodedBoard = decodeBoardFromStgy(stgyCode);
+								if (!decodedBoard) {
+									console.warn("Failed to decode imported board");
+									return;
+								}
 
-							// 直接エディターを初期化（IndexedDBの反映を待たずに）
-							setCurrentBoardId(newBoardId);
-							setInitialBoard({ ...decodedBoard, name });
-							setInitialGroups([]);
-							setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-							setInitialEncodeKey(encodeKey);
-							setEditorKey((prev) => prev + 1);
-						}}
+								// 新しいボードをIndexedDBに保存
+								const newBoardId = await createBoard(
+									name,
+									stgyCode,
+									encodeKey,
+									[],
+									DEFAULT_GRID_SETTINGS,
+								);
+
+								// 直接エディターを初期化（IndexedDBの反映を待たずに）
+								setCurrentBoardId(newBoardId);
+								setInitialBoard({ ...decodedBoard, name });
+								setInitialGroups([]);
+								setInitialGridSettings(DEFAULT_GRID_SETTINGS);
+								setInitialEncodeKey(encodeKey);
+								setEditorKey((prev) => prev + 1);
+							}}
+							onSelectBoard={handleOpenBoard}
+							onDuplicateBoard={(id) => {
+								const board = getBoard(id);
+								if (!board) return;
+								void createBoard(
+									`${board.name} (Copy)`,
+									board.stgyCode,
+									board.encodeKey,
+									board.groups,
+									board.gridSettings,
+								);
+							}}
+						/>
+					</EditorStoreProvider>
+
+					{/* Board Manager Modal */}
+					{!isMemoryOnlyMode && (
+						<BoardManagerModal
+							open={showBoardManager}
+							onClose={() => setShowBoardManager(false)}
+							currentBoardId={currentBoardId}
+							onOpenBoard={handleOpenBoard}
+							onCreateNewBoard={handleCreateNewBoard}
+						/>
+					)}
+
+					{/* Decode Error Dialog */}
+					<DecodeErrorDialog
+						open={decodeError !== null}
+						boardName={decodeError?.boardName ?? ""}
+						onClose={() => setDecodeError(null)}
+						onDelete={handleDeleteCorruptedBoard}
+						onOpenAnother={handleOpenAnotherBoard}
 					/>
-				</EditorStoreProvider>
 
-				{/* Board Manager Modal */}
-				{!isMemoryOnlyMode && (
-					<BoardManagerModal
-						open={showBoardManager}
-						onClose={() => setShowBoardManager(false)}
-						currentBoardId={currentBoardId}
-						onOpenBoard={handleOpenBoard}
-						onCreateNewBoard={handleCreateNewBoard}
-					/>
-				)}
-
-				{/* Decode Error Dialog */}
-				<DecodeErrorDialog
-					open={decodeError !== null}
-					boardName={decodeError?.boardName ?? ""}
-					onClose={() => setDecodeError(null)}
-					onDelete={handleDeleteCorruptedBoard}
-					onOpenAnother={handleOpenAnotherBoard}
-				/>
-
-				{/* Duplicate Board Modal */}
-				{pendingImport && (
-					<DuplicateBoardModal
-						open={true}
-						onClose={handleCancelImport}
-						existingBoard={pendingImport.existingBoard}
-						onOpenExisting={handleOpenExistingFromImport}
-						onCreateNew={handleCreateNewFromImport}
-					/>
-				)}
-			</PanelStoreProvider>
+					{/* Duplicate Board Modal */}
+					{pendingImport && (
+						<DuplicateBoardModal
+							open={true}
+							onClose={handleCancelImport}
+							existingBoard={pendingImport.existingBoard}
+							onOpenExisting={handleOpenExistingFromImport}
+							onCreateNew={handleCreateNewFromImport}
+						/>
+					)}
+				</PanelStoreProvider>
+			</TabStoreProvider>
 		</SettingsStoreProvider>
 	);
 }
@@ -574,6 +600,8 @@ interface EditorContentProps {
 		stgyCode: string,
 		encodeKey: number,
 	) => void | Promise<void>;
+	/** Optional tab bar to render at the bottom of the canvas area */
+	children?: React.ReactNode;
 }
 
 /**
@@ -587,6 +615,7 @@ function EditorContent({
 	onOpenBoardManager,
 	onSaveBoard,
 	onCreateBoardFromImport,
+	children,
 }: EditorContentProps) {
 	// キーボードショートカットを有効化
 	useKeyboardShortcuts();
@@ -697,22 +726,26 @@ function EditorContent({
 						historyPanel: <HistoryPanelActions />,
 					}}
 				>
-					{/* 中央: キャンバス */}
-					<div
-						ref={containerRef}
-						className="canvas-container h-full flex items-center justify-center overflow-auto p-4 relative"
-					>
-						{/* フォーカスモードインジケーター */}
-						{isFocusMode && focusedGroup && (
-							<FocusModeIndicator
-								groupName={
-									focusedGroup.name ||
-									`Group (${focusedGroup.objectIndices.length})`
-								}
-								onExit={unfocus}
-							/>
-						)}
-						<EditorBoard scale={scale} />
+					{/* 中央: キャンバスとタブバー */}
+					<div className="h-full flex flex-col">
+						<div
+							ref={containerRef}
+							className="canvas-container flex-1 flex items-center justify-center overflow-auto p-4 relative"
+						>
+							{/* フォーカスモードインジケーター */}
+							{isFocusMode && focusedGroup && (
+								<FocusModeIndicator
+									groupName={
+										focusedGroup.name ||
+										`Group (${focusedGroup.objectIndices.length})`
+									}
+									onExit={unfocus}
+								/>
+							)}
+							<EditorBoard scale={scale} />
+						</div>
+						{/* タブバー（childrenとして渡される） */}
+						{children}
 					</div>
 				</ResizableLayout>
 			</div>
@@ -720,5 +753,84 @@ function EditorContent({
 			{/* エラートースト */}
 			<ErrorToast />
 		</div>
+	);
+}
+
+/** EditorWithTabsのProps */
+interface EditorWithTabsProps extends EditorContentProps {
+	boards: StoredBoard[];
+	onSelectBoard: (boardId: string) => boolean;
+	onDuplicateBoard: (boardId: string) => void;
+}
+
+/**
+ * タブバー付きエディターラッパー
+ */
+function EditorWithTabs({
+	boards,
+	onSelectBoard,
+	onDuplicateBoard,
+	currentBoardId,
+	isMemoryOnlyMode,
+	...contentProps
+}: EditorWithTabsProps) {
+	const openTabs = useOpenTabs();
+	const activeTabId = useActiveTabId();
+	const { addTab, setInitialTab } = useTabActions();
+
+	// タブストアとcurrentBoardIdを同期
+	useEffect(() => {
+		if (isMemoryOnlyMode || !currentBoardId) return;
+
+		// 初期化: タブがない場合は現在のボードをタブとして追加
+		if (openTabs.length === 0) {
+			const existingBoardIds = new Set(boards.map((b) => b.id));
+			// localStorageから復元されなかった場合、現在のボードを初期タブとして設定
+			if (existingBoardIds.has(currentBoardId)) {
+				setInitialTab(currentBoardId);
+			}
+		} else if (!openTabs.includes(currentBoardId)) {
+			// 現在のボードがタブに含まれていない場合は追加
+			addTab(currentBoardId);
+		}
+	}, [
+		currentBoardId,
+		openTabs,
+		boards,
+		isMemoryOnlyMode,
+		addTab,
+		setInitialTab,
+	]);
+
+	// タブ切り替え時にボードを選択
+	useEffect(() => {
+		if (isMemoryOnlyMode) return;
+		if (activeTabId && activeTabId !== currentBoardId) {
+			onSelectBoard(activeTabId);
+		}
+	}, [activeTabId, currentBoardId, isMemoryOnlyMode, onSelectBoard]);
+
+	// 未保存状態のボードIDセット（今後実装）
+	const unsavedBoardIds = useMemo(() => new Set<string>(), []);
+
+	return (
+		<EditorContent
+			{...contentProps}
+			currentBoardId={currentBoardId}
+			isMemoryOnlyMode={isMemoryOnlyMode}
+		>
+			{/* タブバー */}
+			{!isMemoryOnlyMode && (
+				<BoardTabs
+					boards={boards}
+					unsavedBoardIds={unsavedBoardIds}
+					onAddClick={contentProps.onOpenBoardManager}
+					onSelectBoard={(boardId) => {
+						onSelectBoard(boardId);
+					}}
+					onDuplicateBoard={onDuplicateBoard}
+				/>
+			)}
+		</EditorContent>
 	);
 }

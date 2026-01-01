@@ -524,6 +524,16 @@
 			"warningNoSave": "※ 変更内容は保存されません"
 		}
 	},
+	"boardTabs": {
+		"addTab": "タブを追加",
+		"limitReached": "タブの上限に達しています (最大10個)",
+		"contextMenu": {
+			"duplicate": "複製",
+			"close": "閉じる",
+			"closeOthers": "他のタブを閉じる",
+			"closeRight": "右側のタブを閉じる"
+		}
+	},
 	"settings": {
 		"title": "設定",
 		"tabs": {

@@ -7,6 +7,7 @@ export type { HandleType, ResizeHandle } from "@/lib/editor";
 export { AssetPanel, AssetPanelActions } from "./AssetPanel";
 export type { BoardPropertyPanelProps } from "./BoardPropertyPanel";
 export { BoardPropertyPanel } from "./BoardPropertyPanel";
+export { BoardTabs } from "./BoardTabs";
 export type { ColorPaletteProps } from "./ColorPalette";
 // カラーパレット
 export { ColorPalette } from "./ColorPalette";

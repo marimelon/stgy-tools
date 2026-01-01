@@ -524,6 +524,16 @@
 			"warningNoSave": "* Changes will not be saved"
 		}
 	},
+	"boardTabs": {
+		"addTab": "Add Tab",
+		"limitReached": "Tab limit reached (max 10)",
+		"contextMenu": {
+			"duplicate": "Duplicate",
+			"close": "Close",
+			"closeOthers": "Close Others",
+			"closeRight": "Close Tabs to the Right"
+		}
+	},
 	"settings": {
 		"title": "Settings",
 		"tabs": {

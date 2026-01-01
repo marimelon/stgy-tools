@@ -108,6 +108,8 @@ export {
 	resetEditorStore,
 } from "./store/editorStore";
 export type { EditorStore, EditorStoreOptions } from "./store/types";
+// Tab Management
+export * from "./tabs";
 export type {
 	AlignmentType,
 	BatchUpdatePayload,

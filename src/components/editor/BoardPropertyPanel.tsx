@@ -112,9 +112,27 @@ export function BoardPropertyPanel({
 						type="text"
 						value={boardName}
 						onChange={(e) => onUpdateMeta({ name: e.target.value })}
-						onBlur={() => onCommitHistory(t("boardPanel.boardNameChanged"))}
+						onCompositionEnd={(e) => {
+							// IME確定時に文字数制限を適用
+							if (!debugMode) {
+								const value = e.currentTarget.value;
+								if (value.length > MAX_BOARD_NAME_LENGTH) {
+									onUpdateMeta({
+										name: value.slice(0, MAX_BOARD_NAME_LENGTH),
+									});
+								}
+							}
+						}}
+						onBlur={() => {
+							// 確定時に文字数制限を適用（非IME入力用）
+							if (!debugMode && boardName.length > MAX_BOARD_NAME_LENGTH) {
+								onUpdateMeta({
+									name: boardName.slice(0, MAX_BOARD_NAME_LENGTH),
+								});
+							}
+							onCommitHistory(t("boardPanel.boardNameChanged"));
+						}}
 						placeholder={t("boardPanel.boardNamePlaceholder")}
-						maxLength={debugMode ? undefined : MAX_BOARD_NAME_LENGTH}
 					/>
 				</PropertySection>
 
