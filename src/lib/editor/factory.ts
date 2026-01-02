@@ -57,7 +57,7 @@ export function createDefaultObject(
 		objectId === ObjectIds.Line || objectId === ObjectIds.Text;
 	const defaultColor = isWhiteDefault
 		? { r: 255, g: 255, b: 255, opacity: 0 }
-		: { r: 255, g: 100, b: 0, opacity: 0 };
+		: { r: 255, g: 128, b: 0, opacity: 0 };
 
 	const obj: BoardObject = {
 		objectId,
