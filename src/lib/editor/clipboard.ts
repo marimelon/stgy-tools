@@ -70,5 +70,10 @@ export function getClipboardSnapshot(): boolean {
  * タブ間でクリップボードが共有されるため、他タブでコピーされた場合も検知
  */
 export function useGlobalClipboard(): boolean {
-	return useSyncExternalStore(subscribeToClipboard, getClipboardSnapshot);
+	// 第3引数はSSR用のスナップショット（サーバー側ではクリップボードは常に空）
+	return useSyncExternalStore(
+		subscribeToClipboard,
+		getClipboardSnapshot,
+		() => false,
+	);
 }
