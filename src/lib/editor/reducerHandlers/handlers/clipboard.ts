@@ -45,20 +45,25 @@ export function handlePasteObjects(
 	}
 
 	const newBoard = cloneBoard(state.board);
-	const newIndices: number[] = [];
 
-	for (const obj of state.clipboard) {
+	// ペーストするオブジェクトを準備
+	const pastedObjects = state.clipboard.map((obj) => {
 		const pasted = structuredClone(obj);
 		// 位置をオフセット
 		if (payload.position) {
-			pasted.position = payload.position;
+			pasted.position = { ...payload.position };
 		} else {
 			pasted.position.x += 10;
 			pasted.position.y += 10;
 		}
-		newBoard.objects.push(pasted);
-		newIndices.push(newBoard.objects.length - 1);
-	}
+		return pasted;
+	});
+
+	// 配列の先頭に追加（最前面レイヤーに配置）
+	newBoard.objects.unshift(...pastedObjects);
+
+	// 新しいインデックスは 0 から pastedObjects.length - 1
+	const newIndices = pastedObjects.map((_, i) => i);
 
 	return {
 		...state,

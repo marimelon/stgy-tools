@@ -379,7 +379,8 @@ describe("reducer", () => {
 				position: { x: 256, y: 192 },
 			});
 
-			const pastedObj = state.board.objects[3];
+			// ペーストされたオブジェクトは先頭（最前面）に追加される
+			const pastedObj = state.board.objects[0];
 			expect(pastedObj.position).toEqual({ x: 256, y: 192 });
 		});
 
