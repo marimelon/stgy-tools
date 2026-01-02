@@ -541,7 +541,7 @@
 			"shortcuts": "Shortcuts"
 		},
 		"debugMode": "Debug Mode",
-		"debugModeDescription": "Show all object IDs and allow encode key configuration",
+		"debugModeDescription": "Enable developer features (all object IDs, encode key settings, character limit bypass, etc.)",
 		"reset": "Reset",
 		"shortcutsNote": "* On Mac, use {{modifier}} instead of Ctrl",
 		"shortcuts": {

@@ -541,7 +541,7 @@
 			"shortcuts": "ショートカット"
 		},
 		"debugMode": "デバッグモード",
-		"debugModeDescription": "全オブジェクトIDの表示やエンコードキーの設定が可能になります",
+		"debugModeDescription": "開発者向け機能（全オブジェクトID表示、エンコードキー設定、文字数制限解除など）を有効化します",
 		"reset": "リセット",
 		"shortcutsNote": "※ Macでは {{modifier}} の代わりに ⌘ を使用",
 		"shortcuts": {
