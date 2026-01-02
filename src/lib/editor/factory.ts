@@ -50,7 +50,13 @@ export function createDefaultObject(
 	objectId: number,
 	position?: Position,
 ): BoardObject {
-	const defaultPosition: Position = position ?? { x: 256, y: 192 };
+	const targetPosition: Position = position ?? { x: 256, y: 192 };
+
+	// Lineは始点から右に256pxの線を引くので、中心を指定位置に合わせるため始点を128px左にオフセット
+	const defaultPosition: Position =
+		objectId === ObjectIds.Line
+			? { x: targetPosition.x - 128, y: targetPosition.y }
+			: targetPosition;
 
 	// Line と Text は白、その他はオレンジがデフォルト
 	const isWhiteDefault =
