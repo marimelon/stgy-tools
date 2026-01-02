@@ -54,7 +54,7 @@ export function TabContextMenu({
 
 	// Close on click outside or escape
 	useEffect(() => {
-		const handleClickOutside = (e: MouseEvent) => {
+		const handleClickOutside = (e: PointerEvent) => {
 			if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
 				onClose();
 			}
@@ -66,11 +66,12 @@ export function TabContextMenu({
 			}
 		};
 
-		document.addEventListener("mousedown", handleClickOutside);
+		// Use pointerdown to catch both mouse and pointer events (e.g., from SVG)
+		document.addEventListener("pointerdown", handleClickOutside);
 		document.addEventListener("keydown", handleKeyDown);
 
 		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
+			document.removeEventListener("pointerdown", handleClickOutside);
 			document.removeEventListener("keydown", handleKeyDown);
 		};
 	}, [onClose]);
