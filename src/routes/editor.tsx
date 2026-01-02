@@ -684,8 +684,8 @@ function EditorContent({
 	const logoIcon = (
 		<img
 			src="/favicon.svg"
-			width={32}
-			height={32}
+			width={24}
+			height={24}
 			alt="STGY Tools logo"
 			className="rounded"
 		/>

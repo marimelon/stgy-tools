@@ -223,18 +223,18 @@ export function CompactAppHeader({
 	return (
 		<header
 			className={cn(
-				"app-header flex items-center justify-between px-4 py-2.5",
+				"app-header flex items-center justify-between px-3 py-1",
 				className,
 			)}
 		>
 			{/* ロゴ・タイトル */}
-			<div className="flex items-center gap-3">
+			<div className="flex items-center gap-2">
 				{logo}
-				<h1 className="app-logo">{title ?? "STGY Tools"}</h1>
+				<h1 className="app-logo text-sm">{title ?? "STGY Tools"}</h1>
 			</div>
 
 			{/* ナビゲーション */}
-			<nav className="flex items-center gap-3 md:gap-4">
+			<nav className="flex items-center gap-2 md:gap-3">
 				<NavLink
 					to="/"
 					active={currentPage === "viewer"}
@@ -260,7 +260,7 @@ export function CompactAppHeader({
 					{t("nav.imageGenerator")}
 				</NavLink>
 				{showLanguageSelector && (
-					<div className="ml-2">
+					<div className="ml-1">
 						<LanguageSelector />
 					</div>
 				)}
