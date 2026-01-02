@@ -115,7 +115,7 @@ export function useKeyboardShortcuts() {
 		if (isMod && e.key === "c") {
 			if (hasSelection) {
 				e.preventDefault();
-				void copySelected();
+				copySelected();
 			}
 			return;
 		}
@@ -123,7 +123,7 @@ export function useKeyboardShortcuts() {
 		// Ctrl/Cmd + V: 貼り付け
 		if (isMod && e.key === "v") {
 			e.preventDefault();
-			void paste();
+			paste();
 			return;
 		}
 

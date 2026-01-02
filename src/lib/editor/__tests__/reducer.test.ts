@@ -4,6 +4,7 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { ObjectIds } from "@/lib/stgy";
+import { hasClipboardData } from "../clipboard";
 import { createDefaultObject, createEmptyBoard } from "../factory";
 import {
 	createInitialState,
@@ -32,7 +33,6 @@ describe("reducer", () => {
 
 			expect(state.board.name).toBe("");
 			expect(state.selectedIndices).toEqual([]);
-			expect(state.clipboard).toBeNull();
 			expect(state.groups).toEqual([]);
 			expect(state.history).toHaveLength(1);
 			expect(state.historyIndex).toBe(0);
@@ -361,7 +361,7 @@ describe("reducer", () => {
 			});
 			// コピー
 			state = editorReducer(state, { type: "COPY_OBJECTS" });
-			expect(state.clipboard).toHaveLength(1);
+			expect(hasClipboardData()).toBe(true);
 
 			// ペースト
 			state = editorReducer(state, { type: "PASTE_OBJECTS" });
@@ -386,7 +386,8 @@ describe("reducer", () => {
 
 		it("選択なしでコピーは何もしない", () => {
 			const state = editorReducer(initialState, { type: "COPY_OBJECTS" });
-			expect(state.clipboard).toBeNull();
+			// 状態が変更されていないことを確認
+			expect(state).toBe(initialState);
 		});
 	});
 

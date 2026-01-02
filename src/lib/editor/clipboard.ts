@@ -1,60 +1,74 @@
 /**
- * システムクリップボード操作ユーティリティ
- * タブ間でのコピー/ペーストを可能にする
+ * グローバルクリップボード
+ * アプリ内の全エディタータブで共有されるインメモリストア
  */
 
+import { useSyncExternalStore } from "react";
 import type { BoardObject } from "@/lib/stgy";
 
-/** クリップボードデータの識別子 */
-const CLIPBOARD_TYPE = "strategy-board-editor/objects";
+/** グローバルクリップボードストア */
+let clipboardStore: BoardObject[] | null = null;
 
-/** クリップボードに保存するデータ形式 */
-interface ClipboardData {
-	type: typeof CLIPBOARD_TYPE;
-	objects: BoardObject[];
+/** サブスクライバーのセット */
+const subscribers = new Set<() => void>();
+
+/**
+ * クリップボードの状態変更を購読
+ * useSyncExternalStore用
+ */
+export function subscribeToClipboard(callback: () => void): () => void {
+	subscribers.add(callback);
+	return () => {
+		subscribers.delete(callback);
+	};
 }
 
 /**
- * オブジェクトをシステムクリップボードにコピー
+ * サブスクライバーに通知
  */
-export async function writeToClipboard(objects: BoardObject[]): Promise<void> {
-	const data: ClipboardData = {
-		type: CLIPBOARD_TYPE,
-		objects: structuredClone(objects),
-	};
-
-	try {
-		await navigator.clipboard.writeText(JSON.stringify(data));
-	} catch (error) {
-		console.error("Failed to write to clipboard:", error);
-		throw error;
+function notifySubscribers(): void {
+	for (const callback of subscribers) {
+		callback();
 	}
 }
 
 /**
- * システムクリップボードからオブジェクトを読み取り
- * @returns オブジェクト配列、または読み取れない場合は null
+ * オブジェクトをクリップボードに保存
  */
-export async function readFromClipboard(): Promise<BoardObject[] | null> {
-	try {
-		const text = await navigator.clipboard.readText();
-		if (!text) return null;
+export function writeToClipboard(objects: BoardObject[]): void {
+	clipboardStore = structuredClone(objects);
+	notifySubscribers();
+}
 
-		const data = JSON.parse(text) as ClipboardData;
-
-		// 識別子をチェック
-		if (data.type !== CLIPBOARD_TYPE) {
-			return null;
-		}
-
-		// オブジェクト配列をバリデート
-		if (!Array.isArray(data.objects) || data.objects.length === 0) {
-			return null;
-		}
-
-		return data.objects;
-	} catch {
-		// JSON解析失敗や他のアプリからのデータは無視
+/**
+ * クリップボードからオブジェクトを読み取り
+ * @returns オブジェクト配列、または空の場合は null
+ */
+export function readFromClipboard(): BoardObject[] | null {
+	if (!clipboardStore || clipboardStore.length === 0) {
 		return null;
 	}
+	return clipboardStore;
+}
+
+/**
+ * クリップボードにデータがあるか確認
+ */
+export function hasClipboardData(): boolean {
+	return clipboardStore !== null && clipboardStore.length > 0;
+}
+
+/**
+ * クリップボードの状態を取得（useSyncExternalStore用スナップショット）
+ */
+export function getClipboardSnapshot(): boolean {
+	return hasClipboardData();
+}
+
+/**
+ * グローバルクリップボードの状態を監視するフック
+ * タブ間でクリップボードが共有されるため、他タブでコピーされた場合も検知
+ */
+export function useGlobalClipboard(): boolean {
+	return useSyncExternalStore(subscribeToClipboard, getClipboardSnapshot);
 }

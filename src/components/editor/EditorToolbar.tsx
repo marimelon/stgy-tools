@@ -45,8 +45,8 @@ import {
 	useCanGroup,
 	useCanRedo,
 	useCanUndo,
-	useClipboard,
 	useEditorActions,
+	useGlobalClipboard,
 	useGridSettings,
 	useImportExport,
 	useIsDirty,
@@ -115,7 +115,7 @@ export function EditorToolbar({
 
 	// State
 	const selectedIndices = useSelectedIndices();
-	const clipboard = useClipboard();
+	const hasClipboard = useGlobalClipboard();
 	const gridSettings = useGridSettings();
 	const isDirty = useIsDirty();
 
@@ -165,7 +165,6 @@ export function EditorToolbar({
 
 	const hasSelection = selectedIndices.length > 0;
 	const hasSingleSelection = selectedIndices.length === 1;
-	const hasClipboard = clipboard !== null && clipboard.length > 0;
 
 	// インポート処理
 	const handleImport = () => {

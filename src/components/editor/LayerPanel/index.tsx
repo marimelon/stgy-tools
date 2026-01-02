@@ -9,9 +9,9 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
 	useCanGroup,
-	useClipboard,
 	useEditorActions,
 	useFocusedGroupId,
+	useGlobalClipboard,
 	useGroups,
 	useIsFocusMode,
 	useObjects,
@@ -35,7 +35,7 @@ export function LayerPanel() {
 	const objects = useObjects();
 	const selectedIndices = useSelectedIndices();
 	const groups = useGroups();
-	const clipboard = useClipboard();
+	const hasClipboard = useGlobalClipboard();
 
 	// Derived state
 	const canGroup = useCanGroup();
@@ -413,7 +413,7 @@ export function LayerPanel() {
 				onClose={closeMenu}
 				objects={objects}
 				selectedIndices={selectedIndices}
-				hasClipboard={clipboard !== null}
+				hasClipboard={hasClipboard}
 				canGroup={canGroup}
 				isGroupAllVisible={isGroupAllVisible}
 				isGroupAllLocked={isGroupAllLocked}

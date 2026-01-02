@@ -99,13 +99,6 @@ export const selectors = {
 	/** 変更があるか */
 	isDirty: (s: EditorState): boolean => s.isDirty,
 
-	/** クリップボード */
-	clipboard: (s: EditorState): BoardObject[] | null => s.clipboard,
-
-	/** クリップボードに内容があるか */
-	hasClipboard: (s: EditorState): boolean =>
-		s.clipboard !== null && s.clipboard.length > 0,
-
 	/** 編集中のテキストインデックス */
 	editingTextIndex: (s: EditorState): number | null => s.editingTextIndex,
 
@@ -173,11 +166,6 @@ export function useHistory(): {
 	const history = useEditorSelectorShallow(selectors.history);
 	const historyIndex = useEditorSelector(selectors.historyIndex);
 	return { history, historyIndex };
-}
-
-/** クリップボードを取得 */
-export function useClipboard(): BoardObject[] | null {
-	return useEditorSelectorShallow(selectors.clipboard);
 }
 
 /** 円形配置モードを取得 */

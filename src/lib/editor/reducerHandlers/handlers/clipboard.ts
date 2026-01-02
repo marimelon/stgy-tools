@@ -3,6 +3,7 @@
  */
 
 import i18n from "@/lib/i18n";
+import { readFromClipboard, writeToClipboard } from "../../clipboard";
 import type { EditorState } from "../../types";
 import { canAddObjects } from "../businessLogic/validation";
 import { cloneBoard, pushHistory } from "../utils";
@@ -17,10 +18,10 @@ export function handleCopyObjects(state: EditorState): EditorState {
 		.filter((i) => i >= 0 && i < state.board.objects.length)
 		.map((i) => structuredClone(state.board.objects[i]));
 
-	return {
-		...state,
-		clipboard: copiedObjects,
-	};
+	// グローバルクリップボードに保存
+	writeToClipboard(copiedObjects);
+
+	return state;
 }
 
 /**
@@ -30,10 +31,11 @@ export function handlePasteObjects(
 	state: EditorState,
 	payload: { position?: { x: number; y: number } },
 ): EditorState {
-	if (!state.clipboard || state.clipboard.length === 0) return state;
+	const clipboardObjects = readFromClipboard();
+	if (!clipboardObjects || clipboardObjects.length === 0) return state;
 
 	// バリデーション
-	const validation = canAddObjects(state.board, state.clipboard);
+	const validation = canAddObjects(state.board, clipboardObjects);
 	if (!validation.canAdd) {
 		return {
 			...state,
@@ -47,7 +49,7 @@ export function handlePasteObjects(
 	const newBoard = cloneBoard(state.board);
 
 	// ペーストするオブジェクトを準備
-	const pastedObjects = state.clipboard.map((obj) => {
+	const pastedObjects = clipboardObjects.map((obj) => {
 		const pasted = structuredClone(obj);
 		// 位置をオフセット
 		if (payload.position) {
@@ -64,6 +66,9 @@ export function handlePasteObjects(
 
 	// 新しいインデックスは 0 から pastedObjects.length - 1
 	const newIndices = pastedObjects.map((_, i) => i);
+
+	// 連続ペースト用にグローバルクリップボードも更新
+	writeToClipboard(pastedObjects);
 
 	return {
 		...state,

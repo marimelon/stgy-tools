@@ -258,7 +258,6 @@ export function createInitialStateWithOptions(
 	return {
 		board: structuredClone(board),
 		selectedIndices: [],
-		clipboard: null,
 		groups: initialGroups,
 		gridSettings: initialGridSettings,
 		history: [

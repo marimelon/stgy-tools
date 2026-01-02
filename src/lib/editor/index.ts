@@ -10,6 +10,7 @@ export {
 	isMixed,
 	MIXED_VALUE,
 } from "./batchUtils";
+export { useGlobalClipboard } from "./clipboard";
 export {
 	COLOR_PALETTE,
 	COLOR_PALETTE_COLS,
@@ -71,7 +72,6 @@ export {
 	useBoard,
 	useBoardName,
 	useCircularMode,
-	useClipboard,
 	useEditingTextIndex,
 	useEditorSelector,
 	useEditorSelectorShallow,

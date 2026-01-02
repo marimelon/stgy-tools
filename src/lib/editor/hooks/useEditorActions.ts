@@ -32,7 +32,7 @@ export interface EditorActions extends BaseEditorActions {
 	/** 選択中オブジェクトを複製 */
 	duplicateSelected: () => void;
 	/** 選択中オブジェクトをコピー */
-	copySelected: () => Promise<void>;
+	copySelected: () => void;
 	/** 選択中オブジェクトをグループ化 */
 	groupSelected: () => void;
 }
@@ -87,7 +87,7 @@ export function useEditorActions(): EditorActions {
 		};
 
 		const copySelected = () => {
-			return baseActions.copyObjects();
+			baseActions.copyObjects();
 		};
 
 		const groupSelected = () => {

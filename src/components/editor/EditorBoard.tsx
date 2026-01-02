@@ -19,11 +19,11 @@ import {
 	useCanGroup,
 	useCanvasInteraction,
 	useCircularMode,
-	useClipboard,
 	useEditingTextIndex,
 	useEditorActions,
 	useFocusedGroup,
 	useFocusedGroupId,
+	useGlobalClipboard,
 	useGridSettings,
 	useGroups,
 	useIsCircularMode,
@@ -58,7 +58,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 	const board = useBoard();
 	const selectedIndices = useSelectedIndices();
 	const gridSettings = useGridSettings();
-	const clipboard = useClipboard();
+	const hasClipboard = useGlobalClipboard();
 	const editingTextIndex = useEditingTextIndex();
 	const focusedGroupId = useFocusedGroupId();
 	const groups = useGroups();
@@ -546,7 +546,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 				menuState={contextMenu}
 				onClose={closeContextMenu}
 				selectedIndices={selectedIndices}
-				hasClipboard={clipboard !== null}
+				hasClipboard={hasClipboard}
 				canGroup={canGroup}
 				selectedGroup={selectedGroup}
 				actions={{

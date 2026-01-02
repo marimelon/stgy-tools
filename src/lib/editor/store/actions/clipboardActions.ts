@@ -14,9 +14,9 @@ import type { EditorStore } from "../types";
  */
 export function createClipboardActions(store: EditorStore) {
 	/**
-	 * オブジェクトをコピー（システムクリップボードへ + ローカルステート）
+	 * オブジェクトをコピー（グローバルクリップボードに保存）
 	 */
-	const copyObjects = async () => {
+	const copyObjects = () => {
 		const state = store.state;
 		if (state.selectedIndices.length === 0) return;
 
@@ -26,38 +26,22 @@ export function createClipboardActions(store: EditorStore) {
 
 		if (copiedObjects.length === 0) return;
 
-		// ローカルステートも更新（UI判定用）
-		store.setState((s) => ({
-			...s,
-			clipboard: copiedObjects,
-		}));
-
-		try {
-			await writeToClipboard(copiedObjects);
-		} catch (error) {
-			console.error("Copy failed:", error);
-		}
+		// グローバルストアに保存（タブ間共有）
+		writeToClipboard(copiedObjects);
 	};
 
 	/**
 	 * 選択オブジェクトをコピー
 	 */
-	const copySelected = async () => {
-		await copyObjects();
+	const copySelected = () => {
+		copyObjects();
 	};
 
 	/**
-	 * オブジェクトを貼り付け（システムクリップボードから）
+	 * オブジェクトを貼り付け（グローバルクリップボードから）
 	 */
-	const paste = async (position?: Position) => {
-		let clipboardObjects: Awaited<ReturnType<typeof readFromClipboard>>;
-
-		try {
-			clipboardObjects = await readFromClipboard();
-		} catch (error) {
-			console.error("Paste failed:", error);
-			return;
-		}
+	const paste = (position?: Position) => {
+		const clipboardObjects = readFromClipboard();
 
 		if (!clipboardObjects || clipboardObjects.length === 0) {
 			return;
@@ -96,6 +80,9 @@ export function createClipboardActions(store: EditorStore) {
 
 			// 新しいインデックスは 0 から pastedObjects.length - 1
 			const newIndices = pastedObjects.map((_, i) => i);
+
+			// 連続ペースト用にグローバルクリップボードも更新
+			writeToClipboard(pastedObjects);
 
 			return {
 				...state,

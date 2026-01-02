@@ -244,8 +244,6 @@ export interface EditorState {
 	board: BoardData;
 	/** 選択されているオブジェクトのインデックス (複数選択対応) */
 	selectedIndices: number[];
-	/** クリップボード (コピー/カット用) */
-	clipboard: BoardObject[] | null;
 	/** オブジェクトグループ */
 	groups: ObjectGroup[];
 	/** グリッド設定 */
