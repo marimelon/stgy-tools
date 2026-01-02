@@ -77,7 +77,7 @@ export function createLayerActions(store: EditorStore) {
 				groups: updatedGroups,
 				selectedIndices: [newIndex],
 				...pushHistory(
-					{ ...state, groups: updatedGroups },
+					{ ...state, board: newBoard, groups: updatedGroups },
 					descriptions[direction],
 				),
 			};
@@ -136,7 +136,7 @@ export function createLayerActions(store: EditorStore) {
 				groups: updatedGroups,
 				selectedIndices: [adjustedToIndex],
 				...pushHistory(
-					{ ...state, groups: updatedGroups },
+					{ ...state, board: newBoard, groups: updatedGroups },
 					i18n.t("history.reorderLayers"),
 				),
 			};
@@ -216,7 +216,7 @@ export function createLayerActions(store: EditorStore) {
 				groups: updatedGroups,
 				selectedIndices: newGroupIndices,
 				...pushHistory(
-					{ ...state, groups: updatedGroups },
+					{ ...state, board: newBoard, groups: updatedGroups },
 					i18n.t("history.groupMove"),
 				),
 			};

@@ -64,7 +64,7 @@ export function handleAddObject(
 		selectedIndices: [0],
 		lastError: null,
 		...pushHistory(
-			{ ...state, groups: updatedGroups },
+			{ ...state, board: newBoard, groups: updatedGroups },
 			i18n.t("history.addObject"),
 		),
 	};
@@ -95,7 +95,7 @@ export function handleDeleteObjects(
 		groups: updatedGroups,
 		selectedIndices: [],
 		...pushHistory(
-			{ ...state, groups: updatedGroups },
+			{ ...state, board: newBoard, groups: updatedGroups },
 			i18n.t("history.deleteObject"),
 		),
 	};
@@ -147,7 +147,10 @@ export function handleDuplicateObjects(
 		board: newBoard,
 		selectedIndices: newIndices,
 		lastError: null,
-		...pushHistory(state, i18n.t("history.duplicateObject")),
+		...pushHistory(
+			{ ...state, board: newBoard },
+			i18n.t("history.duplicateObject"),
+		),
 	};
 }
 
