@@ -3,7 +3,7 @@
  */
 
 import { Eye, EyeOff, GripVertical, Lock, LockOpen } from "lucide-react";
-import type { DragEvent } from "react";
+import { type DragEvent, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { BoardObject } from "@/lib/stgy";
 import type { DropTarget } from "./types";
@@ -59,9 +59,20 @@ export function LayerObjectItem({
 	onContextMenu,
 }: LayerObjectItemProps) {
 	const { t } = useTranslation();
+	const itemRef = useRef<HTMLDivElement>(null);
 	const name = t(`object.${object.objectId}`, {
 		defaultValue: `ID: ${object.objectId}`,
 	});
+
+	// 選択されたときに自動スクロール
+	useEffect(() => {
+		if (isSelected && itemRef.current) {
+			itemRef.current.scrollIntoView({
+				behavior: "smooth",
+				block: "nearest",
+			});
+		}
+	}, [isSelected]);
 
 	// グループドラッグ中でグループ内アイテムの場合はグループヘッダーに任せる
 	const isDropBefore =
@@ -74,7 +85,7 @@ export function LayerObjectItem({
 		!(draggedGroupId && isInGroup);
 
 	return (
-		<div className="relative">
+		<div ref={itemRef} className="relative">
 			{/* ドロップインジケーター（前） */}
 			{isDropBefore && (
 				<div className="drop-indicator absolute top-0 left-1 right-1 z-10" />

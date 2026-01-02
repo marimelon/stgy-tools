@@ -91,6 +91,17 @@ export function LayerGroupHeader({
 	const [isEditing, setIsEditing] = useState(false);
 	const [editName, setEditName] = useState("");
 	const inputRef = useRef<HTMLInputElement>(null);
+	const itemRef = useRef<HTMLDivElement>(null);
+
+	// グループが選択されたときに自動スクロール
+	useEffect(() => {
+		if (isAllSelected && itemRef.current) {
+			itemRef.current.scrollIntoView({
+				behavior: "smooth",
+				block: "nearest",
+			});
+		}
+	}, [isAllSelected]);
 
 	// 編集開始時にフォーカス
 	useEffect(() => {
@@ -157,7 +168,7 @@ export function LayerGroupHeader({
 	};
 
 	return (
-		<div className="relative">
+		<div ref={itemRef} className="relative">
 			{/* ドロップインジケーター（グループの前） */}
 			{isDropBeforeGroup && (
 				<div className="drop-indicator absolute top-0 left-1 right-1 z-10" />
