@@ -17,6 +17,7 @@ import { type DragEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ObjectGroup } from "@/lib/editor/types";
 import type { DropTarget } from "./types";
+import { useAutoScrollOnSelect } from "./useAutoScrollOnSelect";
 
 interface LayerGroupHeaderProps {
 	group: ObjectGroup;
@@ -91,17 +92,7 @@ export function LayerGroupHeader({
 	const [isEditing, setIsEditing] = useState(false);
 	const [editName, setEditName] = useState("");
 	const inputRef = useRef<HTMLInputElement>(null);
-	const itemRef = useRef<HTMLDivElement>(null);
-
-	// グループが選択されたときに自動スクロール
-	useEffect(() => {
-		if (isAllSelected && itemRef.current) {
-			itemRef.current.scrollIntoView({
-				behavior: "smooth",
-				block: "nearest",
-			});
-		}
-	}, [isAllSelected]);
+	const itemRef = useAutoScrollOnSelect(isAllSelected);
 
 	// 編集開始時にフォーカス
 	useEffect(() => {

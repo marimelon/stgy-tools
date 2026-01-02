@@ -3,10 +3,11 @@
  */
 
 import { Eye, EyeOff, GripVertical, Lock, LockOpen } from "lucide-react";
-import { type DragEvent, useEffect, useRef } from "react";
+import type { DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import type { BoardObject } from "@/lib/stgy";
 import type { DropTarget } from "./types";
+import { useAutoScrollOnSelect } from "./useAutoScrollOnSelect";
 
 interface LayerObjectItemProps {
 	index: number;
@@ -59,20 +60,10 @@ export function LayerObjectItem({
 	onContextMenu,
 }: LayerObjectItemProps) {
 	const { t } = useTranslation();
-	const itemRef = useRef<HTMLDivElement>(null);
+	const itemRef = useAutoScrollOnSelect(isSelected);
 	const name = t(`object.${object.objectId}`, {
 		defaultValue: `ID: ${object.objectId}`,
 	});
-
-	// 選択されたときに自動スクロール
-	useEffect(() => {
-		if (isSelected && itemRef.current) {
-			itemRef.current.scrollIntoView({
-				behavior: "smooth",
-				block: "nearest",
-			});
-		}
-	}, [isSelected]);
 
 	// グループドラッグ中でグループ内アイテムの場合はグループヘッダーに任せる
 	const isDropBefore =
