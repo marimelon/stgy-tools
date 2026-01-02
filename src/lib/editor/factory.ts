@@ -98,7 +98,18 @@ export function createDefaultObject(
 			case EditParamIds.Height:
 				obj.param1 = paramDef.defaultValue;
 				break;
+			case EditParamIds.LineWidth:
+				obj.param3 = paramDef.defaultValue;
+				break;
 		}
+	}
+
+	// Lineオブジェクトの終点座標を設定（param1=終点X*10, param2=終点Y*10）
+	if (objectId === ObjectIds.Line) {
+		const endX = defaultPosition.x + 256;
+		const endY = defaultPosition.y;
+		obj.param1 = Math.round(endX * 10);
+		obj.param2 = Math.round(endY * 10);
 	}
 
 	// テキストオブジェクトの特殊処理

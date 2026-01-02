@@ -296,4 +296,75 @@ describe("encoder", () => {
 			expect(parsed.name).toBe(mixedName);
 		});
 	});
+
+	describe("Line object params", () => {
+		it("should round-trip Line object with param1, param2, param3", () => {
+			const board: BoardData = {
+				version: 2,
+				name: "Line Test",
+				backgroundId: BackgroundId.None,
+				objects: [
+					{
+						objectId: 12, // Line
+						flags: {
+							visible: true,
+							flipHorizontal: false,
+							flipVertical: false,
+							locked: false,
+						},
+						position: { x: 128, y: 192 },
+						rotation: 0,
+						size: 100,
+						color: { r: 255, g: 255, b: 255, opacity: 0 },
+						param1: 3840, // 終点X * 10 = 384 * 10
+						param2: 1920, // 終点Y * 10 = 192 * 10
+						param3: 6, // 線幅
+					},
+				],
+			};
+
+			const encoded = encodeStgy(board);
+			const decoded = decodeStgy(encoded);
+			const parsed = parseBoardData(decoded);
+
+			expect(parsed.objects.length).toBe(1);
+			const lineObj = parsed.objects[0];
+			expect(lineObj.objectId).toBe(12);
+			expect(lineObj.param1).toBe(3840);
+			expect(lineObj.param2).toBe(1920);
+			expect(lineObj.param3).toBe(6);
+		});
+
+		it("should preserve param3 when other params are updated", () => {
+			const board: BoardData = {
+				version: 2,
+				name: "Line Test",
+				backgroundId: BackgroundId.None,
+				objects: [
+					{
+						objectId: 12,
+						flags: {
+							visible: true,
+							flipHorizontal: false,
+							flipVertical: false,
+							locked: false,
+						},
+						position: { x: 100, y: 100 },
+						rotation: 45,
+						size: 100,
+						color: { r: 255, g: 255, b: 255, opacity: 0 },
+						param1: 2000,
+						param2: 1500,
+						param3: 8, // カスタム線幅
+					},
+				],
+			};
+
+			const encoded = encodeStgy(board);
+			const decoded = decodeStgy(encoded);
+			const parsed = parseBoardData(decoded);
+
+			expect(parsed.objects[0].param3).toBe(8);
+		});
+	});
 });

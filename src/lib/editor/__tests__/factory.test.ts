@@ -67,6 +67,30 @@ describe("factory", () => {
 			expect(obj.param1).toBe(128); // デフォルト縦幅
 			expect(obj.param2).toBe(128); // デフォルト横幅
 		});
+
+		it("Lineはparam1（終点X）, param2（終点Y）, param3（線幅）を持つ", () => {
+			const obj = createDefaultObject(ObjectIds.Line);
+			// Lineは始点(128, 192)から終点(384, 192)までの線（中央配置用に左に128pxオフセット）
+			expect(obj.position).toEqual({ x: 128, y: 192 });
+			expect(obj.param1).toBe(3840); // 終点X座標 * 10 = 384 * 10
+			expect(obj.param2).toBe(1920); // 終点Y座標 * 10 = 192 * 10
+			expect(obj.param3).toBe(6); // デフォルト線幅
+		});
+
+		it("Lineは位置を指定しても終点座標が正しく計算される", () => {
+			const obj = createDefaultObject(ObjectIds.Line, { x: 100, y: 50 });
+			// targetPosition(100, 50)から128px左にオフセット -> 始点(-28, 50)
+			// 終点は始点から右に256px -> (228, 50)
+			expect(obj.position).toEqual({ x: -28, y: 50 });
+			expect(obj.param1).toBe(2280); // 終点X座標 * 10 = 228 * 10
+			expect(obj.param2).toBe(500); // 終点Y座標 * 10 = 50 * 10
+			expect(obj.param3).toBe(6);
+		});
+
+		it("Lineは白色がデフォルト", () => {
+			const obj = createDefaultObject(ObjectIds.Line);
+			expect(obj.color).toEqual({ r: 255, g: 255, b: 255, opacity: 0 });
+		});
 	});
 
 	describe("duplicateObject", () => {
