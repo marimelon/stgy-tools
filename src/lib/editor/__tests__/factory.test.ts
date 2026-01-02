@@ -39,7 +39,7 @@ describe("factory", () => {
 			expect(obj.flags.locked).toBe(false);
 			expect(obj.position).toEqual({ x: 256, y: 192 });
 			expect(obj.rotation).toBe(0);
-			expect(obj.color).toEqual({ r: 255, g: 100, b: 0, opacity: 0 });
+			expect(obj.color).toEqual({ r: 255, g: 128, b: 0, opacity: 0 });
 		});
 
 		it("位置を指定して生成", () => {
