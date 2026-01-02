@@ -9,8 +9,18 @@ import {
 	generateHistoryId,
 	pushHistory,
 } from "../../reducerHandlers/utils";
-import type { CircularModeState } from "../../types";
+import type { CircularModeState, EditorState } from "../../types";
+import { getCurrentBoardId } from "../editorStore";
+import { saveHistory } from "../globalHistoryStore";
 import type { EditorStore } from "../types";
+
+/**
+ * 履歴をグローバルストアに同期
+ */
+function syncToGlobalHistory(state: EditorState): void {
+	const boardId = getCurrentBoardId();
+	saveHistory(boardId, state.history, state.historyIndex);
+}
 
 /**
  * 円形配置モードをボード状態から再計算
@@ -71,23 +81,27 @@ export function createHistoryActions(store: EditorStore) {
 	 * ボードを設定（円形配置モードをリセット）
 	 */
 	const setBoard = (board: BoardData) => {
-		store.setState((state) => ({
-			...state,
-			board,
-			selectedIndices: [],
-			groups: [],
-			isDirty: false,
-			history: [
-				{
-					id: generateHistoryId(),
-					board: structuredClone(board),
-					groups: [],
-					description: i18n.t("history.initial"),
-				},
-			],
-			historyIndex: 0,
-			circularMode: null,
-		}));
+		store.setState((state) => {
+			const newState = {
+				...state,
+				board,
+				selectedIndices: [],
+				groups: [],
+				isDirty: false,
+				history: [
+					{
+						id: generateHistoryId(),
+						board: structuredClone(board),
+						groups: [],
+						description: i18n.t("history.initial"),
+					},
+				],
+				historyIndex: 0,
+				circularMode: null,
+			};
+			syncToGlobalHistory(newState);
+			return newState;
+		});
 	};
 
 	/**
@@ -117,10 +131,14 @@ export function createHistoryActions(store: EditorStore) {
 	 * 履歴をコミット
 	 */
 	const commitHistory = (description: string) => {
-		store.setState((state) => ({
-			...state,
-			...pushHistory(state, description),
-		}));
+		store.setState((state) => {
+			const newState = {
+				...state,
+				...pushHistory(state, description),
+			};
+			syncToGlobalHistory(newState);
+			return newState;
+		});
 	};
 
 	/**
@@ -139,7 +157,7 @@ export function createHistoryActions(store: EditorStore) {
 				? recalculateCircularMode(newBoard, state.circularMode)
 				: null;
 
-			return {
+			const newState = {
 				...state,
 				board: newBoard,
 				groups: structuredClone(entry.groups ?? []),
@@ -148,6 +166,8 @@ export function createHistoryActions(store: EditorStore) {
 				isDirty: newIndex > 0,
 				circularMode: newCircularMode,
 			};
+			syncToGlobalHistory(newState);
+			return newState;
 		});
 	};
 
@@ -167,7 +187,7 @@ export function createHistoryActions(store: EditorStore) {
 				? recalculateCircularMode(newBoard, state.circularMode)
 				: null;
 
-			return {
+			const newState = {
 				...state,
 				board: newBoard,
 				groups: structuredClone(entry.groups ?? []),
@@ -176,6 +196,8 @@ export function createHistoryActions(store: EditorStore) {
 				isDirty: true,
 				circularMode: newCircularMode,
 			};
+			syncToGlobalHistory(newState);
+			return newState;
 		});
 	};
 
@@ -202,7 +224,7 @@ export function createHistoryActions(store: EditorStore) {
 				? recalculateCircularMode(newBoard, state.circularMode)
 				: null;
 
-			return {
+			const newState = {
 				...state,
 				board: newBoard,
 				groups: structuredClone(entry.groups ?? []),
@@ -211,6 +233,8 @@ export function createHistoryActions(store: EditorStore) {
 				isDirty: index > 0,
 				circularMode: newCircularMode,
 			};
+			syncToGlobalHistory(newState);
+			return newState;
 		});
 	};
 
@@ -218,18 +242,22 @@ export function createHistoryActions(store: EditorStore) {
 	 * 履歴をクリア（現在の状態を維持し、履歴のみリセット）
 	 */
 	const clearHistory = () => {
-		store.setState((state) => ({
-			...state,
-			history: [
-				{
-					id: generateHistoryId(),
-					board: structuredClone(state.board),
-					groups: structuredClone(state.groups),
-					description: i18n.t("history.initial"),
-				},
-			],
-			historyIndex: 0,
-		}));
+		store.setState((state) => {
+			const newState = {
+				...state,
+				history: [
+					{
+						id: generateHistoryId(),
+						board: structuredClone(state.board),
+						groups: structuredClone(state.groups),
+						description: i18n.t("history.initial"),
+					},
+				],
+				historyIndex: 0,
+			};
+			syncToGlobalHistory(newState);
+			return newState;
+		});
 	};
 
 	/**
@@ -253,7 +281,7 @@ export function createHistoryActions(store: EditorStore) {
 				(idx) => idx < objectCount,
 			);
 
-			const newState = {
+			const intermediateState = {
 				...state,
 				board,
 				groups: newGroups,
@@ -262,10 +290,12 @@ export function createHistoryActions(store: EditorStore) {
 				circularMode: null, // デバッグ編集時は円形配置モードをリセット
 			};
 
-			return {
-				...newState,
-				...pushHistory(newState, i18n.t("history.debugPanelEdit")),
+			const newState = {
+				...intermediateState,
+				...pushHistory(intermediateState, i18n.t("history.debugPanelEdit")),
 			};
+			syncToGlobalHistory(newState);
+			return newState;
 		});
 	};
 

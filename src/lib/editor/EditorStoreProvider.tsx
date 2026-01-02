@@ -8,6 +8,7 @@ import { createContext, type ReactNode, useContext, useMemo } from "react";
 import type { BoardData } from "@/lib/stgy";
 import { createInitialStateWithOptions } from "./reducer";
 import { createEditorStore } from "./store/editorStore";
+import { getHistory } from "./store/globalHistoryStore";
 import type { EditorStore } from "./store/types";
 import type { GridSettings, ObjectGroup } from "./types";
 
@@ -39,6 +40,8 @@ interface EditorStoreProviderProps {
 	initialGroups?: ObjectGroup[];
 	/** 初期グリッド設定（セッション復元用） */
 	initialGridSettings?: GridSettings;
+	/** ボードID（グローバル履歴ストアとの同期に使用、null = memory-only mode） */
+	boardId: string | null;
 }
 
 /**
@@ -51,16 +54,23 @@ export function EditorStoreProvider({
 	initialBoard,
 	initialGroups,
 	initialGridSettings,
+	boardId,
 }: EditorStoreProviderProps) {
 	// Storeを初期化（初回マウント時のみ）
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Store should only be created once on mount
 	const store = useMemo(() => {
+		// グローバル履歴ストアから履歴を復元
+		const storedHistory = getHistory(boardId);
+
 		const initialState = createInitialStateWithOptions({
 			board: initialBoard,
 			groups: initialGroups,
 			gridSettings: initialGridSettings,
+			// 復元された履歴があれば使用
+			history: storedHistory?.history,
+			historyIndex: storedHistory?.historyIndex,
 		});
-		return createEditorStore(initialState);
+		return createEditorStore(initialState, boardId);
 	}, []);
 
 	// クリーンアップはStoreのリセットを行わない

@@ -480,6 +480,7 @@ function EditorPage() {
 						initialBoard={initialBoard}
 						initialGroups={initialGroups}
 						initialGridSettings={initialGridSettings}
+						boardId={currentBoardId}
 					>
 						<EditorWithTabs
 							boards={boards}

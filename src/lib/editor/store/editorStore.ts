@@ -11,12 +11,28 @@ import type { EditorStore } from "./types";
 /** シングルトンストアインスタンス */
 let store: EditorStore | null = null;
 
+/** 現在編集中のボードID（null = memory-only mode） */
+let currentBoardId: string | null = null;
+
 /**
  * エディターストアを作成
+ * @param initialState 初期状態
+ * @param boardId ボードID（グローバル履歴ストアとの同期に使用）
  */
-export function createEditorStore(initialState: EditorState): EditorStore {
+export function createEditorStore(
+	initialState: EditorState,
+	boardId: string | null,
+): EditorStore {
+	currentBoardId = boardId;
 	store = new Store<EditorState>(initialState);
 	return store;
+}
+
+/**
+ * 現在のボードIDを取得
+ */
+export function getCurrentBoardId(): string | null {
+	return currentBoardId;
 }
 
 /**

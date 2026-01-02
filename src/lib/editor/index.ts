@@ -102,11 +102,14 @@ export { canAddObjects } from "./reducerHandlers/businessLogic/validation";
 // Store
 export {
 	createEditorStore,
+	getCurrentBoardId,
 	getEditorStore,
 	getEditorStoreSafe,
 	isEditorStoreInitialized,
 	resetEditorStore,
 } from "./store/editorStore";
+// Global History Store (内部使用のみ、型定義のみエクスポート)
+export type { StoredHistory } from "./store/globalHistoryStore";
 export type { EditorStore, EditorStoreOptions } from "./store/types";
 // Tab Management
 export * from "./tabs";
