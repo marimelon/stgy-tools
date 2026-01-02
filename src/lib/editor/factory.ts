@@ -52,6 +52,13 @@ export function createDefaultObject(
 ): BoardObject {
 	const defaultPosition: Position = position ?? { x: 256, y: 192 };
 
+	// Line と Text は白、その他はオレンジがデフォルト
+	const isWhiteDefault =
+		objectId === ObjectIds.Line || objectId === ObjectIds.Text;
+	const defaultColor = isWhiteDefault
+		? { r: 255, g: 255, b: 255, opacity: 0 }
+		: { r: 255, g: 100, b: 0, opacity: 0 };
+
 	const obj: BoardObject = {
 		objectId,
 		flags: {
@@ -63,7 +70,7 @@ export function createDefaultObject(
 		position: defaultPosition,
 		rotation: 0,
 		size: getDefaultSize(objectId),
-		color: { r: 255, g: 100, b: 0, opacity: 0 },
+		color: defaultColor,
 	};
 
 	// オブジェクト固有のデフォルトパラメータ（EDIT_PARAMSから自動取得）
