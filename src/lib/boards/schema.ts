@@ -5,9 +5,10 @@
 import { z } from "zod";
 
 // ObjectGroup schema (mirrors editor/types.ts)
+// Use .catch() to provide default values when validation fails (e.g., corrupted data)
 const objectGroupSchema = z.object({
-	id: z.string(),
-	objectIndices: z.array(z.number()),
+	id: z.string().catch(crypto.randomUUID()), // Generate new ID if missing
+	objectIndices: z.array(z.number()).catch([]), // Empty array if missing or invalid
 	name: z.string().optional(),
 	collapsed: z.boolean().optional(),
 });

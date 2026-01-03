@@ -62,6 +62,9 @@ export function useBoards(options: UseBoardsOptions = {}) {
 	// Error state
 	const [error, setError] = useState<BoardsError | null>(null);
 
+	// Track if we've attempted auto-repair (to prevent infinite loops)
+	const [autoRepairAttempted, setAutoRepairAttempted] = useState(false);
+
 	// Live Query: Get all boards
 	const { data, isLoading, isError, status } = useLiveQuery((q) =>
 		q.from({ board: boardsCollection }),
@@ -82,6 +85,24 @@ export function useBoards(options: UseBoardsOptions = {}) {
 					message: status,
 				});
 			} else {
+				// Schema validation error - attempt one auto-reload
+				// The Zod schema with .catch() should auto-repair corrupted data
+				if (
+					!autoRepairAttempted &&
+					status.includes("Schema validation failed")
+				) {
+					console.warn(
+						"Schema validation error detected. Auto-reloading to repair data...",
+					);
+					setAutoRepairAttempted(true);
+					// Reload after a short delay to allow state updates
+					setTimeout(() => {
+						window.location.reload();
+					}, 1000);
+					return;
+				}
+
+				// If auto-repair already attempted or other error, show error screen
 				setError({
 					type: "load_failed",
 					message: status,
@@ -90,7 +111,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		} else {
 			setError(null);
 		}
-	}, [isError, status]);
+	}, [isError, status, autoRepairAttempted]);
 
 	// Client-side filtering and sorting
 	const boards = (data ?? [])
