@@ -8,7 +8,6 @@ import {
 	Copy,
 	ExternalLink,
 	Eye,
-	Key,
 	Link2,
 	Loader2,
 	Share2,
@@ -23,23 +22,18 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { recalculateBoardSize, useBoard } from "@/lib/editor";
 import { createShortLinkFn } from "@/lib/server/shortLinks/serverFn";
-import { useDebugMode } from "@/lib/settings";
+
 import { encodeStgy } from "@/lib/stgy";
 
 /**
  * エクスポートモーダルのProps
  */
 export interface ExportModalProps {
-	/** エンコードキー */
-	encodeKey: number | null;
-	/** エンコードキー変更時のコールバック */
-	onEncodeKeyChange: (key: number | null) => void;
 	/** 閉じる時のコールバック */
 	onClose: () => void;
 	/** 短縮リンク機能が有効かどうか */
@@ -52,15 +46,11 @@ export interface ExportModalProps {
  * モーダル内でuseBoard()を呼び出し、ボードの変更に反応してエクスポートコードを再生成
  */
 export function ExportModal({
-	encodeKey,
-	onEncodeKeyChange,
 	onClose,
 	shortLinksEnabled = false,
 }: ExportModalProps) {
 	const { t } = useTranslation();
-	const debugMode = useDebugMode();
 	const board = useBoard();
-	const keyInputId = useId();
 	const codeTextareaId = useId();
 	const [copied, setCopied] = useState(false);
 	const [copiedShareLink, setCopiedShareLink] = useState(false);
@@ -70,11 +60,8 @@ export function ExportModal({
 	const exportedCode = useMemo(() => {
 		const { width, height } = recalculateBoardSize(board);
 		const exportBoard = { ...board, width, height };
-		return encodeStgy(
-			exportBoard,
-			encodeKey !== null ? { _debugKey: encodeKey } : undefined,
-		);
-	}, [board, encodeKey]);
+		return encodeStgy(exportBoard);
+	}, [board]);
 
 	const generateShareCode = (): string => {
 		const { width, height } = recalculateBoardSize(board);
@@ -96,18 +83,6 @@ export function ExportModal({
 		}
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
-	};
-
-	const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const val = e.target.value;
-		if (val === "") {
-			onEncodeKeyChange(null);
-		} else {
-			const num = Number.parseInt(val, 10);
-			if (!Number.isNaN(num)) {
-				onEncodeKeyChange(Math.max(0, Math.min(63, num)));
-			}
-		}
 	};
 
 	const handleCreateShareLink = async () => {
@@ -155,38 +130,6 @@ export function ExportModal({
 				</DialogHeader>
 
 				<div className="space-y-4">
-					{debugMode && (
-						<div className="space-y-2">
-							<Label htmlFor={keyInputId} className="flex items-center gap-2">
-								<Key className="size-4 text-primary" />
-								{t("exportModal.encryptionKey")}
-							</Label>
-							<div className="flex items-center gap-3">
-								<Input
-									id={keyInputId}
-									type="number"
-									min={0}
-									max={63}
-									value={encodeKey ?? ""}
-									onChange={handleKeyChange}
-									placeholder={t("exportModal.randomPlaceholder")}
-									className="w-24 font-mono"
-								/>
-								<span className="text-xs text-muted-foreground px-2 py-1 rounded bg-muted">
-									{encodeKey !== null ? (
-										<>
-											{t("exportModal.usingKey")}{" "}
-											<span className="text-primary">{encodeKey}</span>{" "}
-											{t("exportModal.useKey")}
-										</>
-									) : (
-										t("exportModal.usingRandomKey")
-									)}
-								</span>
-							</div>
-						</div>
-					)}
-
 					<div className="space-y-2">
 						<div className="flex items-center justify-between">
 							<Label htmlFor={codeTextareaId}>

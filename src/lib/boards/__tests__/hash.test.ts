@@ -68,47 +68,6 @@ describe("hash", () => {
 			expect(hash).toBeNull();
 		});
 
-		it("should produce same hash for same content with different encryption keys", async () => {
-			// Create a board
-			const board: BoardData = {
-				version: 2,
-				name: "Test Board",
-				backgroundId: 2,
-				objects: [
-					{
-						objectId: 47,
-						flags: {
-							visible: true,
-							flipHorizontal: false,
-							flipVertical: false,
-							locked: false,
-						},
-						position: { x: 100, y: 100 },
-						rotation: 0,
-						size: 100,
-						color: { r: 255, g: 0, b: 0, opacity: 50 },
-					},
-				],
-			};
-
-			// Encode with different debug keys (デバッグ用キー指定)
-			const stgyCode0 = encodeStgy(board, { _debugKey: 0 });
-			const stgyCode10 = encodeStgy(board, { _debugKey: 10 });
-			const stgyCode63 = encodeStgy(board, { _debugKey: 63 });
-
-			// The encoded strings should be different
-			expect(stgyCode0).not.toBe(stgyCode10);
-			expect(stgyCode0).not.toBe(stgyCode63);
-
-			// But the content hashes should be the same
-			const hash0 = await generateContentHash(stgyCode0);
-			const hash10 = await generateContentHash(stgyCode10);
-			const hash63 = await generateContentHash(stgyCode63);
-
-			expect(hash0).toBe(hash10);
-			expect(hash0).toBe(hash63);
-		});
-
 		it("should produce different hash for different content", async () => {
 			const board1: BoardData = {
 				version: 2,

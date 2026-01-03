@@ -8,12 +8,7 @@
 import pako from "pako";
 import { encodeBase64 } from "./base64";
 import { encryptCipher } from "./cipher";
-import {
-	KEY_CHAR_INDEX,
-	MAX_CIPHER_KEY,
-	STGY_PREFIX,
-	STGY_SUFFIX,
-} from "./constants";
+import { KEY_CHAR_INDEX, STGY_PREFIX, STGY_SUFFIX } from "./constants";
 import { calculateCRC32 } from "./crc32";
 import { serializeBoardData } from "./serializer";
 import { base64CharToValue, KEY_TABLE } from "./tables";
@@ -30,20 +25,11 @@ const REVERSE_KEY_TABLE: Record<number, string> = Object.fromEntries(
 );
 
 /**
- * エンコードオプション
- */
-export interface EncodeOptions {
-	/** デバッグ用: 暗号化キーを明示的に指定 (通常は使用しない) */
-	_debugKey?: number;
-}
-
-/**
  * BoardDataをstgy文字列にエンコード
  * @param board ボードデータ
- * @param options エンコードオプション
  * @returns [stgy:a...] 形式の文字列
  */
-export function encodeStgy(board: BoardData, options?: EncodeOptions): string {
+export function encodeStgy(board: BoardData): string {
 	// 1. BoardDataをバイナリにシリアライズ
 	const binaryData = serializeBoardData(board);
 
@@ -79,10 +65,7 @@ export function encodeStgy(board: BoardData, options?: EncodeOptions): string {
 
 	// 8. キー値の決定 (CRC32の最下位バイトの下位6bit)
 	// 例: CRC32 = 0x062e241d → 最下位バイト = 0x1d (29) → key = 29 & 0x3F = 29
-	const key =
-		options?._debugKey !== undefined
-			? Math.max(0, Math.min(MAX_CIPHER_KEY, options._debugKey))
-			: crc32 & 0x3f;
+	const key = crc32 & 0x3f;
 
 	// 9. キー文字を取得
 	const keyChar = REVERSE_KEY_TABLE[key];

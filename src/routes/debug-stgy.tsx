@@ -17,7 +17,6 @@ import {
 	type DecodeDebugInfo,
 	decodeStgyDebug,
 	encodeStgy,
-	extractKeyFromStgy,
 	hexDump,
 	parseBoardData,
 } from "@/lib/stgy";
@@ -59,9 +58,9 @@ function StgyDebugPage() {
 	const reEncodedCode = ((): string | null => {
 		if (!boardData) return null;
 		try {
-			const key = extractKeyFromStgy(inputCode.trim());
 			// ラウンドトリップテストでは元のサイズを保持（recalculateBoardSizeを呼ばない）
-			return encodeStgy(boardData, { _debugKey: key });
+			// キーはCRC32から決定的に計算される
+			return encodeStgy(boardData);
 		} catch (e) {
 			console.error("Encode error:", e);
 			return null;

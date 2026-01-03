@@ -152,8 +152,6 @@ export function EditorToolbar({
 		showExportModal,
 		openExportModal,
 		closeExportModal,
-		encodeKey,
-		setEncodeKey,
 	} = useImportExport();
 
 	// Settings modal state
@@ -167,7 +165,6 @@ export function EditorToolbar({
 		const result = executeImport();
 		if (result.success && result.board) {
 			if (result.key !== undefined) {
-				setEncodeKey(result.key);
 			}
 
 			// ボード管理に追加する場合は新しいボードを作成してそちらを開く
@@ -535,8 +532,6 @@ export function EditorToolbar({
 			{/* エクスポートモーダル */}
 			{showExportModal && (
 				<ExportModal
-					encodeKey={encodeKey}
-					onEncodeKeyChange={setEncodeKey}
 					onClose={closeExportModal}
 					shortLinksEnabled={shortLinksEnabled}
 				/>
