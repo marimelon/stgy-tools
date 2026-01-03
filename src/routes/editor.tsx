@@ -495,6 +495,8 @@ function EditorPage() {
 							currentBoardId={currentBoardId}
 							isMemoryOnlyMode={isMemoryOnlyMode}
 							shortLinksEnabled={featureFlags.shortLinksEnabled}
+							showBoardManager={showBoardManager}
+							onCloseBoardManager={() => setShowBoardManager(false)}
 							onOpenBoardManager={() => setShowBoardManager(true)}
 							onSaveBoard={(name, stgyCode, groups, gridSettings, objects) => {
 								if (currentBoardId && !isMemoryOnlyMode) {
@@ -535,6 +537,7 @@ function EditorPage() {
 								setEditorKey((prev) => prev + 1);
 							}}
 							onSelectBoard={handleOpenBoard}
+							onCreateNewBoard={handleCreateNewBoard}
 							onDuplicateBoard={(id) => {
 								const board = getBoard(id);
 								if (!board) return;
@@ -547,17 +550,6 @@ function EditorPage() {
 							}}
 						/>
 					</EditorStoreProvider>
-
-					{/* Board Manager Modal */}
-					{!isMemoryOnlyMode && (
-						<BoardManagerModal
-							open={showBoardManager}
-							onClose={() => setShowBoardManager(false)}
-							currentBoardId={currentBoardId}
-							onOpenBoard={handleOpenBoard}
-							onCreateNewBoard={handleCreateNewBoard}
-						/>
-					)}
 
 					{/* Decode Error Dialog */}
 					<DecodeErrorDialog
@@ -750,8 +742,11 @@ function EditorContent({
 /** EditorWithTabsのProps */
 interface EditorWithTabsProps extends EditorContentProps {
 	boards: StoredBoard[];
+	showBoardManager: boolean;
+	onCloseBoardManager: () => void;
 	onSelectBoard: (boardId: string) => boolean;
 	onDuplicateBoard: (boardId: string) => void;
+	onCreateNewBoard: () => void;
 }
 
 /**
@@ -759,8 +754,11 @@ interface EditorWithTabsProps extends EditorContentProps {
  */
 function EditorWithTabs({
 	boards,
+	showBoardManager,
+	onCloseBoardManager,
 	onSelectBoard,
 	onDuplicateBoard,
+	onCreateNewBoard,
 	currentBoardId,
 	isMemoryOnlyMode,
 	...contentProps
@@ -801,27 +799,49 @@ function EditorWithTabs({
 		}
 	}, [activeTabId, currentBoardId, isMemoryOnlyMode, onSelectBoard]);
 
+	// 統一的な「ボードを開く」ハンドラ（タブ切り替え + ボード読み込み）
+	const handleOpenBoard = useCallback(
+		(boardId: string) => {
+			// タブを追加または切り替え（既存タブの場合はアクティブに切り替わる）
+			addTab(boardId);
+			// ボードを開く
+			onSelectBoard(boardId);
+		},
+		[addTab, onSelectBoard],
+	);
+
 	// 未保存状態のボードIDセット（今後実装）
 	const unsavedBoardIds = useMemo(() => new Set<string>(), []);
 
 	return (
-		<EditorContent
-			{...contentProps}
-			currentBoardId={currentBoardId}
-			isMemoryOnlyMode={isMemoryOnlyMode}
-		>
-			{/* タブバー */}
+		<>
+			<EditorContent
+				{...contentProps}
+				currentBoardId={currentBoardId}
+				isMemoryOnlyMode={isMemoryOnlyMode}
+			>
+				{/* タブバー */}
+				{!isMemoryOnlyMode && (
+					<BoardTabs
+						boards={boards}
+						unsavedBoardIds={unsavedBoardIds}
+						onAddClick={contentProps.onOpenBoardManager}
+						onSelectBoard={handleOpenBoard}
+						onDuplicateBoard={onDuplicateBoard}
+					/>
+				)}
+			</EditorContent>
+
+			{/* Board Manager Modal */}
 			{!isMemoryOnlyMode && (
-				<BoardTabs
-					boards={boards}
-					unsavedBoardIds={unsavedBoardIds}
-					onAddClick={contentProps.onOpenBoardManager}
-					onSelectBoard={(boardId) => {
-						onSelectBoard(boardId);
-					}}
-					onDuplicateBoard={onDuplicateBoard}
+				<BoardManagerModal
+					open={showBoardManager}
+					onClose={onCloseBoardManager}
+					currentBoardId={currentBoardId}
+					onOpenBoard={handleOpenBoard}
+					onCreateNewBoard={onCreateNewBoard}
 				/>
 			)}
-		</EditorContent>
+		</>
 	);
 }
