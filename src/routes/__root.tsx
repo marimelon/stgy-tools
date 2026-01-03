@@ -4,13 +4,13 @@ import {
 	HeadContent,
 	Outlet,
 	Scripts,
-	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 // Initialize i18n
-import i18n from "../lib/i18n";
+import i18n, { isSupportedLang, type SupportedLang } from "../lib/i18n";
+import { resolveLanguageServer } from "../lib/i18n/server";
 import {
 	generateWebApplicationSchema,
 	OGP_DEFAULTS,
@@ -22,17 +22,17 @@ import appCss from "../styles.css?url";
 const jsonLdScript = JSON.stringify(generateWebApplicationSchema());
 
 export const Route = createRootRoute({
-	beforeLoad: ({ search }) => {
-		// SSRでi18nの言語を設定（URLにlangパラメータがある場合のみ）
-		const langParam = (search as { lang?: string }).lang;
-		const supportedLangs = SITE_CONFIG.locale.supported;
-		const isSupported = supportedLangs.includes(
-			langParam as (typeof supportedLangs)[number],
-		);
-		// URLにlangがある場合のみi18nを同期（なければlocalStorageの設定を維持）
-		if (isSupported && i18n.language !== langParam) {
-			i18n.changeLanguage(langParam);
+	loader: async () => {
+		// サーバー関数を呼び出してAccept-Languageから言語を判定
+		// URLパラメータはサーバー関数内でリクエストURLから取得
+		const lang = await resolveLanguageServer();
+
+		// i18nの言語を同期（SSR時）
+		if (i18n.language !== lang) {
+			i18n.changeLanguage(lang);
 		}
+
+		return { lang };
 	},
 	head: () => ({
 		meta: [
@@ -126,33 +126,16 @@ const initialStyle = {
 function RootDocument() {
 	const { i18n } = useTranslation();
 
-	// SSRでも動作するようにURLの検索パラメータから言語を取得
-	const search = useRouterState({
-		select: (s) => s.location.search as { lang?: string },
-	});
+	// loaderで決定した言語を取得
+	const loaderData = Route.useLoaderData() as { lang?: SupportedLang };
 
-	// サポートされている言語のみ認識
-	const supportedLangs = SITE_CONFIG.locale.supported;
-	const isUrlLangSupported = supportedLangs.includes(
-		search.lang as (typeof supportedLangs)[number],
-	);
+	// i18nの現在の言語（"ja-JP" → "ja"）
+	const currentI18nLang = i18n.language.split("-")[0];
 
-	// html lang属性の決定: URLパラメータ > i18nの現在の言語 > デフォルト
-	const currentI18nLang = i18n.language.split("-")[0] as "ja" | "en";
-	const lang = isUrlLangSupported
-		? (search.lang as "ja" | "en")
-		: supportedLangs.includes(currentI18nLang)
-			? currentI18nLang
-			: "en";
-
-	// URLにlangがある場合のみi18nを同期（クライアントサイドのみ）
-	if (
-		typeof window !== "undefined" &&
-		isUrlLangSupported &&
-		i18n.language !== lang
-	) {
-		i18n.changeLanguage(lang);
-	}
+	// html lang属性: loaderで決定した言語 > i18nの言語 > デフォルト
+	const lang: SupportedLang =
+		loaderData?.lang ??
+		(isSupportedLang(currentI18nLang) ? currentI18nLang : "en");
 
 	// ハイドレーション後にトランジションを有効化（FOUC対策）
 	useEffect(() => {
