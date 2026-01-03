@@ -32,9 +32,6 @@ import { createShortLinkFn } from "@/lib/server/shortLinks/serverFn";
 import { useDebugMode } from "@/lib/settings";
 import { encodeStgy } from "@/lib/stgy";
 
-/** 共有リンク用の固定キー */
-const SHARE_LINK_KEY = 61;
-
 /**
  * エクスポートモーダルのProps
  */
@@ -75,14 +72,14 @@ export function ExportModal({
 		const exportBoard = { ...board, width, height };
 		return encodeStgy(
 			exportBoard,
-			encodeKey !== null ? { key: encodeKey } : undefined,
+			encodeKey !== null ? { _debugKey: encodeKey } : undefined,
 		);
 	}, [board, encodeKey]);
 
 	const generateShareCode = (): string => {
 		const { width, height } = recalculateBoardSize(board);
 		const exportBoard = { ...board, width, height };
-		return encodeStgy(exportBoard, { key: SHARE_LINK_KEY });
+		return encodeStgy(exportBoard);
 	};
 
 	const handleCopy = async () => {

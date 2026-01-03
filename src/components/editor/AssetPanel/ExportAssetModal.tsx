@@ -30,7 +30,7 @@ export function ExportAssetModal({ asset, onClose }: ExportAssetModalProps) {
 	// アセットをstgyコードにエンコード（キー固定で一貫性を確保）
 	const stgyCode = useMemo(() => {
 		const boardData = assetToBoardData(asset);
-		return encodeStgy(boardData, { key: 61 });
+		return encodeStgy(boardData);
 	}, [asset]);
 
 	const handleCopy = async () => {

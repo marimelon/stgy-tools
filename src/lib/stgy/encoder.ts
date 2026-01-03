@@ -9,7 +9,6 @@ import pako from "pako";
 import { encodeBase64 } from "./base64";
 import { encryptCipher } from "./cipher";
 import {
-	CIPHER_KEY_RANGE,
 	KEY_CHAR_INDEX,
 	MAX_CIPHER_KEY,
 	STGY_PREFIX,
@@ -34,8 +33,8 @@ const REVERSE_KEY_TABLE: Record<number, string> = Object.fromEntries(
  * エンコードオプション
  */
 export interface EncodeOptions {
-	/** 暗号化キー (0-63)。未指定の場合はランダム */
-	key?: number;
+	/** デバッグ用: 暗号化キーを明示的に指定 (通常は使用しない) */
+	_debugKey?: number;
 }
 
 /**
@@ -78,11 +77,12 @@ export function encodeStgy(board: BoardData, options?: EncodeOptions): string {
 	// 7. Base64エンコード
 	const base64String = encodeBase64(finalBinary);
 
-	// 8. キー値の決定 (指定されていればそれを使用、なければランダム)
+	// 8. キー値の決定 (CRC32の最下位バイトの下位6bit)
+	// 例: CRC32 = 0x062e241d → 最下位バイト = 0x1d (29) → key = 29 & 0x3F = 29
 	const key =
-		options?.key !== undefined
-			? Math.max(0, Math.min(MAX_CIPHER_KEY, options.key))
-			: Math.floor(Math.random() * CIPHER_KEY_RANGE);
+		options?._debugKey !== undefined
+			? Math.max(0, Math.min(MAX_CIPHER_KEY, options._debugKey))
+			: crc32 & 0x3f;
 
 	// 9. キー文字を取得
 	const keyChar = REVERSE_KEY_TABLE[key];

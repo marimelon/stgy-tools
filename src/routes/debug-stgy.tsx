@@ -61,7 +61,7 @@ function StgyDebugPage() {
 		try {
 			const key = extractKeyFromStgy(inputCode.trim());
 			// ラウンドトリップテストでは元のサイズを保持（recalculateBoardSizeを呼ばない）
-			return encodeStgy(boardData, { key });
+			return encodeStgy(boardData, { _debugKey: key });
 		} catch (e) {
 			console.error("Encode error:", e);
 			return null;
