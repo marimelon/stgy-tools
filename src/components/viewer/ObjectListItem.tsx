@@ -13,7 +13,7 @@ interface ObjectListItemProps {
 	index: number;
 	object: BoardObject;
 	isSelected: boolean;
-	onSelect: (index: number) => void;
+	onSelect: () => void;
 }
 
 /**
@@ -41,7 +41,7 @@ export function ObjectListItem({
 	return (
 		<button
 			type="button"
-			onClick={() => onSelect(index)}
+			onClick={onSelect}
 			title={fullText}
 			className={`
 				w-full flex items-center gap-2 px-3 py-1.5 text-left text-sm

@@ -20,6 +20,7 @@ import {
 import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
 import { createShortLinkFn } from "@/lib/server/shortLinks/serverFn";
 import { decodeStgy } from "@/lib/stgy/decoder";
+import { assignBoardObjectIds } from "@/lib/stgy/id";
 import { parseBoardData } from "@/lib/stgy/parser";
 import type { BoardData } from "@/lib/stgy/types";
 
@@ -404,7 +405,8 @@ function ImageGeneratePage() {
 			let parsedBoardData: BoardData;
 			try {
 				const binary = decodeStgy(codeToUse.trim());
-				parsedBoardData = parseBoardData(binary);
+				const parsed = parseBoardData(binary);
+				parsedBoardData = assignBoardObjectIds(parsed);
 			} catch (e) {
 				const message =
 					e instanceof Error ? e.message : t("imageGenerator.unknownError");

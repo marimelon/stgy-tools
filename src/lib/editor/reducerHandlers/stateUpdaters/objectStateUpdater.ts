@@ -8,16 +8,16 @@ import { cloneBoard, updateObjectInBoard } from "../utils";
 /**
  * 位置更新のMapを適用してボードを更新
  * @param board 現在のボードデータ
- * @param updates インデックス → 位置のMap
+ * @param updates オブジェクトID → 位置のMap
  * @returns 更新されたボードデータ
  */
 export function applyPositionUpdates(
 	board: BoardData,
-	updates: Map<number, Position>,
+	updates: Map<string, Position>,
 ): BoardData {
 	let newBoard = cloneBoard(board);
-	for (const [index, position] of updates) {
-		newBoard = updateObjectInBoard(newBoard, index, { position });
+	for (const [objectId, position] of updates) {
+		newBoard = updateObjectInBoard(newBoard, objectId, { position });
 	}
 	return newBoard;
 }
@@ -25,16 +25,16 @@ export function applyPositionUpdates(
 /**
  * オブジェクト更新のMapを適用してボードを更新
  * @param board 現在のボードデータ
- * @param updates インデックス → オブジェクト更新のMap
+ * @param updates オブジェクトID → オブジェクト更新のMap
  * @returns 更新されたボードデータ
  */
 export function applyObjectUpdates(
 	board: BoardData,
-	updates: Map<number, Partial<BoardObject>>,
+	updates: Map<string, Partial<BoardObject>>,
 ): BoardData {
 	let newBoard = cloneBoard(board);
-	for (const [index, update] of updates) {
-		newBoard = updateObjectInBoard(newBoard, index, update);
+	for (const [objectId, update] of updates) {
+		newBoard = updateObjectInBoard(newBoard, objectId, update);
 	}
 	return newBoard;
 }

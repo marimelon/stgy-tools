@@ -1,8 +1,10 @@
 /**
  * BoardData用Zodスキーマ（バリデーション）
+ * 外部JSONからのインポート用。idフィールドはオプションで、
+ * インポート後にassignObjectIdsで付与する想定。
  */
 import { z } from "zod/v4";
-import type { BoardData } from "./types";
+import type { ParsedBoardData } from "./types";
 
 /**
  * 座標スキーマ
@@ -33,7 +35,7 @@ const ObjectFlagsSchema = z.object({
 });
 
 /**
- * ボードオブジェクトスキーマ
+ * ボードオブジェクトスキーマ（IDなし、外部入力用）
  */
 const BoardObjectSchema = z
 	.object({
@@ -48,7 +50,7 @@ const BoardObjectSchema = z
 		param3: z.number().optional(),
 		text: z.string().optional(),
 	})
-	.passthrough(); // _sizePaddingByte等の内部フィールドを保持
+	.passthrough();
 
 /**
  * ボードデータスキーマ
@@ -67,16 +69,19 @@ const BoardDataSchema = z
 export { BoardDataSchema, BoardObjectSchema };
 
 /**
- * JSON文字列からBoardDataをパースしてバリデーション
+ * JSON文字列からParsedBoardDataをパースしてバリデーション
+ * 戻り値のオブジェクトにはIDが含まれない。assignObjectIdsでIDを付与する。
  */
 export function safeParseBoardData(
 	json: string,
-): { success: true; data: BoardData } | { success: false; errors: string[] } {
+):
+	| { success: true; data: ParsedBoardData }
+	| { success: false; errors: string[] } {
 	try {
 		const parsed: unknown = JSON.parse(json);
 		const result = BoardDataSchema.safeParse(parsed);
 		if (result.success) {
-			return { success: true, data: result.data as BoardData };
+			return { success: true, data: result.data as ParsedBoardData };
 		}
 		return {
 			success: false,

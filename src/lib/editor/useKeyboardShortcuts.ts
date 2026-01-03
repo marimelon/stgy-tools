@@ -13,10 +13,7 @@ import {
 	useIsFocusMode,
 	useSelectedGroup,
 } from "./hooks/useEditorDerived";
-import {
-	useEditingTextIndex,
-	useSelectedIndices,
-} from "./hooks/useEditorStore";
+import { useEditingTextId, useSelectedIds } from "./hooks/useEditorStore";
 
 /** 移動量 */
 const MOVE_STEP = 1;
@@ -29,8 +26,8 @@ export function useKeyboardShortcuts() {
 	const { t } = useTranslation();
 
 	// State
-	const selectedIndices = useSelectedIndices();
-	const editingTextIndex = useEditingTextIndex();
+	const selectedIds = useSelectedIds();
+	const editingTextId = useEditingTextId();
 
 	// Derived state
 	const canUndo = useCanUndo();
@@ -59,15 +56,15 @@ export function useKeyboardShortcuts() {
 		moveSelectedLayer,
 	} = useEditorActions();
 
-	const hasSelection = selectedIndices.length > 0;
-	const hasSingleSelection = selectedIndices.length === 1;
+	const hasSelection = selectedIds.length > 0;
+	const hasSingleSelection = selectedIds.length === 1;
 
 	/**
 	 * オブジェクトを移動
 	 */
 	const handleMove = (deltaX: number, deltaY: number) => {
-		if (selectedIndices.length === 0) return;
-		moveObjects(selectedIndices, deltaX, deltaY);
+		if (selectedIds.length === 0) return;
+		moveObjects(selectedIds, deltaX, deltaY);
 		commitHistory(t("history.moveObject"));
 	};
 
@@ -76,7 +73,7 @@ export function useKeyboardShortcuts() {
 	 */
 	const handleKeyDown = (e: KeyboardEvent) => {
 		// テキスト編集中は無視
-		if (editingTextIndex !== null) {
+		if (editingTextId !== null) {
 			return;
 		}
 

@@ -16,9 +16,10 @@ export function createLayerActions(store: EditorStore) {
 	/**
 	 * レイヤーを移動
 	 */
-	const moveLayer = (index: number, direction: LayerDirection) => {
+	const moveLayer = (objectId: string, direction: LayerDirection) => {
 		store.setState((state) => {
 			const objects = state.board.objects;
+			const index = objects.findIndex((obj) => obj.id === objectId);
 
 			// 範囲外チェック
 			if (index < 0 || index >= objects.length) return state;
@@ -48,22 +49,6 @@ export function createLayerActions(store: EditorStore) {
 
 			newBoard.objects.splice(newIndex, 0, movedObject);
 
-			// グループのインデックスを更新
-			const updatedGroups = state.groups.map((group) => ({
-				...group,
-				objectIndices: group.objectIndices.map((i) => {
-					if (i === index) return newIndex;
-					if (index < newIndex) {
-						// 下に移動: index+1 ~ newIndex の範囲を -1
-						if (i > index && i <= newIndex) return i - 1;
-					} else {
-						// 上に移動: newIndex ~ index-1 の範囲を +1
-						if (i >= newIndex && i < index) return i + 1;
-					}
-					return i;
-				}),
-			}));
-
 			const descriptions: Record<LayerDirection, string> = {
 				front: i18n.t("history.bringToFront"),
 				back: i18n.t("history.sendToBack"),
@@ -74,12 +59,8 @@ export function createLayerActions(store: EditorStore) {
 			return {
 				...state,
 				board: newBoard,
-				groups: updatedGroups,
-				selectedIndices: [newIndex],
-				...pushHistory(
-					{ ...state, board: newBoard, groups: updatedGroups },
-					descriptions[direction],
-				),
+				selectedIds: [objectId],
+				...pushHistory({ ...state, board: newBoard }, descriptions[direction]),
 			};
 		});
 	};
@@ -89,16 +70,17 @@ export function createLayerActions(store: EditorStore) {
 	 */
 	const moveSelectedLayer = (direction: LayerDirection) => {
 		const state = store.state;
-		if (state.selectedIndices.length !== 1) return;
-		moveLayer(state.selectedIndices[0], direction);
+		if (state.selectedIds.length !== 1) return;
+		moveLayer(state.selectedIds[0], direction);
 	};
 
 	/**
 	 * レイヤーを任意の位置に移動（ドラッグ&ドロップ用）
 	 */
-	const reorderLayer = (fromIndex: number, toIndex: number) => {
+	const reorderLayer = (objectId: string, toIndex: number) => {
 		store.setState((state) => {
 			const objects = state.board.objects;
+			const fromIndex = objects.findIndex((obj) => obj.id === objectId);
 
 			// 範囲外チェック
 			if (fromIndex < 0 || fromIndex >= objects.length) return state;
@@ -113,30 +95,12 @@ export function createLayerActions(store: EditorStore) {
 			const adjustedToIndex = toIndex > fromIndex ? toIndex - 1 : toIndex;
 			newBoard.objects.splice(adjustedToIndex, 0, movedObject);
 
-			// グループのインデックスを更新
-			const updatedGroups = state.groups.map((group) => ({
-				...group,
-				objectIndices: group.objectIndices.map((i) => {
-					if (i === fromIndex) return adjustedToIndex;
-					// fromIndex から adjustedToIndex への移動によるシフト
-					if (fromIndex < adjustedToIndex) {
-						// 下に移動: fromIndex+1 ~ adjustedToIndex の範囲を -1
-						if (i > fromIndex && i <= adjustedToIndex) return i - 1;
-					} else {
-						// 上に移動: adjustedToIndex ~ fromIndex-1 の範囲を +1
-						if (i >= adjustedToIndex && i < fromIndex) return i + 1;
-					}
-					return i;
-				}),
-			}));
-
 			return {
 				...state,
 				board: newBoard,
-				groups: updatedGroups,
-				selectedIndices: [adjustedToIndex],
+				selectedIds: [objectId],
 				...pushHistory(
-					{ ...state, board: newBoard, groups: updatedGroups },
+					{ ...state, board: newBoard },
 					i18n.t("history.reorderLayers"),
 				),
 			};
@@ -152,23 +116,30 @@ export function createLayerActions(store: EditorStore) {
 			const group = state.groups.find((g) => g.id === groupId);
 			if (!group) return state;
 
-			const sortedIndices = [...group.objectIndices].sort((a, b) => a - b);
-			const groupSize = sortedIndices.length;
-			const firstIndex = sortedIndices[0];
+			const newBoard = cloneBoard(state.board);
+
+			// グループ内オブジェクトの現在のインデックスを取得（配列順）
+			const groupIndices = group.objectIds
+				.map((id) => newBoard.objects.findIndex((obj) => obj.id === id))
+				.filter((idx) => idx !== -1)
+				.sort((a, b) => a - b);
+
+			if (groupIndices.length === 0) return state;
+
+			const groupSize = groupIndices.length;
+			const firstIndex = groupIndices[0];
 
 			// 同じ位置への移動は無視
 			if (toIndex === firstIndex || toIndex === firstIndex + groupSize) {
 				return state;
 			}
 
-			const newBoard = cloneBoard(state.board);
-
 			// グループ内オブジェクトを取り出す（インデックス順）
-			const groupObjects = sortedIndices.map((i) => newBoard.objects[i]);
+			const groupObjects = groupIndices.map((i) => newBoard.objects[i]);
 
 			// 削除（後ろから削除してインデックスがずれないように）
-			for (let i = sortedIndices.length - 1; i >= 0; i--) {
-				newBoard.objects.splice(sortedIndices[i], 1);
+			for (let i = groupIndices.length - 1; i >= 0; i--) {
+				newBoard.objects.splice(groupIndices[i], 1);
 			}
 
 			// 挿入位置を計算（削除によりインデックスがずれる可能性）
@@ -181,42 +152,15 @@ export function createLayerActions(store: EditorStore) {
 			// 挿入
 			newBoard.objects.splice(insertAt, 0, ...groupObjects);
 
-			// 新しいグループのインデックス
-			const newGroupIndices = groupObjects.map((_, i) => insertAt + i);
-
-			// 全グループのインデックスを再計算
-			const updatedGroups = state.groups.map((g) => {
-				if (g.id === groupId) {
-					return { ...g, objectIndices: newGroupIndices };
-				}
-
-				// 他のグループのインデックスも調整
-				const newIndices = g.objectIndices.map((idx) => {
-					// 削除された範囲にあったインデックスの調整
-					let newIdx = idx;
-
-					// 削除による影響
-					const deletedBefore = sortedIndices.filter((si) => si < idx).length;
-					newIdx -= deletedBefore;
-
-					// 挿入による影響
-					if (newIdx >= insertAt) {
-						newIdx += groupSize;
-					}
-
-					return newIdx;
-				});
-
-				return { ...g, objectIndices: newIndices };
-			});
+			// 選択を更新（IDは変わらない）
+			const newSelectedIds = groupObjects.map((obj) => obj.id);
 
 			return {
 				...state,
 				board: newBoard,
-				groups: updatedGroups,
-				selectedIndices: newGroupIndices,
+				selectedIds: newSelectedIds,
 				...pushHistory(
-					{ ...state, board: newBoard, groups: updatedGroups },
+					{ ...state, board: newBoard },
 					i18n.t("history.groupMove"),
 				),
 			};

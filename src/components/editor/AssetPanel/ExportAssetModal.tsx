@@ -10,12 +10,12 @@ import { useTranslation } from "react-i18next";
 import { Modal } from "@/components/editor/Modal";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { assetToBoardData, type StoredAsset } from "@/lib/assets";
+import { type AssetWithRuntimeIds, assetToBoardData } from "@/lib/assets";
 import { encodeStgy } from "@/lib/stgy";
 
 interface ExportAssetModalProps {
 	/** エクスポート対象のアセット */
-	asset: StoredAsset;
+	asset: AssetWithRuntimeIds;
 	/** 閉じるときのコールバック */
 	onClose: () => void;
 }

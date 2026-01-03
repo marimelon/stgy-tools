@@ -7,7 +7,7 @@
 
 import { Effect } from "@tanstack/store";
 import { useEffect, useRef, useState } from "react";
-import { type BoardData, encodeStgy } from "@/lib/stgy";
+import { type BoardData, type BoardObject, encodeStgy } from "@/lib/stgy";
 import { recalculateBoardSize } from "../factory";
 import { getEditorStore } from "../store/editorStore";
 import type { GridSettings, ObjectGroup } from "../types";
@@ -21,6 +21,7 @@ export type SaveBoardCallback = (
 	stgyCode: string,
 	groups: ObjectGroup[],
 	gridSettings: GridSettings,
+	objects: BoardObject[],
 ) => void;
 
 /** useAutoSave のオプション */
@@ -72,7 +73,7 @@ export function useAutoSave(options: UseAutoSaveOptions) {
 			const boardToSave = { ...board, width, height };
 			const stgyCode = encodeStgy(boardToSave);
 
-			onSave(board.name, stgyCode, groups, gridSettings);
+			onSave(board.name, stgyCode, groups, gridSettings, board.objects);
 			setLastSavedAt(new Date());
 		};
 

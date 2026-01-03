@@ -16,7 +16,7 @@ import {
 	calculatePreviewViewBox,
 	useAssets,
 } from "@/lib/assets";
-import { decodeStgy, parseBoardData } from "@/lib/stgy";
+import { assignBoardObjectIds, decodeStgy, parseBoardData } from "@/lib/stgy";
 
 interface ImportAssetModalProps {
 	/** 閉じるときのコールバック */
@@ -60,7 +60,8 @@ export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
 
 		try {
 			const decoded = decodeStgy(stgyCode.trim());
-			const boardData = parseBoardData(decoded);
+			const parsed = parseBoardData(decoded);
+			const boardData = assignBoardObjectIds(parsed);
 			const assetData = boardDataToAssetData(boardData);
 
 			if (assetData.objects.length === 0) {
@@ -184,18 +185,9 @@ export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
 								aria-label={t("assetPanel.importModal.preview")}
 							>
 								{/* SVGは後から描画したものが上に表示されるため、逆順で描画 */}
-								{[...parseResult.objects].reverse().map((obj, index) => {
-									const originalIndex = parseResult.objects.length - 1 - index;
-									const key = `preview-${obj.position.x}-${obj.position.y}-${obj.objectId}-${originalIndex}`;
-									return (
-										<ObjectRenderer
-											key={key}
-											object={obj}
-											index={originalIndex}
-											selected={false}
-										/>
-									);
-								})}
+								{[...parseResult.objects].reverse().map((obj) => (
+									<ObjectRenderer key={obj.id} object={obj} selected={false} />
+								))}
 							</svg>
 						) : (
 							<div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">

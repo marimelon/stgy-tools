@@ -57,8 +57,8 @@ export function useEditorActions(): EditorActions {
 
 		const updateSelectedObjectsBatch = (updates: BatchUpdatePayload) => {
 			const state = store.state;
-			if (state.selectedIndices.length === 0) return;
-			baseActions.updateObjectsBatch(state.selectedIndices, updates);
+			if (state.selectedIds.length === 0) return;
+			baseActions.updateObjectsBatch(state.selectedIds, updates);
 		};
 
 		const updateBoardMetaTyped = (updates: {
@@ -70,20 +70,20 @@ export function useEditorActions(): EditorActions {
 
 		const alignSelected = (alignment: AlignmentType) => {
 			const state = store.state;
-			if (state.selectedIndices.length < 2) return;
-			baseActions.alignObjects(state.selectedIndices, alignment);
+			if (state.selectedIds.length < 2) return;
+			baseActions.alignObjects(state.selectedIds, alignment);
 		};
 
 		const deleteSelected = () => {
 			const state = store.state;
-			if (state.selectedIndices.length === 0) return;
-			baseActions.deleteObjects(state.selectedIndices);
+			if (state.selectedIds.length === 0) return;
+			baseActions.deleteObjects(state.selectedIds);
 		};
 
 		const duplicateSelected = () => {
 			const state = store.state;
-			if (state.selectedIndices.length === 0) return;
-			baseActions.duplicateObjects(state.selectedIndices);
+			if (state.selectedIds.length === 0) return;
+			baseActions.duplicateObjects(state.selectedIds);
 		};
 
 		const copySelected = () => {
@@ -92,8 +92,8 @@ export function useEditorActions(): EditorActions {
 
 		const groupSelected = () => {
 			const state = store.state;
-			if (state.selectedIndices.length < 2) return;
-			baseActions.groupObjects(state.selectedIndices);
+			if (state.selectedIds.length < 2) return;
+			baseActions.groupObjects(state.selectedIds);
 		};
 
 		return {

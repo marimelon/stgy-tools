@@ -9,25 +9,25 @@ import type { EditorState } from "../../types";
  */
 export function handleSelectObject(
 	state: EditorState,
-	payload: { index: number; additive?: boolean },
+	payload: { objectId: string; additive?: boolean },
 ): EditorState {
-	const { index, additive } = payload;
+	const { objectId, additive } = payload;
 
 	if (additive) {
 		// 追加選択モード (Shift + クリック)
-		const exists = state.selectedIndices.includes(index);
+		const exists = state.selectedIds.includes(objectId);
 		return {
 			...state,
-			selectedIndices: exists
-				? state.selectedIndices.filter((i) => i !== index)
-				: [...state.selectedIndices, index],
+			selectedIds: exists
+				? state.selectedIds.filter((id) => id !== objectId)
+				: [...state.selectedIds, objectId],
 		};
 	}
 
 	// 単一選択
 	return {
 		...state,
-		selectedIndices: [index],
+		selectedIds: [objectId],
 	};
 }
 
@@ -36,11 +36,11 @@ export function handleSelectObject(
  */
 export function handleSelectObjects(
 	state: EditorState,
-	payload: { indices: number[] },
+	payload: { objectIds: string[] },
 ): EditorState {
 	return {
 		...state,
-		selectedIndices: payload.indices,
+		selectedIds: payload.objectIds,
 	};
 }
 
@@ -50,6 +50,6 @@ export function handleSelectObjects(
 export function handleDeselectAll(state: EditorState): EditorState {
 	return {
 		...state,
-		selectedIndices: [],
+		selectedIds: [],
 	};
 }

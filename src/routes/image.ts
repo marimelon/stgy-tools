@@ -13,6 +13,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { renderImage } from "@/lib/server/imageRenderer";
 import { isShortLinksEnabled, resolveShortId } from "@/lib/server/shortLinks";
 import { decodeStgy } from "@/lib/stgy/decoder";
+import { assignBoardObjectIds } from "@/lib/stgy/id";
 import { parseBoardData } from "@/lib/stgy/parser";
 
 /** デフォルトの出力幅 */
@@ -152,7 +153,8 @@ export const Route = createFileRoute("/image")({
 					const binary = decodeStgy(code);
 
 					// 2. バイナリをパース
-					const boardData = parseBoardData(binary);
+					const parsed = parseBoardData(binary);
+					const boardData = assignBoardObjectIds(parsed);
 
 					// 3. 画像をレンダリング（環境に応じて自動的にローカル/外部を選択）
 					const result = await renderImage({

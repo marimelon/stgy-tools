@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ObjectRenderer } from "@/components/board";
 import { DebugHeader } from "@/components/debug/DebugHeader";
 import { generateDebugPageMeta } from "@/lib/seo";
-import type { BoardObject } from "@/lib/stgy";
+import type { BoardObjectWithoutId } from "@/lib/stgy";
 import { ObjectIds, ObjectNames } from "@/lib/stgy";
 
 const seo = generateDebugPageMeta("Object ID Debug View");
@@ -17,8 +17,8 @@ const ALL_OBJECT_IDS = Object.keys(ObjectNames)
 	.map(Number)
 	.sort((a, b) => a - b);
 
-/** デフォルトのオブジェクトを生成 */
-function createDefaultObject(objectId: number): BoardObject {
+/** デフォルトのオブジェクトを生成（デバッグ用、IDなし） */
+function createDefaultObject(objectId: number): BoardObjectWithoutId {
 	return {
 		objectId,
 		flags: {
@@ -71,7 +71,10 @@ function ObjectPreview({ objectId }: { objectId: number }) {
 				role="img"
 				aria-label={`Object preview: ${name}`}
 			>
-				<ObjectRenderer object={object} index={0} selected={false} />
+				<ObjectRenderer
+					object={{ ...object, id: `debug-${objectId}` }}
+					selected={false}
+				/>
 			</svg>
 			<div className="mt-2 text-center">
 				<div className="text-xs font-mono text-muted-foreground">

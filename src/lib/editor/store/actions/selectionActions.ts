@@ -11,22 +11,22 @@ export function createSelectionActions(store: EditorStore) {
 	/**
 	 * オブジェクトを選択
 	 */
-	const selectObject = (index: number, additive?: boolean) => {
+	const selectObject = (objectId: string, additive?: boolean) => {
 		store.setState((state) => {
 			if (additive) {
 				// 追加選択モード (Shift + クリック)
-				const exists = state.selectedIndices.includes(index);
+				const exists = state.selectedIds.includes(objectId);
 				return {
 					...state,
-					selectedIndices: exists
-						? state.selectedIndices.filter((i) => i !== index)
-						: [...state.selectedIndices, index],
+					selectedIds: exists
+						? state.selectedIds.filter((id) => id !== objectId)
+						: [...state.selectedIds, objectId],
 				};
 			}
 			// 単一選択
 			return {
 				...state,
-				selectedIndices: [index],
+				selectedIds: [objectId],
 			};
 		});
 	};
@@ -34,10 +34,10 @@ export function createSelectionActions(store: EditorStore) {
 	/**
 	 * 複数オブジェクトを選択
 	 */
-	const selectObjects = (indices: number[]) => {
+	const selectObjects = (objectIds: string[]) => {
 		store.setState((state) => ({
 			...state,
-			selectedIndices: indices,
+			selectedIds: objectIds,
 		}));
 	};
 
@@ -47,7 +47,7 @@ export function createSelectionActions(store: EditorStore) {
 	const deselectAll = () => {
 		store.setState((state) => ({
 			...state,
-			selectedIndices: [],
+			selectedIds: [],
 		}));
 	};
 
@@ -64,14 +64,14 @@ export function createSelectionActions(store: EditorStore) {
 				if (focusedGroup) {
 					return {
 						...state,
-						selectedIndices: focusedGroup.objectIndices,
+						selectedIds: focusedGroup.objectIds,
 					};
 				}
 			}
 			// 通常モードは全選択
 			return {
 				...state,
-				selectedIndices: state.board.objects.map((_, i) => i),
+				selectedIds: state.board.objects.map((obj) => obj.id),
 			};
 		});
 	};
@@ -85,7 +85,7 @@ export function createSelectionActions(store: EditorStore) {
 			if (group) {
 				return {
 					...state,
-					selectedIndices: group.objectIndices,
+					selectedIds: group.objectIds,
 				};
 			}
 			return state;

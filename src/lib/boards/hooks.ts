@@ -5,8 +5,19 @@
 import { useLiveQuery } from "@tanstack/react-db";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GridSettings, ObjectGroup } from "@/lib/editor/types";
-import { decodeStgy } from "@/lib/stgy";
+import {
+	assignObjectIds,
+	decodeStgy,
+	encodeStgy,
+	parseBoardData,
+} from "@/lib/stgy";
+import type { BoardData } from "@/lib/stgy/types";
 import { boardsCollection } from "./collection";
+import {
+	convertGroupsToIdBased,
+	convertGroupsToIndexBased,
+	type StoredObjectGroup,
+} from "./groupConversion";
 import { generateContentHash } from "./hash";
 import { DEFAULT_GRID_SETTINGS, type StoredBoard } from "./schema";
 
@@ -113,12 +124,12 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		};
 	}, []);
 
-	// Create a new board
+	// Create a new board (with index-based groups for storage)
 	const createBoard = useCallback(
 		async (
 			name: string,
 			stgyCode: string,
-			groups: ObjectGroup[] = [],
+			groups: StoredObjectGroup[] = [],
 			gridSettings: GridSettings = DEFAULT_GRID_SETTINGS,
 		): Promise<string> => {
 			const id = crypto.randomUUID();
@@ -140,7 +151,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		[],
 	);
 
-	// Update an existing board
+	// Update an existing board (with index-based groups for storage)
 	const updateBoard = useCallback(
 		async (
 			id: string,
@@ -288,6 +299,112 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		setError(null);
 	}, []);
 
+	/**
+	 * Load board with ID assignment (index → ID conversion)
+	 * @param id Board ID
+	 * @returns Board data with IDs assigned, or null if not found
+	 */
+	const loadBoard = useCallback(
+		(
+			id: string,
+		): {
+			board: BoardData;
+			groups: ObjectGroup[];
+			gridSettings: GridSettings;
+		} | null => {
+			const stored = boards.find((b) => b.id === id);
+			if (!stored) return null;
+
+			try {
+				const binary = decodeStgy(stored.stgyCode);
+				const parsed = parseBoardData(binary);
+
+				// Assign IDs to objects
+				const objectsWithId = assignObjectIds(parsed.objects);
+				const board: BoardData = {
+					...parsed,
+					objects: objectsWithId,
+				};
+
+				// Convert groups from index-based to ID-based
+				const groups = convertGroupsToIdBased(
+					stored.groups as StoredObjectGroup[],
+					objectsWithId,
+				);
+
+				return {
+					board,
+					groups,
+					gridSettings: stored.gridSettings,
+				};
+			} catch {
+				return null;
+			}
+		},
+		[boards],
+	);
+
+	/**
+	 * Save board with ID removal (ID → index conversion)
+	 * @param id Board ID
+	 * @param data Board data with IDs
+	 */
+	const saveBoard = useCallback(
+		async (
+			id: string,
+			data: {
+				board: BoardData;
+				groups: ObjectGroup[];
+				gridSettings: GridSettings;
+				encodeKey: number;
+			},
+		): Promise<void> => {
+			// Convert groups from ID-based to index-based
+			const storedGroups = convertGroupsToIndexBased(
+				data.groups,
+				data.board.objects,
+			);
+
+			// Encode board (IDs are not included in binary format)
+			const stgyCode = encodeStgy(data.board);
+
+			await updateBoard(id, {
+				stgyCode,
+				groups: storedGroups,
+				gridSettings: data.gridSettings,
+			});
+		},
+		[updateBoard],
+	);
+
+	/**
+	 * Create and save a new board with ID-based data
+	 * @returns New board ID
+	 */
+	const createAndSaveBoard = useCallback(
+		async (
+			name: string,
+			data: {
+				board: BoardData;
+				groups: ObjectGroup[];
+				gridSettings: GridSettings;
+				encodeKey: number;
+			},
+		): Promise<string> => {
+			// Convert groups from ID-based to index-based
+			const storedGroups = convertGroupsToIndexBased(
+				data.groups,
+				data.board.objects,
+			);
+
+			// Encode board (IDs are not included in binary format)
+			const stgyCode = encodeStgy(data.board);
+
+			return createBoard(name, stgyCode, storedGroups, data.gridSettings);
+		},
+		[createBoard],
+	);
+
 	return {
 		boards,
 		isLoading,
@@ -299,6 +416,10 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		duplicateBoard,
 		getBoard,
 		findBoardByContent,
+		// ID-based operations
+		loadBoard,
+		saveBoard,
+		createAndSaveBoard,
 		// Undo support
 		deletedBoard,
 		undoDelete,

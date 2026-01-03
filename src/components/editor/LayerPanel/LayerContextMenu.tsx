@@ -16,8 +16,8 @@ interface LayerContextMenuProps {
 	onClose: () => void;
 	/** オブジェクト一覧 */
 	objects: BoardObject[];
-	/** 選択中のインデックス */
-	selectedIndices: number[];
+	/** 選択中のID */
+	selectedIds: string[];
 	/** クリップボードにデータがあるか */
 	hasClipboard: boolean;
 	/** グループ化可能か */
@@ -35,9 +35,9 @@ interface LayerContextMenuProps {
 		delete: () => void;
 		group: () => void;
 		ungroup: (groupId: string) => void;
-		removeFromGroup: (objectIndex: number) => void;
-		toggleVisibility: (index: number) => void;
-		toggleLock: (index: number) => void;
+		removeFromGroup: (objectId: string) => void;
+		toggleVisibility: (objectId: string) => void;
+		toggleLock: (objectId: string) => void;
 		toggleGroupVisibility: (group: ObjectGroup) => void;
 		toggleGroupLock: (group: ObjectGroup) => void;
 		moveLayer: (direction: "front" | "back" | "forward" | "backward") => void;
@@ -72,7 +72,7 @@ export function LayerContextMenu({
 	menuState,
 	onClose,
 	objects,
-	selectedIndices,
+	selectedIds,
 	hasClipboard,
 	canGroup,
 	isGroupAllVisible,
@@ -86,8 +86,8 @@ export function LayerContextMenu({
 	const [isPositioned, setIsPositioned] = useState(false);
 
 	const { target } = menuState;
-	const hasSelection = selectedIndices.length > 0;
-	const singleSelection = selectedIndices.length === 1;
+	const hasSelection = selectedIds.length > 0;
+	const singleSelection = selectedIds.length === 1;
 
 	// メニュー位置を計算
 	useLayoutEffect(() => {
@@ -180,7 +180,7 @@ export function LayerContextMenu({
 
 		// オブジェクト用メニュー
 		if (target.type === "object") {
-			const obj = objects[target.index];
+			const obj = objects.find((o) => o.id === target.objectId);
 			if (!obj) return [];
 
 			const items: MenuItemOrDivider[] = [
@@ -237,7 +237,7 @@ export function LayerContextMenu({
 				items.push({
 					label: t("layerContextMenu.removeFromGroup"),
 					onClick: () => {
-						actions.removeFromGroup(target.index);
+						actions.removeFromGroup(target.objectId);
 						onClose();
 					},
 				});
@@ -250,7 +250,7 @@ export function LayerContextMenu({
 						? t("layerContextMenu.hideObject")
 						: t("layerContextMenu.showObject"),
 					onClick: () => {
-						actions.toggleVisibility(target.index);
+						actions.toggleVisibility(target.objectId);
 						onClose();
 					},
 				},
@@ -259,7 +259,7 @@ export function LayerContextMenu({
 						? t("layerContextMenu.unlockObject")
 						: t("layerContextMenu.lockObject"),
 					onClick: () => {
-						actions.toggleLock(target.index);
+						actions.toggleLock(target.objectId);
 						onClose();
 					},
 				},

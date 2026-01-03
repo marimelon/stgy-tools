@@ -17,7 +17,11 @@
 import { BinaryReader } from "./parser/BinaryReader";
 import { fieldParsers } from "./parser/fieldParsers";
 import { createParseContext, type ParseContext } from "./parser/types";
-import type { BoardData, BoardObject, ObjectFlags } from "./types";
+import type {
+	BoardObjectWithoutId,
+	ObjectFlags,
+	ParsedBoardData,
+} from "./types";
 
 // Re-export for backward compatibility
 export { BinaryReader } from "./parser/BinaryReader";
@@ -30,8 +34,9 @@ const SectionType = {
 
 /**
  * ボードデータをパース
+ * 戻り値のオブジェクトにはIDが含まれない。assignObjectIdsでIDを付与する。
  */
-export function parseBoardData(data: Uint8Array): BoardData {
+export function parseBoardData(data: Uint8Array): ParsedBoardData {
 	const reader = new BinaryReader(data);
 
 	// StrategyBoard ヘッダー (16バイト)
@@ -97,10 +102,10 @@ export function parseBoardData(data: Uint8Array): BoardData {
 }
 
 /**
- * ParseContextからBoardObject[]を組み立て
+ * ParseContextからBoardObjectWithoutId[]を組み立て
  */
-function assembleObjects(context: ParseContext): BoardObject[] {
-	const objects: BoardObject[] = [];
+function assembleObjects(context: ParseContext): BoardObjectWithoutId[] {
+	const objects: BoardObjectWithoutId[] = [];
 	let textIndex = 0;
 
 	const defaultFlags: ObjectFlags = {
@@ -114,7 +119,7 @@ function assembleObjects(context: ParseContext): BoardObject[] {
 		const objectId = context.objectIds[i];
 		const isTextObject = objectId === 100;
 
-		const obj: BoardObject = {
+		const obj: BoardObjectWithoutId = {
 			objectId,
 			flags: context.flagsArray[i] ?? defaultFlags,
 			position: context.positions[i] ?? { x: 0, y: 0 },

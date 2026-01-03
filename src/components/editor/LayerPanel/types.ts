@@ -19,8 +19,8 @@ export interface DropTarget {
  */
 export interface LayerItem {
 	type: "object" | "group-header";
-	/** オブジェクトのインデックス（type: "object" の場合） */
-	index?: number;
+	/** オブジェクトのID（type: "object" の場合） */
+	objectId?: string;
 	/** グループ情報（type: "group-header" の場合） */
 	group?: ObjectGroup;
 	/** グループ内のオブジェクトかどうか */
@@ -35,7 +35,7 @@ export interface LayerItem {
  * レイヤーコンテキストメニューのターゲット種別
  */
 export type LayerContextMenuTarget =
-	| { type: "object"; index: number; isInGroup: boolean; groupId?: string }
+	| { type: "object"; objectId: string; isInGroup: boolean; groupId?: string }
 	| { type: "group"; group: ObjectGroup };
 
 /**

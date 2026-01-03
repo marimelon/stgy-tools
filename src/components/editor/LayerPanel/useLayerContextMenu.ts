@@ -17,7 +17,7 @@ export interface UseLayerContextMenuReturn {
 	menuState: LayerContextMenuState;
 	openObjectMenu: (
 		e: React.MouseEvent,
-		index: number,
+		objectId: string,
 		isInGroup: boolean,
 		groupId?: string,
 	) => void;
@@ -36,7 +36,7 @@ export function useLayerContextMenu(): UseLayerContextMenuReturn {
 	const openObjectMenu = useCallback(
 		(
 			e: React.MouseEvent,
-			index: number,
+			objectId: string,
 			isInGroup: boolean,
 			groupId?: string,
 		) => {
@@ -46,7 +46,7 @@ export function useLayerContextMenu(): UseLayerContextMenuReturn {
 				isOpen: true,
 				x: e.clientX,
 				y: e.clientY,
-				target: { type: "object", index, isInGroup, groupId },
+				target: { type: "object", objectId, isInGroup, groupId },
 			});
 		},
 		[],

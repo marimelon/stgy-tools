@@ -30,7 +30,12 @@ import {
 	resolveShortIdFn,
 } from "@/lib/server/shortLinks/serverFn";
 import type { BoardData, BoardObject } from "@/lib/stgy";
-import { decodeStgy, ObjectNames, parseBoardData } from "@/lib/stgy";
+import {
+	assignBoardObjectIds,
+	decodeStgy,
+	ObjectNames,
+	parseBoardData,
+} from "@/lib/stgy";
 
 export const Route = createFileRoute("/")({
 	component: App,
@@ -195,7 +200,7 @@ function App() {
 	const [boardData, setBoardData] = useState<BoardData | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [isExpandModalOpen, setIsExpandModalOpen] = useState(false);
-	const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+	const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
 	const [selectedObject, setSelectedObject] = useState<BoardObject | null>(
 		null,
 	);
@@ -292,7 +297,7 @@ function App() {
 		if (!input.trim()) {
 			setBoardData(null);
 			setError(null);
-			setSelectedIndex(null);
+			setSelectedObjectId(null);
 			setSelectedObject(null);
 			return;
 		}
@@ -300,9 +305,10 @@ function App() {
 		try {
 			setError(null);
 			const binary = decodeStgy(input.trim());
-			const data = parseBoardData(binary);
+			const parsed = parseBoardData(binary);
+			const data = assignBoardObjectIds(parsed);
 			setBoardData(data);
-			setSelectedIndex(null);
+			setSelectedObjectId(null);
 			setSelectedObject(null);
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Unknown error");
@@ -340,10 +346,10 @@ function App() {
 	}, [stgyInput, decodeBoardData, isUsingDefaultSample]);
 
 	const handleSelectObject = (
-		index: number | null,
+		objectId: string | null,
 		object: BoardObject | null,
 	) => {
-		setSelectedIndex(index);
+		setSelectedObjectId(objectId);
 		setSelectedObject(object);
 	};
 
@@ -475,7 +481,7 @@ function App() {
 									boardData={boardData}
 									responsive
 									maxWidth={boardWidth ?? 896}
-									selectedIndex={selectedIndex}
+									selectedObjectId={selectedObjectId}
 									onSelectObject={handleSelectObject}
 								/>
 							</div>
@@ -501,7 +507,7 @@ function App() {
 							<div className="h-[300px] md:h-[350px]">
 								<ObjectListPanel
 									objects={boardData.objects}
-									selectedIndex={selectedIndex}
+									selectedObjectId={selectedObjectId}
 									onSelectObject={handleSelectObject}
 								/>
 							</div>
@@ -511,9 +517,11 @@ function App() {
 								<h2 className="text-lg font-semibold mb-3 font-display">
 									{t("viewer.selectedObject.title")}
 								</h2>
-								{selectedObject && selectedIndex !== null ? (
+								{selectedObject && selectedObjectId !== null ? (
 									<SelectedObjectInfo
-										index={selectedIndex}
+										index={boardData.objects.findIndex(
+											(o) => o.id === selectedObjectId,
+										)}
 										object={selectedObject}
 									/>
 								) : (

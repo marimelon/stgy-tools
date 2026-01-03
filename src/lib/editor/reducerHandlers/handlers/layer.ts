@@ -4,7 +4,7 @@
 
 import i18n from "@/lib/i18n";
 import type { EditorState } from "../../types";
-import { cloneBoard, pushHistory } from "../utils";
+import { cloneBoard, findObjectIndex, pushHistory } from "../utils";
 
 /** レイヤー移動方向 */
 export type LayerDirection = "front" | "back" | "forward" | "backward";
@@ -14,13 +14,13 @@ export type LayerDirection = "front" | "back" | "forward" | "backward";
  */
 export function handleMoveLayer(
 	state: EditorState,
-	payload: { index: number; direction: LayerDirection },
+	payload: { objectId: string; direction: LayerDirection },
 ): EditorState {
-	const { index, direction } = payload;
-	const objects = state.board.objects;
+	const { objectId, direction } = payload;
+	const index = findObjectIndex(state.board, objectId);
 
-	// 範囲外チェック
-	if (index < 0 || index >= objects.length) return state;
+	// 見つからない場合は無視
+	if (index === -1) return state;
 
 	const newBoard = cloneBoard(state.board);
 	const [movedObject] = newBoard.objects.splice(index, 1);
@@ -47,21 +47,7 @@ export function handleMoveLayer(
 
 	newBoard.objects.splice(newIndex, 0, movedObject);
 
-	// グループのインデックスを更新
-	const updatedGroups = state.groups.map((group) => ({
-		...group,
-		objectIndices: group.objectIndices.map((i) => {
-			if (i === index) return newIndex;
-			if (index < newIndex) {
-				// 下に移動: index+1 ~ newIndex の範囲を -1
-				if (i > index && i <= newIndex) return i - 1;
-			} else {
-				// 上に移動: newIndex ~ index-1 の範囲を +1
-				if (i >= newIndex && i < index) return i + 1;
-			}
-			return i;
-		}),
-	}));
+	// ID-basedなのでグループのインデックス更新は不要
 
 	const descriptions: Record<LayerDirection, string> = {
 		front: i18n.t("history.bringToFront"),
@@ -73,12 +59,8 @@ export function handleMoveLayer(
 	return {
 		...state,
 		board: newBoard,
-		groups: updatedGroups,
-		selectedIndices: [newIndex],
-		...pushHistory(
-			{ ...state, board: newBoard, groups: updatedGroups },
-			descriptions[direction],
-		),
+		selectedIds: [objectId],
+		...pushHistory({ ...state, board: newBoard }, descriptions[direction]),
 	};
 }
 
@@ -105,30 +87,14 @@ export function handleReorderLayer(
 	const adjustedToIndex = toIndex > fromIndex ? toIndex - 1 : toIndex;
 	newBoard.objects.splice(adjustedToIndex, 0, movedObject);
 
-	// グループのインデックスを更新
-	const updatedGroups = state.groups.map((group) => ({
-		...group,
-		objectIndices: group.objectIndices.map((i) => {
-			if (i === fromIndex) return adjustedToIndex;
-			// fromIndex から adjustedToIndex への移動によるシフト
-			if (fromIndex < adjustedToIndex) {
-				// 下に移動: fromIndex+1 ~ adjustedToIndex の範囲を -1
-				if (i > fromIndex && i <= adjustedToIndex) return i - 1;
-			} else {
-				// 上に移動: adjustedToIndex ~ fromIndex-1 の範囲を +1
-				if (i >= adjustedToIndex && i < fromIndex) return i + 1;
-			}
-			return i;
-		}),
-	}));
+	// ID-basedなのでグループのインデックス更新は不要
 
 	return {
 		...state,
 		board: newBoard,
-		groups: updatedGroups,
-		selectedIndices: [adjustedToIndex],
+		selectedIds: [movedObject.id],
 		...pushHistory(
-			{ ...state, board: newBoard, groups: updatedGroups },
+			{ ...state, board: newBoard },
 			i18n.t("history.reorderLayers"),
 		),
 	};
@@ -147,9 +113,18 @@ export function handleReorderGroup(
 	const group = state.groups.find((g) => g.id === groupId);
 	if (!group) return state;
 
-	const sortedIndices = [...group.objectIndices].sort((a, b) => a - b);
-	const groupSize = sortedIndices.length;
-	const firstIndex = sortedIndices[0];
+	// グループ内オブジェクトのインデックスを取得（配列順でソート）
+	const groupObjectIndices: number[] = [];
+	for (let i = 0; i < state.board.objects.length; i++) {
+		if (group.objectIds.includes(state.board.objects[i].id)) {
+			groupObjectIndices.push(i);
+		}
+	}
+
+	if (groupObjectIndices.length === 0) return state;
+
+	const groupSize = groupObjectIndices.length;
+	const firstIndex = groupObjectIndices[0];
 
 	// 同じ位置への移動は無視
 	if (toIndex === firstIndex || toIndex === firstIndex + groupSize) {
@@ -159,11 +134,11 @@ export function handleReorderGroup(
 	const newBoard = cloneBoard(state.board);
 
 	// グループ内オブジェクトを取り出す（インデックス順）
-	const groupObjects = sortedIndices.map((i) => newBoard.objects[i]);
+	const groupObjects = groupObjectIndices.map((i) => newBoard.objects[i]);
 
 	// 削除（後ろから削除してインデックスがずれないように）
-	for (let i = sortedIndices.length - 1; i >= 0; i--) {
-		newBoard.objects.splice(sortedIndices[i], 1);
+	for (let i = groupObjectIndices.length - 1; i >= 0; i--) {
+		newBoard.objects.splice(groupObjectIndices[i], 1);
 	}
 
 	// 挿入位置を計算（削除によりインデックスがずれる可能性）
@@ -176,43 +151,14 @@ export function handleReorderGroup(
 	// 挿入
 	newBoard.objects.splice(insertAt, 0, ...groupObjects);
 
-	// 新しいグループのインデックス
-	const newGroupIndices = groupObjects.map((_, i) => insertAt + i);
-
-	// 全グループのインデックスを再計算
-	const updatedGroups = state.groups.map((g) => {
-		if (g.id === groupId) {
-			return { ...g, objectIndices: newGroupIndices };
-		}
-
-		// 他のグループのインデックスも調整
-		const newIndices = g.objectIndices.map((idx) => {
-			// 削除された範囲にあったインデックスの調整
-			let newIdx = idx;
-
-			// 削除による影響
-			const deletedBefore = sortedIndices.filter((si) => si < idx).length;
-			newIdx -= deletedBefore;
-
-			// 挿入による影響
-			if (newIdx >= insertAt) {
-				newIdx += groupSize;
-			}
-
-			return newIdx;
-		});
-
-		return { ...g, objectIndices: newIndices };
-	});
+	// ID-basedなのでグループのインデックス更新は不要
+	// 選択を移動したグループ内オブジェクトに設定
+	const selectedIds = groupObjects.map((obj) => obj.id);
 
 	return {
 		...state,
 		board: newBoard,
-		groups: updatedGroups,
-		selectedIndices: newGroupIndices,
-		...pushHistory(
-			{ ...state, board: newBoard, groups: updatedGroups },
-			i18n.t("history.groupMove"),
-		),
+		selectedIds,
+		...pushHistory({ ...state, board: newBoard }, i18n.t("history.groupMove")),
 	};
 }

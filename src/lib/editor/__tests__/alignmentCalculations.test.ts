@@ -5,6 +5,7 @@ import { calculateAlignment } from "../reducerHandlers/businessLogic/alignmentCa
 // ヘルパー: テスト用のシンプルなオブジェクトを作成
 function createTestObject(x: number, y: number): BoardObject {
 	return {
+		id: crypto.randomUUID(),
 		objectId: 47,
 		position: { x, y },
 		rotation: 0,

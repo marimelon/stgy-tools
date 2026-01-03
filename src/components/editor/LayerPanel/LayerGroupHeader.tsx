@@ -16,11 +16,13 @@ import {
 import { type DragEvent, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ObjectGroup } from "@/lib/editor/types";
+import type { BoardObject } from "@/lib/stgy";
 import type { DropTarget } from "./types";
 import { useAutoScrollOnSelect } from "./useAutoScrollOnSelect";
 
 interface LayerGroupHeaderProps {
 	group: ObjectGroup;
+	objects: BoardObject[];
 	isAllSelected: boolean;
 	isDragging: boolean;
 	isAllVisible: boolean;
@@ -35,7 +37,7 @@ interface LayerGroupHeaderProps {
 	/** フォーカスモードで他のグループがフォーカスされている場合 */
 	isOutsideFocus?: boolean;
 	onDragStart: (e: DragEvent<HTMLDivElement>, groupId: string) => void;
-	onDragOver: (e: DragEvent<HTMLDivElement>, index: number) => void;
+	onDragOver: (e: DragEvent<HTMLDivElement>, objectId: string) => void;
 	onDragEnd: () => void;
 	onDrop: (e: DragEvent<HTMLDivElement>) => void;
 	onSelect: (groupId: string, e: React.MouseEvent) => void;
@@ -58,6 +60,7 @@ interface LayerGroupHeaderProps {
  */
 export function LayerGroupHeader({
 	group,
+	objects,
 	isAllSelected,
 	isDragging,
 	isAllVisible,
@@ -84,7 +87,14 @@ export function LayerGroupHeader({
 	onUnfocus,
 }: LayerGroupHeaderProps) {
 	const { t } = useTranslation();
-	const firstIndex = Math.min(...group.objectIndices);
+
+	// Find the first objectId in group that exists in objects array
+	const firstObjectId = group.objectIds.find((id) =>
+		objects.some((o) => o.id === id),
+	);
+	const firstIndex = firstObjectId
+		? objects.findIndex((o) => o.id === firstObjectId)
+		: -1;
 	const isDropBeforeGroup =
 		dropTarget?.index === firstIndex && dropTarget?.position === "before";
 
@@ -155,7 +165,7 @@ export function LayerGroupHeader({
 		if (group.name) {
 			return group.name;
 		}
-		return `${t("layerPanel.group")} (${group.objectIndices.length})`;
+		return `${t("layerPanel.group")} (${group.objectIds.length})`;
 	};
 
 	return (
@@ -170,7 +180,7 @@ export function LayerGroupHeader({
 			<div
 				draggable
 				onDragStart={(e) => onDragStart(e, group.id)}
-				onDragOver={(e) => onDragOver(e, firstIndex)}
+				onDragOver={(e) => firstObjectId && onDragOver(e, firstObjectId)}
 				onDragEnd={onDragEnd}
 				onDrop={onDrop}
 				onClick={(e) => onSelect(group.id, e)}

@@ -51,7 +51,7 @@ import {
 	useImportExport,
 	useIsDirty,
 	useSelectedGroup,
-	useSelectedIndices,
+	useSelectedIds,
 } from "@/lib/editor";
 import { ExportModal } from "./ExportModal";
 import { ImportModal } from "./ImportModal";
@@ -110,7 +110,7 @@ export function EditorToolbar({
 	const toolbarSize = useToolbarSize(toolbarRef);
 
 	// State
-	const selectedIndices = useSelectedIndices();
+	const selectedIds = useSelectedIds();
 	const hasClipboard = useGlobalClipboard();
 	const gridSettings = useGridSettings();
 	const isDirty = useIsDirty();
@@ -157,8 +157,8 @@ export function EditorToolbar({
 	// Settings modal state
 	const [showSettingsModal, setShowSettingsModal] = useState(false);
 
-	const hasSelection = selectedIndices.length > 0;
-	const hasSingleSelection = selectedIndices.length === 1;
+	const hasSelection = selectedIds.length > 0;
+	const hasSingleSelection = selectedIds.length === 1;
 
 	// インポート処理
 	const handleImport = () => {

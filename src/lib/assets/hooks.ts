@@ -3,7 +3,7 @@
  */
 
 import { useLiveQuery } from "@tanstack/react-db";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BoardObject } from "@/lib/stgy";
 import { assetsCollection } from "./collection";
 import {
@@ -12,6 +12,34 @@ import {
 	type StoredAsset,
 } from "./schema";
 import { calculateAssetBounds } from "./utils";
+
+/**
+ * オブジェクトにランタイムIDを付与
+ * アセットはIDなしで保存されている可能性があるため、読み込み時に生成
+ */
+function addRuntimeIds(objects: StoredAsset["objects"]): BoardObject[] {
+	return objects.map((obj) => ({
+		...obj,
+		id: obj.id ?? crypto.randomUUID(),
+	}));
+}
+
+/**
+ * ランタイムID付きのアセット型
+ */
+export type AssetWithRuntimeIds = Omit<StoredAsset, "objects"> & {
+	objects: BoardObject[];
+};
+
+/**
+ * アセットのオブジェクトにランタイムIDを付与
+ */
+function addRuntimeIdsToAsset(asset: StoredAsset): AssetWithRuntimeIds {
+	return {
+		...asset,
+		objects: addRuntimeIds(asset.objects),
+	};
+}
 
 /** Sort options for asset list */
 export type AssetSortOption = "updatedAt" | "createdAt" | "name";
@@ -74,37 +102,42 @@ export function useAssets(options: UseAssetsOptions = {}) {
 		}
 	}, [isError, status]);
 
-	// Client-side filtering and sorting
-	const assets = (data ?? [])
-		.filter((asset) => {
-			// Filter by search query
-			if (searchQuery) {
-				const matchesSearch = asset.name
-					.toLowerCase()
-					.includes(searchQuery.toLowerCase());
-				if (!matchesSearch) return false;
-			}
-			// Filter by category
-			if (category) {
-				if (asset.category !== category) return false;
-			}
-			return true;
-		})
-		.sort((a, b) => {
-			let comparison = 0;
-			if (sortBy === "name") {
-				comparison = a.name.localeCompare(b.name);
-			} else if (sortBy === "createdAt") {
-				comparison =
-					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-			} else {
-				comparison =
-					new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-			}
-			return sortDirection === "desc" ? -comparison : comparison;
-		});
+	// Client-side filtering, sorting, and runtime ID generation
+	const assets = useMemo(() => {
+		return (data ?? [])
+			.filter((asset) => {
+				// Filter by search query
+				if (searchQuery) {
+					const matchesSearch = asset.name
+						.toLowerCase()
+						.includes(searchQuery.toLowerCase());
+					if (!matchesSearch) return false;
+				}
+				// Filter by category
+				if (category) {
+					if (asset.category !== category) return false;
+				}
+				return true;
+			})
+			.sort((a, b) => {
+				let comparison = 0;
+				if (sortBy === "name") {
+					comparison = a.name.localeCompare(b.name);
+				} else if (sortBy === "createdAt") {
+					comparison =
+						new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+				} else {
+					comparison =
+						new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+				}
+				return sortDirection === "desc" ? -comparison : comparison;
+			})
+			.map(addRuntimeIdsToAsset);
+	}, [data, searchQuery, category, sortBy, sortDirection]);
 
-	const [deletedAsset, setDeletedAsset] = useState<StoredAsset | null>(null);
+	const [deletedAsset, setDeletedAsset] = useState<AssetWithRuntimeIds | null>(
+		null,
+	);
 	const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	// Clear undo timeout on unmount
@@ -234,7 +267,7 @@ export function useAssets(options: UseAssetsOptions = {}) {
 	);
 
 	const getAsset = useCallback(
-		(id: string): StoredAsset | undefined => {
+		(id: string): AssetWithRuntimeIds | undefined => {
 			return assets.find((a) => a.id === id);
 		},
 		[assets],

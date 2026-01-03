@@ -15,10 +15,6 @@ import {
 	MAX_HISTORY_SIZE,
 	type ObjectGroup,
 } from "../types";
-import {
-	removeIndices,
-	shiftIndicesDown,
-} from "./businessLogic/indexManagement";
 
 /**
  * 履歴の最大保持数
@@ -91,12 +87,12 @@ function equalObjectGroup(a: ObjectGroup, b: ObjectGroup): boolean {
 		a.id !== b.id ||
 		a.name !== b.name ||
 		a.collapsed !== b.collapsed ||
-		a.objectIndices.length !== b.objectIndices.length
+		a.objectIds.length !== b.objectIds.length
 	) {
 		return false;
 	}
-	for (let i = 0; i < a.objectIndices.length; i++) {
-		if (a.objectIndices[i] !== b.objectIndices[i]) {
+	for (let i = 0; i < a.objectIds.length; i++) {
+		if (a.objectIds[i] !== b.objectIds[i]) {
 			return false;
 		}
 	}
@@ -164,25 +160,22 @@ export function generateGroupId(): string {
 }
 
 /**
- * オブジェクト追加時にグループのインデックスを更新（先頭追加）
- * @deprecated Use shiftIndicesDown from businessLogic/indexManagement instead
- */
-export function shiftGroupIndices(
-	groups: ObjectGroup[],
-	count: number,
-): ObjectGroup[] {
-	return shiftIndicesDown(groups, count);
-}
-
-/**
- * オブジェクト削除時にグループを更新
- * @deprecated Use removeIndices from businessLogic/indexManagement instead
+ * オブジェクト削除時にグループを更新（ID-based）
+ * @param groups 既存のグループ配列
+ * @param deletedIds 削除されたオブジェクトのID配列
+ * @returns 更新されたグループ配列（空のグループは除外）
  */
 export function updateGroupsAfterDelete(
 	groups: ObjectGroup[],
-	deletedIndices: number[],
+	deletedIds: string[],
 ): ObjectGroup[] {
-	return removeIndices(groups, deletedIndices);
+	const deletedSet = new Set(deletedIds);
+	return groups
+		.map((group) => ({
+			...group,
+			objectIds: group.objectIds.filter((id) => !deletedSet.has(id)),
+		}))
+		.filter((group) => group.objectIds.length > 0);
 }
 
 /**
@@ -193,15 +186,16 @@ export function cloneBoard(board: BoardData): BoardData {
 }
 
 /**
- * オブジェクトを更新
+ * オブジェクトを更新（ID-based）
  */
 export function updateObjectInBoard(
 	board: BoardData,
-	index: number,
+	objectId: string,
 	updates: Partial<BoardObject>,
 ): BoardData {
 	const newBoard = cloneBoard(board);
-	if (index >= 0 && index < newBoard.objects.length) {
+	const index = newBoard.objects.findIndex((obj) => obj.id === objectId);
+	if (index !== -1) {
 		newBoard.objects[index] = {
 			...newBoard.objects[index],
 			...updates,
@@ -221,4 +215,21 @@ export function updateObjectInBoard(
 		};
 	}
 	return newBoard;
+}
+
+/**
+ * IDからオブジェクトを検索
+ */
+export function findObjectById(
+	board: BoardData,
+	objectId: string,
+): BoardObject | undefined {
+	return board.objects.find((obj) => obj.id === objectId);
+}
+
+/**
+ * IDからオブジェクトのインデックスを取得
+ */
+export function findObjectIndex(board: BoardData, objectId: string): number {
+	return board.objects.findIndex((obj) => obj.id === objectId);
 }

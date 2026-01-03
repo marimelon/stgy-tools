@@ -16,9 +16,9 @@ export interface UseMarqueeSelectionParams {
 	focusedGroupId: string | null;
 	/** オブジェクトが属するグループを取得 */
 	getGroupForObject: (
-		index: number,
-	) => { id: string; objectIndices: number[] } | undefined;
-	selectObjects: (indices: number[]) => void;
+		objectId: string,
+	) => { id: string; objectIds: string[] } | undefined;
+	selectObjects: (objectIds: string[]) => void;
 	deselectAll: () => void;
 }
 
@@ -94,30 +94,29 @@ export function useMarqueeSelection({
 	 * マーキー範囲内のオブジェクトを取得
 	 */
 	const getObjectsInMarquee = useCallback(
-		(marquee: MarqueeState): number[] => {
+		(marquee: MarqueeState): string[] => {
 			const { startPoint, currentPoint } = marquee;
 			const minX = Math.min(startPoint.x, currentPoint.x);
 			const maxX = Math.max(startPoint.x, currentPoint.x);
 			const minY = Math.min(startPoint.y, currentPoint.y);
 			const maxY = Math.max(startPoint.y, currentPoint.y);
 
-			const indices: number[] = [];
-			for (let i = 0; i < objects.length; i++) {
-				const obj = objects[i];
+			const ids: string[] = [];
+			for (const obj of objects) {
 				if (!obj.flags.visible) continue;
 
 				// フォーカスモード中はフォーカス外のオブジェクトを除外
 				if (focusedGroupId !== null) {
-					const group = getGroupForObject(i);
+					const group = getGroupForObject(obj.id);
 					if (group?.id !== focusedGroupId) continue;
 				}
 
 				const { x, y } = obj.position;
 				if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-					indices.push(i);
+					ids.push(obj.id);
 				}
 			}
-			return indices;
+			return ids;
 		},
 		[objects, focusedGroupId, getGroupForObject],
 	);

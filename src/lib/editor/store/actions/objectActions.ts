@@ -13,7 +13,6 @@ import {
 import {
 	cloneBoard,
 	pushHistory,
-	shiftGroupIndices,
 	updateGroupsAfterDelete,
 	updateObjectInBoard,
 } from "../../reducerHandlers/utils";
@@ -27,9 +26,9 @@ export function createObjectActions(store: EditorStore) {
 	/**
 	 * オブジェクトを更新
 	 */
-	const updateObject = (index: number, updates: Partial<BoardObject>) => {
+	const updateObject = (objectId: string, updates: Partial<BoardObject>) => {
 		store.setState((state) => {
-			const newBoard = updateObjectInBoard(state.board, index, updates);
+			const newBoard = updateObjectInBoard(state.board, objectId, updates);
 			return {
 				...state,
 				board: newBoard,
@@ -57,16 +56,14 @@ export function createObjectActions(store: EditorStore) {
 
 			const newBoard = cloneBoard(state.board);
 			newBoard.objects.unshift(object);
-			// グループのインデックスを更新（先頭に追加するので全て+1）
-			const updatedGroups = shiftGroupIndices(state.groups, 1);
 			return {
 				...state,
 				board: newBoard,
-				groups: updatedGroups,
-				selectedIndices: [0],
+				groups: state.groups,
+				selectedIds: [object.id],
 				lastError: null,
 				...pushHistory(
-					{ ...state, board: newBoard, groups: updatedGroups },
+					{ ...state, board: newBoard, groups: state.groups },
 					i18n.t("history.addObject"),
 				),
 			};
@@ -76,25 +73,22 @@ export function createObjectActions(store: EditorStore) {
 	/**
 	 * オブジェクトを削除
 	 */
-	const deleteObjects = (indices: number[]) => {
-		if (indices.length === 0) return;
+	const deleteObjects = (objectIds: string[]) => {
+		if (objectIds.length === 0) return;
 
 		store.setState((state) => {
+			const idsToDelete = new Set(objectIds);
 			const newBoard = cloneBoard(state.board);
-			// インデックスを降順でソートして削除 (インデックスのずれを防ぐ)
-			const sortedIndices = [...indices].sort((a, b) => b - a);
-			for (const index of sortedIndices) {
-				if (index >= 0 && index < newBoard.objects.length) {
-					newBoard.objects.splice(index, 1);
-				}
-			}
+			newBoard.objects = newBoard.objects.filter(
+				(obj) => !idsToDelete.has(obj.id),
+			);
 			// グループを更新
-			const updatedGroups = updateGroupsAfterDelete(state.groups, indices);
+			const updatedGroups = updateGroupsAfterDelete(state.groups, objectIds);
 			return {
 				...state,
 				board: newBoard,
 				groups: updatedGroups,
-				selectedIndices: [],
+				selectedIds: [],
 				...pushHistory(
 					{ ...state, board: newBoard, groups: updatedGroups },
 					i18n.t("history.deleteObject"),
@@ -108,21 +102,22 @@ export function createObjectActions(store: EditorStore) {
 	 */
 	const deleteSelected = () => {
 		const state = store.state;
-		deleteObjects(state.selectedIndices);
+		deleteObjects(state.selectedIds);
 	};
 
 	/**
 	 * オブジェクトを複製
 	 */
-	const duplicateObjects = (indices: number[]) => {
-		if (indices.length === 0) return;
+	const duplicateObjects = (objectIds: string[]) => {
+		if (objectIds.length === 0) return;
 
 		store.setState((state) => {
 			// 複製対象のオブジェクトを収集
 			const objectsToDuplicate: BoardObject[] = [];
-			for (const index of indices) {
-				if (index >= 0 && index < state.board.objects.length) {
-					objectsToDuplicate.push(state.board.objects[index]);
+			for (const id of objectIds) {
+				const obj = state.board.objects.find((o) => o.id === id);
+				if (obj) {
+					objectsToDuplicate.push(obj);
 				}
 			}
 
@@ -139,21 +134,18 @@ export function createObjectActions(store: EditorStore) {
 			}
 
 			const newBoard = cloneBoard(state.board);
-			const newIndices: number[] = [];
+			const newIds: string[] = [];
 
-			for (const index of indices) {
-				if (index >= 0 && index < state.board.objects.length) {
-					const original = state.board.objects[index];
-					const duplicated = duplicateObject(original);
-					newBoard.objects.push(duplicated);
-					newIndices.push(newBoard.objects.length - 1);
-				}
+			for (const original of objectsToDuplicate) {
+				const duplicated = duplicateObject(original);
+				newBoard.objects.push(duplicated);
+				newIds.push(duplicated.id);
 			}
 
 			return {
 				...state,
 				board: newBoard,
-				selectedIndices: newIndices,
+				selectedIds: newIds,
 				lastError: null,
 				...pushHistory(
 					{ ...state, board: newBoard },
@@ -168,41 +160,40 @@ export function createObjectActions(store: EditorStore) {
 	 */
 	const duplicateSelected = () => {
 		const state = store.state;
-		duplicateObjects(state.selectedIndices);
+		duplicateObjects(state.selectedIds);
 	};
 
 	/**
 	 * オブジェクトを移動
 	 */
-	const moveObjects = (indices: number[], deltaX: number, deltaY: number) => {
-		if (indices.length === 0) return;
+	const moveObjects = (objectIds: string[], deltaX: number, deltaY: number) => {
+		if (objectIds.length === 0) return;
 
 		store.setState((state) => {
 			let newBoard = state.board;
-			for (const index of indices) {
-				if (index >= 0 && index < newBoard.objects.length) {
-					const obj = newBoard.objects[index];
+			for (const objectId of objectIds) {
+				const obj = newBoard.objects.find((o) => o.id === objectId);
+				if (!obj) continue;
 
-					// Lineオブジェクトの場合は終点座標（param1, param2）も移動
-					if (obj.objectId === ObjectIds.Line) {
-						const deltaX10 = Math.round(deltaX * 10);
-						const deltaY10 = Math.round(deltaY * 10);
-						newBoard = updateObjectInBoard(newBoard, index, {
-							position: {
-								x: obj.position.x + deltaX,
-								y: obj.position.y + deltaY,
-							},
-							param1: (obj.param1 ?? obj.position.x * 10 + 2560) + deltaX10,
-							param2: (obj.param2 ?? obj.position.y * 10) + deltaY10,
-						});
-					} else {
-						newBoard = updateObjectInBoard(newBoard, index, {
-							position: {
-								x: obj.position.x + deltaX,
-								y: obj.position.y + deltaY,
-							},
-						});
-					}
+				// Lineオブジェクトの場合は終点座標（param1, param2）も移動
+				if (obj.objectId === ObjectIds.Line) {
+					const deltaX10 = Math.round(deltaX * 10);
+					const deltaY10 = Math.round(deltaY * 10);
+					newBoard = updateObjectInBoard(newBoard, objectId, {
+						position: {
+							x: obj.position.x + deltaX,
+							y: obj.position.y + deltaY,
+						},
+						param1: (obj.param1 ?? obj.position.x * 10 + 2560) + deltaX10,
+						param2: (obj.param2 ?? obj.position.y * 10) + deltaY10,
+					});
+				} else {
+					newBoard = updateObjectInBoard(newBoard, objectId, {
+						position: {
+							x: obj.position.x + deltaX,
+							y: obj.position.y + deltaY,
+						},
+					});
 				}
 			}
 
@@ -219,7 +210,7 @@ export function createObjectActions(store: EditorStore) {
 	 * ドラッグ操作時のパフォーマンス最適化のため単一のstate更新で処理
 	 */
 	const moveObjectsWithSnap = (
-		startPositions: Map<number, Position>,
+		startPositions: Map<string, Position>,
 		deltaX: number,
 		deltaY: number,
 		gridSize: number,
@@ -227,32 +218,33 @@ export function createObjectActions(store: EditorStore) {
 		store.setState((state) => {
 			const newBoard = cloneBoard(state.board);
 
-			for (const [idx, startPos] of startPositions) {
-				if (idx >= 0 && idx < newBoard.objects.length) {
-					const obj = newBoard.objects[idx];
-					if (obj.flags.locked) continue;
+			for (const [objectId, startPos] of startPositions) {
+				const index = newBoard.objects.findIndex((o) => o.id === objectId);
+				if (index === -1) continue;
 
-					const newX = Math.round((startPos.x + deltaX) / gridSize) * gridSize;
-					const newY = Math.round((startPos.y + deltaY) / gridSize) * gridSize;
+				const obj = newBoard.objects[index];
+				if (obj.flags.locked) continue;
 
-					// Lineオブジェクトの場合は終点座標も移動
-					if (obj.objectId === ObjectIds.Line) {
-						const currentDeltaX = newX - obj.position.x;
-						const currentDeltaY = newY - obj.position.y;
-						const deltaX10 = Math.round(currentDeltaX * 10);
-						const deltaY10 = Math.round(currentDeltaY * 10);
-						newBoard.objects[idx] = {
-							...obj,
-							position: { x: newX, y: newY },
-							param1: (obj.param1 ?? obj.position.x * 10 + 2560) + deltaX10,
-							param2: (obj.param2 ?? obj.position.y * 10) + deltaY10,
-						};
-					} else {
-						newBoard.objects[idx] = {
-							...obj,
-							position: { x: newX, y: newY },
-						};
-					}
+				const newX = Math.round((startPos.x + deltaX) / gridSize) * gridSize;
+				const newY = Math.round((startPos.y + deltaY) / gridSize) * gridSize;
+
+				// Lineオブジェクトの場合は終点座標も移動
+				if (obj.objectId === ObjectIds.Line) {
+					const currentDeltaX = newX - obj.position.x;
+					const currentDeltaY = newY - obj.position.y;
+					const deltaX10 = Math.round(currentDeltaX * 10);
+					const deltaY10 = Math.round(currentDeltaY * 10);
+					newBoard.objects[index] = {
+						...obj,
+						position: { x: newX, y: newY },
+						param1: (obj.param1 ?? obj.position.x * 10 + 2560) + deltaX10,
+						param2: (obj.param2 ?? obj.position.y * 10) + deltaY10,
+					};
+				} else {
+					newBoard.objects[index] = {
+						...obj,
+						position: { x: newX, y: newY },
+					};
 				}
 			}
 
@@ -268,17 +260,18 @@ export function createObjectActions(store: EditorStore) {
 	 * 複数オブジェクトを一括更新
 	 */
 	const updateObjectsBatch = (
-		indices: number[],
+		objectIds: string[],
 		updates: BatchUpdatePayload,
 	) => {
-		if (indices.length === 0 || Object.keys(updates).length === 0) return;
+		if (objectIds.length === 0 || Object.keys(updates).length === 0) return;
 
 		store.setState((state) => {
 			// 単一クローンで効率的にバッチ更新
 			const newBoard = cloneBoard(state.board);
 
-			for (const index of indices) {
-				if (index < 0 || index >= newBoard.objects.length) continue;
+			for (const objectId of objectIds) {
+				const index = newBoard.objects.findIndex((o) => o.id === objectId);
+				if (index === -1) continue;
 
 				const obj = newBoard.objects[index];
 

@@ -25,8 +25,8 @@ export interface UseCanvasInteractionParams {
 	svgRef: RefObject<SVGSVGElement | null>;
 	/** オブジェクト配列 */
 	objects: BoardObject[];
-	/** 選択中のインデックス */
-	selectedIndices: number[];
+	/** 選択中のID */
+	selectedIds: string[];
 	/** グリッド設定 */
 	gridSettings: GridSettings;
 	/** フォーカス中のグループID（null = フォーカスなし） */
@@ -34,28 +34,28 @@ export interface UseCanvasInteractionParams {
 	/** 円形配置モード状態（null = モードなし） */
 	circularMode: CircularModeState | null;
 	/** オブジェクト選択 */
-	selectObject: (index: number, additive?: boolean) => void;
+	selectObject: (objectId: string, additive?: boolean) => void;
 	/** 複数オブジェクト選択 */
-	selectObjects: (indices: number[]) => void;
+	selectObjects: (objectIds: string[]) => void;
 	/** グループ選択 */
 	selectGroup: (groupId: string) => void;
 	/** オブジェクトが属するグループを取得 */
 	getGroupForObject: (
-		index: number,
-	) => { id: string; objectIndices: number[] } | undefined;
+		objectId: string,
+	) => { id: string; objectIds: string[] } | undefined;
 	/** オブジェクト更新 */
-	updateObject: (index: number, updates: Partial<BoardObject>) => void;
+	updateObject: (objectId: string, updates: Partial<BoardObject>) => void;
 	/** オブジェクト移動 */
-	moveObjects: (indices: number[], deltaX: number, deltaY: number) => void;
+	moveObjects: (objectIds: string[], deltaX: number, deltaY: number) => void;
 	/** グリッドスナップ付きバッチ移動（パフォーマンス最適化） */
 	moveObjectsWithSnap: (
-		startPositions: Map<number, Position>,
+		startPositions: Map<string, Position>,
 		deltaX: number,
 		deltaY: number,
 		gridSize: number,
 	) => void;
 	/** 円周上でオブジェクトを移動 */
-	moveObjectOnCircle: (index: number, angle: number) => void;
+	moveObjectOnCircle: (objectId: string, angle: number) => void;
 	/** 履歴をコミット */
 	commitHistory: (description: string) => void;
 	/** オブジェクト追加 */
@@ -81,9 +81,9 @@ export interface UseCanvasInteractionReturn {
 	/** ドロップハンドラ */
 	handleDrop: (e: React.DragEvent) => void;
 	/** オブジェクトクリックハンドラ */
-	handleObjectClick: (index: number, e: React.MouseEvent) => void;
+	handleObjectClick: (objectId: string, e: React.MouseEvent) => void;
 	/** オブジェクトポインターダウンハンドラ */
-	handleObjectPointerDown: (index: number, e: React.PointerEvent) => void;
+	handleObjectPointerDown: (objectId: string, e: React.PointerEvent) => void;
 	/** 回転開始ハンドラ */
 	handleRotateStart: (e: React.PointerEvent) => void;
 	/** リサイズ開始ハンドラ */
@@ -103,7 +103,7 @@ export interface UseCanvasInteractionReturn {
 export function useCanvasInteraction({
 	svgRef,
 	objects,
-	selectedIndices,
+	selectedIds,
 	gridSettings,
 	focusedGroupId,
 	circularMode,
@@ -148,7 +148,7 @@ export function useCanvasInteraction({
 	} = useDragInteraction({
 		svgRef,
 		objects,
-		selectedIndices,
+		selectedIds,
 		gridSettings,
 		focusedGroupId,
 		circularMode,

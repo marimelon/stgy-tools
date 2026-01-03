@@ -8,7 +8,12 @@ import type {
 	CircularModeState,
 	EditorState,
 } from "../../types";
-import { cloneBoard, pushHistory, updateObjectInBoard } from "../utils";
+import {
+	cloneBoard,
+	findObjectById,
+	pushHistory,
+	updateObjectInBoard,
+} from "../utils";
 
 /** 整列タイプの説明キー */
 const ALIGNMENT_DESCRIPTION_KEYS: Record<AlignmentType, string> = {
@@ -28,18 +33,16 @@ const ALIGNMENT_DESCRIPTION_KEYS: Record<AlignmentType, string> = {
  */
 export function handleAlignObjects(
 	state: EditorState,
-	payload: { indices: number[]; alignment: AlignmentType },
+	payload: { objectIds: string[]; alignment: AlignmentType },
 ): EditorState {
-	const { indices, alignment } = payload;
-	if (indices.length < 2) return state;
+	const { objectIds, alignment } = payload;
+	if (objectIds.length < 2) return state;
 
-	// 有効なインデックスのみフィルタ
-	const validIndices = indices.filter(
-		(i) => i >= 0 && i < state.board.objects.length,
-	);
-	if (validIndices.length < 2) return state;
-
-	const objects = validIndices.map((i) => state.board.objects[i]);
+	// 有効なIDのオブジェクトを取得
+	const objects = objectIds
+		.map((id) => findObjectById(state.board, id))
+		.filter((obj): obj is NonNullable<typeof obj> => obj != null);
+	if (objects.length < 2) return state;
 
 	// 位置の境界を計算
 	const positions = objects.map((obj) => obj.position);
@@ -55,59 +58,58 @@ export function handleAlignObjects(
 	// 整列タイプに応じて位置を更新
 	switch (alignment) {
 		case "left":
-			for (const idx of validIndices) {
-				newBoard = updateObjectInBoard(newBoard, idx, {
-					position: { ...newBoard.objects[idx].position, x: minX },
+			for (const obj of objects) {
+				newBoard = updateObjectInBoard(newBoard, obj.id, {
+					position: { ...obj.position, x: minX },
 				});
 			}
 			break;
 		case "center":
-			for (const idx of validIndices) {
-				newBoard = updateObjectInBoard(newBoard, idx, {
-					position: { ...newBoard.objects[idx].position, x: centerX },
+			for (const obj of objects) {
+				newBoard = updateObjectInBoard(newBoard, obj.id, {
+					position: { ...obj.position, x: centerX },
 				});
 			}
 			break;
 		case "right":
-			for (const idx of validIndices) {
-				newBoard = updateObjectInBoard(newBoard, idx, {
-					position: { ...newBoard.objects[idx].position, x: maxX },
+			for (const obj of objects) {
+				newBoard = updateObjectInBoard(newBoard, obj.id, {
+					position: { ...obj.position, x: maxX },
 				});
 			}
 			break;
 		case "top":
-			for (const idx of validIndices) {
-				newBoard = updateObjectInBoard(newBoard, idx, {
-					position: { ...newBoard.objects[idx].position, y: minY },
+			for (const obj of objects) {
+				newBoard = updateObjectInBoard(newBoard, obj.id, {
+					position: { ...obj.position, y: minY },
 				});
 			}
 			break;
 		case "middle":
-			for (const idx of validIndices) {
-				newBoard = updateObjectInBoard(newBoard, idx, {
-					position: { ...newBoard.objects[idx].position, y: centerY },
+			for (const obj of objects) {
+				newBoard = updateObjectInBoard(newBoard, obj.id, {
+					position: { ...obj.position, y: centerY },
 				});
 			}
 			break;
 		case "bottom":
-			for (const idx of validIndices) {
-				newBoard = updateObjectInBoard(newBoard, idx, {
-					position: { ...newBoard.objects[idx].position, y: maxY },
+			for (const obj of objects) {
+				newBoard = updateObjectInBoard(newBoard, obj.id, {
+					position: { ...obj.position, y: maxY },
 				});
 			}
 			break;
 		case "distribute-h": {
 			// X座標でソート
-			const sortedByX = [...validIndices].sort(
-				(a, b) =>
-					newBoard.objects[a].position.x - newBoard.objects[b].position.x,
+			const sortedByX = [...objects].sort(
+				(a, b) => a.position.x - b.position.x,
 			);
 			if (sortedByX.length >= 2) {
 				const step = (maxX - minX) / (sortedByX.length - 1);
 				for (let i = 0; i < sortedByX.length; i++) {
-					const idx = sortedByX[i];
-					newBoard = updateObjectInBoard(newBoard, idx, {
-						position: { ...newBoard.objects[idx].position, x: minX + step * i },
+					const obj = sortedByX[i];
+					newBoard = updateObjectInBoard(newBoard, obj.id, {
+						position: { ...obj.position, x: minX + step * i },
 					});
 				}
 			}
@@ -115,16 +117,15 @@ export function handleAlignObjects(
 		}
 		case "distribute-v": {
 			// Y座標でソート
-			const sortedByY = [...validIndices].sort(
-				(a, b) =>
-					newBoard.objects[a].position.y - newBoard.objects[b].position.y,
+			const sortedByY = [...objects].sort(
+				(a, b) => a.position.y - b.position.y,
 			);
 			if (sortedByY.length >= 2) {
 				const step = (maxY - minY) / (sortedByY.length - 1);
 				for (let i = 0; i < sortedByY.length; i++) {
-					const idx = sortedByY[i];
-					newBoard = updateObjectInBoard(newBoard, idx, {
-						position: { ...newBoard.objects[idx].position, y: minY + step * i },
+					const obj = sortedByY[i];
+					newBoard = updateObjectInBoard(newBoard, obj.id, {
+						position: { ...obj.position, y: minY + step * i },
 					});
 				}
 			}
@@ -147,17 +148,17 @@ export function handleAlignObjects(
 			const circularRadius = Math.max(50, calculatedRadius);
 
 			// 各オブジェクトの角度を計算・保存
-			const objectAngles = new Map<number, number>();
+			const objectAngles = new Map<string, number>();
 
 			// 各オブジェクトの元の角度を保持したまま、半径だけを揃えて円周上に配置
-			for (let i = 0; i < validIndices.length; i++) {
-				const idx = validIndices[i];
+			for (let i = 0; i < objects.length; i++) {
+				const obj = objects[i];
 				const pos = positions[i];
 				// 現在の角度を計算
 				const angle = Math.atan2(pos.y - centroidY, pos.x - centroidX);
-				objectAngles.set(idx, angle);
+				objectAngles.set(obj.id, angle);
 				// 同じ角度で半径を揃える
-				newBoard = updateObjectInBoard(newBoard, idx, {
+				newBoard = updateObjectInBoard(newBoard, obj.id, {
 					position: {
 						x: centroidX + circularRadius * Math.cos(angle),
 						y: centroidY + circularRadius * Math.sin(angle),
@@ -169,7 +170,7 @@ export function handleAlignObjects(
 			const circularModeState: CircularModeState = {
 				center: { x: centroidX, y: centroidY },
 				radius: circularRadius,
-				participatingIndices: validIndices,
+				participatingIds: objects.map((obj) => obj.id),
 				objectAngles,
 			};
 

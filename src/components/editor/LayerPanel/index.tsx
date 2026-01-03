@@ -15,7 +15,7 @@ import {
 	useGroups,
 	useIsFocusMode,
 	useObjects,
-	useSelectedIndices,
+	useSelectedIds,
 } from "@/lib/editor";
 import type { ObjectGroup } from "@/lib/editor/types";
 import { LayerContextMenu } from "./LayerContextMenu";
@@ -33,7 +33,7 @@ export function LayerPanel() {
 
 	// State（オブジェクト移動で再レンダリングしないようuseObjectsを使用）
 	const objects = useObjects();
-	const selectedIndices = useSelectedIndices();
+	const selectedIds = useSelectedIds();
 	const groups = useGroups();
 	const hasClipboard = useGlobalClipboard();
 
@@ -41,6 +41,9 @@ export function LayerPanel() {
 	const canGroup = useCanGroup();
 	const focusedGroupId = useFocusedGroupId();
 	const isFocusMode = useIsFocusMode();
+
+	// ID→オブジェクトのルックアップ用Set
+	const selectedIdsSet = new Set(selectedIds);
 
 	// Actions
 	const {
@@ -67,8 +70,8 @@ export function LayerPanel() {
 
 	// オブジェクトが属するグループを取得するヘルパー関数
 	const getGroupForObject = useCallback(
-		(index: number): ObjectGroup | undefined => {
-			return groups.find((g) => g.objectIndices.includes(index));
+		(objectId: string): ObjectGroup | undefined => {
+			return groups.find((g) => g.objectIds.includes(objectId));
 		},
 		[groups],
 	);
@@ -94,7 +97,7 @@ export function LayerPanel() {
 
 	// ドラッグ&ドロップ
 	const {
-		draggedIndex,
+		draggedObjectId,
 		draggedGroupId,
 		dropTarget,
 		handleDragStart,
@@ -104,6 +107,7 @@ export function LayerPanel() {
 		handleDrop,
 		handleDragLeave,
 	} = useLayerDragDrop({
+		objects,
 		groups,
 		getGroupForObject,
 		reorderLayer,
@@ -113,9 +117,10 @@ export function LayerPanel() {
 
 	// オブジェクトの表示/非表示トグル
 	const handleToggleVisibility = useCallback(
-		(index: number) => {
-			const obj = objects[index];
-			updateObject(index, {
+		(objectId: string) => {
+			const obj = objects.find((o) => o.id === objectId);
+			if (!obj) return;
+			updateObject(objectId, {
 				flags: { ...obj.flags, visible: !obj.flags.visible },
 			});
 			commitHistory(t("layerPanel.visibilityChanged"));
@@ -126,12 +131,13 @@ export function LayerPanel() {
 	// グループの表示/非表示トグル
 	const handleToggleGroupVisibility = useCallback(
 		(group: ObjectGroup) => {
-			const allVisible = group.objectIndices.every(
-				(i) => objects[i]?.flags.visible,
+			const groupObjects = objects.filter((o) =>
+				group.objectIds.includes(o.id),
 			);
+			const allVisible = groupObjects.every((o) => o.flags.visible);
 			const newVisible = !allVisible;
 
-			updateObjectsBatch(group.objectIndices, {
+			updateObjectsBatch(group.objectIds, {
 				flags: { visible: newVisible },
 			});
 			commitHistory(t("layerPanel.groupVisibilityChanged"));
@@ -141,9 +147,10 @@ export function LayerPanel() {
 
 	// オブジェクトのロック/ロック解除トグル
 	const handleToggleLock = useCallback(
-		(index: number) => {
-			const obj = objects[index];
-			updateObject(index, {
+		(objectId: string) => {
+			const obj = objects.find((o) => o.id === objectId);
+			if (!obj) return;
+			updateObject(objectId, {
 				flags: { ...obj.flags, locked: !obj.flags.locked },
 			});
 			commitHistory(t("layerPanel.lockChanged"));
@@ -154,12 +161,13 @@ export function LayerPanel() {
 	// グループのロック/ロック解除トグル
 	const handleToggleGroupLock = useCallback(
 		(group: ObjectGroup) => {
-			const allLocked = group.objectIndices.every(
-				(i) => objects[i]?.flags.locked,
+			const groupObjects = objects.filter((o) =>
+				group.objectIds.includes(o.id),
 			);
+			const allLocked = groupObjects.every((o) => o.flags.locked);
 			const newLocked = !allLocked;
 
-			updateObjectsBatch(group.objectIndices, {
+			updateObjectsBatch(group.objectIds, {
 				flags: { locked: newLocked },
 			});
 			commitHistory(t("layerPanel.groupLockChanged"));
@@ -169,10 +177,10 @@ export function LayerPanel() {
 
 	// オブジェクト選択
 	const handleSelectObject = useCallback(
-		(index: number, e: React.MouseEvent) => {
+		(objectId: string, e: React.MouseEvent) => {
 			// Shift, Command (Mac), Ctrl (Windows) で追加選択
 			const additive = e.shiftKey || e.metaKey || e.ctrlKey;
-			selectObject(index, additive);
+			selectObject(objectId, additive);
 		},
 		[selectObject],
 	);
@@ -248,14 +256,14 @@ export function LayerPanel() {
 			ungroup: (groupId: string) => {
 				ungroup(groupId);
 			},
-			removeFromGroup: (objectIndex: number) => {
-				removeFromGroup(objectIndex);
+			removeFromGroup: (objectId: string) => {
+				removeFromGroup(objectId);
 			},
-			toggleVisibility: (index: number) => {
-				handleToggleVisibility(index);
+			toggleVisibility: (objectId: string) => {
+				handleToggleVisibility(objectId);
 			},
-			toggleLock: (index: number) => {
-				handleToggleLock(index);
+			toggleLock: (objectId: string) => {
+				handleToggleLock(objectId);
 			},
 			toggleGroupVisibility: (group: ObjectGroup) => {
 				handleToggleGroupVisibility(group);
@@ -264,7 +272,7 @@ export function LayerPanel() {
 				handleToggleGroupLock(group);
 			},
 			moveLayer: (direction: "front" | "back" | "forward" | "backward") => {
-				if (selectedIndices.length === 1) {
+				if (selectedIds.length === 1) {
 					moveSelectedLayer(direction);
 				}
 			},
@@ -288,7 +296,7 @@ export function LayerPanel() {
 			handleToggleGroupVisibility,
 			handleToggleGroupLock,
 			moveSelectedLayer,
-			selectedIndices,
+			selectedIds,
 			handleStartRenameGroup,
 			toggleGroupCollapse,
 			commitHistory,
@@ -315,14 +323,15 @@ export function LayerPanel() {
 						{layerItems.map((item) => {
 							if (item.type === "group-header" && item.group) {
 								const group = item.group;
-								const allSelected = group.objectIndices.every((i) =>
-									selectedIndices.includes(i),
+								const allSelected = group.objectIds.every((id) =>
+									selectedIdsSet.has(id),
 								);
 
 								return (
 									<LayerGroupHeader
 										key={`group-${group.id}`}
 										group={group}
+										objects={objects}
 										isAllSelected={allSelected}
 										isDragging={draggedGroupId === group.id}
 										isAllVisible={isGroupAllVisible(group)}
@@ -351,27 +360,28 @@ export function LayerPanel() {
 								);
 							}
 
-							if (item.type === "object" && item.index !== undefined) {
-								const index = item.index;
-								const obj = objects[index];
+							if (item.type === "object" && item.objectId !== undefined) {
+								const objectId = item.objectId;
+								const obj = objects.find((o) => o.id === objectId);
+								if (!obj) return null;
 
 								// フォーカスモードで、このオブジェクトがフォーカス中のグループに属していない場合
-								const focusedGroup = focusedGroupId
+								const focusedGroupObj = focusedGroupId
 									? groups.find((g) => g.id === focusedGroupId)
 									: null;
 								const isObjectOutsideFocus =
-									isFocusMode && !focusedGroup?.objectIndices.includes(index);
+									isFocusMode && !focusedGroupObj?.objectIds.includes(objectId);
 
 								return (
 									<LayerObjectItem
-										key={`obj-${index}`}
-										index={index}
+										key={`obj-${objectId}`}
+										objectId={objectId}
 										object={obj}
-										isSelected={selectedIndices.includes(index)}
+										isSelected={selectedIdsSet.has(objectId)}
 										isInGroup={item.isInGroup}
 										isLastInGroup={item.isLastInGroup}
 										groupId={item.groupId}
-										isDragging={draggedIndex === index}
+										isDragging={draggedObjectId === objectId}
 										dropTarget={dropTarget}
 										draggedGroupId={draggedGroupId}
 										isOutsideFocus={isObjectOutsideFocus}
@@ -412,7 +422,7 @@ export function LayerPanel() {
 				menuState={menuState}
 				onClose={closeMenu}
 				objects={objects}
-				selectedIndices={selectedIndices}
+				selectedIds={selectedIds}
 				hasClipboard={hasClipboard}
 				canGroup={canGroup}
 				isGroupAllVisible={isGroupAllVisible}

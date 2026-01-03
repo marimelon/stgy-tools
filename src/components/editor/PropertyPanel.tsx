@@ -9,7 +9,7 @@ import {
 	useCircularMode,
 	useEditorActions,
 	useIsCircularMode,
-	useSelectedIndices,
+	useSelectedIds,
 	useSelectedObjects,
 } from "@/lib/editor";
 import { BatchPropertyPanel } from "./BatchPropertyPanel";
@@ -25,7 +25,7 @@ import { ObjectPropertyPanel } from "./ObjectPropertyPanel";
  * 複数オブジェクト選択時はバッチ編集パネルを表示
  */
 export function PropertyPanel() {
-	const selectedIndices = useSelectedIndices();
+	const selectedIds = useSelectedIds();
 	const selectedObjects = useSelectedObjects();
 	const isCircularMode = useIsCircularMode();
 	const circularMode = useCircularMode();
@@ -41,8 +41,7 @@ export function PropertyPanel() {
 	// 単一選択判定
 	const selectedObject =
 		selectedObjects.length === 1 ? selectedObjects[0] : null;
-	const selectedIndex =
-		selectedIndices.length === 1 ? selectedIndices[0] : null;
+	const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
 
 	// 複数選択判定
 	const isMultipleSelection = selectedObjects.length > 1;
@@ -50,11 +49,11 @@ export function PropertyPanel() {
 	// オブジェクト更新ハンドラ（単一選択用）
 	const handleUpdateObject = useCallback(
 		(updates: Parameters<typeof updateObject>[1]) => {
-			if (selectedIndex !== null) {
-				updateObject(selectedIndex, updates);
+			if (selectedId !== null) {
+				updateObject(selectedId, updates);
 			}
 		},
-		[selectedIndex, updateObject],
+		[selectedId, updateObject],
 	);
 
 	// 円形配置モード時は円形プロパティパネルを表示
@@ -63,7 +62,7 @@ export function PropertyPanel() {
 			<CircularPropertyPanel
 				center={circularMode.center}
 				radius={circularMode.radius}
-				objectCount={circularMode.participatingIndices.length}
+				objectCount={circularMode.participatingIds.length}
 				onCenterChange={updateCircularCenter}
 				onRadiusChange={updateCircularRadius}
 				onCommitHistory={commitHistory}
@@ -83,7 +82,7 @@ export function PropertyPanel() {
 	}
 
 	// 単一選択時はオブジェクトプロパティパネルを表示
-	if (selectedObject && selectedIndex !== null) {
+	if (selectedObject && selectedId !== null) {
 		return (
 			<ObjectPropertyPanel
 				object={selectedObject}

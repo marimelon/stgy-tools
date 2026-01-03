@@ -6,7 +6,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board";
-import { decodeStgy, parseBoardData } from "@/lib/stgy";
+import { assignBoardObjectIds, decodeStgy, parseBoardData } from "@/lib/stgy";
 
 export interface BoardThumbnailProps {
 	stgyCode: string;
@@ -19,7 +19,8 @@ export function BoardThumbnail({ stgyCode, className }: BoardThumbnailProps) {
 	const boardData = useMemo(() => {
 		try {
 			const binary = decodeStgy(stgyCode);
-			return parseBoardData(binary);
+			const parsed = parseBoardData(binary);
+			return assignBoardObjectIds(parsed);
 		} catch {
 			return null;
 		}

@@ -8,7 +8,7 @@ import { Copy, MousePointer, Pencil, Share, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
-import type { StoredAsset } from "@/lib/assets";
+import type { AssetWithRuntimeIds } from "@/lib/assets";
 
 interface ContextMenuPosition {
 	x: number;
@@ -17,21 +17,21 @@ interface ContextMenuPosition {
 
 interface AssetContextMenuProps {
 	/** 対象のアセット */
-	asset: StoredAsset;
+	asset: AssetWithRuntimeIds;
 	/** メニューの位置 */
 	position: ContextMenuPosition;
 	/** 閉じるときのコールバック */
 	onClose: () => void;
 	/** 配置アクション */
-	onApply: (asset: StoredAsset) => void;
+	onApply: (asset: AssetWithRuntimeIds) => void;
 	/** 名前変更アクション */
-	onRename: (asset: StoredAsset, newName: string) => void;
+	onRename: (asset: AssetWithRuntimeIds, newName: string) => void;
 	/** 複製アクション */
-	onDuplicate: (asset: StoredAsset) => void;
+	onDuplicate: (asset: AssetWithRuntimeIds) => void;
 	/** エクスポートアクション */
-	onExport: (asset: StoredAsset) => void;
+	onExport: (asset: AssetWithRuntimeIds) => void;
 	/** 削除アクション */
-	onDelete: (asset: StoredAsset) => void;
+	onDelete: (asset: AssetWithRuntimeIds) => void;
 }
 
 /**

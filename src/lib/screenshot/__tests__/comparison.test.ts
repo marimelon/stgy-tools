@@ -14,7 +14,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { renderImage } from "@/lib/server/imageRenderer";
-import { decodeStgy, parseBoardData } from "@/lib/stgy";
+import { assignBoardObjectIds, decodeStgy, parseBoardData } from "@/lib/stgy";
 import { TARGET_BOARD_HEIGHT, TARGET_BOARD_WIDTH } from "../types";
 import {
 	comparePixels,
@@ -91,10 +91,11 @@ async function runComparison(
 	if (decoded === null) {
 		throw new Error(`Failed to decode stgy code from ${txtPath}`);
 	}
-	const boardData = parseBoardData(decoded);
-	if (boardData === null) {
+	const parsed = parseBoardData(decoded);
+	if (parsed === null) {
 		throw new Error(`Failed to parse board data from ${txtPath}`);
 	}
+	const boardData = assignBoardObjectIds(parsed);
 
 	// 4. stgyコードをPNGにレンダリング
 	const renderResult = await renderImage({

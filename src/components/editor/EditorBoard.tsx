@@ -19,7 +19,7 @@ import {
 	useCanGroup,
 	useCanvasInteraction,
 	useCircularMode,
-	useEditingTextIndex,
+	useEditingTextId,
 	useEditorActions,
 	useFocusedGroup,
 	useFocusedGroupId,
@@ -30,7 +30,7 @@ import {
 	useIsFocusMode,
 	useLongPress,
 	useSelectedGroup,
-	useSelectedIndices,
+	useSelectedIds,
 } from "@/lib/editor";
 import type { ObjectGroup } from "@/lib/editor/types";
 import { ObjectIds } from "@/lib/stgy";
@@ -56,10 +56,10 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
 	// State
 	const board = useBoard();
-	const selectedIndices = useSelectedIndices();
+	const selectedIds = useSelectedIds();
 	const gridSettings = useGridSettings();
 	const hasClipboard = useGlobalClipboard();
-	const editingTextIndex = useEditingTextIndex();
+	const editingTextId = useEditingTextId();
 	const focusedGroupId = useFocusedGroupId();
 	const groups = useGroups();
 
@@ -70,6 +70,9 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 	const isFocusMode = useIsFocusMode();
 	const circularMode = useCircularMode();
 	const isCircularMode = useIsCircularMode();
+
+	// ID→オブジェクトのルックアップ用Set
+	const selectedIdsSet = new Set(selectedIds);
 
 	// Actions
 	const {
@@ -102,8 +105,8 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
 	// オブジェクトが属するグループを取得するヘルパー関数
 	const getGroupForObject = useCallback(
-		(index: number): ObjectGroup | undefined => {
-			return groups.find((g) => g.objectIndices.includes(index));
+		(objectId: string): ObjectGroup | undefined => {
+			return groups.find((g) => g.objectIds.includes(objectId));
 		},
 		[groups],
 	);
@@ -115,7 +118,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		isOpen: false,
 		x: 0,
 		y: 0,
-		targetIndex: null,
+		targetId: null,
 	});
 
 	const closeContextMenu = useCallback(() => {
@@ -124,11 +127,11 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
 	// オブジェクトダブルクリック（テキスト編集開始）
 	const handleObjectDoubleClick = useCallback(
-		(index: number, e: React.MouseEvent) => {
+		(objectId: string, e: React.MouseEvent) => {
 			e.stopPropagation();
-			const obj = objects[index];
+			const obj = objects.find((o) => o.id === objectId);
 			if (obj?.objectId === ObjectIds.Text && !obj.flags.locked) {
-				startTextEdit(index);
+				startTextEdit(objectId);
 			}
 		},
 		[objects, startTextEdit],
@@ -142,29 +145,29 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 			isOpen: true,
 			x: e.clientX,
 			y: e.clientY,
-			targetIndex: null,
+			targetId: null,
 		});
 	}, []);
 
 	// オブジェクト上での右クリック
 	const handleObjectContextMenu = useCallback(
-		(index: number, e: React.MouseEvent) => {
+		(objectId: string, e: React.MouseEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
 
 			// 未選択のオブジェクトを右クリックした場合は選択する
-			if (!selectedIndices.includes(index)) {
-				selectObject(index);
+			if (!selectedIdsSet.has(objectId)) {
+				selectObject(objectId);
 			}
 
 			setContextMenu({
 				isOpen: true,
 				x: e.clientX,
 				y: e.clientY,
-				targetIndex: index,
+				targetId: objectId,
 			});
 		},
-		[selectedIndices, selectObject],
+		[selectedIdsSet, selectObject],
 	);
 
 	// インタラクションフック
@@ -183,7 +186,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 	} = useCanvasInteraction({
 		svgRef,
 		objects,
-		selectedIndices,
+		selectedIds,
 		gridSettings,
 		focusedGroupId,
 		circularMode,
@@ -202,20 +205,20 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
 	// 長押しフック（タッチデバイス用コンテキストメニュー）
 	const handleLongPress = useCallback(
-		(clientX: number, clientY: number, objectIndex: number | null) => {
+		(clientX: number, clientY: number, objectId: string | null) => {
 			// 未選択のオブジェクトを長押しした場合は選択する
-			if (objectIndex !== null && !selectedIndices.includes(objectIndex)) {
-				selectObject(objectIndex);
+			if (objectId !== null && !selectedIdsSet.has(objectId)) {
+				selectObject(objectId);
 			}
 
 			setContextMenu({
 				isOpen: true,
 				x: clientX,
 				y: clientY,
-				targetIndex: objectIndex,
+				targetId: objectId,
 			});
 		},
-		[selectedIndices, selectObject],
+		[selectedIdsSet, selectObject],
 	);
 
 	const { startLongPress, moveLongPress, cancelLongPress } = useLongPress({
@@ -233,9 +236,9 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
 	// 長押し対応のポインターダウン（オブジェクト）
 	const handleObjectPointerDown = useCallback(
-		(index: number, e: React.PointerEvent) => {
-			startLongPress(e, index);
-			originalObjectPointerDown(index, e);
+		(objectId: string, e: React.PointerEvent) => {
+			startLongPress(e, objectId);
+			originalObjectPointerDown(objectId, e);
 		},
 		[startLongPress, originalObjectPointerDown],
 	);
@@ -259,13 +262,13 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 	);
 
 	// 可視オブジェクトのみ取得
-	const visibleObjects = objects
-		.map((obj, index) => ({ obj, index }))
-		.filter(({ obj }) => obj.flags.visible);
+	const visibleObjects = objects.filter((obj) => obj.flags.visible);
 
 	// 選択オブジェクトの取得
 	const selectedObject =
-		selectedIndices.length === 1 ? objects[selectedIndices[0]] : null;
+		selectedIds.length === 1
+			? objects.find((o) => o.id === selectedIds[0])
+			: null;
 
 	// マーキー矩形の計算
 	const marqueeRect = marqueeState
@@ -332,37 +335,37 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 				)}
 
 				{/* オブジェクト (逆順で描画してレイヤー順を正しくする) */}
-				{[...visibleObjects].reverse().map(({ obj, index }) => {
+				{[...visibleObjects].reverse().map((obj) => {
 					// フォーカスモードでフォーカス外のオブジェクトは薄く表示
 					const isOutsideFocus =
-						isFocusMode && !focusedGroup?.objectIndices.includes(index);
+						isFocusMode && !focusedGroup?.objectIds.includes(obj.id);
 					const opacity =
-						editingTextIndex === index ? 0.3 : isOutsideFocus ? 0.3 : 1;
+						editingTextId === obj.id ? 0.3 : isOutsideFocus ? 0.3 : 1;
 					const pointerEvents = isOutsideFocus ? "none" : "auto";
 
 					return (
 						// biome-ignore lint/a11y/noStaticElementInteractions: SVG group elements require onClick for selection
 						<g
-							key={index}
-							onClick={(e) => handleObjectClick(index, e)}
-							onDoubleClick={(e) => handleObjectDoubleClick(index, e)}
-							onPointerDown={(e) => handleObjectPointerDown(index, e)}
-							onContextMenu={(e) => handleObjectContextMenu(index, e)}
+							key={obj.id}
+							onClick={(e) => handleObjectClick(obj.id, e)}
+							onDoubleClick={(e) => handleObjectDoubleClick(obj.id, e)}
+							onPointerDown={(e) => handleObjectPointerDown(obj.id, e)}
+							onContextMenu={(e) => handleObjectContextMenu(obj.id, e)}
 							style={{
 								cursor: isOutsideFocus ? "default" : "move",
 								opacity,
 								pointerEvents,
 							}}
 						>
-							<ObjectRenderer object={obj} index={index} selected={false} />
+							<ObjectRenderer object={obj} selected={false} />
 						</g>
 					);
 				})}
 
 				{/* 選択インジケーター (複数選択時のみ) */}
-				{selectedIndices.length > 1 &&
-					selectedIndices.map((index) => {
-						const obj = objects[index];
+				{selectedIds.length > 1 &&
+					selectedIds.map((objectId) => {
+						const obj = objects.find((o) => o.id === objectId);
 						if (!obj) return null;
 						const bbox = getObjectBoundingBox(
 							obj.objectId,
@@ -389,7 +392,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
 							return (
 								<SelectionIndicator
-									key={`selection-${index}`}
+									key={`selection-${objectId}`}
 									x={centerX}
 									y={centerY}
 									width={bbox.width * objScale}
@@ -403,7 +406,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
 						return (
 							<SelectionIndicator
-								key={`selection-${index}`}
+								key={`selection-${objectId}`}
 								x={obj.position.x}
 								y={obj.position.y}
 								width={bbox.width * objScale}
@@ -416,19 +419,23 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 					})}
 
 				{/* インラインテキストエディタ */}
-				{editingTextIndex !== null && objects[editingTextIndex] && (
-					<InlineTextEditor
-						object={objects[editingTextIndex]}
-						onEndEdit={endTextEdit}
-					/>
-				)}
+				{editingTextId !== null &&
+					(() => {
+						const editingObject = objects.find((o) => o.id === editingTextId);
+						return editingObject ? (
+							<InlineTextEditor
+								object={editingObject}
+								onEndEdit={endTextEdit}
+							/>
+						) : null;
+					})()}
 
 				{/* 選択ハンドル (単一選択時のみ、テキスト編集中は非表示) */}
 				{selectedObject &&
-					selectedIndices.length === 1 &&
-					editingTextIndex === null &&
+					selectedIds.length === 1 &&
+					editingTextId === null &&
 					(() => {
-						const selectedIndex = selectedIndices[0];
+						const selectedId = selectedIds[0];
 
 						// Lineの場合は専用ハンドルを表示
 						if (selectedObject.objectId === ObjectIds.Line) {
@@ -445,7 +452,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 									endY={endY}
 									onStartPointDrag={(x, y) => {
 										// 始点移動：positionを更新
-										updateObject(selectedIndex, {
+										updateObject(selectedId, {
 											position: { x, y },
 										});
 									}}
@@ -457,7 +464,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 										const dx = x - selectedObject.position.x;
 										const dy = y - selectedObject.position.y;
 										const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-										updateObject(selectedIndex, {
+										updateObject(selectedId, {
 											param1: Math.round(x * 10),
 											param2: Math.round(y * 10),
 											rotation: Math.round(angle),
@@ -536,7 +543,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 			{/* 円形配置モードインジケーター */}
 			{isCircularMode && circularMode && (
 				<CircularModeIndicator
-					objectCount={circularMode.participatingIndices.length}
+					objectCount={circularMode.participatingIds.length}
 					onExit={exitCircularMode}
 				/>
 			)}
@@ -545,7 +552,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 			<ContextMenu
 				menuState={contextMenu}
 				onClose={closeContextMenu}
-				selectedIndices={selectedIndices}
+				selectedIds={selectedIds}
 				hasClipboard={hasClipboard}
 				canGroup={canGroup}
 				selectedGroup={selectedGroup}

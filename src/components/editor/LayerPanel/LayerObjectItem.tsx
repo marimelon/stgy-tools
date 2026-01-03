@@ -10,7 +10,7 @@ import type { DropTarget } from "./types";
 import { useAutoScrollOnSelect } from "./useAutoScrollOnSelect";
 
 interface LayerObjectItemProps {
-	index: number;
+	objectId: string;
 	object: BoardObject;
 	isSelected: boolean;
 	isInGroup: boolean;
@@ -21,16 +21,16 @@ interface LayerObjectItemProps {
 	draggedGroupId: string | null;
 	/** フォーカスモードでフォーカス外のオブジェクトかどうか */
 	isOutsideFocus?: boolean;
-	onDragStart: (e: DragEvent<HTMLDivElement>, index: number) => void;
-	onDragOver: (e: DragEvent<HTMLDivElement>, index: number) => void;
+	onDragStart: (e: DragEvent<HTMLDivElement>, objectId: string) => void;
+	onDragOver: (e: DragEvent<HTMLDivElement>, objectId: string) => void;
 	onDragEnd: () => void;
 	onDrop: (e: DragEvent<HTMLDivElement>) => void;
-	onSelect: (index: number, e: React.MouseEvent) => void;
-	onToggleVisibility: (index: number) => void;
-	onToggleLock: (index: number) => void;
+	onSelect: (objectId: string, e: React.MouseEvent) => void;
+	onToggleVisibility: (objectId: string) => void;
+	onToggleLock: (objectId: string) => void;
 	onContextMenu: (
 		e: React.MouseEvent,
-		index: number,
+		objectId: string,
 		isInGroup: boolean,
 		groupId?: string,
 	) => void;
@@ -40,7 +40,7 @@ interface LayerObjectItemProps {
  * レイヤーパネルのオブジェクトアイテム
  */
 export function LayerObjectItem({
-	index,
+	objectId,
 	object,
 	isSelected,
 	isInGroup,
@@ -65,15 +65,17 @@ export function LayerObjectItem({
 		defaultValue: `ID: ${object.objectId}`,
 	});
 
-	// グループドラッグ中でグループ内アイテムの場合はグループヘッダーに任せる
+	// ドロップターゲットはindex基準なので、objects配列から自分のインデックスを探す必要あり
+	// ここでは dropTarget が表示上の判定に使われるだけなので、
+	// dropTarget は親から objectId に基づいて渡される前提
 	const isDropBefore =
-		dropTarget?.index === index &&
-		dropTarget?.position === "before" &&
-		!(draggedGroupId && isInGroup);
+		dropTarget !== null &&
+		!(draggedGroupId && isInGroup) &&
+		dropTarget.position === "before";
 	const isDropAfter =
-		dropTarget?.index === index &&
-		dropTarget?.position === "after" &&
-		!(draggedGroupId && isInGroup);
+		dropTarget !== null &&
+		!(draggedGroupId && isInGroup) &&
+		dropTarget.position === "after";
 
 	return (
 		<div ref={itemRef} className="relative">
@@ -86,12 +88,12 @@ export function LayerObjectItem({
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: Interactive draggable layer */}
 			<div
 				draggable
-				onDragStart={(e) => onDragStart(e, index)}
-				onDragOver={(e) => onDragOver(e, index)}
+				onDragStart={(e) => onDragStart(e, objectId)}
+				onDragOver={(e) => onDragOver(e, objectId)}
 				onDragEnd={onDragEnd}
 				onDrop={onDrop}
-				onClick={(e) => onSelect(index, e)}
-				onContextMenu={(e) => onContextMenu(e, index, isInGroup, groupId)}
+				onClick={(e) => onSelect(objectId, e)}
+				onContextMenu={(e) => onContextMenu(e, objectId, isInGroup, groupId)}
 				className={`layer-item select-none ${isInGroup ? "in-group" : ""} ${isLastInGroup ? "last-in-group" : ""} ${isDragging ? "opacity-50" : isOutsideFocus ? "opacity-40" : ""} ${isSelected ? "selected" : ""}`}
 			>
 				{/* ドラッグハンドル */}
@@ -104,7 +106,7 @@ export function LayerObjectItem({
 					type="button"
 					onClick={(e) => {
 						e.stopPropagation();
-						onToggleVisibility(index);
+						onToggleVisibility(objectId);
 					}}
 					className={
 						object.flags.visible ? "text-foreground" : "text-muted-foreground"
@@ -123,7 +125,7 @@ export function LayerObjectItem({
 					type="button"
 					onClick={(e) => {
 						e.stopPropagation();
-						onToggleLock(index);
+						onToggleLock(objectId);
 					}}
 					className={
 						object.flags.locked ? "text-foreground" : "text-muted-foreground"

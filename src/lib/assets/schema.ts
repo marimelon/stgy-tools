@@ -33,7 +33,10 @@ const objectFlagsSchema = z.object({
 });
 
 // BoardObject schema (mirrors stgy/types.ts)
+// Note: id is optional for backward compatibility. It's a runtime-only field that's
+// regenerated when assets are loaded.
 const boardObjectSchema = z.object({
+	id: z.string().optional(),
 	objectId: z.number(),
 	text: z.string().optional(),
 	flags: objectFlagsSchema,

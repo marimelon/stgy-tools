@@ -14,13 +14,13 @@ export function createGroupActions(store: EditorStore) {
 	/**
 	 * オブジェクトをグループ化
 	 */
-	const groupObjects = (indices: number[]) => {
-		if (indices.length < 2) return;
+	const groupObjects = (objectIds: string[]) => {
+		if (objectIds.length < 2) return;
 
 		store.setState((state) => {
 			const newGroup: ObjectGroup = {
 				id: generateGroupId(),
-				objectIndices: [...indices].sort((a, b) => a - b),
+				objectIds: [...objectIds],
 			};
 
 			const newGroups = [...state.groups, newGroup];
@@ -41,8 +41,8 @@ export function createGroupActions(store: EditorStore) {
 	 */
 	const groupSelected = () => {
 		const state = store.state;
-		if (state.selectedIndices.length < 2) return;
-		groupObjects(state.selectedIndices);
+		if (state.selectedIds.length < 2) return;
+		groupObjects(state.selectedIds);
 	};
 
 	/**
@@ -109,21 +109,19 @@ export function createGroupActions(store: EditorStore) {
 	/**
 	 * オブジェクトをグループから除外
 	 */
-	const removeFromGroup = (objectIndex: number) => {
+	const removeFromGroup = (objectId: string) => {
 		store.setState((state) => {
 			// オブジェクトが属するグループを探す
-			const group = state.groups.find((g) =>
-				g.objectIndices.includes(objectIndex),
-			);
+			const group = state.groups.find((g) => g.objectIds.includes(objectId));
 			if (!group) return state;
 
 			// グループから除外
-			const newIndices = group.objectIndices.filter((i) => i !== objectIndex);
+			const newIds = group.objectIds.filter((id) => id !== objectId);
 
 			let newGroups: typeof state.groups;
 			let newFocusedGroupId = state.focusedGroupId;
 
-			if (newIndices.length < 2) {
+			if (newIds.length < 2) {
 				// 残りが1つ以下ならグループ自体を削除
 				newGroups = state.groups.filter((g) => g.id !== group.id);
 				// フォーカス中のグループが削除された場合、フォーカスをクリア
@@ -133,7 +131,7 @@ export function createGroupActions(store: EditorStore) {
 			} else {
 				// グループを更新
 				newGroups = state.groups.map((g) =>
-					g.id === group.id ? { ...g, objectIndices: newIndices } : g,
+					g.id === group.id ? { ...g, objectIds: newIds } : g,
 				);
 			}
 
@@ -176,11 +174,10 @@ export function createGroupActions(store: EditorStore) {
 
 			// フォーカス設定時、フォーカス外のオブジェクトが選択されていたら選択解除
 			const focusedGroup = state.groups.find((g) => g.id === groupId);
-			const newSelectedIndices = focusedGroup
-				? state.selectedIndices.filter((idx) =>
-						focusedGroup.objectIndices.includes(idx),
-					)
-				: state.selectedIndices;
+			const focusedIdSet = new Set(focusedGroup?.objectIds ?? []);
+			const newSelectedIds = focusedGroup
+				? state.selectedIds.filter((id) => focusedIdSet.has(id))
+				: state.selectedIds;
 
 			// グループが折りたたまれていたら展開する
 			const newGroups = state.groups.map((g) =>
@@ -190,7 +187,7 @@ export function createGroupActions(store: EditorStore) {
 			return {
 				...state,
 				focusedGroupId: groupId,
-				selectedIndices: newSelectedIndices,
+				selectedIds: newSelectedIds,
 				groups: newGroups,
 			};
 		});
@@ -209,8 +206,8 @@ export function createGroupActions(store: EditorStore) {
 	/**
 	 * オブジェクトが属するグループを取得
 	 */
-	const getGroupForObject = (index: number): ObjectGroup | undefined => {
-		return store.state.groups.find((g) => g.objectIndices.includes(index));
+	const getGroupForObject = (objectId: string): ObjectGroup | undefined => {
+		return store.state.groups.find((g) => g.objectIds.includes(objectId));
 	};
 
 	return {

@@ -10,7 +10,7 @@ export interface ContextMenuState {
 	isOpen: boolean;
 	x: number;
 	y: number;
-	targetIndex: number | null;
+	targetId: string | null;
 }
 
 interface ContextMenuProps {
@@ -18,8 +18,8 @@ interface ContextMenuProps {
 	menuState: ContextMenuState;
 	/** メニューを閉じるコールバック */
 	onClose: () => void;
-	/** 選択中のインデックス */
-	selectedIndices: number[];
+	/** 選択中のID */
+	selectedIds: string[];
 	/** クリップボードにデータがあるか */
 	hasClipboard: boolean;
 	/** グループ化可能か */
@@ -62,7 +62,7 @@ function isDivider(item: MenuItemOrDivider): item is MenuDivider {
 export function ContextMenu({
 	menuState,
 	onClose,
-	selectedIndices,
+	selectedIds,
 	hasClipboard,
 	canGroup,
 	selectedGroup,
@@ -73,8 +73,8 @@ export function ContextMenu({
 	const [position, setPosition] = useState({ x: 0, y: 0 });
 	const [isPositioned, setIsPositioned] = useState(false);
 
-	const hasSelection = selectedIndices.length > 0;
-	const singleSelection = selectedIndices.length === 1;
+	const hasSelection = selectedIds.length > 0;
+	const singleSelection = selectedIds.length === 1;
 
 	// メニュー位置を計算
 	useLayoutEffect(() => {

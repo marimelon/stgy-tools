@@ -25,19 +25,19 @@ export function createModeActions(store: EditorStore) {
 	const enterCircularMode = (
 		center: Position,
 		radius: number,
-		indices: number[],
+		objectIds: string[],
 	) => {
 		store.setState((state) => {
 			// 各オブジェクトの初期角度を計算
-			const objectAngles = new Map<number, number>();
-			for (const idx of indices) {
-				const obj = state.board.objects[idx];
+			const objectAngles = new Map<string, number>();
+			for (const id of objectIds) {
+				const obj = state.board.objects.find((o) => o.id === id);
 				if (obj) {
 					const angle = Math.atan2(
 						obj.position.y - center.y,
 						obj.position.x - center.x,
 					);
-					objectAngles.set(idx, angle);
+					objectAngles.set(id, angle);
 				}
 			}
 
@@ -46,7 +46,7 @@ export function createModeActions(store: EditorStore) {
 				circularMode: {
 					center,
 					radius: Math.max(radius, MIN_RADIUS),
-					participatingIndices: indices,
+					participatingIds: objectIds,
 					objectAngles,
 				},
 			};
@@ -77,10 +77,10 @@ export function createModeActions(store: EditorStore) {
 			let newBoard = cloneBoard(state.board);
 
 			// 参加オブジェクトを移動
-			for (const idx of state.circularMode.participatingIndices) {
-				const obj = newBoard.objects[idx];
+			for (const id of state.circularMode.participatingIds) {
+				const obj = newBoard.objects.find((o) => o.id === id);
 				if (obj) {
-					newBoard = updateObjectInBoard(newBoard, idx, {
+					newBoard = updateObjectInBoard(newBoard, id, {
 						position: {
 							x: obj.position.x + deltaX,
 							y: obj.position.y + deltaY,
@@ -113,8 +113,8 @@ export function createModeActions(store: EditorStore) {
 			let newBoard = cloneBoard(state.board);
 
 			// 各オブジェクトを新しい半径で再配置（角度は保持）
-			for (const [idx, angle] of objectAngles) {
-				newBoard = updateObjectInBoard(newBoard, idx, {
+			for (const [id, angle] of objectAngles) {
+				newBoard = updateObjectInBoard(newBoard, id, {
 					position: {
 						x: center.x + newRadius * Math.cos(angle),
 						y: center.y + newRadius * Math.sin(angle),
@@ -136,19 +136,19 @@ export function createModeActions(store: EditorStore) {
 	/**
 	 * オブジェクトを円周上で移動
 	 */
-	const moveObjectOnCircle = (index: number, angle: number) => {
+	const moveObjectOnCircle = (objectId: string, angle: number) => {
 		store.setState((state) => {
 			if (!state.circularMode) return state;
 
-			const { center, radius, participatingIndices, objectAngles } =
+			const { center, radius, participatingIds, objectAngles } =
 				state.circularMode;
 
 			// 参加オブジェクトでない場合は無視
-			if (!participatingIndices.includes(index)) return state;
+			if (!participatingIds.includes(objectId)) return state;
 
 			// オブジェクトを新しい角度の位置に移動
 			let newBoard = cloneBoard(state.board);
-			newBoard = updateObjectInBoard(newBoard, index, {
+			newBoard = updateObjectInBoard(newBoard, objectId, {
 				position: {
 					x: center.x + radius * Math.cos(angle),
 					y: center.y + radius * Math.sin(angle),
@@ -157,7 +157,7 @@ export function createModeActions(store: EditorStore) {
 
 			// 角度を更新
 			const newObjectAngles = new Map(objectAngles);
-			newObjectAngles.set(index, angle);
+			newObjectAngles.set(objectId, angle);
 
 			return {
 				...state,
@@ -177,9 +177,9 @@ export function createModeActions(store: EditorStore) {
 	/**
 	 * テキスト編集を開始
 	 */
-	const startTextEdit = (index: number) => {
+	const startTextEdit = (objectId: string) => {
 		store.setState((state) => {
-			const obj = state.board.objects[index];
+			const obj = state.board.objects.find((o) => o.id === objectId);
 
 			// テキストオブジェクトのみ編集可能
 			if (!obj || obj.objectId !== ObjectIds.Text) {
@@ -193,8 +193,8 @@ export function createModeActions(store: EditorStore) {
 
 			return {
 				...state,
-				editingTextIndex: index,
-				selectedIndices: [index],
+				editingTextId: objectId,
+				selectedIds: [objectId],
 			};
 		});
 	};
@@ -204,17 +204,25 @@ export function createModeActions(store: EditorStore) {
 	 */
 	const endTextEdit = (save: boolean, text?: string) => {
 		store.setState((state) => {
-			if (state.editingTextIndex === null) {
+			if (state.editingTextId === null) {
 				return state;
 			}
 
-			const editingIndex = state.editingTextIndex;
+			const editingId = state.editingTextId;
+			const editingIndex = state.board.objects.findIndex(
+				(o) => o.id === editingId,
+			);
 			const currentText = state.board.objects[editingIndex]?.text;
 
-			let newState = { ...state, editingTextIndex: null };
+			let newState = { ...state, editingTextId: null };
 
 			// テキストが実際に変更された場合のみ更新
-			if (save && text !== undefined && text !== currentText) {
+			if (
+				save &&
+				text !== undefined &&
+				text !== currentText &&
+				editingIndex !== -1
+			) {
 				// 空文字の場合はデフォルトテキストに戻す
 				const finalText =
 					text.trim() === "" ? i18n.t("common.defaultText") : text;

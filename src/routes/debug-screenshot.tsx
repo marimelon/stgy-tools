@@ -47,7 +47,12 @@ import {
 	type ViewMode,
 } from "@/lib/screenshot";
 import { generateDebugPageMeta } from "@/lib/seo";
-import { type BoardData, decodeStgy, parseBoardData } from "@/lib/stgy";
+import {
+	assignBoardObjectIds,
+	type BoardData,
+	decodeStgy,
+	parseBoardData,
+} from "@/lib/stgy";
 
 const seo = generateDebugPageMeta("Screenshot Comparison Debug");
 
@@ -107,7 +112,8 @@ function ScreenshotDebugPage() {
 		if (!stgyCode.trim()) return null;
 		try {
 			const binary = decodeStgy(stgyCode.trim());
-			return parseBoardData(binary);
+			const parsed = parseBoardData(binary);
+			return assignBoardObjectIds(parsed);
 		} catch {
 			return null;
 		}

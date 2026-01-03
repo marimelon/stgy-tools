@@ -5,16 +5,17 @@
 import i18n from "@/lib/i18n";
 import { ObjectIds } from "@/lib/stgy";
 import type { EditorState } from "../../types";
+import { findObjectById } from "../utils";
 
 /**
  * テキスト編集を開始
  */
 export function handleStartTextEdit(
 	state: EditorState,
-	payload: { index: number },
+	payload: { objectId: string },
 ): EditorState {
-	const { index } = payload;
-	const obj = state.board.objects[index];
+	const { objectId } = payload;
+	const obj = findObjectById(state.board, objectId);
 
 	// テキストオブジェクトのみ編集可能
 	if (!obj || obj.objectId !== ObjectIds.Text) {
@@ -28,8 +29,8 @@ export function handleStartTextEdit(
 
 	return {
 		...state,
-		editingTextIndex: index,
-		selectedIndices: [index],
+		editingTextId: objectId,
+		selectedIds: [objectId],
 	};
 }
 
@@ -42,14 +43,19 @@ export function handleEndTextEdit(
 ): EditorState {
 	const { save, text } = payload;
 
-	if (state.editingTextIndex === null) {
+	if (state.editingTextId === null) {
 		return state;
 	}
 
-	const editingIndex = state.editingTextIndex;
+	const editingId = state.editingTextId;
+	const editingIndex = state.board.objects.findIndex((o) => o.id === editingId);
+	if (editingIndex === -1) {
+		return { ...state, editingTextId: null };
+	}
+
 	const currentText = state.board.objects[editingIndex]?.text;
 
-	let newState: EditorState = { ...state, editingTextIndex: null };
+	let newState: EditorState = { ...state, editingTextId: null };
 
 	// テキストが実際に変更された場合のみ更新
 	if (save && text !== undefined && text !== currentText) {

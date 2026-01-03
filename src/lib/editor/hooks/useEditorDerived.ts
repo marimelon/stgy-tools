@@ -18,10 +18,10 @@ export function useSelectedObjects(): BoardObject[] {
 	const store = getEditorStore();
 	return useStore(
 		store,
-		(state: EditorState) =>
-			state.selectedIndices
-				.filter((i) => i >= 0 && i < state.board.objects.length)
-				.map((i) => state.board.objects[i]),
+		(state: EditorState) => {
+			const selectedSet = new Set(state.selectedIds);
+			return state.board.objects.filter((obj) => selectedSet.has(obj.id));
+		},
 		{ equal: shallow },
 	);
 }
@@ -31,10 +31,7 @@ export function useSelectedObjects(): BoardObject[] {
  */
 export function useCanGroup(): boolean {
 	const store = getEditorStore();
-	return useStore(
-		store,
-		(state: EditorState) => state.selectedIndices.length >= 2,
-	);
+	return useStore(store, (state: EditorState) => state.selectedIds.length >= 2);
 }
 
 /**
@@ -42,10 +39,7 @@ export function useCanGroup(): boolean {
  */
 export function useCanAlign(): boolean {
 	const store = getEditorStore();
-	return useStore(
-		store,
-		(state: EditorState) => state.selectedIndices.length >= 2,
-	);
+	return useStore(store, (state: EditorState) => state.selectedIds.length >= 2);
 }
 
 /**
@@ -54,10 +48,8 @@ export function useCanAlign(): boolean {
 export function useSelectedGroup(): ObjectGroup | undefined {
 	const store = getEditorStore();
 	return useStore(store, (state: EditorState) => {
-		if (state.selectedIndices.length === 0) return undefined;
-		return state.groups.find((g) =>
-			g.objectIndices.includes(state.selectedIndices[0]),
-		);
+		if (state.selectedIds.length === 0) return undefined;
+		return state.groups.find((g) => g.objectIds.includes(state.selectedIds[0]));
 	});
 }
 

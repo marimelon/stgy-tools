@@ -17,13 +17,13 @@ export interface UseLongPressParams {
 	onLongPress: (
 		clientX: number,
 		clientY: number,
-		objectIndex: number | null,
+		objectId: string | null,
 	) => void;
 }
 
 export interface UseLongPressReturn {
 	/** ポインターダウン時に呼び出す（長押しタイマー開始） */
-	startLongPress: (e: React.PointerEvent, objectIndex: number | null) => void;
+	startLongPress: (e: React.PointerEvent, objectId: string | null) => void;
 	/** ポインター移動時に呼び出す（閾値超えでキャンセル） */
 	moveLongPress: (e: React.PointerEvent) => void;
 	/** ポインターアップ時に呼び出す（タイマーキャンセル） */
@@ -33,7 +33,7 @@ export interface UseLongPressReturn {
 interface LongPressState {
 	timerId: ReturnType<typeof setTimeout>;
 	startPosition: Position;
-	objectIndex: number | null;
+	objectId: string | null;
 }
 
 /**
@@ -58,7 +58,7 @@ export function useLongPress({
 	 * 長押しタイマーを開始
 	 */
 	const startLongPress = useCallback(
-		(e: React.PointerEvent, objectIndex: number | null) => {
+		(e: React.PointerEvent, objectId: string | null) => {
 			// マウスの場合は長押し不要（右クリックがある）
 			if (e.pointerType === "mouse") return;
 
@@ -69,14 +69,14 @@ export function useLongPress({
 			const clientY = e.clientY;
 
 			const timerId = setTimeout(() => {
-				onLongPress(clientX, clientY, objectIndex);
+				onLongPress(clientX, clientY, objectId);
 				longPressStateRef.current = null;
 			}, LONG_PRESS_DURATION);
 
 			longPressStateRef.current = {
 				timerId,
 				startPosition: { x: clientX, y: clientY },
-				objectIndex,
+				objectId,
 			};
 		},
 		[onLongPress, clearLongPressTimer],

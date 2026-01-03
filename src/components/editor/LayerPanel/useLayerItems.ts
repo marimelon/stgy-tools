@@ -12,7 +12,7 @@ import type { LayerItem } from "./types";
 
 export interface UseLayerItemsParams {
 	objects: BoardObject[];
-	getGroupForObject: (index: number) => ObjectGroup | undefined;
+	getGroupForObject: (objectId: string) => ObjectGroup | undefined;
 }
 
 export interface UseLayerItemsReturn {
@@ -38,17 +38,19 @@ export function useLayerItems({
 	// レイヤーアイテムのリストを構築（グループを考慮）
 	const layerItems = useMemo<LayerItem[]>(() => {
 		const items: LayerItem[] = [];
-		const processedIndices = new Set<number>();
+		const processedIds = new Set<string>();
 
-		for (let i = 0; i < objects.length; i++) {
-			if (processedIndices.has(i)) continue;
+		for (const obj of objects) {
+			if (processedIds.has(obj.id)) continue;
 
-			const group = getGroupForObject(i);
+			const group = getGroupForObject(obj.id);
 
 			if (group) {
-				// グループの最初のオブジェクトでグループヘッダーを追加
-				const firstInGroup = Math.min(...group.objectIndices);
-				if (i === firstInGroup) {
+				// グループの最初のオブジェクト（配列順で最初に出現するオブジェクト）でグループヘッダーを追加
+				const firstGroupObjectId = group.objectIds.find((id) =>
+					objects.some((o) => o.id === id),
+				);
+				if (obj.id === firstGroupObjectId) {
 					items.push({
 						type: "group-header",
 						group,
@@ -58,25 +60,26 @@ export function useLayerItems({
 
 					// グループ内のオブジェクトを追加（折りたたまれていなければ）
 					if (!group.collapsed) {
-						// 元の配列を変更しないようにコピーしてからソート
-						const sortedIndices = [...group.objectIndices].sort(
-							(a, b) => a - b,
+						// オブジェクト配列の順序に従ってグループ内オブジェクトを追加
+						const groupObjectsInOrder = objects.filter((o) =>
+							group.objectIds.includes(o.id),
 						);
-						const lastIndex = sortedIndices[sortedIndices.length - 1];
-						for (const idx of sortedIndices) {
+						const lastObject =
+							groupObjectsInOrder[groupObjectsInOrder.length - 1];
+						for (const groupObj of groupObjectsInOrder) {
 							items.push({
 								type: "object",
-								index: idx,
+								objectId: groupObj.id,
 								isInGroup: true,
 								groupId: group.id,
-								isLastInGroup: idx === lastIndex,
+								isLastInGroup: groupObj.id === lastObject?.id,
 							});
-							processedIndices.add(idx);
+							processedIds.add(groupObj.id);
 						}
 					} else {
-						// 折りたたまれている場合はインデックスだけ記録
-						for (const idx of group.objectIndices) {
-							processedIndices.add(idx);
+						// 折りたたまれている場合はIDだけ記録
+						for (const id of group.objectIds) {
+							processedIds.add(id);
 						}
 					}
 				}
@@ -84,7 +87,7 @@ export function useLayerItems({
 				// グループに属していないオブジェクト
 				items.push({
 					type: "object",
-					index: i,
+					objectId: obj.id,
 					isInGroup: false,
 				});
 			}
@@ -96,7 +99,10 @@ export function useLayerItems({
 	// グループ内のオブジェクトが全て表示中かどうかを取得
 	const isGroupAllVisible = useCallback(
 		(group: ObjectGroup) => {
-			return group.objectIndices.every((i) => objects[i]?.flags.visible);
+			return group.objectIds.every((id) => {
+				const obj = objects.find((o) => o.id === id);
+				return obj?.flags.visible;
+			});
 		},
 		[objects],
 	);
@@ -104,7 +110,10 @@ export function useLayerItems({
 	// グループ内のオブジェクトが全て非表示かどうかを取得
 	const isGroupAllHidden = useCallback(
 		(group: ObjectGroup) => {
-			return group.objectIndices.every((i) => !objects[i]?.flags.visible);
+			return group.objectIds.every((id) => {
+				const obj = objects.find((o) => o.id === id);
+				return !obj?.flags.visible;
+			});
 		},
 		[objects],
 	);
@@ -112,7 +121,10 @@ export function useLayerItems({
 	// グループ内のオブジェクトが全てロック中かどうかを取得
 	const isGroupAllLocked = useCallback(
 		(group: ObjectGroup) => {
-			return group.objectIndices.every((i) => objects[i]?.flags.locked);
+			return group.objectIds.every((id) => {
+				const obj = objects.find((o) => o.id === id);
+				return obj?.flags.locked;
+			});
 		},
 		[objects],
 	);
@@ -120,7 +132,10 @@ export function useLayerItems({
 	// グループ内のオブジェクトが全てロック解除かどうかを取得
 	const isGroupAllUnlocked = useCallback(
 		(group: ObjectGroup) => {
-			return group.objectIndices.every((i) => !objects[i]?.flags.locked);
+			return group.objectIds.every((id) => {
+				const obj = objects.find((o) => o.id === id);
+				return !obj?.flags.locked;
+			});
 		},
 		[objects],
 	);

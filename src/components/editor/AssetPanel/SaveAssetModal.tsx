@@ -16,7 +16,7 @@ import {
 	calculatePreviewViewBox,
 	useAssets,
 } from "@/lib/assets";
-import { useObjects, useSelectedIndices } from "@/lib/editor";
+import { useObjects, useSelectedIds } from "@/lib/editor";
 
 interface SaveAssetModalProps {
 	/** 閉じるときのコールバック */
@@ -29,16 +29,15 @@ interface SaveAssetModalProps {
 export function SaveAssetModal({ onClose }: SaveAssetModalProps) {
 	const { t } = useTranslation();
 	const objects = useObjects();
-	const selectedIndices = useSelectedIndices();
+	const selectedIds = useSelectedIds();
 	const { createAsset } = useAssets();
 	const nameInputId = useId();
 
 	const [name, setName] = useState("");
 
 	// 選択されたオブジェクトを取得
-	const selectedObjects = selectedIndices
-		.filter((i) => i >= 0 && i < objects.length)
-		.map((i) => objects[i]);
+	const selectedIdsSet = new Set(selectedIds);
+	const selectedObjects = objects.filter((obj) => selectedIdsSet.has(obj.id));
 
 	// プレビュー用のバウンディングボックスとviewBoxを計算
 	const bounds = calculateAssetBounds(selectedObjects);
@@ -79,18 +78,9 @@ export function SaveAssetModal({ onClose }: SaveAssetModalProps) {
 							aria-label={t("assetPanel.saveModal.preview")}
 						>
 							{/* SVGは後から描画したものが上に表示されるため、逆順で描画 */}
-							{[...selectedObjects].reverse().map((obj, index) => {
-								const originalIndex = selectedObjects.length - 1 - index;
-								const key = `preview-${obj.position.x}-${obj.position.y}-${obj.objectId}-${originalIndex}`;
-								return (
-									<ObjectRenderer
-										key={key}
-										object={obj}
-										index={originalIndex}
-										selected={false}
-									/>
-								);
-							})}
+							{[...selectedObjects].reverse().map((obj) => (
+								<ObjectRenderer key={obj.id} object={obj} selected={false} />
+							))}
 						</svg>
 					</div>
 					<p className="text-xs text-muted-foreground mt-1">

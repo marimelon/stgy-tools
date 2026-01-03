@@ -72,7 +72,7 @@ export {
 	useBoard,
 	useBoardName,
 	useCircularMode,
-	useEditingTextIndex,
+	useEditingTextId,
 	useEditorSelector,
 	useEditorSelectorShallow,
 	useEditorState,
@@ -83,7 +83,7 @@ export {
 	useIsDirty,
 	useLastError,
 	useObjects,
-	useSelectedIndices,
+	useSelectedIds,
 } from "./hooks/useEditorStore";
 export type {
 	UseLongPressParams,

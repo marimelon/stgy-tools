@@ -33,11 +33,11 @@ export interface DragState {
 	/** ドラッグ開始時のオブジェクト状態 */
 	startObjectState: BoardObject;
 	/** 選択中の全オブジェクトの初期位置（グリッドスナップ用） */
-	startPositions: Map<number, Position>;
+	startPositions: Map<string, Position>;
 	/** 操作中のハンドル */
 	handle?: HandleType;
-	/** 操作対象のオブジェクトインデックス */
-	objectIndex: number;
+	/** 操作対象のオブジェクトID */
+	objectId: string;
 }
 
 /** マーキー選択状態 */
@@ -57,10 +57,10 @@ export interface CircularModeState {
 	center: Position;
 	/** 円の半径 */
 	radius: number;
-	/** 参加オブジェクトのインデックス */
-	participatingIndices: number[];
-	/** 各オブジェクトの角度（index → angle in radians） */
-	objectAngles: Map<number, number>;
+	/** 参加オブジェクトのID */
+	participatingIds: string[];
+	/** 各オブジェクトの角度（id → angle in radians） */
+	objectAngles: Map<string, number>;
 }
 
 // ============================================
@@ -83,8 +83,8 @@ export interface EditorBoardProps {
 export interface ObjectGroup {
 	/** グループID */
 	id: string;
-	/** グループに含まれるオブジェクトのインデックス */
-	objectIndices: number[];
+	/** グループに含まれるオブジェクトのID */
+	objectIds: string[];
 	/** グループ名（オプション） */
 	name?: string;
 	/** 折りたたみ状態 */
@@ -242,8 +242,8 @@ export interface EditorError {
 export interface EditorState {
 	/** 現在のボードデータ */
 	board: BoardData;
-	/** 選択されているオブジェクトのインデックス (複数選択対応) */
-	selectedIndices: number[];
+	/** 選択されているオブジェクトのID (複数選択対応) */
+	selectedIds: string[];
 	/** オブジェクトグループ */
 	groups: ObjectGroup[];
 	/** グリッド設定 */
@@ -254,8 +254,8 @@ export interface EditorState {
 	historyIndex: number;
 	/** 変更があるかどうか */
 	isDirty: boolean;
-	/** インライン編集中のテキストオブジェクトのインデックス（null = 編集なし） */
-	editingTextIndex: number | null;
+	/** インライン編集中のテキストオブジェクトのID（null = 編集なし） */
+	editingTextId: string | null;
 	/** 最後のエラー（UIで表示後クリア） */
 	lastError: EditorError | null;
 	/** フォーカス中のグループID（null = フォーカスなし） */
@@ -269,13 +269,13 @@ export interface EditorState {
  */
 export type EditorAction =
 	| { type: "SET_BOARD"; board: BoardData }
-	| { type: "SELECT_OBJECT"; index: number; additive?: boolean }
-	| { type: "SELECT_OBJECTS"; indices: number[] }
+	| { type: "SELECT_OBJECT"; objectId: string; additive?: boolean }
+	| { type: "SELECT_OBJECTS"; objectIds: string[] }
 	| { type: "DESELECT_ALL" }
-	| { type: "UPDATE_OBJECT"; index: number; updates: Partial<BoardObject> }
+	| { type: "UPDATE_OBJECT"; objectId: string; updates: Partial<BoardObject> }
 	| { type: "ADD_OBJECT"; object: BoardObject }
-	| { type: "DELETE_OBJECTS"; indices: number[] }
-	| { type: "DUPLICATE_OBJECTS"; indices: number[] }
+	| { type: "DELETE_OBJECTS"; objectIds: string[] }
+	| { type: "DUPLICATE_OBJECTS"; objectIds: string[] }
 	| { type: "COPY_OBJECTS" }
 	| { type: "PASTE_OBJECTS"; position?: { x: number; y: number } }
 	| { type: "UNDO" }
@@ -284,28 +284,33 @@ export type EditorAction =
 			type: "UPDATE_BOARD_META";
 			updates: Partial<Pick<BoardData, "name" | "backgroundId">>;
 	  }
-	| { type: "MOVE_OBJECTS"; indices: number[]; deltaX: number; deltaY: number }
+	| {
+			type: "MOVE_OBJECTS";
+			objectIds: string[];
+			deltaX: number;
+			deltaY: number;
+	  }
 	| { type: "COMMIT_HISTORY"; description: string }
 	| {
 			type: "MOVE_LAYER";
-			index: number;
+			objectId: string;
 			direction: "front" | "back" | "forward" | "backward";
 	  }
-	| { type: "GROUP_OBJECTS"; indices: number[] }
+	| { type: "GROUP_OBJECTS"; objectIds: string[] }
 	| { type: "UNGROUP"; groupId: string }
 	| { type: "RENAME_GROUP"; groupId: string; name: string }
 	| { type: "TOGGLE_GROUP_COLLAPSE"; groupId: string }
 	| { type: "SET_GRID_SETTINGS"; settings: Partial<GridSettings> }
-	| { type: "ALIGN_OBJECTS"; indices: number[]; alignment: AlignmentType }
+	| { type: "ALIGN_OBJECTS"; objectIds: string[]; alignment: AlignmentType }
 	| { type: "REORDER_LAYER"; fromIndex: number; toIndex: number }
-	| { type: "REMOVE_FROM_GROUP"; objectIndex: number }
+	| { type: "REMOVE_FROM_GROUP"; objectId: string }
 	| { type: "REORDER_GROUP"; groupId: string; toIndex: number }
 	| {
 			type: "UPDATE_OBJECTS_BATCH";
-			indices: number[];
+			objectIds: string[];
 			updates: BatchUpdatePayload;
 	  }
-	| { type: "START_TEXT_EDIT"; index: number }
+	| { type: "START_TEXT_EDIT"; objectId: string }
 	| { type: "END_TEXT_EDIT"; save: boolean; text?: string }
 	| { type: "JUMP_TO_HISTORY"; index: number }
 	| { type: "CLEAR_HISTORY" }
@@ -316,12 +321,12 @@ export type EditorAction =
 			type: "ENTER_CIRCULAR_MODE";
 			center: Position;
 			radius: number;
-			indices: number[];
+			objectIds: string[];
 	  }
 	| { type: "EXIT_CIRCULAR_MODE" }
 	| { type: "UPDATE_CIRCULAR_CENTER"; center: Position }
 	| { type: "UPDATE_CIRCULAR_RADIUS"; radius: number }
-	| { type: "MOVE_OBJECT_ON_CIRCLE"; index: number; angle: number };
+	| { type: "MOVE_OBJECT_ON_CIRCLE"; objectId: string; angle: number };
 
 /**
  * ボードメタデータ更新用の部分型

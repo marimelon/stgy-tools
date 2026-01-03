@@ -30,19 +30,24 @@ function recalculateCircularMode(
 	board: BoardData,
 	circularMode: CircularModeState,
 ): CircularModeState {
-	const { participatingIndices } = circularMode;
+	const { participatingIds } = circularMode;
 
-	// 有効なオブジェクトのみフィルタ
-	const validIndices = participatingIndices.filter(
-		(idx) => idx >= 0 && idx < board.objects.length,
-	);
+	// 有効なオブジェクトのみフィルタ（IDで検索）
+	const boardIdSet = new Set(board.objects.map((obj) => obj.id));
+	const validIds = participatingIds.filter((id) => boardIdSet.has(id));
 
-	if (validIndices.length === 0) {
+	if (validIds.length === 0) {
 		return circularMode;
 	}
 
 	// 参加オブジェクトの位置を取得
-	const positions = validIndices.map((idx) => board.objects[idx].position);
+	const positions = validIds
+		.map((id) => board.objects.find((obj) => obj.id === id)?.position)
+		.filter((pos): pos is NonNullable<typeof pos> => pos !== undefined);
+
+	if (positions.length === 0) {
+		return circularMode;
+	}
 
 	// 重心を中心として計算
 	const sumX = positions.reduce((sum, p) => sum + p.x, 0);
@@ -58,17 +63,22 @@ function recalculateCircularMode(
 	const radius = Math.max(10, avgRadius);
 
 	// 各オブジェクトの角度を再計算
-	const objectAngles = new Map<number, number>();
-	for (const idx of validIndices) {
-		const pos = board.objects[idx].position;
-		const angle = Math.atan2(pos.y - centerY, pos.x - centerX);
-		objectAngles.set(idx, angle);
+	const objectAngles = new Map<string, number>();
+	for (const id of validIds) {
+		const obj = board.objects.find((o) => o.id === id);
+		if (obj) {
+			const angle = Math.atan2(
+				obj.position.y - centerY,
+				obj.position.x - centerX,
+			);
+			objectAngles.set(id, angle);
+		}
 	}
 
 	return {
 		center: { x: centerX, y: centerY },
 		radius,
-		participatingIndices: validIndices,
+		participatingIds: validIds,
 		objectAngles,
 	};
 }
@@ -85,7 +95,7 @@ export function createHistoryActions(store: EditorStore) {
 			const newState = {
 				...state,
 				board,
-				selectedIndices: [],
+				selectedIds: [],
 				groups: [],
 				isDirty: false,
 				history: [
@@ -162,7 +172,7 @@ export function createHistoryActions(store: EditorStore) {
 				board: newBoard,
 				groups: structuredClone(entry.groups ?? []),
 				historyIndex: newIndex,
-				selectedIndices: [],
+				selectedIds: [],
 				isDirty: newIndex > 0,
 				circularMode: newCircularMode,
 			};
@@ -192,7 +202,7 @@ export function createHistoryActions(store: EditorStore) {
 				board: newBoard,
 				groups: structuredClone(entry.groups ?? []),
 				historyIndex: newIndex,
-				selectedIndices: [],
+				selectedIds: [],
 				isDirty: true,
 				circularMode: newCircularMode,
 			};
@@ -229,7 +239,7 @@ export function createHistoryActions(store: EditorStore) {
 				board: newBoard,
 				groups: structuredClone(entry.groups ?? []),
 				historyIndex: index,
-				selectedIndices: [],
+				selectedIds: [],
 				isDirty: index > 0,
 				circularMode: newCircularMode,
 			};
@@ -266,26 +276,27 @@ export function createHistoryActions(store: EditorStore) {
 	 */
 	const updateBoardFromDebug = (board: BoardData) => {
 		store.setState((state) => {
-			const objectCount = board.objects.length;
+			// ボード内のオブジェクトIDセット
+			const boardIdSet = new Set(board.objects.map((obj) => obj.id));
 
-			// グループインデックスの調整（オブジェクト数変更対応）
+			// グループIDの調整（存在しないオブジェクトを除外）
 			const newGroups = state.groups
 				.map((group) => ({
 					...group,
-					objectIndices: group.objectIndices.filter((idx) => idx < objectCount),
+					objectIds: group.objectIds.filter((id) => boardIdSet.has(id)),
 				}))
-				.filter((group) => group.objectIndices.length > 0);
+				.filter((group) => group.objectIds.length > 0);
 
-			// 選択インデックスの調整
-			const newSelectedIndices = state.selectedIndices.filter(
-				(idx) => idx < objectCount,
+			// 選択IDの調整
+			const newSelectedIds = state.selectedIds.filter((id) =>
+				boardIdSet.has(id),
 			);
 
 			const intermediateState = {
 				...state,
 				board,
 				groups: newGroups,
-				selectedIndices: newSelectedIndices,
+				selectedIds: newSelectedIds,
 				isDirty: true,
 				circularMode: null, // デバッグ編集時は円形配置モードをリセット
 			};

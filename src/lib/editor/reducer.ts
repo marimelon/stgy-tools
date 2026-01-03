@@ -65,19 +65,19 @@ export function editorReducer(
 
 		case "SELECT_OBJECT":
 			return handleSelectObject(state, {
-				index: action.index,
+				objectId: action.objectId,
 				additive: action.additive,
 			});
 
 		case "SELECT_OBJECTS":
-			return handleSelectObjects(state, { indices: action.indices });
+			return handleSelectObjects(state, { objectIds: action.objectIds });
 
 		case "DESELECT_ALL":
 			return handleDeselectAll(state);
 
 		case "UPDATE_OBJECT":
 			return handleUpdateObject(state, {
-				index: action.index,
+				objectId: action.objectId,
 				updates: action.updates,
 			});
 
@@ -85,10 +85,10 @@ export function editorReducer(
 			return handleAddObject(state, { object: action.object });
 
 		case "DELETE_OBJECTS":
-			return handleDeleteObjects(state, { indices: action.indices });
+			return handleDeleteObjects(state, { objectIds: action.objectIds });
 
 		case "DUPLICATE_OBJECTS":
-			return handleDuplicateObjects(state, { indices: action.indices });
+			return handleDuplicateObjects(state, { objectIds: action.objectIds });
 
 		case "COPY_OBJECTS":
 			return handleCopyObjects(state);
@@ -98,7 +98,7 @@ export function editorReducer(
 
 		case "MOVE_OBJECTS":
 			return handleMoveObjects(state, {
-				indices: action.indices,
+				objectIds: action.objectIds,
 				deltaX: action.deltaX,
 				deltaY: action.deltaY,
 			});
@@ -117,7 +117,7 @@ export function editorReducer(
 
 		case "MOVE_LAYER":
 			return handleMoveLayer(state, {
-				index: action.index,
+				objectId: action.objectId,
 				direction: action.direction,
 			});
 
@@ -134,7 +134,7 @@ export function editorReducer(
 			});
 
 		case "GROUP_OBJECTS":
-			return handleGroupObjects(state, { indices: action.indices });
+			return handleGroupObjects(state, { objectIds: action.objectIds });
 
 		case "UNGROUP":
 			return handleUngroup(state, { groupId: action.groupId });
@@ -149,7 +149,7 @@ export function editorReducer(
 			return handleToggleGroupCollapse(state, { groupId: action.groupId });
 
 		case "REMOVE_FROM_GROUP":
-			return handleRemoveFromGroup(state, { objectIndex: action.objectIndex });
+			return handleRemoveFromGroup(state, { objectId: action.objectId });
 
 		case "SET_GRID_SETTINGS":
 			return handleSetGridSettings(state, { settings: action.settings });
@@ -159,18 +159,18 @@ export function editorReducer(
 
 		case "ALIGN_OBJECTS":
 			return handleAlignObjects(state, {
-				indices: action.indices,
+				objectIds: action.objectIds,
 				alignment: action.alignment,
 			});
 
 		case "UPDATE_OBJECTS_BATCH":
 			return handleUpdateObjectsBatch(state, {
-				indices: action.indices,
+				objectIds: action.objectIds,
 				updates: action.updates,
 			});
 
 		case "START_TEXT_EDIT":
-			return handleStartTextEdit(state, { index: action.index });
+			return handleStartTextEdit(state, { objectId: action.objectId });
 
 		case "END_TEXT_EDIT":
 			return handleEndTextEdit(state, {
@@ -194,7 +194,7 @@ export function editorReducer(
 			return handleEnterCircularMode(state, {
 				center: action.center,
 				radius: action.radius,
-				indices: action.indices,
+				objectIds: action.objectIds,
 			});
 
 		case "EXIT_CIRCULAR_MODE":
@@ -208,7 +208,7 @@ export function editorReducer(
 
 		case "MOVE_OBJECT_ON_CIRCLE":
 			return handleMoveObjectOnCircle(state, {
-				index: action.index,
+				objectId: action.objectId,
 				angle: action.angle,
 			});
 
@@ -282,13 +282,13 @@ export function createInitialStateWithOptions(
 
 	return {
 		board: currentBoard,
-		selectedIndices: [],
+		selectedIds: [],
 		groups: currentGroups,
 		gridSettings: initialGridSettings,
 		history: initialHistory,
 		historyIndex: initialHistoryIndex,
 		isDirty: initialHistoryIndex > 0,
-		editingTextIndex: null,
+		editingTextId: null,
 		lastError: null,
 		focusedGroupId: null,
 		circularMode: null,

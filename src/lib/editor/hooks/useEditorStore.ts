@@ -71,18 +71,17 @@ export const selectors = {
 	/** ボード名 */
 	boardName: (s: EditorState): string => s.board.name,
 
-	/** 選択中のインデックス配列 */
-	selectedIndices: (s: EditorState): number[] => s.selectedIndices,
+	/** 選択中のID配列 */
+	selectedIds: (s: EditorState): string[] => s.selectedIds,
 
 	/** 選択数 */
-	selectionCount: (s: EditorState): number => s.selectedIndices.length,
+	selectionCount: (s: EditorState): number => s.selectedIds.length,
 
 	/** 何か選択されているか */
-	hasSelection: (s: EditorState): boolean => s.selectedIndices.length > 0,
+	hasSelection: (s: EditorState): boolean => s.selectedIds.length > 0,
 
 	/** 単一選択か */
-	hasSingleSelection: (s: EditorState): boolean =>
-		s.selectedIndices.length === 1,
+	hasSingleSelection: (s: EditorState): boolean => s.selectedIds.length === 1,
 
 	/** グリッド設定 */
 	gridSettings: (s: EditorState): GridSettings => s.gridSettings,
@@ -99,11 +98,11 @@ export const selectors = {
 	/** 変更があるか */
 	isDirty: (s: EditorState): boolean => s.isDirty,
 
-	/** 編集中のテキストインデックス */
-	editingTextIndex: (s: EditorState): number | null => s.editingTextIndex,
+	/** 編集中のテキストID */
+	editingTextId: (s: EditorState): string | null => s.editingTextId,
 
 	/** テキスト編集中か */
-	isEditingText: (s: EditorState): boolean => s.editingTextIndex !== null,
+	isEditingText: (s: EditorState): boolean => s.editingTextId !== null,
 
 	/** フォーカス中のグループID */
 	focusedGroupId: (s: EditorState): string | null => s.focusedGroupId,
@@ -143,9 +142,9 @@ export function useObjects(): BoardObject[] {
 	return useEditorSelectorShallow(selectors.objects);
 }
 
-/** 選択インデックスを取得 */
-export function useSelectedIndices(): number[] {
-	return useEditorSelectorShallow(selectors.selectedIndices);
+/** 選択IDを取得 */
+export function useSelectedIds(): string[] {
+	return useEditorSelectorShallow(selectors.selectedIds);
 }
 
 /** グリッド設定を取得 */
@@ -178,9 +177,9 @@ export function useLastError(): EditorError | null {
 	return useEditorSelector(selectors.lastError);
 }
 
-/** 編集中のテキストインデックスを取得 */
-export function useEditingTextIndex(): number | null {
-	return useEditorSelector(selectors.editingTextIndex);
+/** 編集中のテキストIDを取得 */
+export function useEditingTextId(): string | null {
+	return useEditorSelector(selectors.editingTextId);
 }
 
 /** フォーカス中のグループIDを取得 */

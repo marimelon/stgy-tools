@@ -11,13 +11,13 @@ import { generateGroupId, pushHistory } from "../utils";
  */
 export function handleGroupObjects(
 	state: EditorState,
-	payload: { indices: number[] },
+	payload: { objectIds: string[] },
 ): EditorState {
-	if (payload.indices.length < 2) return state;
+	if (payload.objectIds.length < 2) return state;
 
 	const newGroup: ObjectGroup = {
 		id: generateGroupId(),
-		objectIndices: [...payload.indices].sort((a, b) => a - b),
+		objectIds: [...payload.objectIds],
 	};
 
 	const newGroups = [...state.groups, newGroup];
@@ -102,21 +102,21 @@ export function handleToggleGroupCollapse(
  */
 export function handleRemoveFromGroup(
 	state: EditorState,
-	payload: { objectIndex: number },
+	payload: { objectId: string },
 ): EditorState {
-	const { objectIndex } = payload;
+	const { objectId } = payload;
 
 	// オブジェクトが属するグループを探す
-	const group = state.groups.find((g) => g.objectIndices.includes(objectIndex));
+	const group = state.groups.find((g) => g.objectIds.includes(objectId));
 	if (!group) return state;
 
 	// グループから除外
-	const newIndices = group.objectIndices.filter((i) => i !== objectIndex);
+	const newIds = group.objectIds.filter((id) => id !== objectId);
 
 	let newGroups: typeof state.groups;
 	let newFocusedGroupId = state.focusedGroupId;
 
-	if (newIndices.length < 2) {
+	if (newIds.length < 2) {
 		// 残りが1つ以下ならグループ自体を削除
 		newGroups = state.groups.filter((g) => g.id !== group.id);
 		// フォーカス中のグループが削除された場合、フォーカスをクリア
@@ -126,7 +126,7 @@ export function handleRemoveFromGroup(
 	} else {
 		// グループを更新
 		newGroups = state.groups.map((g) =>
-			g.id === group.id ? { ...g, objectIndices: newIndices } : g,
+			g.id === group.id ? { ...g, objectIds: newIds } : g,
 		);
 	}
 
@@ -182,11 +182,10 @@ export function handleSetFocusGroup(
 
 	// フォーカス設定時、フォーカス外のオブジェクトが選択されていたら選択解除
 	const focusedGroup = state.groups.find((g) => g.id === groupId);
-	const newSelectedIndices = focusedGroup
-		? state.selectedIndices.filter((idx) =>
-				focusedGroup.objectIndices.includes(idx),
-			)
-		: state.selectedIndices;
+	const focusedObjectIds = new Set(focusedGroup?.objectIds ?? []);
+	const newSelectedIds = focusedGroup
+		? state.selectedIds.filter((id) => focusedObjectIds.has(id))
+		: state.selectedIds;
 
 	// グループが折りたたまれていたら展開する
 	const newGroups = state.groups.map((g) =>
@@ -196,7 +195,7 @@ export function handleSetFocusGroup(
 	return {
 		...state,
 		focusedGroupId: groupId,
-		selectedIndices: newSelectedIndices,
+		selectedIds: newSelectedIds,
 		groups: newGroups,
 	};
 }

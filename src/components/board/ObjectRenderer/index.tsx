@@ -10,14 +10,12 @@ export { getObjectBoundingBox } from "./bounding-box";
 
 interface ObjectRendererProps {
 	object: BoardObject;
-	index: number;
 	selected?: boolean;
-	onSelect?: (index: number) => void;
+	onSelect?: (objectId: string) => void;
 }
 
 export function ObjectRenderer({
 	object,
-	index,
 	selected = false,
 	onSelect,
 }: ObjectRendererProps) {
@@ -57,7 +55,7 @@ export function ObjectRenderer({
 	// クリックハンドラ
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		onSelect?.(index);
+		onSelect?.(object.id);
 	};
 
 	// オブジェクトタイプに応じてレンダリング（ストラテジーパターン）

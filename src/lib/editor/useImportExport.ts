@@ -4,7 +4,12 @@
 
 import { useState } from "react";
 import type { BoardData } from "@/lib/stgy";
-import { decodeStgy, extractKeyFromStgy, parseBoardData } from "@/lib/stgy";
+import {
+	assignBoardObjectIds,
+	decodeStgy,
+	extractKeyFromStgy,
+	parseBoardData,
+} from "@/lib/stgy";
 
 /**
  * インポート結果
@@ -86,7 +91,8 @@ export function useImportExport(): UseImportExportReturn {
 			const trimmedText = importText.trim();
 			const key = extractKeyFromStgy(trimmedText);
 			const binary = decodeStgy(trimmedText);
-			const board = parseBoardData(binary);
+			const parsed = parseBoardData(binary);
+			const board = assignBoardObjectIds(parsed);
 
 			return {
 				success: true,

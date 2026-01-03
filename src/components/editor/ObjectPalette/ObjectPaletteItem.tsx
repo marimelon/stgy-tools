@@ -112,7 +112,7 @@ export function ObjectPaletteItem({
 							border: isDebug ? "2px solid #f59e0b" : undefined,
 						}}
 					>
-						<ObjectRenderer object={object} index={0} selected={false} />
+						<ObjectRenderer object={object} selected={false} />
 					</svg>
 				)}
 			</button>

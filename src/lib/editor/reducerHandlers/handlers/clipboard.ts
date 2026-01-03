@@ -4,6 +4,7 @@
 
 import i18n from "@/lib/i18n";
 import { readFromClipboard, writeToClipboard } from "../../clipboard";
+import { duplicateObject } from "../../factory";
 import type { EditorState } from "../../types";
 import { canAddObjects } from "../businessLogic/validation";
 import { cloneBoard, pushHistory } from "../utils";
@@ -12,11 +13,12 @@ import { cloneBoard, pushHistory } from "../utils";
  * オブジェクトをコピー
  */
 export function handleCopyObjects(state: EditorState): EditorState {
-	if (state.selectedIndices.length === 0) return state;
+	if (state.selectedIds.length === 0) return state;
 
-	const copiedObjects = state.selectedIndices
-		.filter((i) => i >= 0 && i < state.board.objects.length)
-		.map((i) => structuredClone(state.board.objects[i]));
+	const selectedIdSet = new Set(state.selectedIds);
+	const copiedObjects = state.board.objects
+		.filter((obj) => selectedIdSet.has(obj.id))
+		.map((obj) => structuredClone(obj));
 
 	// グローバルクリップボードに保存
 	writeToClipboard(copiedObjects);
@@ -48,24 +50,22 @@ export function handlePasteObjects(
 
 	const newBoard = cloneBoard(state.board);
 
-	// ペーストするオブジェクトを準備
+	// ペーストするオブジェクトを準備（新しいIDを生成）
 	const pastedObjects = clipboardObjects.map((obj) => {
-		const pasted = structuredClone(obj);
-		// 位置をオフセット
-		if (payload.position) {
-			pasted.position = { ...payload.position };
-		} else {
-			pasted.position.x += 10;
-			pasted.position.y += 10;
-		}
-		return pasted;
+		const offset = payload.position
+			? {
+					x: payload.position.x - obj.position.x,
+					y: payload.position.y - obj.position.y,
+				}
+			: { x: 10, y: 10 };
+		return duplicateObject(obj, offset);
 	});
 
 	// 配列の先頭に追加（最前面レイヤーに配置）
 	newBoard.objects.unshift(...pastedObjects);
 
-	// 新しいインデックスは 0 から pastedObjects.length - 1
-	const newIndices = pastedObjects.map((_, i) => i);
+	// 新しいIDを取得
+	const newIds = pastedObjects.map((obj) => obj.id);
 
 	// 連続ペースト用にグローバルクリップボードも更新
 	writeToClipboard(pastedObjects);
@@ -73,7 +73,7 @@ export function handlePasteObjects(
 	return {
 		...state,
 		board: newBoard,
-		selectedIndices: newIndices,
+		selectedIds: newIds,
 		lastError: null,
 		...pushHistory(state, i18n.t("history.pasteObject")),
 	};

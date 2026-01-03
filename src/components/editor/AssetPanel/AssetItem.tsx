@@ -7,15 +7,18 @@
 import type { MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { ObjectRenderer } from "@/components/board";
-import { calculatePreviewViewBox, type StoredAsset } from "@/lib/assets";
+import {
+	type AssetWithRuntimeIds,
+	calculatePreviewViewBox,
+} from "@/lib/assets";
 
 interface AssetItemProps {
 	/** アセットデータ */
-	asset: StoredAsset;
+	asset: AssetWithRuntimeIds;
 	/** ダブルクリック時のコールバック */
-	onApply: (asset: StoredAsset) => void;
+	onApply: (asset: AssetWithRuntimeIds) => void;
 	/** 右クリック時のコールバック */
-	onContextMenu: (e: MouseEvent, asset: StoredAsset) => void;
+	onContextMenu: (e: MouseEvent, asset: AssetWithRuntimeIds) => void;
 }
 
 /**
@@ -57,13 +60,8 @@ export function AssetItem({ asset, onApply, onContextMenu }: AssetItemProps) {
 					aria-label={asset.name}
 				>
 					{/* SVGは後から描画したものが上に表示されるため、逆順で描画 */}
-					{[...asset.objects].reverse().map((obj, index) => (
-						<ObjectRenderer
-							key={`${asset.id}-${asset.objects.length - 1 - index}`}
-							object={obj}
-							index={asset.objects.length - 1 - index}
-							selected={false}
-						/>
+					{[...asset.objects].reverse().map((obj) => (
+						<ObjectRenderer key={obj.id} object={obj} selected={false} />
 					))}
 				</svg>
 			</div>

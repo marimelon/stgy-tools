@@ -9,6 +9,7 @@ import {
 	DEFAULT_EDIT_PARAMS,
 	EDIT_PARAMS,
 	EditParamIds,
+	generateObjectId,
 	OBJECT_EDIT_PARAMS,
 	ObjectIds,
 } from "@/lib/stgy";
@@ -66,6 +67,7 @@ export function createDefaultObject(
 		: { r: 255, g: 128, b: 0, opacity: 0 };
 
 	const obj: BoardObject = {
+		id: generateObjectId(),
 		objectId,
 		flags: {
 			visible: true,
@@ -131,6 +133,7 @@ export function duplicateObject(
 ): BoardObject {
 	return {
 		...object,
+		id: generateObjectId(),
 		position: {
 			x: object.position.x + offset.x,
 			y: object.position.y + offset.y,

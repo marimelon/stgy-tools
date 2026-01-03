@@ -9,8 +9,8 @@ import type { BatchUpdatePayload, EditorState } from "../../types";
 import { canAddObject, canAddObjects } from "../businessLogic/validation";
 import {
 	cloneBoard,
+	findObjectById,
 	pushHistory,
-	shiftGroupIndices,
 	updateGroupsAfterDelete,
 	updateObjectInBoard,
 } from "../utils";
@@ -20,11 +20,11 @@ import {
  */
 export function handleUpdateObject(
 	state: EditorState,
-	payload: { index: number; updates: Partial<BoardObject> },
+	payload: { objectId: string; updates: Partial<BoardObject> },
 ): EditorState {
 	const newBoard = updateObjectInBoard(
 		state.board,
-		payload.index,
+		payload.objectId,
 		payload.updates,
 	);
 	return {
@@ -55,18 +55,13 @@ export function handleAddObject(
 
 	const newBoard = cloneBoard(state.board);
 	newBoard.objects.unshift(payload.object);
-	// グループのインデックスを更新（先頭に追加するので全て+1）
-	const updatedGroups = shiftGroupIndices(state.groups, 1);
+	// ID-basedなのでグループのインデックス更新は不要
 	return {
 		...state,
 		board: newBoard,
-		groups: updatedGroups,
-		selectedIndices: [0],
+		selectedIds: [payload.object.id],
 		lastError: null,
-		...pushHistory(
-			{ ...state, board: newBoard, groups: updatedGroups },
-			i18n.t("history.addObject"),
-		),
+		...pushHistory({ ...state, board: newBoard }, i18n.t("history.addObject")),
 	};
 }
 
@@ -75,25 +70,23 @@ export function handleAddObject(
  */
 export function handleDeleteObjects(
 	state: EditorState,
-	payload: { indices: number[] },
+	payload: { objectIds: string[] },
 ): EditorState {
-	if (payload.indices.length === 0) return state;
+	if (payload.objectIds.length === 0) return state;
 
 	const newBoard = cloneBoard(state.board);
-	// インデックスを降順でソートして削除 (インデックスのずれを防ぐ)
-	const sortedIndices = [...payload.indices].sort((a, b) => b - a);
-	for (const index of sortedIndices) {
-		if (index >= 0 && index < newBoard.objects.length) {
-			newBoard.objects.splice(index, 1);
-		}
-	}
+	const idsToDelete = new Set(payload.objectIds);
+	newBoard.objects = newBoard.objects.filter((obj) => !idsToDelete.has(obj.id));
 	// グループを更新
-	const updatedGroups = updateGroupsAfterDelete(state.groups, payload.indices);
+	const updatedGroups = updateGroupsAfterDelete(
+		state.groups,
+		payload.objectIds,
+	);
 	return {
 		...state,
 		board: newBoard,
 		groups: updatedGroups,
-		selectedIndices: [],
+		selectedIds: [],
 		...pushHistory(
 			{ ...state, board: newBoard, groups: updatedGroups },
 			i18n.t("history.deleteObject"),
@@ -106,15 +99,16 @@ export function handleDeleteObjects(
  */
 export function handleDuplicateObjects(
 	state: EditorState,
-	payload: { indices: number[] },
+	payload: { objectIds: string[] },
 ): EditorState {
-	if (payload.indices.length === 0) return state;
+	if (payload.objectIds.length === 0) return state;
 
 	// 複製対象のオブジェクトを収集
 	const objectsToDuplicate: BoardObject[] = [];
-	for (const index of payload.indices) {
-		if (index >= 0 && index < state.board.objects.length) {
-			objectsToDuplicate.push(state.board.objects[index]);
+	for (const objectId of payload.objectIds) {
+		const obj = findObjectById(state.board, objectId);
+		if (obj) {
+			objectsToDuplicate.push(obj);
 		}
 	}
 
@@ -131,21 +125,18 @@ export function handleDuplicateObjects(
 	}
 
 	const newBoard = cloneBoard(state.board);
-	const newIndices: number[] = [];
+	const newIds: string[] = [];
 
-	for (const index of payload.indices) {
-		if (index >= 0 && index < state.board.objects.length) {
-			const original = state.board.objects[index];
-			const duplicated = duplicateObject(original);
-			newBoard.objects.push(duplicated);
-			newIndices.push(newBoard.objects.length - 1);
-		}
+	for (const obj of objectsToDuplicate) {
+		const duplicated = duplicateObject(obj);
+		newBoard.objects.push(duplicated);
+		newIds.push(duplicated.id);
 	}
 
 	return {
 		...state,
 		board: newBoard,
-		selectedIndices: newIndices,
+		selectedIds: newIds,
 		lastError: null,
 		...pushHistory(
 			{ ...state, board: newBoard },
@@ -159,20 +150,19 @@ export function handleDuplicateObjects(
  */
 export function handleMoveObjects(
 	state: EditorState,
-	payload: { indices: number[]; deltaX: number; deltaY: number },
+	payload: { objectIds: string[]; deltaX: number; deltaY: number },
 ): EditorState {
-	if (payload.indices.length === 0) return state;
+	if (payload.objectIds.length === 0) return state;
 
 	let newBoard = state.board;
-	for (const index of payload.indices) {
-		if (index >= 0 && index < newBoard.objects.length) {
-			const obj = newBoard.objects[index];
-
+	for (const objectId of payload.objectIds) {
+		const obj = findObjectById(newBoard, objectId);
+		if (obj) {
 			// Lineオブジェクトの場合は終点座標（param1, param2）も移動
 			if (obj.objectId === ObjectIds.Line) {
 				const deltaX10 = Math.round(payload.deltaX * 10);
 				const deltaY10 = Math.round(payload.deltaY * 10);
-				newBoard = updateObjectInBoard(newBoard, index, {
+				newBoard = updateObjectInBoard(newBoard, objectId, {
 					position: {
 						x: obj.position.x + payload.deltaX,
 						y: obj.position.y + payload.deltaY,
@@ -181,7 +171,7 @@ export function handleMoveObjects(
 					param2: (obj.param2 ?? obj.position.y * 10) + deltaY10,
 				});
 			} else {
-				newBoard = updateObjectInBoard(newBoard, index, {
+				newBoard = updateObjectInBoard(newBoard, objectId, {
 					position: {
 						x: obj.position.x + payload.deltaX,
 						y: obj.position.y + payload.deltaY,
@@ -205,23 +195,24 @@ export function handleMoveObjects(
  */
 export function handleUpdateObjectsBatch(
 	state: EditorState,
-	payload: { indices: number[]; updates: BatchUpdatePayload },
+	payload: { objectIds: string[]; updates: BatchUpdatePayload },
 ): EditorState {
-	const { indices, updates } = payload;
-	if (indices.length === 0 || Object.keys(updates).length === 0) {
+	const { objectIds, updates } = payload;
+	if (objectIds.length === 0 || Object.keys(updates).length === 0) {
 		return state;
 	}
+
+	const idsToUpdate = new Set(objectIds);
 
 	// 単一クローンで効率的にバッチ更新
 	const newBoard = cloneBoard(state.board);
 
-	for (const index of indices) {
-		if (index < 0 || index >= newBoard.objects.length) continue;
-
-		const obj = newBoard.objects[index];
+	for (let i = 0; i < newBoard.objects.length; i++) {
+		const obj = newBoard.objects[i];
+		if (!idsToUpdate.has(obj.id)) continue;
 
 		// 更新を適用（ネストされたオブジェクトは適切にマージ）
-		newBoard.objects[index] = {
+		newBoard.objects[i] = {
 			...obj,
 			...(updates.rotation !== undefined && { rotation: updates.rotation }),
 			...(updates.size !== undefined && { size: updates.size }),

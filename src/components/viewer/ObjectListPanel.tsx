@@ -11,8 +11,8 @@ import { ObjectListItem } from "./ObjectListItem";
 
 interface ObjectListPanelProps {
 	objects: BoardObject[];
-	selectedIndex: number | null;
-	onSelectObject: (index: number | null, object: BoardObject | null) => void;
+	selectedObjectId: string | null;
+	onSelectObject: (objectId: string | null, object: BoardObject | null) => void;
 }
 
 /**
@@ -20,17 +20,18 @@ interface ObjectListPanelProps {
  */
 export function ObjectListPanel({
 	objects,
-	selectedIndex,
+	selectedObjectId,
 	onSelectObject,
 }: ObjectListPanelProps) {
 	const { t } = useTranslation();
 
-	const handleSelect = (index: number) => {
+	const handleSelect = (objectId: string) => {
 		// 同じオブジェクトをクリックしたら選択解除
-		if (selectedIndex === index) {
+		if (selectedObjectId === objectId) {
 			onSelectObject(null, null);
 		} else {
-			onSelectObject(index, objects[index]);
+			const obj = objects.find((o) => o.id === objectId);
+			onSelectObject(objectId, obj ?? null);
 		}
 	};
 
@@ -53,11 +54,11 @@ export function ObjectListPanel({
 					<div className="py-1">
 						{objects.map((obj, index) => (
 							<ObjectListItem
-								key={`${obj.objectId}-${obj.position.x}-${obj.position.y}-${index}`}
+								key={obj.id}
 								index={index}
 								object={obj}
-								isSelected={selectedIndex === index}
-								onSelect={handleSelect}
+								isSelected={selectedObjectId === obj.id}
+								onSelect={() => handleSelect(obj.id)}
 							/>
 						))}
 					</div>

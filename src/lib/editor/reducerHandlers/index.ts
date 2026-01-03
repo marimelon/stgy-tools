@@ -67,11 +67,12 @@ export {
 // ユーティリティ
 export {
 	cloneBoard,
+	findObjectById,
+	findObjectIndex,
 	generateGroupId,
 	generateHistoryId,
 	MAX_HISTORY,
 	pushHistory,
-	shiftGroupIndices,
 	updateGroupsAfterDelete,
 	updateObjectInBoard,
 } from "./utils";

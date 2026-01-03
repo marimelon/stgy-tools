@@ -8,13 +8,18 @@ import {
 	type BoardObject,
 	type Position,
 } from "@/lib/stgy";
-import type { AssetBounds, StoredAsset } from "./schema";
+import type { AssetBounds } from "./schema";
+
+/** オブジェクトのバウンディングボックス計算に必要な最小のプロパティ */
+type BoundsCalculationObject = Pick<BoardObject, "position" | "size">;
 
 /**
  * Calculate bounding box for a set of objects
  * Uses object positions as reference points
  */
-export function calculateAssetBounds(objects: BoardObject[]): AssetBounds {
+export function calculateAssetBounds(
+	objects: BoundsCalculationObject[],
+): AssetBounds {
 	if (objects.length === 0) {
 		return { minX: 0, minY: 0, maxX: 0, maxY: 0 };
 	}
@@ -91,9 +96,13 @@ export function calculatePreviewViewBox(
 }
 
 /**
- * Convert StoredAsset to BoardData for stgy encoding
+ * Convert asset to BoardData for stgy encoding
+ * Works with both StoredAsset (without runtime IDs) and AssetWithRuntimeIds
  */
-export function assetToBoardData(asset: StoredAsset): BoardData {
+export function assetToBoardData(asset: {
+	name: string;
+	objects: BoardObject[];
+}): BoardData {
 	return {
 		version: 2,
 		name: asset.name,

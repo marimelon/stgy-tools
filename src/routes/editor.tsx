@@ -29,6 +29,11 @@ import {
 import { ResizableLayout } from "@/components/panel";
 import { CompactAppHeader } from "@/components/ui/AppHeader";
 import { useBoards } from "@/lib/boards";
+import {
+	convertGroupsToIdBased,
+	convertGroupsToIndexBased,
+	type StoredObjectGroup,
+} from "@/lib/boards/groupConversion";
 import type { StoredBoard } from "@/lib/boards/schema";
 import {
 	createEmptyBoard,
@@ -57,7 +62,9 @@ import {
 import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
 import { SettingsStoreProvider } from "@/lib/settings";
 import {
+	assignBoardObjectIds,
 	type BoardData,
+	type BoardObject,
 	decodeStgy,
 	encodeStgy,
 	parseBoardData,
@@ -130,7 +137,8 @@ const DEFAULT_GRID_SETTINGS: GridSettings = {
 function decodeBoardFromStgy(stgyCode: string): BoardData | null {
 	try {
 		const binary = decodeStgy(stgyCode);
-		return parseBoardData(binary);
+		const parsed = parseBoardData(binary);
+		return assignBoardObjectIds(parsed);
 	} catch (error) {
 		console.warn("Failed to decode board:", error);
 		return null;
@@ -208,7 +216,12 @@ function EditorPage() {
 			setCurrentBoardId(boardId);
 			// Use stored board name (may have been renamed) instead of decoded name
 			setInitialBoard({ ...decodedBoard, name: board.name });
-			setInitialGroups(board.groups);
+			// Convert stored groups (index-based) to runtime groups (ID-based)
+			const runtimeGroups = convertGroupsToIdBased(
+				board.groups as StoredObjectGroup[],
+				decodedBoard.objects,
+			);
+			setInitialGroups(runtimeGroups);
 			setInitialGridSettings(board.gridSettings);
 
 			setEditorKey((prev) => prev + 1);
@@ -483,12 +496,16 @@ function EditorPage() {
 							isMemoryOnlyMode={isMemoryOnlyMode}
 							shortLinksEnabled={featureFlags.shortLinksEnabled}
 							onOpenBoardManager={() => setShowBoardManager(true)}
-							onSaveBoard={(name, stgyCode, groups, gridSettings) => {
+							onSaveBoard={(name, stgyCode, groups, gridSettings, objects) => {
 								if (currentBoardId && !isMemoryOnlyMode) {
+									const storedGroups = convertGroupsToIndexBased(
+										groups,
+										objects,
+									);
 									void updateBoard(currentBoardId, {
 										name,
 										stgyCode,
-										groups,
+										groups: storedGroups,
 										gridSettings,
 									});
 								}
@@ -578,6 +595,7 @@ interface EditorContentProps {
 		stgyCode: string,
 		groups: ObjectGroup[],
 		gridSettings: GridSettings,
+		objects: BoardObject[],
 	) => void;
 	onCreateBoardFromImport?: (
 		name: string,
@@ -710,7 +728,7 @@ function EditorContent({
 								<FocusModeIndicator
 									groupName={
 										focusedGroup.name ||
-										`Group (${focusedGroup.objectIndices.length})`
+										`Group (${focusedGroup.objectIds.length})`
 									}
 									onExit={unfocus}
 								/>

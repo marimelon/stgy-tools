@@ -31,20 +31,20 @@ export function createAlignmentActions(store: EditorStore) {
 	/**
 	 * オブジェクトを整列
 	 */
-	const alignObjects = (indices: number[], alignment: AlignmentType) => {
-		if (indices.length < 2) return;
+	const alignObjects = (objectIds: string[], alignment: AlignmentType) => {
+		if (objectIds.length < 2) return;
 
 		store.setState((state) => {
-			// 有効なインデックスのみフィルタ
-			const validIndices = indices.filter(
-				(i) => i >= 0 && i < state.board.objects.length,
-			);
-			if (validIndices.length < 2) return state;
+			// 有効なオブジェクトのみフィルタ
+			const validObjects = objectIds
+				.map((id) => state.board.objects.find((obj) => obj.id === id))
+				.filter((obj): obj is NonNullable<typeof obj> => obj !== undefined);
+			if (validObjects.length < 2) return state;
 
-			const objects = validIndices.map((i) => state.board.objects[i]);
+			const validIds = validObjects.map((obj) => obj.id);
 
 			// 位置の境界を計算
-			const positions = objects.map((obj) => obj.position);
+			const positions = validObjects.map((obj) => obj.position);
 			const minX = Math.min(...positions.map((p) => p.x));
 			const maxX = Math.max(...positions.map((p) => p.x));
 			const minY = Math.min(...positions.map((p) => p.y));
@@ -57,60 +57,77 @@ export function createAlignmentActions(store: EditorStore) {
 			// 整列タイプに応じて位置を更新
 			switch (alignment) {
 				case "left":
-					for (const idx of validIndices) {
-						newBoard = updateObjectInBoard(newBoard, idx, {
-							position: { ...newBoard.objects[idx].position, x: minX },
-						});
+					for (const id of validIds) {
+						const obj = newBoard.objects.find((o) => o.id === id);
+						if (obj) {
+							newBoard = updateObjectInBoard(newBoard, id, {
+								position: { ...obj.position, x: minX },
+							});
+						}
 					}
 					break;
 				case "center":
-					for (const idx of validIndices) {
-						newBoard = updateObjectInBoard(newBoard, idx, {
-							position: { ...newBoard.objects[idx].position, x: centerX },
-						});
+					for (const id of validIds) {
+						const obj = newBoard.objects.find((o) => o.id === id);
+						if (obj) {
+							newBoard = updateObjectInBoard(newBoard, id, {
+								position: { ...obj.position, x: centerX },
+							});
+						}
 					}
 					break;
 				case "right":
-					for (const idx of validIndices) {
-						newBoard = updateObjectInBoard(newBoard, idx, {
-							position: { ...newBoard.objects[idx].position, x: maxX },
-						});
+					for (const id of validIds) {
+						const obj = newBoard.objects.find((o) => o.id === id);
+						if (obj) {
+							newBoard = updateObjectInBoard(newBoard, id, {
+								position: { ...obj.position, x: maxX },
+							});
+						}
 					}
 					break;
 				case "top":
-					for (const idx of validIndices) {
-						newBoard = updateObjectInBoard(newBoard, idx, {
-							position: { ...newBoard.objects[idx].position, y: minY },
-						});
+					for (const id of validIds) {
+						const obj = newBoard.objects.find((o) => o.id === id);
+						if (obj) {
+							newBoard = updateObjectInBoard(newBoard, id, {
+								position: { ...obj.position, y: minY },
+							});
+						}
 					}
 					break;
 				case "middle":
-					for (const idx of validIndices) {
-						newBoard = updateObjectInBoard(newBoard, idx, {
-							position: { ...newBoard.objects[idx].position, y: centerY },
-						});
+					for (const id of validIds) {
+						const obj = newBoard.objects.find((o) => o.id === id);
+						if (obj) {
+							newBoard = updateObjectInBoard(newBoard, id, {
+								position: { ...obj.position, y: centerY },
+							});
+						}
 					}
 					break;
 				case "bottom":
-					for (const idx of validIndices) {
-						newBoard = updateObjectInBoard(newBoard, idx, {
-							position: { ...newBoard.objects[idx].position, y: maxY },
-						});
+					for (const id of validIds) {
+						const obj = newBoard.objects.find((o) => o.id === id);
+						if (obj) {
+							newBoard = updateObjectInBoard(newBoard, id, {
+								position: { ...obj.position, y: maxY },
+							});
+						}
 					}
 					break;
 				case "distribute-h": {
 					// X座標でソート
-					const sortedByX = [...validIndices].sort(
-						(a, b) =>
-							newBoard.objects[a].position.x - newBoard.objects[b].position.x,
+					const sortedByX = [...validObjects].sort(
+						(a, b) => a.position.x - b.position.x,
 					);
 					if (sortedByX.length >= 2) {
 						const step = (maxX - minX) / (sortedByX.length - 1);
 						for (let i = 0; i < sortedByX.length; i++) {
-							const idx = sortedByX[i];
-							newBoard = updateObjectInBoard(newBoard, idx, {
+							const obj = sortedByX[i];
+							newBoard = updateObjectInBoard(newBoard, obj.id, {
 								position: {
-									...newBoard.objects[idx].position,
+									...obj.position,
 									x: minX + step * i,
 								},
 							});
@@ -120,17 +137,16 @@ export function createAlignmentActions(store: EditorStore) {
 				}
 				case "distribute-v": {
 					// Y座標でソート
-					const sortedByY = [...validIndices].sort(
-						(a, b) =>
-							newBoard.objects[a].position.y - newBoard.objects[b].position.y,
+					const sortedByY = [...validObjects].sort(
+						(a, b) => a.position.y - b.position.y,
 					);
 					if (sortedByY.length >= 2) {
 						const step = (maxY - minY) / (sortedByY.length - 1);
 						for (let i = 0; i < sortedByY.length; i++) {
-							const idx = sortedByY[i];
-							newBoard = updateObjectInBoard(newBoard, idx, {
+							const obj = sortedByY[i];
+							newBoard = updateObjectInBoard(newBoard, obj.id, {
 								position: {
-									...newBoard.objects[idx].position,
+									...obj.position,
 									y: minY + step * i,
 								},
 							});
@@ -167,20 +183,20 @@ export function createAlignmentActions(store: EditorStore) {
 					}
 
 					// 各オブジェクトの角度を計算・保存
-					const objectAngles = new Map<number, number>();
+					const objectAngles = new Map<string, number>();
 
 					// 各オブジェクトの元の角度を保持したまま、半径だけを揃えて円周上に配置
-					for (let i = 0; i < validIndices.length; i++) {
-						const idx = validIndices[i];
+					for (let i = 0; i < validObjects.length; i++) {
+						const obj = validObjects[i];
 						const pos = positions[i];
 						// 現在の角度を計算
 						const angle = Math.atan2(
 							pos.y - circleCenterY,
 							pos.x - circleCenterX,
 						);
-						objectAngles.set(idx, angle);
+						objectAngles.set(obj.id, angle);
 						// 同じ角度で半径を揃える
-						newBoard = updateObjectInBoard(newBoard, idx, {
+						newBoard = updateObjectInBoard(newBoard, obj.id, {
 							position: {
 								x: circleCenterX + circularRadius * Math.cos(angle),
 								y: circleCenterY + circularRadius * Math.sin(angle),
@@ -192,7 +208,7 @@ export function createAlignmentActions(store: EditorStore) {
 					const circularModeState: CircularModeState = {
 						center: { x: circleCenterX, y: circleCenterY },
 						radius: circularRadius,
-						participatingIndices: validIndices,
+						participatingIds: validIds,
 						objectAngles,
 					};
 
@@ -221,8 +237,8 @@ export function createAlignmentActions(store: EditorStore) {
 	 */
 	const alignSelected = (alignment: AlignmentType) => {
 		const state = store.state;
-		if (state.selectedIndices.length < 2) return;
-		alignObjects(state.selectedIndices, alignment);
+		if (state.selectedIds.length < 2) return;
+		alignObjects(state.selectedIds, alignment);
 	};
 
 	return {

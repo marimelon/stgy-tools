@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { MAX_BOARD_NAME_LENGTH } from "../constants";
 import { decodeStgy } from "../decoder";
 import { encodeStgy } from "../encoder";
+import { assignBoardObjectIds } from "../id";
 import { parseBoardData } from "../parser";
 import { serializeBoardData } from "../serializer";
 import { ALPHABET_TABLE } from "../tables";
@@ -19,6 +20,7 @@ describe("encoder", () => {
 			backgroundId: BackgroundId.None,
 			objects: [
 				{
+					id: crypto.randomUUID(),
 					objectId: 47, // Tank
 					flags: {
 						visible: true,
@@ -77,7 +79,8 @@ describe("encoder", () => {
 	it("should round-trip existing sample stgy", () => {
 		// Decode original
 		const originalBinary = decodeStgy(SAMPLE_STGY);
-		const originalBoard = parseBoardData(originalBinary);
+		const originalParsed = parseBoardData(originalBinary);
+		const originalBoard = assignBoardObjectIds(originalParsed);
 		console.log("Original board name:", originalBoard.name);
 		console.log("Original object count:", originalBoard.objects.length);
 
@@ -87,7 +90,8 @@ describe("encoder", () => {
 
 		// Decode again
 		const decodedBinary = decodeStgy(reEncoded);
-		const decodedBoard = parseBoardData(decodedBinary);
+		const decodedParsed = parseBoardData(decodedBinary);
+		const decodedBoard = assignBoardObjectIds(decodedParsed);
 		console.log("Decoded board name:", decodedBoard.name);
 		console.log("Decoded object count:", decodedBoard.objects.length);
 
@@ -128,6 +132,7 @@ describe("encoder", () => {
 			backgroundId: BackgroundId.None,
 			objects: [
 				{
+					id: crypto.randomUUID(),
 					objectId: 47,
 					flags: {
 						visible: true,
@@ -191,7 +196,8 @@ describe("encoder", () => {
 		);
 
 		// Parse and re-serialize
-		const board = parseBoardData(originalBinary);
+		const parsed = parseBoardData(originalBinary);
+		const board = assignBoardObjectIds(parsed);
 		const serialized = serializeBoardData(board);
 		console.log("Serialized binary length:", serialized.length);
 		console.log(
@@ -341,6 +347,7 @@ describe("encoder", () => {
 				backgroundId: BackgroundId.None,
 				objects: [
 					{
+						id: crypto.randomUUID(),
 						objectId: 47,
 						flags: {
 							visible: true,
@@ -379,6 +386,7 @@ describe("encoder", () => {
 				backgroundId: BackgroundId.None,
 				objects: [
 					{
+						id: crypto.randomUUID(),
 						objectId: 12, // Line
 						flags: {
 							visible: true,
@@ -416,6 +424,7 @@ describe("encoder", () => {
 				backgroundId: BackgroundId.None,
 				objects: [
 					{
+						id: crypto.randomUUID(),
 						objectId: 12,
 						flags: {
 							visible: true,

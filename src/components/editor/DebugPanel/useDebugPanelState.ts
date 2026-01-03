@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { useEditorActions } from "@/lib/editor/hooks/useEditorActions";
 import { useBoard } from "@/lib/editor/hooks/useEditorStore";
 import type { BoardData } from "@/lib/stgy";
+import { assignBoardObjectIds } from "@/lib/stgy";
 import { safeParseBoardData } from "@/lib/stgy/schema";
 
 /** 同期ステータス */
@@ -74,8 +75,9 @@ export function useDebugPanelState(): DebugPanelState {
 
 			if (result.success) {
 				isLocalEditRef.current = true;
-				updateBoardFromDebug(result.data);
-				lastExternalBoardRef.current = result.data;
+				const boardData = assignBoardObjectIds(result.data);
+				updateBoardFromDebug(boardData);
+				lastExternalBoardRef.current = boardData;
 				setSyncStatus("synced");
 				setValidationErrors(null);
 			} else {

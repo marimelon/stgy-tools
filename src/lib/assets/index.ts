@@ -9,6 +9,7 @@ export {
 	type AssetSortOption,
 	type AssetsError,
 	type AssetsErrorType,
+	type AssetWithRuntimeIds,
 	type SortDirection,
 	type UseAssetsOptions,
 	useAssets,

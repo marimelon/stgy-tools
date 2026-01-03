@@ -4,7 +4,7 @@
 
 import type { Position } from "@/lib/stgy";
 import type { EditorState } from "../../types";
-import { cloneBoard, updateObjectInBoard } from "../utils";
+import { cloneBoard, findObjectById, updateObjectInBoard } from "../utils";
 
 /** 最小半径 */
 const MIN_RADIUS = 10;
@@ -14,20 +14,20 @@ const MIN_RADIUS = 10;
  */
 export function handleEnterCircularMode(
 	state: EditorState,
-	payload: { center: Position; radius: number; indices: number[] },
+	payload: { center: Position; radius: number; objectIds: string[] },
 ): EditorState {
-	const { center, radius, indices } = payload;
+	const { center, radius, objectIds } = payload;
 
 	// 各オブジェクトの初期角度を計算
-	const objectAngles = new Map<number, number>();
-	for (const idx of indices) {
-		const obj = state.board.objects[idx];
+	const objectAngles = new Map<string, number>();
+	for (const objectId of objectIds) {
+		const obj = findObjectById(state.board, objectId);
 		if (obj) {
 			const angle = Math.atan2(
 				obj.position.y - center.y,
 				obj.position.x - center.x,
 			);
-			objectAngles.set(idx, angle);
+			objectAngles.set(objectId, angle);
 		}
 	}
 
@@ -36,7 +36,7 @@ export function handleEnterCircularMode(
 		circularMode: {
 			center,
 			radius: Math.max(radius, MIN_RADIUS),
-			participatingIndices: indices,
+			participatingIds: objectIds,
 			objectAngles,
 		},
 	};
@@ -69,10 +69,10 @@ export function handleUpdateCircularCenter(
 	let newBoard = cloneBoard(state.board);
 
 	// 参加オブジェクトを移動
-	for (const idx of state.circularMode.participatingIndices) {
-		const obj = newBoard.objects[idx];
+	for (const objectId of state.circularMode.participatingIds) {
+		const obj = findObjectById(newBoard, objectId);
 		if (obj) {
-			newBoard = updateObjectInBoard(newBoard, idx, {
+			newBoard = updateObjectInBoard(newBoard, objectId, {
 				position: {
 					x: obj.position.x + deltaX,
 					y: obj.position.y + deltaY,
@@ -106,8 +106,8 @@ export function handleUpdateCircularRadius(
 	let newBoard = cloneBoard(state.board);
 
 	// 各オブジェクトを新しい半径で再配置（角度は保持）
-	for (const [idx, angle] of objectAngles) {
-		newBoard = updateObjectInBoard(newBoard, idx, {
+	for (const [objectId, angle] of objectAngles) {
+		newBoard = updateObjectInBoard(newBoard, objectId, {
 			position: {
 				x: center.x + radius * Math.cos(angle),
 				y: center.y + radius * Math.sin(angle),
@@ -130,20 +130,19 @@ export function handleUpdateCircularRadius(
  */
 export function handleMoveObjectOnCircle(
 	state: EditorState,
-	payload: { index: number; angle: number },
+	payload: { objectId: string; angle: number },
 ): EditorState {
 	if (!state.circularMode) return state;
 
-	const { index, angle } = payload;
-	const { center, radius, participatingIndices, objectAngles } =
-		state.circularMode;
+	const { objectId, angle } = payload;
+	const { center, radius, participatingIds, objectAngles } = state.circularMode;
 
 	// 参加オブジェクトでない場合は無視
-	if (!participatingIndices.includes(index)) return state;
+	if (!participatingIds.includes(objectId)) return state;
 
 	// オブジェクトを新しい角度の位置に移動
 	let newBoard = cloneBoard(state.board);
-	newBoard = updateObjectInBoard(newBoard, index, {
+	newBoard = updateObjectInBoard(newBoard, objectId, {
 		position: {
 			x: center.x + radius * Math.cos(angle),
 			y: center.y + radius * Math.sin(angle),
@@ -152,7 +151,7 @@ export function handleMoveObjectOnCircle(
 
 	// 角度を更新
 	const newObjectAngles = new Map(objectAngles);
-	newObjectAngles.set(index, angle);
+	newObjectAngles.set(objectId, angle);
 
 	return {
 		...state,

@@ -242,6 +242,7 @@ function createObject(
 	overrides: Partial<BoardObject> = {},
 ): BoardObject {
 	return {
+		id: crypto.randomUUID(),
 		objectId,
 		position: { x: 256, y: 192 },
 		rotation: 0,

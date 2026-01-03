@@ -14,8 +14,11 @@ interface BoardViewerProps {
 	responsive?: boolean;
 	/** レスポンシブモード時の最大幅（デフォルト: CANVAS_WIDTH） */
 	maxWidth?: number;
-	selectedIndex?: number | null;
-	onSelectObject?: (index: number | null, object: BoardObject | null) => void;
+	selectedObjectId?: string | null;
+	onSelectObject?: (
+		objectId: string | null,
+		object: BoardObject | null,
+	) => void;
 }
 
 export function BoardViewer({
@@ -23,20 +26,18 @@ export function BoardViewer({
 	scale = 1,
 	responsive = false,
 	maxWidth,
-	selectedIndex = null,
+	selectedObjectId = null,
 	onSelectObject,
 }: BoardViewerProps) {
 	const { backgroundId, objects } = boardData;
 
-	// 表示するオブジェクトのみフィルタ（元のインデックスを保持）
+	// 表示するオブジェクトのみフィルタ
 	// SVGは後から描画したものが上に表示されるため、逆順で描画
-	const visibleObjects = objects
-		.map((obj, index) => ({ obj, index }))
-		.filter(({ obj }) => obj.flags.visible)
-		.reverse();
+	const visibleObjects = objects.filter((obj) => obj.flags.visible).reverse();
 
-	const handleSelect = (index: number) => {
-		onSelectObject?.(index, objects[index]);
+	const handleSelect = (objectId: string) => {
+		const obj = objects.find((o) => o.id === objectId);
+		onSelectObject?.(objectId, obj ?? null);
 	};
 
 	const handleBackgroundClick = () => {
@@ -71,12 +72,11 @@ export function BoardViewer({
 				width={CANVAS_WIDTH}
 				height={CANVAS_HEIGHT}
 			/>
-			{visibleObjects.map(({ obj, index }) => (
+			{visibleObjects.map((obj) => (
 				<ObjectRenderer
-					key={index}
+					key={obj.id}
 					object={obj}
-					index={index}
-					selected={selectedIndex === index}
+					selected={selectedObjectId === obj.id}
 					onSelect={handleSelect}
 				/>
 			))}

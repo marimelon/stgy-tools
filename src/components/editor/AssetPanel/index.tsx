@@ -9,15 +9,15 @@ import { type MouseEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import {
+	type AssetWithRuntimeIds,
 	offsetObjectsToPosition,
-	type StoredAsset,
 	useAssets,
 } from "@/lib/assets";
 import {
 	canAddObjects,
 	getEditorStore,
 	useEditorActions,
-	useSelectedIndices,
+	useSelectedIds,
 } from "@/lib/editor";
 import { AssetContextMenu } from "./AssetContextMenu";
 import { AssetItem } from "./AssetItem";
@@ -26,7 +26,7 @@ import { ImportAssetModal } from "./ImportAssetModal";
 import { SaveAssetModal } from "./SaveAssetModal";
 
 interface ContextMenuState {
-	asset: StoredAsset;
+	asset: AssetWithRuntimeIds;
 	position: { x: number; y: number };
 }
 
@@ -50,7 +50,9 @@ export function AssetPanel() {
 
 	const [showSaveModal, setShowSaveModal] = useState(false);
 	const [showImportModal, setShowImportModal] = useState(false);
-	const [exportAsset, setExportAsset] = useState<StoredAsset | null>(null);
+	const [exportAsset, setExportAsset] = useState<AssetWithRuntimeIds | null>(
+		null,
+	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
@@ -72,7 +74,7 @@ export function AssetPanel() {
 			)
 		: assets;
 
-	const handleApplyAsset = (asset: StoredAsset) => {
+	const handleApplyAsset = (asset: AssetWithRuntimeIds) => {
 		// バリデーション（コールバック実行時に最新のboardを取得）
 		const board = getEditorStore().state.board;
 		const validation = canAddObjects(board, asset.objects);
@@ -92,42 +94,42 @@ export function AssetPanel() {
 		);
 
 		// オブジェクトを追加（addObjectは先頭に追加するため逆順で追加）
+		// 追加されたオブジェクトのIDを収集
+		const newIds: string[] = [];
 		for (let i = offsetObjects.length - 1; i >= 0; i--) {
 			addObject(offsetObjects[i]);
+			newIds.push(offsetObjects[i].id);
 		}
 
-		// 追加後のインデックスは 0 から N-1（先頭に追加されるため）
-		const newIndices = offsetObjects.map((_, i) => i);
+		selectObjects(newIds);
 
-		selectObjects(newIndices);
-
-		if (newIndices.length >= 2) {
-			groupObjects(newIndices);
+		if (newIds.length >= 2) {
+			groupObjects(newIds);
 		}
 
 		commitHistory(t("assetPanel.toast.assetApplied", { name: asset.name }));
 	};
 
-	const handleContextMenu = (e: MouseEvent, asset: StoredAsset) => {
+	const handleContextMenu = (e: MouseEvent, asset: AssetWithRuntimeIds) => {
 		setContextMenu({
 			asset,
 			position: { x: e.clientX, y: e.clientY },
 		});
 	};
 
-	const handleRename = (asset: StoredAsset, newName: string) => {
+	const handleRename = (asset: AssetWithRuntimeIds, newName: string) => {
 		updateAsset(asset.id, { name: newName });
 	};
 
-	const handleDuplicate = (asset: StoredAsset) => {
+	const handleDuplicate = (asset: AssetWithRuntimeIds) => {
 		duplicateAsset(asset.id);
 	};
 
-	const handleExport = (asset: StoredAsset) => {
+	const handleExport = (asset: AssetWithRuntimeIds) => {
 		setExportAsset(asset);
 	};
 
-	const handleDelete = (asset: StoredAsset) => {
+	const handleDelete = (asset: AssetWithRuntimeIds) => {
 		deleteAsset(asset.id);
 	};
 
@@ -261,8 +263,8 @@ function EmptyState({ hasAssets }: { hasAssets: boolean }) {
  */
 export function AssetPanelActions() {
 	const { t } = useTranslation();
-	const selectedIndices = useSelectedIndices();
-	const canSave = selectedIndices.length > 0;
+	const selectedIds = useSelectedIds();
+	const canSave = selectedIds.length > 0;
 
 	const handleSaveClick = () => {
 		window.dispatchEvent(new CustomEvent("openSaveAssetModal"));

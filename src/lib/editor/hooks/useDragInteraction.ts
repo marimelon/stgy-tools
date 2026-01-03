@@ -37,35 +37,35 @@ function getSizeLimits(objectId: number): { min: number; max: number } {
 export interface UseDragInteractionParams {
 	svgRef: RefObject<SVGSVGElement | null>;
 	objects: BoardObject[];
-	selectedIndices: number[];
+	selectedIds: string[];
 	gridSettings: GridSettings;
 	/** フォーカス中のグループID（null = フォーカスなし） */
 	focusedGroupId: string | null;
 	/** 円形配置モード状態（null = モードなし） */
 	circularMode: CircularModeState | null;
-	selectObject: (index: number, additive?: boolean) => void;
+	selectObject: (objectId: string, additive?: boolean) => void;
 	selectGroup: (groupId: string) => void;
 	getGroupForObject: (
-		index: number,
-	) => { id: string; objectIndices: number[] } | undefined;
-	updateObject: (index: number, updates: Partial<BoardObject>) => void;
-	moveObjects: (indices: number[], deltaX: number, deltaY: number) => void;
+		objectId: string,
+	) => { id: string; objectIds: string[] } | undefined;
+	updateObject: (objectId: string, updates: Partial<BoardObject>) => void;
+	moveObjects: (objectIds: string[], deltaX: number, deltaY: number) => void;
 	/** グリッドスナップ付きバッチ移動（パフォーマンス最適化） */
 	moveObjectsWithSnap: (
-		startPositions: Map<number, Position>,
+		startPositions: Map<string, Position>,
 		deltaX: number,
 		deltaY: number,
 		gridSize: number,
 	) => void;
 	/** 円周上でオブジェクトを移動 */
-	moveObjectOnCircle: (index: number, angle: number) => void;
+	moveObjectOnCircle: (objectId: string, angle: number) => void;
 	commitHistory: (description: string) => void;
 }
 
 export interface UseDragInteractionReturn {
 	dragState: DragState | null;
-	handleObjectClick: (index: number, e: React.MouseEvent) => void;
-	handleObjectPointerDown: (index: number, e: React.PointerEvent) => void;
+	handleObjectClick: (objectId: string, e: React.MouseEvent) => void;
+	handleObjectPointerDown: (objectId: string, e: React.PointerEvent) => void;
 	handleRotateStart: (e: React.PointerEvent) => void;
 	handleResizeStart: (handle: ResizeHandle, e: React.PointerEvent) => void;
 	handleDragMove: (currentPointer: Position) => void;
@@ -78,7 +78,7 @@ export interface UseDragInteractionReturn {
 export function useDragInteraction({
 	svgRef,
 	objects,
-	selectedIndices,
+	selectedIds,
 	gridSettings,
 	focusedGroupId,
 	circularMode,
@@ -95,12 +95,12 @@ export function useDragInteraction({
 	const [dragState, setDragState] = useState<DragState | null>(null);
 
 	/**
-	 * フォーカスモード中に、指定インデックスがフォーカス外かどうかを判定
+	 * フォーカスモード中に、指定オブジェクトがフォーカス外かどうかを判定
 	 */
 	const isOutsideFocus = useCallback(
-		(index: number): boolean => {
+		(objectId: string): boolean => {
 			if (focusedGroupId === null) return false;
-			const focusedGroup = getGroupForObject(index);
+			const focusedGroup = getGroupForObject(objectId);
 			// フォーカス中のグループに属していない場合はフォーカス外
 			return focusedGroup?.id !== focusedGroupId;
 		},
@@ -111,21 +111,21 @@ export function useDragInteraction({
 	 * オブジェクトクリック（グループ対応）
 	 */
 	const handleObjectClick = useCallback(
-		(index: number, e: React.MouseEvent) => {
+		(objectId: string, e: React.MouseEvent) => {
 			e.stopPropagation();
 
 			// フォーカスモード中、フォーカス外のオブジェクトはクリック無視
-			if (isOutsideFocus(index)) return;
+			if (isOutsideFocus(objectId)) return;
 
 			// Shift, Command (Mac), Ctrl (Windows) で追加選択
 			const additive = e.shiftKey || e.metaKey || e.ctrlKey;
 
-			const group = getGroupForObject(index);
+			const group = getGroupForObject(objectId);
 			// フォーカスモード中は個別オブジェクト選択（グループ選択しない）
 			if (group && !additive && focusedGroupId === null) {
 				selectGroup(group.id);
 			} else {
-				selectObject(index, additive);
+				selectObject(objectId, additive);
 			}
 		},
 		[
@@ -144,11 +144,11 @@ export function useDragInteraction({
 	 * 選択を変更せずに既存の選択をドラッグする（Figma等と同様の動作）
 	 */
 	const handleObjectPointerDown = useCallback(
-		(index: number, e: React.PointerEvent) => {
+		(objectId: string, e: React.PointerEvent) => {
 			if (e.button !== 0) return;
 
 			// フォーカスモード中、フォーカス外のオブジェクトはドラッグ無視
-			if (isOutsideFocus(index)) return;
+			if (isOutsideFocus(objectId)) return;
 
 			const svg = svgRef.current;
 			if (!svg) return;
@@ -160,51 +160,55 @@ export function useDragInteraction({
 			const additive = e.shiftKey || e.metaKey || e.ctrlKey;
 			const startPointer = screenToSVG(e, svg);
 
-			const group = getGroupForObject(index);
-			let indicesToMove = selectedIndices;
+			const group = getGroupForObject(objectId);
+			let idsToMove = selectedIds;
 
 			// クリックされたオブジェクトが選択されていない場合
-			if (!selectedIndices.includes(index)) {
+			if (!selectedIds.includes(objectId)) {
 				// 選択中のオブジェクトがクリック位置にあるかチェック
 				// あれば選択を維持してそのままドラッグ（前面オブジェクトをクリックスルー）
-				const selectedObjectAtPoint = selectedIndices.find((idx) => {
-					const obj = objects[idx];
+				const selectedObjectAtPoint = selectedIds.find((id) => {
+					const obj = objects.find((o) => o.id === id);
 					return obj && isPointInObject(startPointer, obj);
 				});
 
 				if (selectedObjectAtPoint !== undefined) {
 					// 選択中のオブジェクトがクリック位置にある場合は、
 					// 選択を変更せずに既存の選択をドラッグ
-					indicesToMove = selectedIndices;
+					idsToMove = selectedIds;
 				} else {
 					// 選択中のオブジェクトがクリック位置にない場合は、
 					// クリックされたオブジェクトを選択
 					// フォーカスモード中は個別オブジェクト選択（グループ選択しない）
 					if (group && !additive && focusedGroupId === null) {
 						selectGroup(group.id);
-						indicesToMove = group.objectIndices;
+						idsToMove = group.objectIds;
 					} else {
-						selectObject(index, additive);
-						indicesToMove = additive ? [...selectedIndices, index] : [index];
+						selectObject(objectId, additive);
+						idsToMove = additive ? [...selectedIds, objectId] : [objectId];
 					}
 				}
 			}
 
 			// ロックされたオブジェクトはドラッグ不可（選択のみ）
 			// 複数選択時は、移動対象にロックされていないオブジェクトが含まれていれば移動可能
-			const allLocked = indicesToMove.every(
-				(idx) => objects[idx]?.flags.locked,
-			);
+			const allLocked = idsToMove.every((id) => {
+				const obj = objects.find((o) => o.id === id);
+				return obj?.flags.locked;
+			});
 			if (allLocked) {
 				return;
 			}
 
-			const startObjectState = { ...objects[indicesToMove[0]] };
+			const firstObject = objects.find((o) => o.id === idsToMove[0]);
+			if (!firstObject) return;
+			const startObjectState = { ...firstObject };
 
-			const startPositions = new Map<number, Position>();
-			for (const idx of indicesToMove) {
-				if (idx >= 0 && idx < objects.length && !objects[idx].flags.locked) {
-					startPositions.set(idx, { ...objects[idx].position });
+			const startPositions = new Map<string, Position>();
+			for (const id of idsToMove) {
+				const obj = objects.find((o) => o.id === id);
+				if (obj && !obj.flags.locked) {
+					startPositions.set(id, { ...obj.position });
 				}
 			}
 
@@ -213,7 +217,7 @@ export function useDragInteraction({
 				startPointer,
 				startObjectState,
 				startPositions,
-				objectIndex: indicesToMove[0],
+				objectId: idsToMove[0],
 			});
 
 			(e.target as Element).setPointerCapture(e.pointerId);
@@ -221,7 +225,7 @@ export function useDragInteraction({
 		[
 			svgRef,
 			objects,
-			selectedIndices,
+			selectedIds,
 			selectObject,
 			getGroupForObject,
 			selectGroup,
@@ -235,21 +239,22 @@ export function useDragInteraction({
 	 */
 	const handleRotateStart = useCallback(
 		(e: React.PointerEvent) => {
-			if (selectedIndices.length !== 1) return;
+			if (selectedIds.length !== 1) return;
 
 			const svg = svgRef.current;
 			if (!svg) return;
 
-			const index = selectedIndices[0];
+			const selectedId = selectedIds[0];
+			const obj = objects.find((o) => o.id === selectedId);
+			if (!obj) return;
 
 			// ロックされたオブジェクトは回転不可
-			const obj = objects[index];
 			if (obj.flags.locked) {
 				return;
 			}
 
 			const startPointer = screenToSVG(e, svg);
-			const startObjectState = { ...objects[index] };
+			const startObjectState = { ...obj };
 
 			setDragState({
 				mode: "rotate",
@@ -257,12 +262,12 @@ export function useDragInteraction({
 				startObjectState,
 				startPositions: new Map(),
 				handle: "rotate",
-				objectIndex: index,
+				objectId: selectedId,
 			});
 
 			(e.target as Element).setPointerCapture(e.pointerId);
 		},
-		[svgRef, objects, selectedIndices],
+		[svgRef, objects, selectedIds],
 	);
 
 	/**
@@ -270,21 +275,22 @@ export function useDragInteraction({
 	 */
 	const handleResizeStart = useCallback(
 		(handle: ResizeHandle, e: React.PointerEvent) => {
-			if (selectedIndices.length !== 1) return;
+			if (selectedIds.length !== 1) return;
 
 			const svg = svgRef.current;
 			if (!svg) return;
 
-			const index = selectedIndices[0];
+			const selectedId = selectedIds[0];
+			const obj = objects.find((o) => o.id === selectedId);
+			if (!obj) return;
 
 			// ロックされたオブジェクトはリサイズ不可
-			const obj = objects[index];
 			if (obj.flags.locked) {
 				return;
 			}
 
 			const startPointer = screenToSVG(e, svg);
-			const startObjectState = { ...objects[index] };
+			const startObjectState = { ...obj };
 
 			setDragState({
 				mode: "resize",
@@ -292,12 +298,12 @@ export function useDragInteraction({
 				startObjectState,
 				startPositions: new Map(),
 				handle,
-				objectIndex: index,
+				objectId: selectedId,
 			});
 
 			(e.target as Element).setPointerCapture(e.pointerId);
 		},
-		[svgRef, objects, selectedIndices],
+		[svgRef, objects, selectedIds],
 	);
 
 	/**
@@ -307,23 +313,18 @@ export function useDragInteraction({
 		(currentPointer: Position) => {
 			if (!dragState) return;
 
-			const {
-				mode,
-				startPointer,
-				startObjectState,
-				startPositions,
-				objectIndex,
-			} = dragState;
+			const { mode, startPointer, startObjectState, startPositions, objectId } =
+				dragState;
 
 			if (mode === "drag") {
 				// 円形モード中で、ドラッグ対象が円形配置に参加している場合
 				// 円周上のみに移動を制約
-				if (circularMode?.participatingIndices.includes(objectIndex)) {
+				if (objectId && circularMode?.participatingIds.includes(objectId)) {
 					const angle = Math.atan2(
 						currentPointer.y - circularMode.center.y,
 						currentPointer.x - circularMode.center.x,
 					);
-					moveObjectOnCircle(objectIndex, angle);
+					moveObjectOnCircle(objectId, angle);
 					return;
 				}
 
@@ -339,17 +340,17 @@ export function useDragInteraction({
 						gridSettings.size,
 					);
 				} else {
-					moveObjects(selectedIndices, deltaX, deltaY);
+					moveObjects(selectedIds, deltaX, deltaY);
 					setDragState({
 						...dragState,
 						startPointer: currentPointer,
 					});
 				}
-			} else if (mode === "rotate") {
+			} else if (mode === "rotate" && objectId) {
 				const center = startObjectState.position;
 				const newRotation = calculateRotation(center, currentPointer);
-				updateObject(objectIndex, { rotation: newRotation });
-			} else if (mode === "resize") {
+				updateObject(objectId, { rotation: newRotation });
+			} else if (mode === "resize" && objectId) {
 				const distance = Math.sqrt(
 					(currentPointer.x - startObjectState.position.x) ** 2 +
 						(currentPointer.y - startObjectState.position.y) ** 2,
@@ -365,7 +366,7 @@ export function useDragInteraction({
 					const newSize = Math.round(
 						Math.max(min, Math.min(max, startObjectState.size * scaleFactor)),
 					);
-					updateObject(objectIndex, { size: newSize });
+					updateObject(objectId, { size: newSize });
 				}
 			}
 		},
@@ -373,7 +374,7 @@ export function useDragInteraction({
 			dragState,
 			updateObject,
 			gridSettings,
-			selectedIndices,
+			selectedIds,
 			moveObjects,
 			moveObjectsWithSnap,
 			circularMode,

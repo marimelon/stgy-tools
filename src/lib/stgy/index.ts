@@ -27,14 +27,22 @@ export { compareStgy, decodeStgyDebug, hexDump } from "./debug";
 export type { DecodeResult } from "./decoder";
 export { decodeStgy, decodeStgyWithInfo } from "./decoder";
 export { encodeStgy, extractKeyFromStgy } from "./encoder";
+export {
+	assignBoardObjectIds,
+	assignObjectId,
+	assignObjectIds,
+	generateObjectId,
+} from "./id";
 export { parseBoardData } from "./parser";
 export { serializeBoardData } from "./serializer";
 export type {
 	BoardData,
 	BoardObject,
+	BoardObjectWithoutId,
 	Color,
 	EditParamDefinition,
 	ObjectFlags,
+	ParsedBoardData,
 	Position,
 } from "./types";
 export {

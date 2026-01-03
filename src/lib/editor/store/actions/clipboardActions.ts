@@ -18,11 +18,12 @@ export function createClipboardActions(store: EditorStore) {
 	 */
 	const copyObjects = () => {
 		const state = store.state;
-		if (state.selectedIndices.length === 0) return;
+		if (state.selectedIds.length === 0) return;
 
-		const copiedObjects = state.selectedIndices
-			.filter((i) => i >= 0 && i < state.board.objects.length)
-			.map((i) => structuredClone(state.board.objects[i]));
+		const copiedObjects = state.selectedIds
+			.map((id) => state.board.objects.find((obj) => obj.id === id))
+			.filter((obj): obj is NonNullable<typeof obj> => obj !== undefined)
+			.map((obj) => structuredClone(obj));
 
 		if (copiedObjects.length === 0) return;
 
@@ -62,9 +63,11 @@ export function createClipboardActions(store: EditorStore) {
 
 			const newBoard = cloneBoard(state.board);
 
-			// ペーストするオブジェクトを準備
+			// ペーストするオブジェクトを準備（新しいIDを生成）
 			const pastedObjects = clipboardObjects.map((obj) => {
 				const pasted = structuredClone(obj);
+				// 新しいIDを生成
+				pasted.id = crypto.randomUUID();
 				// 位置をオフセット
 				if (position) {
 					pasted.position = { ...position };
@@ -78,8 +81,8 @@ export function createClipboardActions(store: EditorStore) {
 			// 配列の先頭に追加（最前面レイヤーに配置）
 			newBoard.objects.unshift(...pastedObjects);
 
-			// 新しいインデックスは 0 から pastedObjects.length - 1
-			const newIndices = pastedObjects.map((_, i) => i);
+			// 新しいIDを収集
+			const newIds = pastedObjects.map((obj) => obj.id);
 
 			// 連続ペースト用にグローバルクリップボードも更新
 			writeToClipboard(pastedObjects);
@@ -87,7 +90,7 @@ export function createClipboardActions(store: EditorStore) {
 			return {
 				...state,
 				board: newBoard,
-				selectedIndices: newIndices,
+				selectedIds: newIds,
 				lastError: null,
 				...pushHistory(state, i18n.t("history.pasteObject")),
 			};

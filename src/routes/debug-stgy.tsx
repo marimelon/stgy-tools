@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { generateDebugPageMeta } from "@/lib/seo";
 import {
+	assignBoardObjectIds,
 	type CompareResult,
 	compareStgy,
 	type DecodeDebugInfo,
@@ -45,10 +46,11 @@ function StgyDebugPage() {
 		}
 	})();
 
-	const boardData = ((): ReturnType<typeof parseBoardData> | null => {
+	const boardData = (() => {
 		if (!debugInfo) return null;
 		try {
-			return parseBoardData(debugInfo.decompressedData);
+			const parsed = parseBoardData(debugInfo.decompressedData);
+			return assignBoardObjectIds(parsed);
 		} catch (e) {
 			console.error("Parse error:", e);
 			return null;

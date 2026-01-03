@@ -22,7 +22,12 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { generateDebugPageMeta } from "@/lib/seo";
 import type { BoardData, BoardObject } from "@/lib/stgy";
-import { decodeStgy, ObjectNames, parseBoardData } from "@/lib/stgy";
+import {
+	assignBoardObjectIds,
+	decodeStgy,
+	ObjectNames,
+	parseBoardData,
+} from "@/lib/stgy";
 
 const seo = generateDebugPageMeta("Render Comparison Debug");
 
@@ -57,7 +62,8 @@ function RenderDebugPage() {
 		if (!inputCode.trim()) return null;
 		try {
 			const binary = decodeStgy(inputCode.trim());
-			const boardData = parseBoardData(binary);
+			const parsed = parseBoardData(binary);
+			const boardData = assignBoardObjectIds(parsed);
 			return { boardData, error: null };
 		} catch (e) {
 			const message = e instanceof Error ? e.message : "不明なエラー";

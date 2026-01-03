@@ -36,9 +36,10 @@ export interface ObjectFlags {
 }
 
 /**
- * ボード上のオブジェクト
+ * ボード上のオブジェクト（IDなし、パーサー出力用）
+ * パーサーから出力され、assignObjectIdsでIDが付与される
  */
-export interface BoardObject {
+export interface BoardObjectWithoutId {
 	/** オブジェクトID (オブジェクト種別を示す) */
 	objectId: number;
 	/** テキスト内容 (テキストオブジェクトの場合) */
@@ -62,6 +63,14 @@ export interface BoardObject {
 }
 
 /**
+ * ボード上のオブジェクト（ランタイムID付き）
+ */
+export interface BoardObject extends BoardObjectWithoutId {
+	/** ランタイムID（保存時は破棄される） */
+	id: string;
+}
+
+/**
  * 背景ID
  */
 export enum BackgroundId {
@@ -75,7 +84,7 @@ export enum BackgroundId {
 }
 
 /**
- * ボードデータ
+ * ボードデータ（ランタイムID付きオブジェクト）
  *
  * 注意: stgyバイナリフォーマットにはボードサイズ（幅/高さ）は含まれていません。
  * キャンバスサイズは固定値(512x384)または描画時に計算されます。
@@ -89,6 +98,25 @@ export interface BoardData {
 	backgroundId: BackgroundId;
 	/** オブジェクトリスト */
 	objects: BoardObject[];
+	/** サイズ配列後のパディングバイト (ラウンドトリップ用、内部使用) */
+	_sizePaddingByte?: number;
+	/** セクションコンテンツ先頭の空フィールド数 (ラウンドトリップ用、内部使用) */
+	_emptyFieldCount?: number;
+}
+
+/**
+ * パース済みボードデータ（IDなしオブジェクト）
+ * parseBoardDataの出力型。assignObjectIdsでBoardDataに変換される。
+ */
+export interface ParsedBoardData {
+	/** バージョン (= 2) */
+	version: number;
+	/** ボード名 */
+	name: string;
+	/** 背景ID */
+	backgroundId: BackgroundId;
+	/** オブジェクトリスト（IDなし） */
+	objects: BoardObjectWithoutId[];
 	/** サイズ配列後のパディングバイト (ラウンドトリップ用、内部使用) */
 	_sizePaddingByte?: number;
 	/** セクションコンテンツ先頭の空フィールド数 (ラウンドトリップ用、内部使用) */
