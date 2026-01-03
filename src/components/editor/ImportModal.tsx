@@ -73,6 +73,12 @@ export function ImportModal({
 							id={textareaId}
 							value={importText}
 							onChange={(e) => onImportTextChange(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter" && !e.shiftKey && importText.trim()) {
+									e.preventDefault();
+									onImport();
+								}
+							}}
 							placeholder={t("importModal.placeholder")}
 							className="h-32 font-mono text-sm resize-none break-all"
 						/>
