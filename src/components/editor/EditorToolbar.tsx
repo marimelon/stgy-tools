@@ -74,11 +74,7 @@ export interface EditorToolbarProps {
 	/** Board Manager を開くコールバック */
 	onOpenBoardManager?: () => void;
 	/** インポート時に新しいボードを作成するコールバック */
-	onCreateBoardFromImport?: (
-		name: string,
-		stgyCode: string,
-		encodeKey: number,
-	) => void;
+	onCreateBoardFromImport?: (name: string, stgyCode: string) => void;
 	/** 短縮リンク機能が有効かどうか */
 	shortLinksEnabled?: boolean;
 }
@@ -177,11 +173,7 @@ export function EditorToolbar({
 			// ボード管理に追加する場合は新しいボードを作成してそちらを開く
 			// （EditorProviderが再初期化されるため setBoard は不要）
 			if (addToBoards && onCreateBoardFromImport) {
-				onCreateBoardFromImport(
-					result.board.name,
-					importText.trim(),
-					result.key ?? 0,
-				);
+				onCreateBoardFromImport(result.board.name, importText.trim());
 			} else {
 				// ボード管理に追加しない場合は現在のエディターに読み込む
 				setBoard(result.board);

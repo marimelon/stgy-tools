@@ -42,7 +42,6 @@ import {
 	useAutoSave,
 	useEditorActions,
 	useFocusedGroup,
-	useImportExport,
 	useIsFocusMode,
 	useKeyboardShortcuts,
 	useOpenTabs,
@@ -166,7 +165,6 @@ function EditorPage() {
 	const [initialGridSettings, setInitialGridSettings] = useState<GridSettings>(
 		DEFAULT_GRID_SETTINGS,
 	);
-	const [initialEncodeKey, setInitialEncodeKey] = useState<number>(0);
 
 	// Key to force re-render EditorProvider when switching boards
 	const [editorKey, setEditorKey] = useState(0);
@@ -212,7 +210,7 @@ function EditorPage() {
 			setInitialBoard({ ...decodedBoard, name: board.name });
 			setInitialGroups(board.groups);
 			setInitialGridSettings(board.gridSettings);
-			setInitialEncodeKey(board.encodeKey);
+
 			setEditorKey((prev) => prev + 1);
 			return true;
 		},
@@ -233,7 +231,6 @@ function EditorPage() {
 				const newBoardId = await createBoard(
 					newBoard.name,
 					stgyCode,
-					0,
 					[],
 					DEFAULT_GRID_SETTINGS,
 				);
@@ -247,7 +244,7 @@ function EditorPage() {
 			setInitialBoard(newBoard);
 			setInitialGroups([]);
 			setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-			setInitialEncodeKey(0);
+
 			setEditorKey((prev) => prev + 1);
 		},
 		[createBoard, t, isMemoryOnlyMode],
@@ -314,7 +311,6 @@ function EditorPage() {
 			const newBoardId = await createBoard(
 				boardName,
 				trimmedCode,
-				0,
 				[],
 				DEFAULT_GRID_SETTINGS,
 			);
@@ -324,7 +320,7 @@ function EditorPage() {
 			setInitialBoard({ ...decodedBoard, name: boardName });
 			setInitialGroups([]);
 			setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-			setInitialEncodeKey(0);
+
 			setEditorKey((prev) => prev + 1);
 
 			// Clear the URL parameter to prevent re-import on refresh
@@ -362,7 +358,6 @@ function EditorPage() {
 		const newBoardId = await createBoard(
 			boardName,
 			pendingImport.code,
-			0,
 			[],
 			DEFAULT_GRID_SETTINGS,
 		);
@@ -372,7 +367,7 @@ function EditorPage() {
 		setInitialBoard({ ...decodedBoard, name: boardName });
 		setInitialGroups([]);
 		setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-		setInitialEncodeKey(0);
+
 		setEditorKey((prev) => prev + 1);
 
 		setPendingImport(null);
@@ -484,29 +479,21 @@ function EditorPage() {
 					>
 						<EditorWithTabs
 							boards={boards}
-							initialEncodeKey={initialEncodeKey}
 							currentBoardId={currentBoardId}
 							isMemoryOnlyMode={isMemoryOnlyMode}
 							shortLinksEnabled={featureFlags.shortLinksEnabled}
 							onOpenBoardManager={() => setShowBoardManager(true)}
-							onSaveBoard={(
-								name,
-								stgyCode,
-								encodeKey,
-								groups,
-								gridSettings,
-							) => {
+							onSaveBoard={(name, stgyCode, groups, gridSettings) => {
 								if (currentBoardId && !isMemoryOnlyMode) {
 									void updateBoard(currentBoardId, {
 										name,
 										stgyCode,
-										encodeKey,
 										groups,
 										gridSettings,
 									});
 								}
 							}}
-							onCreateBoardFromImport={async (name, stgyCode, encodeKey) => {
+							onCreateBoardFromImport={async (name, stgyCode) => {
 								// stgyCodeをデコードしてボードデータを取得
 								const decodedBoard = decodeBoardFromStgy(stgyCode);
 								if (!decodedBoard) {
@@ -518,7 +505,6 @@ function EditorPage() {
 								const newBoardId = await createBoard(
 									name,
 									stgyCode,
-									encodeKey,
 									[],
 									DEFAULT_GRID_SETTINGS,
 								);
@@ -528,7 +514,7 @@ function EditorPage() {
 								setInitialBoard({ ...decodedBoard, name });
 								setInitialGroups([]);
 								setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-								setInitialEncodeKey(encodeKey);
+
 								setEditorKey((prev) => prev + 1);
 							}}
 							onSelectBoard={handleOpenBoard}
@@ -538,7 +524,6 @@ function EditorPage() {
 								void createBoard(
 									`${board.name} (Copy)`,
 									board.stgyCode,
-									board.encodeKey,
 									board.groups,
 									board.gridSettings,
 								);
@@ -584,7 +569,6 @@ function EditorPage() {
 
 /** EditorContentのProps */
 interface EditorContentProps {
-	initialEncodeKey: number;
 	currentBoardId: string | null;
 	isMemoryOnlyMode: boolean;
 	shortLinksEnabled: boolean;
@@ -592,14 +576,12 @@ interface EditorContentProps {
 	onSaveBoard: (
 		name: string,
 		stgyCode: string,
-		encodeKey: number,
 		groups: ObjectGroup[],
 		gridSettings: GridSettings,
 	) => void;
 	onCreateBoardFromImport?: (
 		name: string,
 		stgyCode: string,
-		encodeKey: number,
 	) => void | Promise<void>;
 	/** Optional tab bar to render at the bottom of the canvas area */
 	children?: React.ReactNode;
@@ -609,7 +591,6 @@ interface EditorContentProps {
  * エディターコンテンツ（キーボードショートカット有効化）
  */
 function EditorContent({
-	initialEncodeKey,
 	currentBoardId,
 	isMemoryOnlyMode,
 	shortLinksEnabled,
@@ -626,18 +607,9 @@ function EditorContent({
 	const focusedGroup = useFocusedGroup();
 	const { unfocus } = useEditorActions();
 
-	// インポート/エクスポートフック（encodeKeyの管理）
-	const { encodeKey, setEncodeKey } = useImportExport();
-
-	// 初期encodeKeyを設定
-	useEffect(() => {
-		setEncodeKey(initialEncodeKey);
-	}, [initialEncodeKey, setEncodeKey]);
-
 	// TanStack Store Effect を使用した自動保存
 	const { lastSavedAt } = useAutoSave({
 		currentBoardId,
-		encodeKey,
 		isMemoryOnlyMode,
 		onSave: onSaveBoard,
 	});

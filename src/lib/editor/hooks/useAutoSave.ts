@@ -19,7 +19,6 @@ const AUTO_SAVE_DEBOUNCE_MS = 1000;
 export type SaveBoardCallback = (
 	name: string,
 	stgyCode: string,
-	encodeKey: number,
 	groups: ObjectGroup[],
 	gridSettings: GridSettings,
 ) => void;
@@ -28,8 +27,6 @@ export type SaveBoardCallback = (
 export interface UseAutoSaveOptions {
 	/** 保存先のボードID（nullの場合は保存しない） */
 	currentBoardId: string | null;
-	/** エンコードキー */
-	encodeKey: number | null;
 	/** メモリのみモード（trueの場合は保存しない） */
 	isMemoryOnlyMode: boolean;
 	/** 保存コールバック */
@@ -68,14 +65,14 @@ export function useAutoSave(options: UseAutoSaveOptions) {
 			groups: ObjectGroup[],
 			gridSettings: GridSettings,
 		) => {
-			const { currentBoardId, encodeKey, onSave } = optionsRef.current;
+			const { currentBoardId, onSave } = optionsRef.current;
 			if (!currentBoardId || optionsRef.current.isMemoryOnlyMode) return;
 
 			const { width, height } = recalculateBoardSize(board);
 			const boardToSave = { ...board, width, height };
 			const stgyCode = encodeStgy(boardToSave);
 
-			onSave(board.name, stgyCode, encodeKey ?? 0, groups, gridSettings);
+			onSave(board.name, stgyCode, groups, gridSettings);
 			setLastSavedAt(new Date());
 		};
 

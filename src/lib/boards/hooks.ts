@@ -118,7 +118,6 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		async (
 			name: string,
 			stgyCode: string,
-			encodeKey: number,
 			groups: ObjectGroup[] = [],
 			gridSettings: GridSettings = DEFAULT_GRID_SETTINGS,
 		): Promise<string> => {
@@ -129,7 +128,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				id,
 				name,
 				stgyCode,
-				encodeKey,
+				// encodeKey は保存しない（CRC32から決定的に計算されるため不要）
 				groups,
 				gridSettings,
 				createdAt: now,
@@ -146,10 +145,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		async (
 			id: string,
 			updates: Partial<
-				Pick<
-					StoredBoard,
-					"name" | "stgyCode" | "encodeKey" | "groups" | "gridSettings"
-				>
+				Pick<StoredBoard, "name" | "stgyCode" | "groups" | "gridSettings">
 			>,
 		): Promise<void> => {
 			// If stgyCode is being updated, regenerate the content hash
@@ -160,8 +156,6 @@ export function useBoards(options: UseBoardsOptions = {}) {
 			boardsCollection.update(id, (draft) => {
 				if (updates.name !== undefined) draft.name = updates.name;
 				if (updates.stgyCode !== undefined) draft.stgyCode = updates.stgyCode;
-				if (updates.encodeKey !== undefined)
-					draft.encodeKey = updates.encodeKey;
 				if (updates.groups !== undefined) draft.groups = updates.groups;
 				if (updates.gridSettings !== undefined)
 					draft.gridSettings = updates.gridSettings;
