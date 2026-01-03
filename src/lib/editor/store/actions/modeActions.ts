@@ -4,8 +4,8 @@
 
 import i18n from "@/lib/i18n";
 import { ObjectIds, type Position } from "@/lib/stgy";
-import { cloneBoard, updateObjectInBoard } from "../../reducerHandlers/utils";
 import type { EditorError } from "../../types";
+import { cloneBoard, updateObjectInBoard } from "../../utils";
 import type { EditorStore } from "../types";
 
 /** 最小半径 */

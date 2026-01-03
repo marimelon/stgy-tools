@@ -6,17 +6,14 @@ import { calculateLineEndpoint } from "@/lib/board";
 import i18n from "@/lib/i18n";
 import { type BoardObject, ObjectIds, type Position } from "@/lib/stgy";
 import { duplicateObject } from "../../factory";
-import {
-	canAddObject,
-	canAddObjects,
-} from "../../reducerHandlers/businessLogic/validation";
+import type { BatchUpdatePayload } from "../../types";
 import {
 	cloneBoard,
 	pushHistory,
 	updateGroupsAfterDelete,
 	updateObjectInBoard,
-} from "../../reducerHandlers/utils";
-import type { BatchUpdatePayload } from "../../types";
+} from "../../utils";
+import { canAddObject, canAddObjects } from "../../utils/validation";
 import type { EditorStore } from "../types";
 
 /**

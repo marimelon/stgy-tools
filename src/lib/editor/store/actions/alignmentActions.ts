@@ -3,12 +3,8 @@
  */
 
 import i18n from "@/lib/i18n";
-import {
-	cloneBoard,
-	pushHistory,
-	updateObjectInBoard,
-} from "../../reducerHandlers/utils";
 import type { AlignmentType, CircularModeState } from "../../types";
+import { cloneBoard, pushHistory, updateObjectInBoard } from "../../utils";
 import type { EditorStore } from "../types";
 
 /** 整列タイプの説明キー */

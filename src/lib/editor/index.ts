@@ -92,13 +92,7 @@ export type {
 export { useLongPress } from "./hooks/useLongPress";
 export { useSVGHandleEvents } from "./hooks/useSVGHandleEvents";
 export type { CreateInitialStateOptions } from "./reducer";
-export {
-	createInitialState,
-	createInitialStateWithOptions,
-	editorReducer,
-} from "./reducer";
-export type { ValidationResult } from "./reducerHandlers/businessLogic/validation";
-export { canAddObjects } from "./reducerHandlers/businessLogic/validation";
+export { createInitialState, createInitialStateWithOptions } from "./reducer";
 // Store
 export {
 	createEditorStore,
@@ -156,3 +150,5 @@ export {
 	useKeyboardShortcuts,
 } from "./useKeyboardShortcuts";
 export { useObjectPaletteState } from "./useObjectPaletteState";
+export type { ValidationResult } from "./utils/validation";
+export { canAddObjects } from "./utils/validation";

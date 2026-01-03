@@ -3,7 +3,7 @@
  */
 
 import i18n from "@/lib/i18n";
-import { cloneBoard, pushHistory } from "../../reducerHandlers/utils";
+import { cloneBoard, pushHistory } from "../../utils";
 import type { EditorStore } from "../types";
 
 /** レイヤー移動方向 */

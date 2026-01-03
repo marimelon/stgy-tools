@@ -4,12 +4,8 @@
 
 import i18n from "@/lib/i18n";
 import type { BoardData } from "@/lib/stgy";
-import {
-	cloneBoard,
-	generateHistoryId,
-	pushHistory,
-} from "../../reducerHandlers/utils";
 import type { CircularModeState, EditorState } from "../../types";
+import { cloneBoard, generateHistoryId, pushHistory } from "../../utils";
 import { getCurrentBoardId } from "../editorStore";
 import { saveHistory } from "../globalHistoryStore";
 import type { EditorStore } from "../types";

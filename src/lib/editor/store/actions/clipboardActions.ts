@@ -5,8 +5,8 @@
 import i18n from "@/lib/i18n";
 import type { Position } from "@/lib/stgy";
 import { readFromClipboard, writeToClipboard } from "../../clipboard";
-import { canAddObjects } from "../../reducerHandlers/businessLogic/validation";
-import { cloneBoard, pushHistory } from "../../reducerHandlers/utils";
+import { cloneBoard, pushHistory } from "../../utils";
+import { canAddObjects } from "../../utils/validation";
 import type { EditorStore } from "../types";
 
 /**

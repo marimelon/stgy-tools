@@ -3,8 +3,8 @@
  */
 
 import i18n from "@/lib/i18n";
-import { generateGroupId, pushHistory } from "../../reducerHandlers/utils";
 import type { GridSettings, ObjectGroup } from "../../types";
+import { generateGroupId, pushHistory } from "../../utils";
 import type { EditorStore } from "../types";
 
 /**
