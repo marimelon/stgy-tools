@@ -5,7 +5,7 @@
 import { useState } from "react";
 import type { BoardData } from "@/lib/stgy";
 import {
-	assignBoardObjectIds,
+	assignBoardObjectIdsDeterministic,
 	decodeStgy,
 	extractKeyFromStgy,
 	parseBoardData,
@@ -92,7 +92,7 @@ export function useImportExport(): UseImportExportReturn {
 			const key = extractKeyFromStgy(trimmedText);
 			const binary = decodeStgy(trimmedText);
 			const parsed = parseBoardData(binary);
-			const board = assignBoardObjectIds(parsed);
+			const board = assignBoardObjectIdsDeterministic(parsed);
 
 			return {
 				success: true,

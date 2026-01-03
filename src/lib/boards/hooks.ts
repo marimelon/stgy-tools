@@ -6,7 +6,7 @@ import { useLiveQuery } from "@tanstack/react-db";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GridSettings, ObjectGroup } from "@/lib/editor/types";
 import {
-	assignObjectIds,
+	assignBoardObjectIdsDeterministic,
 	decodeStgy,
 	encodeStgy,
 	parseBoardData,
@@ -301,6 +301,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 
 	/**
 	 * Load board with ID assignment (index → ID conversion)
+	 * 決定論的ID生成を使用（同じstgyCode → 同じID）
 	 * @param id Board ID
 	 * @returns Board data with IDs assigned, or null if not found
 	 */
@@ -319,17 +320,13 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				const binary = decodeStgy(stored.stgyCode);
 				const parsed = parseBoardData(binary);
 
-				// Assign IDs to objects
-				const objectsWithId = assignObjectIds(parsed.objects);
-				const board: BoardData = {
-					...parsed,
-					objects: objectsWithId,
-				};
+				// Assign deterministic IDs to objects
+				const board = assignBoardObjectIdsDeterministic(parsed);
 
 				// Convert groups from index-based to ID-based
 				const groups = convertGroupsToIdBased(
 					stored.groups as StoredObjectGroup[],
-					objectsWithId,
+					board.objects,
 				);
 
 				return {

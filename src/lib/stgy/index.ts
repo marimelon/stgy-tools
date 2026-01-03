@@ -29,8 +29,11 @@ export { decodeStgy, decodeStgyWithInfo } from "./decoder";
 export { encodeStgy, extractKeyFromStgy } from "./encoder";
 export {
 	assignBoardObjectIds,
+	assignBoardObjectIdsDeterministic,
+	assignDeterministicObjectIds,
 	assignObjectId,
 	assignObjectIds,
+	generateDeterministicObjectId,
 	generateObjectId,
 } from "./id";
 export { parseBoardData } from "./parser";
