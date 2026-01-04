@@ -493,6 +493,7 @@
 		"rename": "Rename",
 		"duplicate": "Duplicate",
 		"delete": "Delete",
+		"copyStgyCode": "Copy stgy code",
 		"currentBoard": "Currently editing",
 		"emptyState": {
 			"title": "No saved boards",

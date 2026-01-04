@@ -493,6 +493,7 @@
 		"rename": "名前変更",
 		"duplicate": "複製",
 		"delete": "削除",
+		"copyStgyCode": "stgyコードをコピー",
 		"currentBoard": "現在編集中",
 		"emptyState": {
 			"title": "保存されたボードがありません",

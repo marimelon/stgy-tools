@@ -2,7 +2,14 @@
  * Board card component for the board manager grid
  */
 
-import { Copy, FolderOpen, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+	ClipboardCopy,
+	Copy,
+	FolderOpen,
+	MoreHorizontal,
+	Pencil,
+	Trash2,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -75,6 +82,20 @@ export function BoardCard({
 			handleSaveEdit();
 		} else if (e.key === "Escape") {
 			handleCancelEdit();
+		}
+	};
+
+	const handleCopyStgyCode = async () => {
+		try {
+			await navigator.clipboard.writeText(board.stgyCode);
+		} catch {
+			// Fallback for older browsers
+			const textarea = document.createElement("textarea");
+			textarea.value = board.stgyCode;
+			document.body.appendChild(textarea);
+			textarea.select();
+			document.execCommand("copy");
+			document.body.removeChild(textarea);
 		}
 	};
 
@@ -169,6 +190,10 @@ export function BoardCard({
 						<DropdownMenuItem onClick={onDuplicate}>
 							<Copy className="size-4 mr-2" />
 							{t("boardManager.duplicate")}
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={handleCopyStgyCode}>
+							<ClipboardCopy className="size-4 mr-2" />
+							{t("boardManager.copyStgyCode")}
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							onClick={onDelete}
