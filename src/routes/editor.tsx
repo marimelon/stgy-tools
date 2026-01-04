@@ -485,13 +485,6 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 							boards={boards}
 							currentBoardId={currentBoardId}
 							shortLinksEnabled={featureFlags.shortLinksEnabled}
-							onOpenBoardManager={() => {
-								NiceModal.show(BoardManagerModal, {
-									currentBoardId,
-									onOpenBoard: handleOpenBoard,
-									onCreateNewBoard: handleCreateNewBoard,
-								});
-							}}
 							onSaveBoard={(name, stgyCode, groups, gridSettings, objects) => {
 								if (currentBoardId) {
 									const storedGroups = convertGroupsToIndexBased(
@@ -709,7 +702,8 @@ function EditorContent({
 }
 
 /** EditorWithTabsのProps */
-interface EditorWithTabsProps extends EditorContentProps {
+interface EditorWithTabsProps
+	extends Omit<EditorContentProps, "onOpenBoardManager"> {
 	boards: StoredBoard[];
 	onSelectBoard: (boardId: string) => boolean;
 	onDuplicateBoard: (boardId: string) => void;
@@ -766,16 +760,29 @@ function EditorWithTabs({
 		[addTab, onSelectBoard],
 	);
 
+	// ボードマネージャーを開く（タブ追加を含むhandleOpenBoardを使用）
+	const handleOpenBoardManager = useCallback(() => {
+		NiceModal.show(BoardManagerModal, {
+			currentBoardId,
+			onOpenBoard: handleOpenBoard,
+			onCreateNewBoard,
+		});
+	}, [currentBoardId, handleOpenBoard, onCreateNewBoard]);
+
 	// 未保存状態のボードIDセット（今後実装）
 	const unsavedBoardIds = useMemo(() => new Set<string>(), []);
 
 	return (
-		<EditorContent {...contentProps} currentBoardId={currentBoardId}>
+		<EditorContent
+			{...contentProps}
+			currentBoardId={currentBoardId}
+			onOpenBoardManager={handleOpenBoardManager}
+		>
 			{/* タブバー */}
 			<BoardTabs
 				boards={boards}
 				unsavedBoardIds={unsavedBoardIds}
-				onAddClick={contentProps.onOpenBoardManager}
+				onAddClick={handleOpenBoardManager}
 				onSelectBoard={handleOpenBoard}
 				onDuplicateBoard={onDuplicateBoard}
 			/>
