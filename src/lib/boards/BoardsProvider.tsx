@@ -41,7 +41,6 @@ const BoardsContext = createContext<BoardsContextValue | null>(null);
 
 /** Dexie (IndexedDB) コレクション */
 const dexieCollection = createCollection(
-	// @ts-expect-error - tanstack-dexie-db-collection uses older @tanstack/db types
 	dexieCollectionOptions({
 		id: "boards",
 		schema: storedBoardSchema,
