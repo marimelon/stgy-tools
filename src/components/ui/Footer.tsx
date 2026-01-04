@@ -3,6 +3,7 @@
  * デフォルトでコンパクト表示、展開可能
  */
 
+import { Github } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -21,14 +22,24 @@ export function Footer({ className = "" }: { className?: string }) {
 					<div className="space-y-0.5 animate-in fade-in duration-200">
 						<p>© SQUARE ENIX</p>
 						<p>STGY Tools is not affiliated with SQUARE ENIX CO., LTD.</p>
-						<p className="mt-1.5 pt-1.5 border-t border-border/20">
+						<div className="flex items-center justify-center gap-3 mt-1.5 pt-1.5 border-t border-border/20">
 							<a
 								href="mailto:contact@stgy.m4e.dev"
 								className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
 							>
 								Contact: contact@stgy.m4e.dev
 							</a>
-						</p>
+							<span className="text-muted-foreground/30">|</span>
+							<a
+								href="https://github.com/marimelon/stgy-tools"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="inline-flex items-center gap-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+							>
+								<Github className="size-3" />
+								GitHub
+							</a>
+						</div>
 						<button
 							type="button"
 							onClick={() => setExpanded(false)}
@@ -52,6 +63,16 @@ export function Footer({ className = "" }: { className?: string }) {
 							className="text-muted-foreground/50 hover:text-muted-foreground transition-colors"
 						>
 							Contact
+						</a>
+						<span className="text-muted-foreground/30">|</span>
+						<a
+							href="https://github.com/marimelon/stgy-tools"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center gap-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+						>
+							<Github className="size-3" />
+							GitHub
 						</a>
 					</div>
 				)}
