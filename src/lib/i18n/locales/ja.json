@@ -444,8 +444,7 @@
 		"pasteCode": "stgyコードを貼り付け:",
 		"placeholder": "[stgy:a...]",
 		"cancel": "キャンセル",
-		"import": "インポート",
-		"addToBoards": "ボード管理に追加する"
+		"import": "インポート"
 	},
 	"duplicateBoard": {
 		"title": "同じボードが見つかりました",

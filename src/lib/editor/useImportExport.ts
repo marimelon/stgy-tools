@@ -42,10 +42,6 @@ export interface UseImportExportReturn {
 	executeImport: () => ImportResult;
 	/** インポートをリセット */
 	resetImport: () => void;
-	/** ボード管理に追加するか */
-	addToBoards: boolean;
-	/** ボード管理に追加するかを設定 */
-	setAddToBoards: (value: boolean) => void;
 
 	// エクスポート関連
 	/** エクスポートモーダル表示状態 */
@@ -67,7 +63,6 @@ export function useImportExport(): UseImportExportReturn {
 	const [showImportModal, setShowImportModal] = useState(false);
 	const [importText, setImportText] = useState("");
 	const [importError, setImportError] = useState<string | null>(null);
-	const [addToBoards, setAddToBoards] = useState(true);
 	const [showExportModal, setShowExportModal] = useState(false);
 	const [encodeKey, setEncodeKey] = useState<number | null>(null);
 
@@ -82,7 +77,6 @@ export function useImportExport(): UseImportExportReturn {
 	const resetImport = () => {
 		setImportText("");
 		setImportError(null);
-		setAddToBoards(true);
 	};
 
 	const executeImport = (): ImportResult => {
@@ -127,8 +121,6 @@ export function useImportExport(): UseImportExportReturn {
 		importError,
 		executeImport,
 		resetImport,
-		addToBoards,
-		setAddToBoards,
 		showExportModal,
 		openExportModal,
 		closeExportModal,

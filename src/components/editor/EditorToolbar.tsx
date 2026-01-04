@@ -147,8 +147,6 @@ export function EditorToolbar({
 		importError,
 		executeImport,
 		resetImport,
-		addToBoards,
-		setAddToBoards,
 		showExportModal,
 		openExportModal,
 		closeExportModal,
@@ -164,15 +162,12 @@ export function EditorToolbar({
 	const handleImport = () => {
 		const result = executeImport();
 		if (result.success && result.board) {
-			if (result.key !== undefined) {
-			}
-
-			// ボード管理に追加する場合は新しいボードを作成してそちらを開く
-			// （EditorProviderが再初期化されるため setBoard は不要）
-			if (addToBoards && onCreateBoardFromImport) {
+			if (onCreateBoardFromImport) {
+				// 新しいボードを作成してそちらを開く
+				// （EditorProviderが再初期化されるため setBoard は不要）
 				onCreateBoardFromImport(result.board.name, importText.trim());
 			} else {
-				// ボード管理に追加しない場合は現在のエディターに読み込む
+				// メモリモードの場合は現在のエディターに読み込む
 				setBoard(result.board);
 			}
 
@@ -523,9 +518,6 @@ export function EditorToolbar({
 					importError={importError}
 					onImport={handleImport}
 					onClose={closeImportModal}
-					addToBoards={addToBoards}
-					onAddToBoardsChange={setAddToBoards}
-					isBoardManagementAvailable={!!onCreateBoardFromImport}
 				/>
 			)}
 

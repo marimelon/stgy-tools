@@ -444,8 +444,7 @@
 		"pasteCode": "Paste stgy code:",
 		"placeholder": "[stgy:a...]",
 		"cancel": "Cancel",
-		"import": "Import",
-		"addToBoards": "Add to board management"
+		"import": "Import"
 	},
 	"duplicateBoard": {
 		"title": "Duplicate board found",
