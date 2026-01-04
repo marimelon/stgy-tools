@@ -17,7 +17,10 @@ export function UndoToast({ boardName, onUndo, onDismiss }: UndoToastProps) {
 	const { t } = useTranslation();
 
 	return createPortal(
-		<div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg bg-foreground text-background shadow-lg animate-in slide-in-from-bottom-4 fade-in duration-200">
+		<div
+			className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg bg-foreground text-background shadow-lg animate-in slide-in-from-bottom-4 fade-in duration-200"
+			onPointerDown={(e) => e.stopPropagation()}
+		>
 			<span className="text-sm">
 				{t("boardManager.undoDelete", { name: boardName })}
 			</span>
