@@ -2,7 +2,7 @@
  * 自動保存フック
  *
  * TanStack Store Effect を使用して EditorStore の変更を監視し、
- * デバウンス付きで IndexedDB に自動保存する
+ * デバウンス付きで自動保存する
  */
 
 import { Effect } from "@tanstack/store";
@@ -28,8 +28,6 @@ export type SaveBoardCallback = (
 export interface UseAutoSaveOptions {
 	/** 保存先のボードID（nullの場合は保存しない） */
 	currentBoardId: string | null;
-	/** メモリのみモード（trueの場合は保存しない） */
-	isMemoryOnlyMode: boolean;
 	/** 保存コールバック */
 	onSave: SaveBoardCallback;
 }
@@ -40,7 +38,7 @@ export interface UseAutoSaveOptions {
  * EditorStore の isDirty が true になったとき、デバウンス付きで保存を実行
  */
 export function useAutoSave(options: UseAutoSaveOptions) {
-	const { currentBoardId, isMemoryOnlyMode } = options;
+	const { currentBoardId } = options;
 
 	// 最終保存時刻
 	const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -54,7 +52,7 @@ export function useAutoSave(options: UseAutoSaveOptions) {
 
 	useEffect(() => {
 		// 保存が無効な場合は Effect をマウントしない
-		if (!currentBoardId || isMemoryOnlyMode) {
+		if (!currentBoardId) {
 			return;
 		}
 
@@ -67,7 +65,7 @@ export function useAutoSave(options: UseAutoSaveOptions) {
 			gridSettings: GridSettings,
 		) => {
 			const { currentBoardId, onSave } = optionsRef.current;
-			if (!currentBoardId || optionsRef.current.isMemoryOnlyMode) return;
+			if (!currentBoardId) return;
 
 			const { width, height } = recalculateBoardSize(board);
 			const boardToSave = { ...board, width, height };
@@ -87,10 +85,7 @@ export function useAutoSave(options: UseAutoSaveOptions) {
 				if (!state.isDirty) return;
 
 				// 保存が無効な場合は何もしない
-				if (
-					!optionsRef.current.currentBoardId ||
-					optionsRef.current.isMemoryOnlyMode
-				) {
+				if (!optionsRef.current.currentBoardId) {
 					return;
 				}
 
@@ -126,7 +121,7 @@ export function useAutoSave(options: UseAutoSaveOptions) {
 				saveTimeoutRef.current = null;
 			}
 		};
-	}, [currentBoardId, isMemoryOnlyMode]);
+	}, [currentBoardId]);
 
 	return { lastSavedAt };
 }

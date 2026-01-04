@@ -2,7 +2,13 @@
  * Board storage module exports
  */
 
-export { boardsCollection } from "./collection";
+export {
+	BoardsProvider,
+	type StorageMode,
+	useBoardsContext,
+	useIsPersistent,
+	useStorageMode,
+} from "./BoardsProvider";
 export { generateContentHash, generateHashFromBinary } from "./hash";
 export {
 	type BoardSortOption,

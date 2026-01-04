@@ -10,6 +10,4 @@ export { BoardThumbnail } from "./BoardThumbnail";
 export type { DecodeErrorDialogProps } from "./DecodeErrorDialog";
 export { DecodeErrorDialog } from "./DecodeErrorDialog";
 export { EmptyState } from "./EmptyState";
-export type { LoadErrorScreenProps } from "./LoadErrorScreen";
-export { LoadErrorScreen } from "./LoadErrorScreen";
 export { UndoToast } from "./UndoToast";

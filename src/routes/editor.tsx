@@ -24,11 +24,10 @@ import {
 import {
 	BoardManagerModal,
 	DecodeErrorDialog,
-	LoadErrorScreen,
 } from "@/components/editor/BoardManager";
 import { ResizableLayout } from "@/components/panel";
 import { CompactAppHeader } from "@/components/ui/AppHeader";
-import { useBoards } from "@/lib/boards";
+import { BoardsProvider, useBoards } from "@/lib/boards";
 import {
 	convertGroupsToIdBased,
 	convertGroupsToIndexBased,
@@ -146,18 +145,28 @@ function decodeBoardFromStgy(stgyCode: string): BoardData | null {
 }
 
 function EditorPage() {
+	const { featureFlags } = Route.useLoaderData();
+
+	return (
+		<BoardsProvider>
+			<EditorPageContent featureFlags={featureFlags} />
+		</BoardsProvider>
+	);
+}
+
+interface EditorPageContentProps {
+	featureFlags: { shortLinksEnabled: boolean };
+}
+
+function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { stgy: codeFromUrl } = Route.useSearch();
-	const { featureFlags } = Route.useLoaderData();
 
 	// Board manager state
 	const [showBoardManager, setShowBoardManager] = useState(false);
 	const [currentBoardId, setCurrentBoardId] = useState<string | null>(null);
 	const [isInitialized, setIsInitialized] = useState(false);
-
-	// Memory-only mode (when IndexedDB is unavailable)
-	const [isMemoryOnlyMode, setIsMemoryOnlyMode] = useState(false);
 
 	// Decode error state
 	const [decodeError, setDecodeError] = useState<{
@@ -185,7 +194,6 @@ function EditorPage() {
 		boards,
 		isLoading,
 		error: storageError,
-		clearError,
 		createBoard,
 		updateBoard,
 		deleteBoard,
@@ -230,38 +238,29 @@ function EditorPage() {
 		[getBoard],
 	);
 
-	// Handle creating a new board (or starting in memory-only mode)
-	const handleCreateNewBoard = useCallback(
-		async (memoryOnly = false) => {
-			const defaultName = t("boardManager.defaultBoardName");
-			const newBoard = createEmptyBoard(defaultName);
+	// Handle creating a new board
+	const handleCreateNewBoard = useCallback(async () => {
+		const defaultName = t("boardManager.defaultBoardName");
+		const newBoard = createEmptyBoard(defaultName);
 
-			if (!memoryOnly && !isMemoryOnlyMode) {
-				const { width, height } = recalculateBoardSize(newBoard);
-				const boardToSave = { ...newBoard, width, height };
-				const stgyCode = encodeStgy(boardToSave);
+		const { width, height } = recalculateBoardSize(newBoard);
+		const boardToSave = { ...newBoard, width, height };
+		const stgyCode = encodeStgy(boardToSave);
 
-				const newBoardId = await createBoard(
-					newBoard.name,
-					stgyCode,
-					[],
-					DEFAULT_GRID_SETTINGS,
-				);
+		const newBoardId = await createBoard(
+			newBoard.name,
+			stgyCode,
+			[],
+			DEFAULT_GRID_SETTINGS,
+		);
 
-				setCurrentBoardId(newBoardId);
-			} else {
-				// Memory-only mode: don't save to IndexedDB
-				setCurrentBoardId(null);
-			}
+		setCurrentBoardId(newBoardId);
+		setInitialBoard(newBoard);
+		setInitialGroups([]);
+		setInitialGridSettings(DEFAULT_GRID_SETTINGS);
 
-			setInitialBoard(newBoard);
-			setInitialGroups([]);
-			setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-
-			setEditorKey((prev) => prev + 1);
-		},
-		[createBoard, t, isMemoryOnlyMode],
-	);
+		setEditorKey((prev) => prev + 1);
+	}, [createBoard, t]);
 
 	// Handle decode error: open board manager
 	const handleOpenAnotherBoard = useCallback(() => {
@@ -284,20 +283,6 @@ function EditorPage() {
 			await handleCreateNewBoard();
 		}
 	}, [decodeError, deleteBoard, boards, handleOpenBoard, handleCreateNewBoard]);
-
-	// Handle storage error: retry
-	const handleRetryStorage = useCallback(() => {
-		clearError();
-		window.location.reload();
-	}, [clearError]);
-
-	// Handle storage error: continue without saving
-	const handleContinueWithoutSaving = useCallback(async () => {
-		clearError();
-		setIsMemoryOnlyMode(true);
-		await handleCreateNewBoard(true);
-		setIsInitialized(true);
-	}, [clearError, handleCreateNewBoard]);
 
 	// Handle importing a board from URL query parameter
 	const handleImportFromUrl = useCallback(
@@ -406,8 +391,8 @@ function EditorPage() {
 
 	// Auto-initialize: create first board or open last edited board
 	useEffect(() => {
-		// Wait for loading to complete, skip if error or memory-only mode
-		if (isLoading || isInitialized || storageError || isMemoryOnlyMode) return;
+		// Wait for loading to complete, skip if error
+		if (isLoading || isInitialized || storageError) return;
 
 		// Prevent multiple initialization attempts (race condition with boards update)
 		if (initializingRef.current) return;
@@ -451,7 +436,6 @@ function EditorPage() {
 		boards,
 		currentBoardId,
 		storageError,
-		isMemoryOnlyMode,
 		codeFromUrl,
 		handleCreateNewBoard,
 		handleOpenBoard,
@@ -459,14 +443,21 @@ function EditorPage() {
 		navigate,
 	]);
 
-	// Show storage error screen
+	// Show error state
 	if (storageError) {
 		return (
-			<LoadErrorScreen
-				error={storageError}
-				onRetry={handleRetryStorage}
-				onStartWithoutSaving={handleContinueWithoutSaving}
-			/>
+			<div className="h-screen flex flex-col items-center justify-center bg-background gap-4">
+				<div className="text-destructive text-lg">
+					{t("boardManager.loadError")}
+				</div>
+				<button
+					type="button"
+					onClick={() => window.location.reload()}
+					className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+				>
+					{t("boardManager.retry")}
+				</button>
+			</div>
 		);
 	}
 
@@ -493,13 +484,12 @@ function EditorPage() {
 						<EditorWithTabs
 							boards={boards}
 							currentBoardId={currentBoardId}
-							isMemoryOnlyMode={isMemoryOnlyMode}
 							shortLinksEnabled={featureFlags.shortLinksEnabled}
 							showBoardManager={showBoardManager}
 							onCloseBoardManager={() => setShowBoardManager(false)}
 							onOpenBoardManager={() => setShowBoardManager(true)}
 							onSaveBoard={(name, stgyCode, groups, gridSettings, objects) => {
-								if (currentBoardId && !isMemoryOnlyMode) {
+								if (currentBoardId) {
 									const storedGroups = convertGroupsToIndexBased(
 										groups,
 										objects,
@@ -579,7 +569,6 @@ function EditorPage() {
 /** EditorContentのProps */
 interface EditorContentProps {
 	currentBoardId: string | null;
-	isMemoryOnlyMode: boolean;
 	shortLinksEnabled: boolean;
 	onOpenBoardManager: () => void;
 	onSaveBoard: (
@@ -602,7 +591,6 @@ interface EditorContentProps {
  */
 function EditorContent({
 	currentBoardId,
-	isMemoryOnlyMode,
 	shortLinksEnabled,
 	onOpenBoardManager,
 	onSaveBoard,
@@ -620,7 +608,6 @@ function EditorContent({
 	// TanStack Store Effect を使用した自動保存
 	const { lastSavedAt } = useAutoSave({
 		currentBoardId,
-		isMemoryOnlyMode,
 		onSave: onSaveBoard,
 	});
 
@@ -685,11 +672,9 @@ function EditorContent({
 
 			{/* ツールバー */}
 			<EditorToolbar
-				lastSavedAt={isMemoryOnlyMode ? null : lastSavedAt}
-				onOpenBoardManager={isMemoryOnlyMode ? undefined : onOpenBoardManager}
-				onCreateBoardFromImport={
-					isMemoryOnlyMode ? undefined : onCreateBoardFromImport
-				}
+				lastSavedAt={lastSavedAt}
+				onOpenBoardManager={onOpenBoardManager}
+				onCreateBoardFromImport={onCreateBoardFromImport}
 				shortLinksEnabled={shortLinksEnabled}
 			/>
 
@@ -760,7 +745,6 @@ function EditorWithTabs({
 	onDuplicateBoard,
 	onCreateNewBoard,
 	currentBoardId,
-	isMemoryOnlyMode,
 	...contentProps
 }: EditorWithTabsProps) {
 	const openTabs = useOpenTabs();
@@ -769,7 +753,7 @@ function EditorWithTabs({
 
 	// タブストアとcurrentBoardIdを同期
 	useEffect(() => {
-		if (isMemoryOnlyMode || !currentBoardId) return;
+		if (!currentBoardId) return;
 
 		// 初期化: タブがない場合は現在のボードをタブとして追加
 		if (openTabs.length === 0) {
@@ -782,22 +766,14 @@ function EditorWithTabs({
 			// 現在のボードがタブに含まれていない場合は追加
 			addTab(currentBoardId);
 		}
-	}, [
-		currentBoardId,
-		openTabs,
-		boards,
-		isMemoryOnlyMode,
-		addTab,
-		setInitialTab,
-	]);
+	}, [currentBoardId, openTabs, boards, addTab, setInitialTab]);
 
 	// タブ切り替え時にボードを選択
 	useEffect(() => {
-		if (isMemoryOnlyMode) return;
 		if (activeTabId && activeTabId !== currentBoardId) {
 			onSelectBoard(activeTabId);
 		}
-	}, [activeTabId, currentBoardId, isMemoryOnlyMode, onSelectBoard]);
+	}, [activeTabId, currentBoardId, onSelectBoard]);
 
 	// 統一的な「ボードを開く」ハンドラ（タブ切り替え + ボード読み込み）
 	const handleOpenBoard = useCallback(
@@ -815,33 +791,25 @@ function EditorWithTabs({
 
 	return (
 		<>
-			<EditorContent
-				{...contentProps}
-				currentBoardId={currentBoardId}
-				isMemoryOnlyMode={isMemoryOnlyMode}
-			>
+			<EditorContent {...contentProps} currentBoardId={currentBoardId}>
 				{/* タブバー */}
-				{!isMemoryOnlyMode && (
-					<BoardTabs
-						boards={boards}
-						unsavedBoardIds={unsavedBoardIds}
-						onAddClick={contentProps.onOpenBoardManager}
-						onSelectBoard={handleOpenBoard}
-						onDuplicateBoard={onDuplicateBoard}
-					/>
-				)}
+				<BoardTabs
+					boards={boards}
+					unsavedBoardIds={unsavedBoardIds}
+					onAddClick={contentProps.onOpenBoardManager}
+					onSelectBoard={handleOpenBoard}
+					onDuplicateBoard={onDuplicateBoard}
+				/>
 			</EditorContent>
 
 			{/* Board Manager Modal */}
-			{!isMemoryOnlyMode && (
-				<BoardManagerModal
-					open={showBoardManager}
-					onClose={onCloseBoardManager}
-					currentBoardId={currentBoardId}
-					onOpenBoard={handleOpenBoard}
-					onCreateNewBoard={onCreateNewBoard}
-				/>
-			)}
+			<BoardManagerModal
+				open={showBoardManager}
+				onClose={onCloseBoardManager}
+				currentBoardId={currentBoardId}
+				onOpenBoard={handleOpenBoard}
+				onCreateNewBoard={onCreateNewBoard}
+			/>
 		</>
 	);
 }

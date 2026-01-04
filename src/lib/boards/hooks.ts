@@ -12,7 +12,7 @@ import {
 	parseBoardData,
 } from "@/lib/stgy";
 import type { BoardData } from "@/lib/stgy/types";
-import { boardsCollection } from "./collection";
+import { useBoardsContext } from "./BoardsProvider";
 import {
 	convertGroupsToIdBased,
 	convertGroupsToIndexBased,
@@ -38,10 +38,7 @@ export interface UseBoardsOptions {
 const UNDO_TIMEOUT_MS = 5000;
 
 /** Error types for board operations */
-export type BoardsErrorType =
-	| "indexeddb_unavailable"
-	| "load_failed"
-	| "unknown";
+export type BoardsErrorType = "load_failed" | "unknown";
 
 export interface BoardsError {
 	type: BoardsErrorType;
@@ -59,6 +56,9 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		searchQuery = "",
 	} = options;
 
+	// Get collection from context
+	const { collection, storageMode, isInitializing } = useBoardsContext();
+
 	// Error state
 	const [error, setError] = useState<BoardsError | null>(null);
 
@@ -66,52 +66,45 @@ export function useBoards(options: UseBoardsOptions = {}) {
 	const [autoRepairAttempted, setAutoRepairAttempted] = useState(false);
 
 	// Live Query: Get all boards
-	const { data, isLoading, isError, status } = useLiveQuery((q) =>
-		q.from({ board: boardsCollection }),
-	);
+	const {
+		data: rawData,
+		isLoading: isQueryLoading,
+		isError,
+		status,
+	} = useLiveQuery((q) => q.from({ board: collection }));
+
+	// Cast to correct type (collection type varies between Dexie and localOnly)
+	const data = rawData as StoredBoard[] | undefined;
 
 	// Handle query errors
 	useEffect(() => {
 		if (isError) {
-			// Detect IndexedDB unavailability (common in private browsing)
-			if (
-				status.includes("IndexedDB") ||
-				status.includes("IDBDatabase") ||
-				status.includes("access denied") ||
-				status.includes("QuotaExceededError")
-			) {
-				setError({
-					type: "indexeddb_unavailable",
-					message: status,
-				});
-			} else {
-				// Schema validation error - attempt one auto-reload
-				// The Zod schema with .catch() should auto-repair corrupted data
-				if (
-					!autoRepairAttempted &&
-					status.includes("Schema validation failed")
-				) {
-					console.warn(
-						"Schema validation error detected. Auto-reloading to repair data...",
-					);
-					setAutoRepairAttempted(true);
-					// Reload after a short delay to allow state updates
-					setTimeout(() => {
-						window.location.reload();
-					}, 1000);
-					return;
-				}
-
-				// If auto-repair already attempted or other error, show error screen
-				setError({
-					type: "load_failed",
-					message: status,
-				});
+			// Schema validation error - attempt one auto-reload
+			// The Zod schema with .catch() should auto-repair corrupted data
+			if (!autoRepairAttempted && status.includes("Schema validation failed")) {
+				console.warn(
+					"Schema validation error detected. Auto-reloading to repair data...",
+				);
+				setAutoRepairAttempted(true);
+				// Reload after a short delay to allow state updates
+				setTimeout(() => {
+					window.location.reload();
+				}, 1000);
+				return;
 			}
+
+			// Show error for other failures
+			setError({
+				type: "load_failed",
+				message: status,
+			});
 		} else {
 			setError(null);
 		}
 	}, [isError, status, autoRepairAttempted]);
+
+	// Combined loading state
+	const isLoading = isInitializing || isQueryLoading;
 
 	// Client-side filtering and sorting
 	const boards = (data ?? [])
@@ -156,7 +149,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 			const id = crypto.randomUUID();
 			const now = new Date().toISOString();
 			const contentHash = await generateContentHash(stgyCode);
-			boardsCollection.insert({
+			collection.insert({
 				id,
 				name,
 				stgyCode,
@@ -169,7 +162,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 			});
 			return id;
 		},
-		[],
+		[collection],
 	);
 
 	// Update an existing board (with index-based groups for storage)
@@ -185,7 +178,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				? await generateContentHash(updates.stgyCode)
 				: undefined;
 
-			boardsCollection.update(id, (draft) => {
+			collection.update(id, (draft: StoredBoard) => {
 				if (updates.name !== undefined) draft.name = updates.name;
 				if (updates.stgyCode !== undefined) draft.stgyCode = updates.stgyCode;
 				if (updates.groups !== undefined) draft.groups = updates.groups;
@@ -195,7 +188,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				draft.updatedAt = new Date().toISOString();
 			});
 		},
-		[],
+		[collection],
 	);
 
 	// Delete a board (with undo support)
@@ -214,14 +207,14 @@ export function useBoards(options: UseBoardsOptions = {}) {
 			setDeletedBoard(boardToDelete);
 
 			// Delete from collection
-			boardsCollection.delete(id);
+			collection.delete(id);
 
 			// Set timeout to clear undo
 			undoTimeoutRef.current = setTimeout(() => {
 				setDeletedBoard(null);
 			}, UNDO_TIMEOUT_MS);
 		},
-		[boards],
+		[boards, collection],
 	);
 
 	const undoDelete = useCallback(() => {
@@ -234,11 +227,11 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		}
 
 		// Re-insert the board
-		boardsCollection.insert(deletedBoard);
+		collection.insert(deletedBoard);
 
 		// Clear undo state
 		setDeletedBoard(null);
-	}, [deletedBoard]);
+	}, [deletedBoard, collection]);
 
 	// Dismiss undo toast
 	const dismissUndo = useCallback(() => {
@@ -257,7 +250,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 
 			const newId = crypto.randomUUID();
 			const now = new Date().toISOString();
-			boardsCollection.insert({
+			collection.insert({
 				...original,
 				id: newId,
 				name: `${original.name} (Copy)`,
@@ -266,7 +259,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 			});
 			return newId;
 		},
-		[boards],
+		[boards, collection],
 	);
 
 	const getBoard = useCallback(
@@ -428,6 +421,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		isLoading,
 		error,
 		clearError,
+		storageMode,
 		createBoard,
 		updateBoard,
 		deleteBoard,
