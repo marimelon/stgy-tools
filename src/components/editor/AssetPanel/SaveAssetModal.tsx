@@ -1,13 +1,14 @@
 /**
  * アセット保存モーダルコンポーネント
+ * @ebay/nice-modal-react + ModalBase ベース
  *
  * 選択されたオブジェクトをアセットとして保存するためのモーダル
  */
 
+import NiceModal, { useModal } from "@ebay/nice-modal-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ObjectRenderer } from "@/components/board";
-import { Modal } from "@/components/editor/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,17 +18,14 @@ import {
 	useAssets,
 } from "@/lib/assets";
 import { useObjects, useSelectedIds } from "@/lib/editor";
-
-interface SaveAssetModalProps {
-	/** 閉じるときのコールバック */
-	onClose: () => void;
-}
+import { ModalBase } from "@/lib/modal";
 
 /**
  * アセット保存モーダル
  */
-export function SaveAssetModal({ onClose }: SaveAssetModalProps) {
+export const SaveAssetModal = NiceModal.create(() => {
 	const { t } = useTranslation();
+	const modal = useModal();
 	const objects = useObjects();
 	const selectedIds = useSelectedIds();
 	const { createAsset } = useAssets();
@@ -35,11 +33,9 @@ export function SaveAssetModal({ onClose }: SaveAssetModalProps) {
 
 	const [name, setName] = useState("");
 
-	// 選択されたオブジェクトを取得
 	const selectedIdsSet = new Set(selectedIds);
 	const selectedObjects = objects.filter((obj) => selectedIdsSet.has(obj.id));
 
-	// プレビュー用のバウンディングボックスとviewBoxを計算
 	const bounds = calculateAssetBounds(selectedObjects);
 	const viewBox = calculatePreviewViewBox(bounds, 20);
 
@@ -48,7 +44,7 @@ export function SaveAssetModal({ onClose }: SaveAssetModalProps) {
 		if (selectedObjects.length === 0) return;
 
 		createAsset(name.trim(), selectedObjects);
-		onClose();
+		modal.hide();
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -58,7 +54,19 @@ export function SaveAssetModal({ onClose }: SaveAssetModalProps) {
 	};
 
 	return (
-		<Modal title={t("assetPanel.saveModal.title")} onClose={onClose}>
+		<ModalBase
+			title={t("assetPanel.saveModal.title")}
+			footer={
+				<>
+					<Button variant="outline" onClick={() => modal.hide()}>
+						{t("assetPanel.saveModal.cancel")}
+					</Button>
+					<Button onClick={handleSave} disabled={!name.trim()}>
+						{t("assetPanel.saveModal.save")}
+					</Button>
+				</>
+			}
+		>
 			<div className="space-y-4">
 				{/* プレビュー */}
 				<div>
@@ -77,7 +85,6 @@ export function SaveAssetModal({ onClose }: SaveAssetModalProps) {
 							role="img"
 							aria-label={t("assetPanel.saveModal.preview")}
 						>
-							{/* SVGは後から描画したものが上に表示されるため、逆順で描画 */}
 							{[...selectedObjects].reverse().map((obj) => (
 								<ObjectRenderer key={obj.id} object={obj} selected={false} />
 							))}
@@ -106,17 +113,7 @@ export function SaveAssetModal({ onClose }: SaveAssetModalProps) {
 						autoFocus
 					/>
 				</div>
-
-				{/* ボタン */}
-				<div className="flex justify-end gap-2 pt-2">
-					<Button variant="outline" onClick={onClose}>
-						{t("assetPanel.saveModal.cancel")}
-					</Button>
-					<Button onClick={handleSave} disabled={!name.trim()}>
-						{t("assetPanel.saveModal.save")}
-					</Button>
-				</div>
 			</div>
-		</Modal>
+		</ModalBase>
 	);
-}
+});

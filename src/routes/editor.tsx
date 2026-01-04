@@ -2,6 +2,7 @@
  * エディターページ
  */
 
+import NiceModal from "@ebay/nice-modal-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,6 +12,7 @@ import {
 	BoardTabs,
 	DebugPanel,
 	DuplicateBoardModal,
+	type DuplicateBoardResult,
 	EditorBoard,
 	EditorToolbar,
 	ErrorToast,
@@ -24,6 +26,7 @@ import {
 import {
 	BoardManagerModal,
 	DecodeErrorDialog,
+	type DecodeErrorResult,
 } from "@/components/editor/BoardManager";
 import { ResizableLayout } from "@/components/panel";
 import { CompactAppHeader } from "@/components/ui/AppHeader";
@@ -149,7 +152,9 @@ function EditorPage() {
 
 	return (
 		<BoardsProvider>
-			<EditorPageContent featureFlags={featureFlags} />
+			<NiceModal.Provider>
+				<EditorPageContent featureFlags={featureFlags} />
+			</NiceModal.Provider>
 		</BoardsProvider>
 	);
 }
@@ -164,7 +169,6 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 	const { stgy: codeFromUrl } = Route.useSearch();
 
 	// Board manager state
-	const [showBoardManager, setShowBoardManager] = useState(false);
 	const [currentBoardId, setCurrentBoardId] = useState<string | null>(null);
 	const [isInitialized, setIsInitialized] = useState(false);
 
@@ -200,12 +204,6 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 		getBoard,
 		findBoardByContent,
 	} = useBoards();
-
-	// Pending import state (for duplicate detection modal)
-	const [pendingImport, setPendingImport] = useState<{
-		code: string;
-		existingBoard: StoredBoard;
-	} | null>(null);
 
 	// Handle opening a board
 	const handleOpenBoard = useCallback(
@@ -262,39 +260,97 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 		setEditorKey((prev) => prev + 1);
 	}, [createBoard, t]);
 
-	// Handle decode error: open board manager
-	const handleOpenAnotherBoard = useCallback(() => {
-		setDecodeError(null);
-		setShowBoardManager(true);
-	}, []);
-
-	// Handle decode error: delete corrupted board
-	const handleDeleteCorruptedBoard = useCallback(async () => {
+	// Handle decode error using nice-modal
+	useEffect(() => {
 		if (!decodeError) return;
 
-		deleteBoard(decodeError.boardId);
-		setDecodeError(null);
+		const showDecodeErrorModal = async () => {
+			const result = (await NiceModal.show(DecodeErrorDialog, {
+				boardName: decodeError.boardName,
+			})) as DecodeErrorResult;
 
-		// Open another board or create new one
-		const remainingBoards = boards.filter((b) => b.id !== decodeError.boardId);
-		if (remainingBoards.length > 0) {
-			handleOpenBoard(remainingBoards[0].id);
-		} else {
-			await handleCreateNewBoard();
-		}
-	}, [decodeError, deleteBoard, boards, handleOpenBoard, handleCreateNewBoard]);
+			if (result === "delete") {
+				deleteBoard(decodeError.boardId);
+				const remainingBoards = boards.filter(
+					(b) => b.id !== decodeError.boardId,
+				);
+				if (remainingBoards.length > 0) {
+					handleOpenBoard(remainingBoards[0].id);
+				} else {
+					await handleCreateNewBoard();
+				}
+			} else if (result === "open-another") {
+				NiceModal.show(BoardManagerModal, {
+					currentBoardId,
+					onOpenBoard: handleOpenBoard,
+					onCreateNewBoard: handleCreateNewBoard,
+				});
+			}
+
+			setDecodeError(null);
+		};
+
+		showDecodeErrorModal();
+	}, [
+		decodeError,
+		deleteBoard,
+		boards,
+		handleOpenBoard,
+		handleCreateNewBoard,
+		currentBoardId,
+	]);
 
 	// Handle importing a board from URL query parameter
 	const handleImportFromUrl = useCallback(
-		async (code: string): Promise<boolean | "pending"> => {
+		async (code: string): Promise<boolean> => {
 			const trimmedCode = code.trim();
 
 			// Check for existing board with same content (ignores encryption key)
 			const existingBoard = await findBoardByContent(trimmedCode);
 			if (existingBoard) {
-				// Show duplicate detection modal
-				setPendingImport({ code: trimmedCode, existingBoard });
-				return "pending";
+				// Show duplicate detection modal using nice-modal
+				const result = (await NiceModal.show(DuplicateBoardModal, {
+					existingBoard,
+				})) as DuplicateBoardResult;
+
+				// Clear URL parameter
+				navigate({ to: "/editor", search: {}, replace: true });
+
+				if (result === "open-existing") {
+					handleOpenBoard(existingBoard.id);
+					return true;
+				}
+				if (result === "create-new") {
+					const decodedBoard = decodeBoardFromStgy(trimmedCode);
+					if (!decodedBoard) {
+						console.warn("Failed to decode board from pending import");
+						return false;
+					}
+
+					const boardName =
+						decodedBoard.name || t("boardManager.defaultBoardName");
+					const newBoardId = await createBoard(
+						boardName,
+						trimmedCode,
+						[],
+						DEFAULT_GRID_SETTINGS,
+					);
+
+					setCurrentBoardId(newBoardId);
+					setInitialBoard({ ...decodedBoard, name: boardName });
+					setInitialGroups([]);
+					setInitialGridSettings(DEFAULT_GRID_SETTINGS);
+					setEditorKey((prev) => prev + 1);
+					return true;
+				}
+
+				// Cancelled - open most recent board or create new one
+				if (boards.length > 0) {
+					handleOpenBoard(boards[0].id);
+				} else {
+					await handleCreateNewBoard();
+				}
+				return false;
 			}
 
 			// Decode the stgy code
@@ -326,68 +382,16 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 
 			return true;
 		},
-		[createBoard, t, navigate, findBoardByContent],
+		[
+			createBoard,
+			t,
+			navigate,
+			findBoardByContent,
+			boards,
+			handleOpenBoard,
+			handleCreateNewBoard,
+		],
 	);
-
-	// Handle duplicate modal: open existing board
-	const handleOpenExistingFromImport = useCallback(() => {
-		if (!pendingImport) return;
-
-		handleOpenBoard(pendingImport.existingBoard.id);
-		setPendingImport(null);
-
-		// Clear URL parameter
-		navigate({ to: "/editor", search: {}, replace: true });
-	}, [pendingImport, handleOpenBoard, navigate]);
-
-	// Handle duplicate modal: create new board
-	const handleCreateNewFromImport = useCallback(async () => {
-		if (!pendingImport) return;
-
-		const decodedBoard = decodeBoardFromStgy(pendingImport.code);
-		if (!decodedBoard) {
-			console.warn("Failed to decode board from pending import");
-			setPendingImport(null);
-			return;
-		}
-
-		// Create new board
-		const boardName = decodedBoard.name || t("boardManager.defaultBoardName");
-		const newBoardId = await createBoard(
-			boardName,
-			pendingImport.code,
-			[],
-			DEFAULT_GRID_SETTINGS,
-		);
-
-		// Initialize editor with the imported board
-		setCurrentBoardId(newBoardId);
-		setInitialBoard({ ...decodedBoard, name: boardName });
-		setInitialGroups([]);
-		setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-
-		setEditorKey((prev) => prev + 1);
-
-		setPendingImport(null);
-
-		// Clear URL parameter
-		navigate({ to: "/editor", search: {}, replace: true });
-	}, [pendingImport, createBoard, t, navigate]);
-
-	// Handle duplicate modal: cancel
-	const handleCancelImport = useCallback(async () => {
-		setPendingImport(null);
-
-		// Clear URL parameter
-		navigate({ to: "/editor", search: {}, replace: true });
-
-		// Open the most recent board or create new one
-		if (boards.length > 0) {
-			handleOpenBoard(boards[0].id);
-		} else {
-			await handleCreateNewBoard();
-		}
-	}, [navigate, boards, handleOpenBoard, handleCreateNewBoard]);
 
 	// Auto-initialize: create first board or open last edited board
 	useEffect(() => {
@@ -405,16 +409,12 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 				navigate({ to: "/editor", search: {}, replace: true });
 
 				const result = await handleImportFromUrl(codeFromUrl);
-				if (result === "pending") {
-					// Duplicate found, modal will be shown
+				if (result) {
+					// Import successful
 					setIsInitialized(true);
 					return;
 				}
-				if (result === true) {
-					setIsInitialized(true);
-					return;
-				}
-				// result === false: decode failed, continue to normal flow
+				// result === false: decode failed or cancelled, continue to normal flow
 			}
 
 			if (boards.length === 0) {
@@ -485,9 +485,13 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 							boards={boards}
 							currentBoardId={currentBoardId}
 							shortLinksEnabled={featureFlags.shortLinksEnabled}
-							showBoardManager={showBoardManager}
-							onCloseBoardManager={() => setShowBoardManager(false)}
-							onOpenBoardManager={() => setShowBoardManager(true)}
+							onOpenBoardManager={() => {
+								NiceModal.show(BoardManagerModal, {
+									currentBoardId,
+									onOpenBoard: handleOpenBoard,
+									onCreateNewBoard: handleCreateNewBoard,
+								});
+							}}
 							onSaveBoard={(name, stgyCode, groups, gridSettings, objects) => {
 								if (currentBoardId) {
 									const storedGroups = convertGroupsToIndexBased(
@@ -540,26 +544,6 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 							}}
 						/>
 					</EditorStoreProvider>
-
-					{/* Decode Error Dialog */}
-					<DecodeErrorDialog
-						open={decodeError !== null}
-						boardName={decodeError?.boardName ?? ""}
-						onClose={() => setDecodeError(null)}
-						onDelete={handleDeleteCorruptedBoard}
-						onOpenAnother={handleOpenAnotherBoard}
-					/>
-
-					{/* Duplicate Board Modal */}
-					{pendingImport && (
-						<DuplicateBoardModal
-							open={true}
-							onClose={handleCancelImport}
-							existingBoard={pendingImport.existingBoard}
-							onOpenExisting={handleOpenExistingFromImport}
-							onCreateNew={handleCreateNewFromImport}
-						/>
-					)}
 				</PanelStoreProvider>
 			</TabStoreProvider>
 		</SettingsStoreProvider>
@@ -727,8 +711,6 @@ function EditorContent({
 /** EditorWithTabsのProps */
 interface EditorWithTabsProps extends EditorContentProps {
 	boards: StoredBoard[];
-	showBoardManager: boolean;
-	onCloseBoardManager: () => void;
 	onSelectBoard: (boardId: string) => boolean;
 	onDuplicateBoard: (boardId: string) => void;
 	onCreateNewBoard: () => void;
@@ -739,8 +721,6 @@ interface EditorWithTabsProps extends EditorContentProps {
  */
 function EditorWithTabs({
 	boards,
-	showBoardManager,
-	onCloseBoardManager,
 	onSelectBoard,
 	onDuplicateBoard,
 	onCreateNewBoard,
@@ -790,26 +770,15 @@ function EditorWithTabs({
 	const unsavedBoardIds = useMemo(() => new Set<string>(), []);
 
 	return (
-		<>
-			<EditorContent {...contentProps} currentBoardId={currentBoardId}>
-				{/* タブバー */}
-				<BoardTabs
-					boards={boards}
-					unsavedBoardIds={unsavedBoardIds}
-					onAddClick={contentProps.onOpenBoardManager}
-					onSelectBoard={handleOpenBoard}
-					onDuplicateBoard={onDuplicateBoard}
-				/>
-			</EditorContent>
-
-			{/* Board Manager Modal */}
-			<BoardManagerModal
-				open={showBoardManager}
-				onClose={onCloseBoardManager}
-				currentBoardId={currentBoardId}
-				onOpenBoard={handleOpenBoard}
-				onCreateNewBoard={onCreateNewBoard}
+		<EditorContent {...contentProps} currentBoardId={currentBoardId}>
+			{/* タブバー */}
+			<BoardTabs
+				boards={boards}
+				unsavedBoardIds={unsavedBoardIds}
+				onAddClick={contentProps.onOpenBoardManager}
+				onSelectBoard={handleOpenBoard}
+				onDuplicateBoard={onDuplicateBoard}
 			/>
-		</>
+		</EditorContent>
 	);
 }

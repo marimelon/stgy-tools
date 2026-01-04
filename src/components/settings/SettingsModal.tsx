@@ -1,7 +1,9 @@
 /**
  * 設定モーダルコンポーネント
+ * @ebay/nice-modal-react + Radix Dialog ベース
  */
 
+import NiceModal, { useModal } from "@ebay/nice-modal-react";
 import { Bug, Keyboard, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,28 +20,33 @@ import { Switch } from "@/components/ui/switch";
 import { useAppSettings, useSettingsActions } from "@/lib/settings";
 import { ShortcutsList } from "./ShortcutsList";
 
-/** 設定モーダルのProps */
-export interface SettingsModalProps {
-	/** モーダルを閉じる */
-	onClose: () => void;
-}
-
 type TabId = "general" | "shortcuts";
 
 /**
  * 設定モーダル
  */
-export function SettingsModal({ onClose }: SettingsModalProps) {
+export const SettingsModal = NiceModal.create(() => {
 	const { t } = useTranslation();
+	const modal = useModal();
 	const settings = useAppSettings();
 	const { updateSettings, resetSettings } = useSettingsActions();
 	const [activeTab, setActiveTab] = useState<TabId>("general");
 
+	const handleClose = () => {
+		modal.hide();
+	};
+
 	return (
-		<Dialog open onOpenChange={(isOpen) => !isOpen && onClose()}>
+		<Dialog
+			open={modal.visible}
+			onOpenChange={(open) => {
+				if (!open) handleClose();
+			}}
+		>
 			<DialogContent
 				className="sm:max-w-lg"
 				onOpenAutoFocus={(e) => e.preventDefault()}
+				onCloseAutoFocus={() => modal.remove()}
 			>
 				<DialogHeader>
 					<DialogTitle className="font-display">
@@ -116,11 +123,11 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
 						<RotateCcw className="size-4" />
 						{t("settings.reset")}
 					</Button>
-					<Button variant="default" onClick={onClose}>
+					<Button variant="default" onClick={handleClose}>
 						{t("common.close")}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
 	);
-}
+});

@@ -1,13 +1,14 @@
 /**
  * アセットインポートモーダルコンポーネント
+ * @ebay/nice-modal-react + ModalBase ベース
  *
  * stgyコードからアセットをインポートするためのモーダル
  */
 
+import NiceModal, { useModal } from "@ebay/nice-modal-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ObjectRenderer } from "@/components/board";
-import { Modal } from "@/components/editor/Modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,12 +17,8 @@ import {
 	calculatePreviewViewBox,
 	useAssets,
 } from "@/lib/assets";
+import { ModalBase } from "@/lib/modal";
 import { assignBoardObjectIds, decodeStgy, parseBoardData } from "@/lib/stgy";
-
-interface ImportAssetModalProps {
-	/** 閉じるときのコールバック */
-	onClose: () => void;
-}
 
 interface ParseResult {
 	success: true;
@@ -40,8 +37,9 @@ type ParseState = ParseResult | ParseError | null;
 /**
  * アセットインポートモーダル
  */
-export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
+export const ImportAssetModal = NiceModal.create(() => {
 	const { t } = useTranslation();
+	const modal = useModal();
 	const { createAsset } = useAssets();
 	const nameInputId = useId();
 	const stgyInputId = useId();
@@ -49,10 +47,8 @@ export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
 	const [name, setName] = useState("");
 	const [stgyCode, setStgyCode] = useState("");
 
-	// ユーザーが名前を手動で編集したかを追跡
 	const hasUserEditedName = useRef(false);
 
-	// stgyコードをパースして結果を取得
 	const parseResult: ParseState = useMemo(() => {
 		if (!stgyCode.trim()) {
 			return null;
@@ -79,7 +75,6 @@ export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
 		}
 	}, [stgyCode]);
 
-	// stgyコードからボード名を自動入力（名前が未入力かつユーザーが編集していない場合）
 	useEffect(() => {
 		if (
 			parseResult?.success &&
@@ -90,7 +85,6 @@ export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
 		}
 	}, [parseResult]);
 
-	// プレビュー用のviewBoxを計算
 	const viewBox = useMemo(() => {
 		if (!parseResult || !parseResult.success) {
 			return { x: 0, y: 0, width: 100, height: 100 };
@@ -105,7 +99,7 @@ export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
 		if (!canImport || !parseResult || !parseResult.success) return;
 
 		createAsset(name.trim(), parseResult.objects);
-		onClose();
+		modal.hide();
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -115,7 +109,19 @@ export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
 	};
 
 	return (
-		<Modal title={t("assetPanel.importModal.title")} onClose={onClose}>
+		<ModalBase
+			title={t("assetPanel.importModal.title")}
+			footer={
+				<>
+					<Button variant="outline" onClick={() => modal.hide()}>
+						{t("assetPanel.saveModal.cancel")}
+					</Button>
+					<Button onClick={handleImport} disabled={!canImport}>
+						{t("assetPanel.importModal.import")}
+					</Button>
+				</>
+			}
+		>
 			<div className="space-y-4">
 				{/* アセット名入力 */}
 				<div>
@@ -184,7 +190,6 @@ export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
 								role="img"
 								aria-label={t("assetPanel.importModal.preview")}
 							>
-								{/* SVGは後から描画したものが上に表示されるため、逆順で描画 */}
 								{[...parseResult.objects].reverse().map((obj) => (
 									<ObjectRenderer key={obj.id} object={obj} selected={false} />
 								))}
@@ -205,17 +210,7 @@ export function ImportAssetModal({ onClose }: ImportAssetModalProps) {
 						</p>
 					)}
 				</div>
-
-				{/* ボタン */}
-				<div className="flex justify-end gap-2 pt-2">
-					<Button variant="outline" onClick={onClose}>
-						{t("assetPanel.saveModal.cancel")}
-					</Button>
-					<Button onClick={handleImport} disabled={!canImport}>
-						{t("assetPanel.importModal.import")}
-					</Button>
-				</div>
 			</div>
-		</Modal>
+		</ModalBase>
 	);
-}
+});

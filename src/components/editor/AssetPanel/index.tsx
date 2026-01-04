@@ -4,6 +4,7 @@
  * 保存したアセットの一覧表示と管理
  */
 
+import NiceModal from "@ebay/nice-modal-react";
 import { Download, Package, Save, Search, Undo2 } from "lucide-react";
 import { type MouseEvent, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -48,18 +49,13 @@ export function AssetPanel() {
 		dismissUndo,
 	} = useAssets({ sortBy: "updatedAt", sortDirection: "desc" });
 
-	const [showSaveModal, setShowSaveModal] = useState(false);
-	const [showImportModal, setShowImportModal] = useState(false);
-	const [exportAsset, setExportAsset] = useState<AssetWithRuntimeIds | null>(
-		null,
-	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
 	// カスタムイベントでモーダルを開く（ヘッダーアクションボタン用）
 	useEffect(() => {
-		const handleOpenSaveModal = () => setShowSaveModal(true);
-		const handleOpenImportModal = () => setShowImportModal(true);
+		const handleOpenSaveModal = () => NiceModal.show(SaveAssetModal);
+		const handleOpenImportModal = () => NiceModal.show(ImportAssetModal);
 		window.addEventListener("openSaveAssetModal", handleOpenSaveModal);
 		window.addEventListener("openImportAssetModal", handleOpenImportModal);
 		return () => {
@@ -126,7 +122,7 @@ export function AssetPanel() {
 	};
 
 	const handleExport = (asset: AssetWithRuntimeIds) => {
-		setExportAsset(asset);
+		NiceModal.show(ExportAssetModal, { asset });
 	};
 
 	const handleDelete = (asset: AssetWithRuntimeIds) => {
@@ -200,22 +196,6 @@ export function AssetPanel() {
 						×
 					</button>
 				</div>
-			)}
-
-			{/* モーダル */}
-			{showSaveModal && (
-				<SaveAssetModal onClose={() => setShowSaveModal(false)} />
-			)}
-
-			{showImportModal && (
-				<ImportAssetModal onClose={() => setShowImportModal(false)} />
-			)}
-
-			{exportAsset && (
-				<ExportAssetModal
-					asset={exportAsset}
-					onClose={() => setExportAsset(null)}
-				/>
 			)}
 
 			{/* コンテキストメニュー */}

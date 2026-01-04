@@ -12,7 +12,10 @@ export type { ColorPaletteProps } from "./ColorPalette";
 // カラーパレット
 export { ColorPalette } from "./ColorPalette";
 export { DebugPanel } from "./DebugPanel";
-export type { DuplicateBoardModalProps } from "./DuplicateBoardModal";
+export type {
+	DuplicateBoardModalProps,
+	DuplicateBoardResult,
+} from "./DuplicateBoardModal";
 export { DuplicateBoardModal } from "./DuplicateBoardModal";
 export { EditorBoard } from "./EditorBoard";
 export { EditorToolbar } from "./EditorToolbar";
@@ -36,11 +39,9 @@ export type { GridOverlayProps, SelectionIndicatorProps } from "./GridOverlay";
 // SVGオーバーレイ
 export { GridOverlay, SelectionIndicator } from "./GridOverlay";
 export { HistoryPanel, HistoryPanelActions } from "./HistoryPanel";
-export type { ImportModalProps } from "./ImportModal";
+export type { ImportResult } from "./ImportModal";
 export { ImportModal } from "./ImportModal";
 export { LayerPanel } from "./LayerPanel";
-export type { ModalProps } from "./Modal";
-export { Modal } from "./Modal";
 export { ObjectPalette } from "./ObjectPalette";
 export type { ObjectPropertyPanelProps } from "./ObjectPropertyPanel";
 export { ObjectPropertyPanel } from "./ObjectPropertyPanel";
