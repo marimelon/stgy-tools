@@ -3,6 +3,7 @@
  */
 
 import { Undo2, X } from "lucide-react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
@@ -15,8 +16,8 @@ export interface UndoToastProps {
 export function UndoToast({ boardName, onUndo, onDismiss }: UndoToastProps) {
 	const { t } = useTranslation();
 
-	return (
-		<div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 rounded-lg bg-foreground text-background shadow-lg animate-in slide-in-from-bottom-4 fade-in duration-200">
+	return createPortal(
+		<div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg bg-foreground text-background shadow-lg animate-in slide-in-from-bottom-4 fade-in duration-200">
 			<span className="text-sm">
 				{t("boardManager.undoDelete", { name: boardName })}
 			</span>
@@ -36,6 +37,7 @@ export function UndoToast({ boardName, onUndo, onDismiss }: UndoToastProps) {
 			>
 				<X className="size-4" />
 			</button>
-		</div>
+		</div>,
+		document.body,
 	);
 }
