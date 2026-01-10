@@ -56,4 +56,4 @@ export const initialViewerState: ViewerState = {
 /**
  * ボード数の上限
  */
-export const MAX_BOARDS = 10;
+export const MAX_BOARDS = 30;
