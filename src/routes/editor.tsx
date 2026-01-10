@@ -725,9 +725,15 @@ function EditorWithTabs({
 	const activeTabId = useActiveTabId();
 	const { addTab, setInitialTab, replaceAllTabs } = useTabActions();
 
+	// 初回マウントかどうかを追跡（リロード後の初期化とユーザーアクションを区別）
+	const isInitialMountRef = useRef(true);
+
 	// タブストアとcurrentBoardIdを同期
 	useEffect(() => {
 		if (!currentBoardId) return;
+
+		const isInitialMount = isInitialMountRef.current;
+		isInitialMountRef.current = false;
 
 		// 初期化: タブがない場合は現在のボードをタブとして追加
 		if (openTabs.length === 0) {
@@ -737,9 +743,9 @@ function EditorWithTabs({
 				setInitialTab(currentBoardId);
 			}
 		} else if (!openTabs.includes(currentBoardId)) {
-			// activeTabIdが有効な場合（replaceAllTabs後など）は、そちらに切り替える
-			// そうでない場合のみ、現在のボードをタブに追加
-			if (activeTabId && openTabs.includes(activeTabId)) {
+			// 初回マウント時（リロード後）で、有効なactiveTabIdがある場合は、そちらに切り替える
+			// それ以外（Viewerからのインポート等）は、currentBoardIdをタブに追加
+			if (isInitialMount && activeTabId && openTabs.includes(activeTabId)) {
 				onSelectBoard(activeTabId);
 			} else {
 				addTab(currentBoardId);
