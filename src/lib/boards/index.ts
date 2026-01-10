@@ -18,5 +18,15 @@ export {
 	type UseBoardsOptions,
 	useBoards,
 } from "./hooks";
-export type { StoredBoard } from "./schema";
-export { DEFAULT_GRID_SETTINGS, storedBoardSchema } from "./schema";
+export type { StoredBoard, StoredFolder } from "./schema";
+export {
+	DEFAULT_GRID_SETTINGS,
+	storedBoardSchema,
+	storedFolderSchema,
+} from "./schema";
+export {
+	type FolderSortDirection,
+	type FolderSortOption,
+	type UseFoldersOptions,
+	useFolders,
+} from "./useFolders";

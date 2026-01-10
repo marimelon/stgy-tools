@@ -18,7 +18,7 @@ import {
 	useState,
 } from "react";
 import { dexieCollectionOptions } from "tanstack-dexie-db-collection";
-import { storedBoardSchema } from "./schema";
+import { storedBoardSchema, storedFolderSchema } from "./schema";
 
 /** ストレージモード */
 export type StorageMode = "persistent" | "memory";
@@ -29,8 +29,10 @@ type AnyCollection = any;
 
 /** コンテキストの型 */
 interface BoardsContextValue {
-	/** アクティブなコレクション */
+	/** アクティブなボードコレクション */
 	collection: AnyCollection;
+	/** アクティブなフォルダコレクション */
+	foldersCollection: AnyCollection;
 	/** ストレージモード */
 	storageMode: StorageMode;
 	/** 初期化中かどうか */
@@ -55,6 +57,26 @@ const localOnlyCollection = createCollection(
 	localOnlyCollectionOptions({
 		id: "boards-memory",
 		schema: storedBoardSchema,
+		getKey: (item) => item.id,
+	}),
+);
+
+/** Dexie (IndexedDB) フォルダコレクション */
+const dexieFoldersCollection = createCollection(
+	dexieCollectionOptions({
+		id: "folders",
+		schema: storedFolderSchema,
+		getKey: (item) => item.id,
+		dbName: "strategy-board-editor",
+		tableName: "folders",
+	}),
+);
+
+/** メモリのみのフォルダコレクション（フォールバック用） */
+const localOnlyFoldersCollection = createCollection(
+	localOnlyCollectionOptions({
+		id: "folders-memory",
+		schema: storedFolderSchema,
 		getKey: (item) => item.id,
 	}),
 );
@@ -127,13 +149,22 @@ export function BoardsProvider({ children }: BoardsProviderProps) {
 		[storageMode],
 	);
 
+	const foldersCollection = useMemo(
+		() =>
+			storageMode === "persistent"
+				? dexieFoldersCollection
+				: localOnlyFoldersCollection,
+		[storageMode],
+	);
+
 	const value = useMemo(
 		() => ({
 			collection,
+			foldersCollection,
 			storageMode,
 			isInitializing,
 		}),
-		[collection, storageMode, isInitializing],
+		[collection, foldersCollection, storageMode, isInitializing],
 	);
 
 	return (

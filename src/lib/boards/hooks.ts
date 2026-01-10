@@ -170,7 +170,10 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		async (
 			id: string,
 			updates: Partial<
-				Pick<StoredBoard, "name" | "stgyCode" | "groups" | "gridSettings">
+				Pick<
+					StoredBoard,
+					"name" | "stgyCode" | "groups" | "gridSettings" | "folderId"
+				>
 			>,
 		): Promise<void> => {
 			// If stgyCode is being updated, regenerate the content hash
@@ -184,11 +187,28 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				if (updates.groups !== undefined) draft.groups = updates.groups;
 				if (updates.gridSettings !== undefined)
 					draft.gridSettings = updates.gridSettings;
+				if (updates.folderId !== undefined) draft.folderId = updates.folderId;
 				if (contentHash != null) draft.contentHash = contentHash;
 				draft.updatedAt = new Date().toISOString();
 			});
 		},
 		[collection],
+	);
+
+	// Move a board to a folder (or to root if folderId is null)
+	const moveBoardToFolder = useCallback(
+		async (boardId: string, folderId: string | null): Promise<void> => {
+			await updateBoard(boardId, { folderId });
+		},
+		[updateBoard],
+	);
+
+	// Get boards by folder ID (null = root/uncategorized)
+	const getBoardsByFolder = useCallback(
+		(folderId: string | null): StoredBoard[] => {
+			return boards.filter((b) => b.folderId === folderId);
+		},
+		[boards],
 	);
 
 	// Delete a board (with undo support)
@@ -432,6 +452,9 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		loadBoard,
 		saveBoard,
 		createAndSaveBoard,
+		// Folder operations
+		moveBoardToFolder,
+		getBoardsByFolder,
 		// Undo support
 		deletedBoard,
 		undoDelete,

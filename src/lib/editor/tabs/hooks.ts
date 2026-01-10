@@ -122,6 +122,11 @@ export function useTabActions() {
 		[store],
 	);
 
+	const replaceAllTabs = useCallback(
+		(boardIds: string[]) => actions.replaceAllTabs(store, boardIds),
+		[store],
+	);
+
 	return {
 		addTab,
 		closeTab,
@@ -132,5 +137,6 @@ export function useTabActions() {
 		removeDeletedBoardTab,
 		initializeTabs,
 		setInitialTab,
+		replaceAllTabs,
 	};
 }

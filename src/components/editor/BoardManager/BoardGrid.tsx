@@ -2,7 +2,7 @@
  * Board grid component for displaying board cards
  */
 
-import type { StoredBoard } from "@/lib/boards";
+import type { StoredBoard, StoredFolder } from "@/lib/boards";
 import { BoardCard } from "./BoardCard";
 import { EmptyState } from "./EmptyState";
 
@@ -15,7 +15,10 @@ export interface BoardGridProps {
 	onRenameBoard: (id: string, newName: string) => void;
 	onDuplicateBoard: (id: string) => void;
 	onDeleteBoard: (id: string) => void;
-	onCreateNew: () => void;
+	onCreateNew?: () => void;
+	onMoveToFolder?: (boardId: string, folderId: string | null) => void;
+	folders?: StoredFolder[];
+	currentFolderId?: string | null;
 }
 
 export function BoardGrid({
@@ -28,6 +31,9 @@ export function BoardGrid({
 	onDuplicateBoard,
 	onDeleteBoard,
 	onCreateNew,
+	onMoveToFolder,
+	folders,
+	currentFolderId,
 }: BoardGridProps) {
 	if (isLoading) {
 		return (
@@ -37,10 +43,14 @@ export function BoardGrid({
 		);
 	}
 
-	if (boards.length === 0) {
+	if (boards.length === 0 && onCreateNew) {
 		return (
 			<EmptyState hasSearchQuery={!!searchQuery} onCreateNew={onCreateNew} />
 		);
+	}
+
+	if (boards.length === 0) {
+		return null;
 	}
 
 	return (
@@ -54,6 +64,13 @@ export function BoardGrid({
 					onRename={(newName) => onRenameBoard(board.id, newName)}
 					onDuplicate={() => onDuplicateBoard(board.id)}
 					onDelete={() => onDeleteBoard(board.id)}
+					onMoveToFolder={
+						onMoveToFolder
+							? (folderId) => onMoveToFolder(board.id, folderId)
+							: undefined
+					}
+					folders={folders}
+					currentFolderId={currentFolderId}
 				/>
 			))}
 		</div>

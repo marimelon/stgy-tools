@@ -723,7 +723,7 @@ function EditorWithTabs({
 }: EditorWithTabsProps) {
 	const openTabs = useOpenTabs();
 	const activeTabId = useActiveTabId();
-	const { addTab, setInitialTab } = useTabActions();
+	const { addTab, setInitialTab, replaceAllTabs } = useTabActions();
 
 	// タブストアとcurrentBoardIdを同期
 	useEffect(() => {
@@ -737,10 +737,23 @@ function EditorWithTabs({
 				setInitialTab(currentBoardId);
 			}
 		} else if (!openTabs.includes(currentBoardId)) {
-			// 現在のボードがタブに含まれていない場合は追加
-			addTab(currentBoardId);
+			// activeTabIdが有効な場合（replaceAllTabs後など）は、そちらに切り替える
+			// そうでない場合のみ、現在のボードをタブに追加
+			if (activeTabId && openTabs.includes(activeTabId)) {
+				onSelectBoard(activeTabId);
+			} else {
+				addTab(currentBoardId);
+			}
 		}
-	}, [currentBoardId, openTabs, boards, addTab, setInitialTab]);
+	}, [
+		currentBoardId,
+		openTabs,
+		activeTabId,
+		boards,
+		addTab,
+		setInitialTab,
+		onSelectBoard,
+	]);
 
 	// タブ切り替え時にボードを選択
 	useEffect(() => {
@@ -760,14 +773,29 @@ function EditorWithTabs({
 		[addTab, onSelectBoard],
 	);
 
+	// 複数ボードをタブで開く（既存タブを置き換え）
+	const handleOpenBoards = useCallback(
+		(boardIds: string[]) => {
+			if (boardIds.length === 0) return;
+
+			// すべてのタブを置き換え（最初のボードがアクティブになる）
+			replaceAllTabs(boardIds);
+
+			// 最初のボードを開く
+			onSelectBoard(boardIds[0]);
+		},
+		[replaceAllTabs, onSelectBoard],
+	);
+
 	// ボードマネージャーを開く（タブ追加を含むhandleOpenBoardを使用）
 	const handleOpenBoardManager = useCallback(() => {
 		NiceModal.show(BoardManagerModal, {
 			currentBoardId,
 			onOpenBoard: handleOpenBoard,
+			onOpenBoards: handleOpenBoards,
 			onCreateNewBoard,
 		});
-	}, [currentBoardId, handleOpenBoard, onCreateNewBoard]);
+	}, [currentBoardId, handleOpenBoard, handleOpenBoards, onCreateNewBoard]);
 
 	// 未保存状態のボードIDセット（今後実装）
 	const unsavedBoardIds = useMemo(() => new Set<string>(), []);

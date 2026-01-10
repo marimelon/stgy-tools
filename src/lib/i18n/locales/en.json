@@ -6,7 +6,9 @@
 		"generate": "Generate",
 		"error": "Error",
 		"defaultText": "Text",
-		"close": "Close"
+		"close": "Close",
+		"cancel": "Cancel",
+		"create": "Create"
 	},
 	"contextMenu": {
 		"copy": "Copy",
@@ -532,6 +534,19 @@
 			"openAnother": "Open another board",
 			"continueWithoutSaving": "Continue without saving",
 			"warningNoSave": "* Changes will not be saved"
+		},
+		"folder": {
+			"newFolder": "New Folder",
+			"folderName": "Folder Name",
+			"defaultFolderName": "New Folder",
+			"rename": "Rename",
+			"delete": "Delete",
+			"deleteConfirm": "Boards in this folder will be moved to root",
+			"moveToFolder": "Move to Folder",
+			"moveToRoot": "Move to Root",
+			"emptyFolder": "Folder is empty",
+			"openInViewer": "Open in Viewer",
+			"openAllInEditor": "Open All in Tabs"
 		}
 	},
 	"boardTabs": {

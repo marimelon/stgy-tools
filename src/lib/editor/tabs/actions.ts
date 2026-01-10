@@ -225,3 +225,20 @@ export function setInitialTab(store: TabStore, boardId: string): void {
 		activeTabId: boardId,
 	}));
 }
+
+/**
+ * Replace all open tabs with the given board IDs
+ * The first board becomes the active tab
+ */
+export function replaceAllTabs(store: TabStore, boardIds: string[]): void {
+	if (boardIds.length === 0) return;
+
+	// Respect MAX_TABS limit
+	const limitedBoardIds = boardIds.slice(0, MAX_TABS);
+
+	store.setState((s) => ({
+		...s,
+		openTabs: limitedBoardIds,
+		activeTabId: limitedBoardIds[0],
+	}));
+}

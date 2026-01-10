@@ -76,6 +76,22 @@ const gridSettingsSchema = z.object({
 		.default(DEFAULT_OVERLAY_SETTINGS),
 });
 
+// Folder storage schema
+export const storedFolderSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	// For future hierarchy support (currently always null)
+	parentId: z.string().nullable().default(null),
+	// Display order
+	order: z.number(),
+	// Collapsed state
+	collapsed: z.boolean().default(false),
+	createdAt: z.string(),
+	updatedAt: z.string(),
+});
+
+export type StoredFolder = z.infer<typeof storedFolderSchema>;
+
 // Main board storage schema
 export const storedBoardSchema = z.object({
 	id: z.string(),
@@ -89,6 +105,8 @@ export const storedBoardSchema = z.object({
 	// SHA-256 hash of decoded binary data (for content-based duplicate detection)
 	// Optional for backward compatibility with existing data
 	contentHash: z.string().optional(),
+	// Folder ID (null = root/uncategorized)
+	folderId: z.string().nullable().default(null),
 });
 
 export type StoredBoard = z.infer<typeof storedBoardSchema>;

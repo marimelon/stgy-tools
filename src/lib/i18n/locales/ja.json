@@ -6,7 +6,9 @@
 		"generate": "生成",
 		"error": "エラー",
 		"defaultText": "テキスト",
-		"close": "閉じる"
+		"close": "閉じる",
+		"cancel": "キャンセル",
+		"create": "作成"
 	},
 	"contextMenu": {
 		"copy": "コピー",
@@ -532,6 +534,19 @@
 			"openAnother": "別のボードを開く",
 			"continueWithoutSaving": "保存なしで続行",
 			"warningNoSave": "※ 変更内容は保存されません"
+		},
+		"folder": {
+			"newFolder": "新規フォルダ",
+			"folderName": "フォルダ名",
+			"defaultFolderName": "新規フォルダ",
+			"rename": "名前変更",
+			"delete": "削除",
+			"deleteConfirm": "フォルダ内のボードはルートに移動されます",
+			"moveToFolder": "フォルダに移動",
+			"moveToRoot": "ルートに移動",
+			"emptyFolder": "フォルダが空です",
+			"openInViewer": "Viewerで開く",
+			"openAllInEditor": "すべてタブで開く"
 		}
 	},
 	"boardTabs": {

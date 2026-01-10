@@ -5,7 +5,9 @@
 import {
 	ClipboardCopy,
 	Copy,
+	Folder,
 	FolderOpen,
+	FolderOutput,
 	MoreHorizontal,
 	Pencil,
 	Trash2,
@@ -17,9 +19,14 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuPortal,
+	DropdownMenuSeparator,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { StoredBoard } from "@/lib/boards";
+import type { StoredBoard, StoredFolder } from "@/lib/boards";
 import { useDebugMode } from "@/lib/settings";
 import { MAX_BOARD_NAME_LENGTH } from "@/lib/stgy";
 import { BoardThumbnail } from "./BoardThumbnail";
@@ -31,6 +38,9 @@ export interface BoardCardProps {
 	onRename: (newName: string) => void;
 	onDuplicate: () => void;
 	onDelete: () => void;
+	onMoveToFolder?: (folderId: string | null) => void;
+	folders?: StoredFolder[];
+	currentFolderId?: string | null;
 }
 
 export function BoardCard({
@@ -40,6 +50,9 @@ export function BoardCard({
 	onRename,
 	onDuplicate,
 	onDelete,
+	onMoveToFolder,
+	folders,
+	currentFolderId,
 }: BoardCardProps) {
 	const { t } = useTranslation();
 	const debugMode = useDebugMode();
@@ -195,6 +208,39 @@ export function BoardCard({
 							<ClipboardCopy className="size-4 mr-2" />
 							{t("boardManager.copyStgyCode")}
 						</DropdownMenuItem>
+						{onMoveToFolder && folders && folders.length > 0 && (
+							<>
+								<DropdownMenuSeparator />
+								<DropdownMenuSub>
+									<DropdownMenuSubTrigger>
+										<Folder className="size-4 mr-2" />
+										{t("boardManager.folder.moveToFolder")}
+									</DropdownMenuSubTrigger>
+									<DropdownMenuPortal>
+										<DropdownMenuSubContent>
+											{currentFolderId !== null && (
+												<DropdownMenuItem onClick={() => onMoveToFolder(null)}>
+													<FolderOutput className="size-4 mr-2" />
+													{t("boardManager.folder.moveToRoot")}
+												</DropdownMenuItem>
+											)}
+											{folders
+												.filter((f) => f.id !== currentFolderId)
+												.map((folder) => (
+													<DropdownMenuItem
+														key={folder.id}
+														onClick={() => onMoveToFolder(folder.id)}
+													>
+														<Folder className="size-4 mr-2" />
+														{folder.name}
+													</DropdownMenuItem>
+												))}
+										</DropdownMenuSubContent>
+									</DropdownMenuPortal>
+								</DropdownMenuSub>
+							</>
+						)}
+						<DropdownMenuSeparator />
 						<DropdownMenuItem
 							onClick={onDelete}
 							className="text-destructive focus:text-destructive"
