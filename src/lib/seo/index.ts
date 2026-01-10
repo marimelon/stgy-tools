@@ -117,15 +117,24 @@ export function generateHreflangLinks(path: string) {
 }
 
 /** canonical URL 生成 */
-export function generateCanonicalLink(path: string) {
+export function generateCanonicalLink(path: string, lang?: string | null) {
+	const supportedLangs = SITE_CONFIG.locale.supported;
+	const isValidLang =
+		lang && supportedLangs.includes(lang as (typeof supportedLangs)[number]);
+	const href = isValidLang
+		? `${SITE_CONFIG.url}${path}?lang=${lang}`
+		: `${SITE_CONFIG.url}${path}`;
 	return {
 		rel: "canonical",
-		href: `${SITE_CONFIG.url}${path}`,
+		href,
 	};
 }
 
 /** 共通メタタグ生成 */
-export function generateCommonMeta(page: keyof typeof PAGE_SEO) {
+export function generateCommonMeta(
+	page: keyof typeof PAGE_SEO,
+	lang?: string | null,
+) {
 	const seo = PAGE_SEO[page];
 	return {
 		meta: [
@@ -153,7 +162,7 @@ export function generateCommonMeta(page: keyof typeof PAGE_SEO) {
 			},
 		],
 		links: [
-			generateCanonicalLink(seo.path),
+			generateCanonicalLink(seo.path, lang),
 			...generateHreflangLinks(seo.path),
 		],
 	};

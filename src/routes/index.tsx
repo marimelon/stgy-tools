@@ -154,7 +154,7 @@ export const Route = createFileRoute("/")({
 				},
 			],
 			links: [
-				generateCanonicalLink(seo.path),
+				generateCanonicalLink(seo.path, lang),
 				...generateHreflangLinks(seo.path),
 			],
 		};

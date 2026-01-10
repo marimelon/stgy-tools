@@ -251,7 +251,7 @@ export const Route = createFileRoute("/image/generate")({
 				},
 			],
 			links: [
-				generateCanonicalLink(seo.path),
+				generateCanonicalLink(seo.path, lang),
 				...generateHreflangLinks(seo.path),
 			],
 		};

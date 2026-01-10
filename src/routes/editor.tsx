@@ -111,7 +111,7 @@ export const Route = createFileRoute("/editor")({
 				{ name: "twitter:image", content: `${SITE_CONFIG.url}/favicon.svg` },
 			],
 			links: [
-				generateCanonicalLink(seo.path),
+				generateCanonicalLink(seo.path, lang),
 				...generateHreflangLinks(seo.path),
 			],
 		};
