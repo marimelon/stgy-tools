@@ -8,7 +8,14 @@ import {
 	Maximize2,
 	Pencil,
 } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board";
 import { AppHeader } from "@/components/ui/AppHeader";
@@ -18,6 +25,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BoardExpandModal } from "@/components/viewer/BoardExpandModal";
 import { ObjectListPanel } from "@/components/viewer/ObjectListPanel";
+import { ViewerGrid } from "@/components/viewer/ViewerGrid";
+import { ViewerTabs } from "@/components/viewer/ViewerTabs";
+import { ViewerToolbar } from "@/components/viewer/ViewerToolbar";
 import {
 	generateCanonicalLink,
 	generateHreflangLinks,
@@ -29,52 +39,105 @@ import {
 	createShortLinkFn,
 	resolveShortIdFn,
 } from "@/lib/server/shortLinks/serverFn";
-import type { BoardData, BoardObject } from "@/lib/stgy";
+import type { BoardObject } from "@/lib/stgy";
+import { ObjectNames } from "@/lib/stgy";
 import {
-	assignBoardObjectIds,
-	decodeStgy,
-	ObjectNames,
-	parseBoardData,
-} from "@/lib/stgy";
+	MAX_BOARDS,
+	parseMultipleStgyCodes,
+	useViewerActions,
+	useViewerActiveBoard,
+	useViewerActiveSelection,
+	useViewerBoardCount,
+	useViewerBoards,
+	useViewerMode,
+	ViewerStoreProvider,
+} from "@/lib/viewer";
 
 export const Route = createFileRoute("/")({
 	component: App,
 	validateSearch: (search: Record<string, unknown>) => {
+		// stgy と s は単一または配列で複数指定可能
+		const parseStringOrArray = (
+			value: unknown,
+		): string | string[] | undefined => {
+			if (typeof value === "string") return value;
+			if (Array.isArray(value) && value.every((v) => typeof v === "string")) {
+				return value as string[];
+			}
+			return undefined;
+		};
+
 		return {
-			stgy: typeof search.stgy === "string" ? search.stgy : undefined,
-			s: typeof search.s === "string" ? search.s : undefined,
+			stgy: parseStringOrArray(search.stgy),
+			s: parseStringOrArray(search.s),
 			lang: typeof search.lang === "string" ? search.lang : undefined,
+			mode:
+				search.mode === "tab" || search.mode === "grid"
+					? search.mode
+					: undefined,
+			active: typeof search.active === "number" ? search.active : undefined,
 		};
 	},
 	loaderDeps: ({ search }) => ({ s: search.s, stgy: search.stgy }),
 	loader: async ({ deps }) => {
-		// Feature Flagsを取得
 		const featureFlags = await getFeatureFlagsFn();
 
-		if (deps.stgy) {
-			return { resolvedStgy: deps.stgy, shortId: undefined, featureFlags };
+		// 配列または単一値を配列に正規化
+		const normalizeToArray = (
+			value: string | string[] | undefined,
+		): string[] => {
+			if (!value) return [];
+			return Array.isArray(value) ? value : [value];
+		};
+
+		const stgyCodes = normalizeToArray(deps.stgy);
+		const shortIds = normalizeToArray(deps.s);
+
+		// short IDsを解決
+		const resolvedFromShortIds = await Promise.all(
+			shortIds.map(async (shortId) => {
+				const result = await resolveShortIdFn({ data: { shortId } });
+				return result?.stgy ?? null;
+			}),
+		);
+
+		// 全ての解決済みstgyコードを結合（stgy直接指定 + short ID解決）
+		const allStgyCodes = [
+			...stgyCodes,
+			...resolvedFromShortIds.filter((s): s is string => s !== null),
+		];
+
+		// 少なくとも1つのshort IDが解決できなかった場合
+		const hasUnresolvedShortId =
+			shortIds.length > 0 &&
+			resolvedFromShortIds.some((s) => s === null) &&
+			allStgyCodes.length === 0;
+
+		if (hasUnresolvedShortId) {
+			throw notFound();
 		}
-		if (deps.s) {
-			const result = await resolveShortIdFn({ data: { shortId: deps.s } });
-			if (!result) {
-				throw notFound();
-			}
-			return { resolvedStgy: result.stgy, shortId: deps.s, featureFlags };
-		}
-		return { resolvedStgy: undefined, shortId: undefined, featureFlags };
+
+		return {
+			resolvedStgyCodes: allStgyCodes,
+			shortIds: shortIds.length > 0 ? shortIds : undefined,
+			featureFlags,
+		};
 	},
 	head: ({ match, loaderData }) => {
 		const { stgy, s, lang } = match.search;
-		// 短縮IDの場合はloaderDataから解決済みのstgyを取得
-		const resolvedStgy = loaderData?.resolvedStgy ?? stgy;
+		// 配列の場合は最初の要素を使用（OGP用）
+		const firstStgy = Array.isArray(stgy) ? stgy[0] : stgy;
+		const firstShortId = Array.isArray(s) ? s[0] : s;
+		const resolvedStgyCodes = loaderData?.resolvedStgyCodes ?? [];
+		const resolvedStgy = resolvedStgyCodes[0] ?? firstStgy;
 		const hasCode = Boolean(resolvedStgy);
 		const seo = getLocalizedSeo("home", lang);
 
 		// 動的OGイメージ: stgyコードがある場合は生成画像を使用
 		// 短縮IDがある場合はそれを使用（OGP用に短いURL）
 		const ogImage = hasCode
-			? s
-				? `${SITE_CONFIG.url}/image?s=${encodeURIComponent(s)}`
+			? firstShortId
+				? `${SITE_CONFIG.url}/image?s=${encodeURIComponent(firstShortId)}`
 				: `${SITE_CONFIG.url}/image?stgy=${encodeURIComponent(resolvedStgy as string)}`
 			: `${SITE_CONFIG.url}/favicon.svg`;
 
@@ -82,10 +145,15 @@ export const Route = createFileRoute("/")({
 		const twitterCard = hasCode ? "summary_large_image" : "summary";
 
 		// 言語に応じた動的OG説明文
+		const boardCount = resolvedStgyCodes.length;
 		const ogDescription = hasCode
 			? seo.lang === "ja"
-				? "FFXIV ストラテジーボードのダイアグラムを表示"
-				: "View this FFXIV Strategy Board diagram"
+				? boardCount > 1
+					? `${boardCount}件のFFXIV ストラテジーボードダイアグラムを表示`
+					: "FFXIV ストラテジーボードのダイアグラムを表示"
+				: boardCount > 1
+					? `View ${boardCount} FFXIV Strategy Board diagrams`
+					: "View this FFXIV Strategy Board diagram"
 			: seo.description;
 
 		return {
@@ -167,45 +235,85 @@ const SAMPLE_STGY =
 /** デバウンス遅延時間 (ms) */
 const DEBOUNCE_DELAY = 300;
 
+/**
+ * App: ViewerStoreProviderでラップ
+ */
 function App() {
+	const { mode } = Route.useSearch();
+	const { resolvedStgyCodes } = Route.useLoaderData();
+
+	// 初期ボードを生成
+	const initialBoards = useMemo(() => {
+		if (resolvedStgyCodes.length > 0) {
+			return parseMultipleStgyCodes(resolvedStgyCodes.join("\n"));
+		}
+		// サンプルコードを使用
+		return parseMultipleStgyCodes(SAMPLE_STGY);
+	}, [resolvedStgyCodes]);
+
+	const isUsingDefaultSample = resolvedStgyCodes.length === 0;
+
+	const initialViewMode = mode === "grid" ? "grid" : "tab";
+
+	return (
+		<ViewerStoreProvider
+			initialBoards={initialBoards}
+			initialViewMode={initialViewMode}
+		>
+			<ViewerContent isUsingDefaultSample={isUsingDefaultSample} />
+		</ViewerStoreProvider>
+	);
+}
+
+/**
+ * ViewerContent: 実際のViewer UI
+ */
+function ViewerContent({
+	isUsingDefaultSample: initialIsUsingDefaultSample,
+}: {
+	isUsingDefaultSample: boolean;
+}) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { stgy: searchStgy, s: shortId } = Route.useSearch();
-	const { resolvedStgy, featureFlags } = Route.useLoaderData();
+	const { featureFlags } = Route.useLoaderData();
+	const { shortIds } = Route.useLoaderData();
 
-	// 初期コード: loader で解決されたstgyを優先
-	const initialCode = resolvedStgy ?? searchStgy;
+	// Viewer状態
+	const boards = useViewerBoards();
+	const activeBoard = useViewerActiveBoard();
+	const boardCount = useViewerBoardCount();
+	const viewMode = useViewerMode();
+	const { objectId: selectedObjectId, object: selectedObject } =
+		useViewerActiveSelection();
+	const actions = useViewerActions();
 
-	// サンプルコードを使用しているかどうか（URL更新をスキップするため）
+	// ローカル状態
 	const [isUsingDefaultSample, setIsUsingDefaultSample] = useState(
-		!initialCode,
+		initialIsUsingDefaultSample,
 	);
-	const [stgyInput, setStgyInput] = useState(initialCode ?? SAMPLE_STGY);
+	const [stgyInput, setStgyInput] = useState(() =>
+		boards.map((b) => b.stgyCode).join("\n"),
+	);
+	const [isExpandModalOpen, setIsExpandModalOpen] = useState(false);
+	const stgyInputId = useId();
+	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	// 短縮IDで開いた場合は初回のみstgyに展開してURLを更新
+	// 短縮IDで開いた場合は初回のみURLを更新
 	const hasInitialized = useRef(false);
 	useEffect(() => {
-		if (!hasInitialized.current && resolvedStgy && shortId) {
-			setStgyInput(resolvedStgy);
-			setIsUsingDefaultSample(false);
+		if (!hasInitialized.current && shortIds && shortIds.length > 0) {
 			hasInitialized.current = true;
-
 			// URLを ?s=xxx から ?stgy=xxx に置き換え
 			const url = new URL(window.location.href);
 			url.searchParams.delete("s");
-			url.searchParams.set("stgy", resolvedStgy);
+			for (const board of boards) {
+				if (board.stgyCode) {
+					url.searchParams.append("stgy", board.stgyCode);
+				}
+			}
 			window.history.replaceState(null, "", url.toString());
 		}
-	}, [resolvedStgy, shortId]);
-	const [boardData, setBoardData] = useState<BoardData | null>(null);
-	const [error, setError] = useState<string | null>(null);
-	const [isExpandModalOpen, setIsExpandModalOpen] = useState(false);
-	const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
-	const [selectedObject, setSelectedObject] = useState<BoardObject | null>(
-		null,
-	);
-	const stgyInputId = useId();
-	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	}, [shortIds, boards]);
 
 	// ボードサイズのリサイズ機能
 	const [boardWidth, setBoardWidth] = useState<number | null>(null);
@@ -220,7 +328,6 @@ function App() {
 			if (!isResizing.current || !boardContainerRef.current) return;
 			const containerRect = boardContainerRef.current.getBoundingClientRect();
 			const newWidth = moveEvent.clientX - containerRect.left;
-			// 最小幅200px、最大幅896px
 			setBoardWidth(Math.max(200, Math.min(896, newWidth)));
 		};
 
@@ -241,31 +348,68 @@ function App() {
 	// stgyコードコピー
 	const [copiedStgyCode, setCopiedStgyCode] = useState(false);
 
+	// アクティブボードの情報
+	const boardData = activeBoard?.boardData ?? null;
+	const activeBoardError = activeBoard?.error ?? null;
+
+	// 全体のエラー（デコードに失敗したボードがある場合）
+	const failedBoardCount = boards.filter((b) => b.error !== null).length;
+
 	// Editorで編集ボタンのハンドラー
 	const handleEditInEditor = useCallback(() => {
-		if (!stgyInput.trim() || !boardData) return;
-		navigate({ to: "/editor", search: { stgy: stgyInput.trim() } });
-	}, [stgyInput, boardData, navigate]);
+		if (!activeBoard?.stgyCode || !boardData) return;
+		navigate({ to: "/editor", search: { stgy: activeBoard.stgyCode } });
+	}, [activeBoard, boardData, navigate]);
 
-	// 短縮リンク生成ハンドラー
+	// 短縮リンク生成ハンドラー（複数ボード対応）
 	const handleGenerateShortLink = useCallback(async () => {
-		if (!stgyInput.trim() || !boardData) return;
+		// 有効なstgyコードを持つボードのみ対象
+		const validBoards = boards.filter((b) => b.stgyCode && b.boardData);
+		if (validBoards.length === 0) return;
+
 		setIsGeneratingShortLink(true);
 		setCopiedShortLink(false);
 		try {
 			const baseUrl = window.location.origin;
-			const result = await createShortLinkFn({
-				data: { stgy: stgyInput.trim(), baseUrl },
-			});
-			if (result.success && result.data.url) {
-				await navigator.clipboard.writeText(result.data.url);
+
+			// 全ボードの短縮リンクを並列で生成
+			const results = await Promise.all(
+				validBoards.map((board) =>
+					createShortLinkFn({ data: { stgy: board.stgyCode, baseUrl } }),
+				),
+			);
+
+			// 成功した短縮IDを収集
+			const shortIds = results
+				.filter(
+					(
+						r,
+					): r is {
+						success: true;
+						data: { id: string; url: string; viewerUrl: string };
+					} => r.success && !!r.data.id,
+				)
+				.map((r) => r.data.id);
+
+			if (shortIds.length > 0) {
+				// URLを構築
+				const url = new URL(baseUrl);
+				for (const shortId of shortIds) {
+					url.searchParams.append("s", shortId);
+				}
+				// 複数ボードでグリッドモードの場合はmodeパラメータを追加
+				if (shortIds.length > 1 && viewMode === "grid") {
+					url.searchParams.set("mode", "grid");
+				}
+
+				await navigator.clipboard.writeText(url.toString());
 				setCopiedShortLink(true);
 				setTimeout(() => setCopiedShortLink(false), 2000);
 			}
 		} finally {
 			setIsGeneratingShortLink(false);
 		}
-	}, [stgyInput, boardData]);
+	}, [boards, viewMode]);
 
 	// stgyコードをコピー
 	const handleCopyStgyCode = useCallback(async () => {
@@ -279,42 +423,17 @@ function App() {
 		}
 	}, [stgyInput]);
 
-	// 入力変更ハンドラー（サンプルコードフラグを更新）
+	// 入力変更ハンドラー
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
 			const newValue = e.target.value;
 			setStgyInput(newValue);
-			// ユーザーが入力を変更したらサンプルコードフラグをオフ
 			if (isUsingDefaultSample) {
 				setIsUsingDefaultSample(false);
 			}
 		},
 		[isUsingDefaultSample],
 	);
-
-	// 自動デコード関数
-	const decodeBoardData = useCallback((input: string) => {
-		if (!input.trim()) {
-			setBoardData(null);
-			setError(null);
-			setSelectedObjectId(null);
-			setSelectedObject(null);
-			return;
-		}
-
-		try {
-			setError(null);
-			const binary = decodeStgy(input.trim());
-			const parsed = parseBoardData(binary);
-			const data = assignBoardObjectIds(parsed);
-			setBoardData(data);
-			setSelectedObjectId(null);
-			setSelectedObject(null);
-		} catch (e) {
-			setError(e instanceof Error ? e.message : "Unknown error");
-			setBoardData(null);
-		}
-	}, []);
 
 	// 入力変更時の自動デコード＆URL更新（デバウンス付き）
 	useEffect(() => {
@@ -323,17 +442,24 @@ function App() {
 		}
 
 		debounceTimerRef.current = setTimeout(() => {
-			decodeBoardData(stgyInput);
+			// 改行区切りで複数ボードをパース
+			actions.loadBoards(stgyInput);
 
 			// サンプルコード使用時はURLを更新しない
 			if (!isUsingDefaultSample) {
-				const trimmedCode = stgyInput.trim();
+				const codes = stgyInput
+					.split("\n")
+					.map((line) => line.trim())
+					.filter((line) => line.length > 0);
+
 				const url = new URL(window.location.href);
-				if (trimmedCode) {
-					url.searchParams.set("stgy", trimmedCode);
-				} else {
-					url.searchParams.delete("stgy");
+				url.searchParams.delete("stgy");
+				url.searchParams.delete("s");
+
+				for (const code of codes.slice(0, MAX_BOARDS)) {
+					url.searchParams.append("stgy", code);
 				}
+
 				window.history.replaceState(null, "", url.toString());
 			}
 		}, DEBOUNCE_DELAY);
@@ -343,15 +469,17 @@ function App() {
 				clearTimeout(debounceTimerRef.current);
 			}
 		};
-	}, [stgyInput, decodeBoardData, isUsingDefaultSample]);
+	}, [stgyInput, actions, isUsingDefaultSample]);
 
-	const handleSelectObject = (
-		objectId: string | null,
-		object: BoardObject | null,
-	) => {
-		setSelectedObjectId(objectId);
-		setSelectedObject(object);
-	};
+	// オブジェクト選択ハンドラー
+	const handleSelectObject = useCallback(
+		(objectId: string | null, _object: BoardObject | null) => {
+			if (activeBoard) {
+				actions.setSelectedObject(activeBoard.id, objectId);
+			}
+		},
+		[activeBoard, actions],
+	);
 
 	return (
 		<div className="min-h-screen bg-background text-foreground">
@@ -389,14 +517,60 @@ function App() {
 					/>
 				</div>
 
-				{error && (
+				{/* エラー表示: 複数ボード中にデコード失敗があった場合 */}
+				{failedBoardCount > 0 && (
 					<div className="mb-6 flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
 						<AlertCircle className="size-5" />
-						<p>{error}</p>
+						<p>
+							{t("viewer.multiBoard.parseError", { count: failedBoardCount })}
+						</p>
 					</div>
 				)}
 
-				{boardData && (
+				{/* アクティブボードのエラー表示 */}
+				{activeBoardError && boardCount === 1 && (
+					<div className="mb-6 flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
+						<AlertCircle className="size-5" />
+						<p>{activeBoardError}</p>
+					</div>
+				)}
+
+				{/* ツールバー（モード切替・共有リンク） */}
+				<ViewerToolbar
+					viewMode={viewMode}
+					onViewModeChange={actions.setViewMode}
+					boardCount={boardCount}
+					onGenerateShortLink={handleGenerateShortLink}
+					isGeneratingShortLink={isGeneratingShortLink}
+					copiedShortLink={copiedShortLink}
+					shortLinksEnabled={featureFlags.shortLinksEnabled}
+				/>
+
+				{/* タブUI（タブモード時のみ） */}
+				{viewMode === "tab" && (
+					<ViewerTabs
+						boards={boards}
+						activeId={activeBoard?.id ?? null}
+						onSelectTab={actions.setActiveBoard}
+						onCloseTab={actions.removeBoard}
+					/>
+				)}
+
+				{/* グリッドモード時の表示 */}
+				{viewMode === "grid" && boardCount > 1 && (
+					<ViewerGrid
+						boards={boards}
+						activeId={activeBoard?.id ?? null}
+						onSelectBoard={(id) => {
+							actions.setActiveBoard(id);
+							actions.setViewMode("tab");
+						}}
+						onCloseBoard={actions.removeBoard}
+					/>
+				)}
+
+				{/* タブモード時の詳細表示 */}
+				{viewMode === "tab" && boardData && (
 					<div className="space-y-4">
 						{/* ボード情報ヘッダー（コンパクト） */}
 						<div className="flex flex-wrap items-center justify-between gap-2 p-2 sm:p-3 bg-card border border-border rounded-lg">

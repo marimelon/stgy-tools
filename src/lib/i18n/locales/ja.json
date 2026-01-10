@@ -60,7 +60,7 @@
 	},
 	"viewer": {
 		"pageTitle": "STGY Tools Viewer",
-		"inputLabel": "stgyコードを入力:",
+		"inputLabel": "stgyコードを入力 (複数可):",
 		"inputPlaceholder": "[stgy:a...]",
 		"boardInfo": {
 			"title": "ボード情報",
@@ -111,6 +111,16 @@
 			"title": "オブジェクト一覧",
 			"empty": "オブジェクトがありません",
 			"count": "オブジェクト"
+		},
+		"multiBoard": {
+			"tabMode": "タブ表示",
+			"gridMode": "グリッド表示",
+			"closeTab": "閉じる",
+			"defaultName": "ボード{{index}}",
+			"boardCount": "{{count}}件のボード",
+			"parseError": "{{count}}件のコードが解析できませんでした",
+			"share": "共有",
+			"noData": "データなし"
 		}
 	},
 	"batchProperty": {

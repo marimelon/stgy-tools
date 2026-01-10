@@ -60,7 +60,7 @@
 	},
 	"viewer": {
 		"pageTitle": "STGY Tools Viewer",
-		"inputLabel": "Enter stgy code:",
+		"inputLabel": "Enter stgy code (multiple allowed):",
 		"inputPlaceholder": "[stgy:a...]",
 		"boardInfo": {
 			"title": "Board Information",
@@ -111,6 +111,16 @@
 			"title": "Object List",
 			"empty": "No objects",
 			"count": "objects"
+		},
+		"multiBoard": {
+			"tabMode": "Tab View",
+			"gridMode": "Grid View",
+			"closeTab": "Close",
+			"defaultName": "Board {{index}}",
+			"boardCount": "{{count}} boards",
+			"parseError": "{{count}} codes failed to parse",
+			"share": "Share",
+			"noData": "No data"
 		}
 	},
 	"batchProperty": {

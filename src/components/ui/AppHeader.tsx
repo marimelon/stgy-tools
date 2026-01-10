@@ -3,7 +3,7 @@
  * 全ページで統一されたナビゲーションを提供
  */
 
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useLocation } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -56,22 +56,22 @@ function NavLink({
 	// stgyを引き継ぐべきパスの場合のみstgyパラメータを付与
 	const shouldPreserveStgy = stgy && STGY_PRESERVE_PATHS.includes(to);
 
-	// searchパラメータを構築
-	const search = useMemo(() => {
-		const params: Record<string, string> = {};
+	// URLを構築（配列パラメータを避けるため直接構築）
+	const href = useMemo(() => {
+		const params = new URLSearchParams();
 		if (shouldPreserveStgy && stgy) {
-			params.stgy = stgy;
+			params.set("stgy", stgy);
 		}
 		if (lang) {
-			params.lang = lang;
+			params.set("lang", lang);
 		}
-		return Object.keys(params).length > 0 ? params : undefined;
-	}, [shouldPreserveStgy, stgy, lang]);
+		const queryString = params.toString();
+		return queryString ? `${to}?${queryString}` : to;
+	}, [to, shouldPreserveStgy, stgy, lang]);
 
 	return (
-		<Link
-			to={to}
-			search={search}
+		<a
+			href={href}
 			className={cn(
 				"text-sm font-medium transition-colors",
 				active
@@ -80,7 +80,7 @@ function NavLink({
 			)}
 		>
 			{children}
-		</Link>
+		</a>
 	);
 }
 
@@ -89,22 +89,17 @@ function NavLink({
  */
 function LanguageSelector() {
 	const { i18n, t } = useTranslation();
-	const location = useLocation();
-	const navigate = useNavigate();
 
 	const changeLanguage = useCallback(
 		(lang: string) => {
 			i18n.changeLanguage(lang);
-			// URLのlangパラメータも更新
-			const searchParams = new URLSearchParams(location.search);
+			// URLのlangパラメータも更新（配列パラメータを保持するためwindow.locationを使用）
+			const searchParams = new URLSearchParams(window.location.search);
 			searchParams.set("lang", lang);
-			navigate({
-				to: location.pathname,
-				search: Object.fromEntries(searchParams.entries()),
-				replace: true,
-			});
+			const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+			window.history.replaceState(null, "", newUrl);
 		},
-		[i18n, location.pathname, location.search, navigate],
+		[i18n],
 	);
 
 	return (
@@ -125,14 +120,17 @@ function LanguageSelector() {
 
 /**
  * 現在のURLからstgyパラメータを取得するフック
+ * 複数指定されている場合は最初の値を返す
  */
 function useCurrentStgy(): string | undefined {
 	const location = useLocation();
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: URL変更時に再評価が必要
 	return useMemo(() => {
-		const searchParams = new URLSearchParams(location.search);
+		// window.location.searchを使用して配列パラメータを正しく処理
+		const searchParams = new URLSearchParams(window.location.search);
 		return searchParams.get("stgy") ?? undefined;
-	}, [location.search]);
+	}, [location.href]);
 }
 
 /**
@@ -141,10 +139,11 @@ function useCurrentStgy(): string | undefined {
 function useCurrentLang(): string | undefined {
 	const location = useLocation();
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: URL変更時に再評価が必要
 	return useMemo(() => {
-		const searchParams = new URLSearchParams(location.search);
+		const searchParams = new URLSearchParams(window.location.search);
 		return searchParams.get("lang") ?? undefined;
-	}, [location.search]);
+	}, [location.href]);
 }
 
 /**
