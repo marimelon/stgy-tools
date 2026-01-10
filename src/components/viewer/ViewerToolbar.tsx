@@ -1,4 +1,11 @@
-import { Check, LayoutGrid, LayoutList, Link, Loader2 } from "lucide-react";
+import {
+	Check,
+	LayoutGrid,
+	LayoutList,
+	Link,
+	Loader2,
+	Pencil,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { ViewerMode } from "@/lib/viewer";
@@ -11,6 +18,7 @@ interface ViewerToolbarProps {
 	isGeneratingShortLink?: boolean;
 	copiedShortLink?: boolean;
 	shortLinksEnabled?: boolean;
+	onEditAllInEditor?: () => void;
 }
 
 export function ViewerToolbar({
@@ -21,6 +29,7 @@ export function ViewerToolbar({
 	isGeneratingShortLink,
 	copiedShortLink,
 	shortLinksEnabled,
+	onEditAllInEditor,
 }: ViewerToolbarProps) {
 	const { t } = useTranslation();
 
@@ -55,6 +64,20 @@ export function ViewerToolbar({
 							{copiedShortLink
 								? t("viewer.shortLink.copied")
 								: t("viewer.multiBoard.share")}
+						</span>
+					</button>
+				)}
+				{/* エディターで全て開くボタン */}
+				{onEditAllInEditor && (
+					<button
+						type="button"
+						className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/30 hover:border-accent/50 rounded-lg transition-all"
+						onClick={onEditAllInEditor}
+						title={t("imageGenerator.editInEditor")}
+					>
+						<Pencil className="size-4" />
+						<span className="hidden sm:inline">
+							{t("imageGenerator.editInEditor")}
 						</span>
 					</button>
 				)}

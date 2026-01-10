@@ -123,7 +123,8 @@
 			"parseError": "{{count}} codes failed to parse",
 			"share": "Share",
 			"noData": "No data"
-		}
+		},
+		"importComplete": "Imported {{count}} boards to \"{{folder}}\""
 	},
 	"batchProperty": {
 		"title": "Batch Edit",

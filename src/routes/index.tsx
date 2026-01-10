@@ -361,6 +361,25 @@ function ViewerContent({
 		navigate({ to: "/editor", search: { stgy: activeBoard.stgyCode } });
 	}, [activeBoard, boardData, navigate]);
 
+	// Editorで全て編集ボタンのハンドラー
+	const handleEditAllInEditor = useCallback(() => {
+		const validBoards = boards.filter((b) => b.stgyCode && b.boardData);
+		if (validBoards.length === 0) return;
+
+		const key = crypto.randomUUID();
+		const folderName = `Imported - ${new Date().toLocaleString()}`;
+
+		sessionStorage.setItem(
+			`board-import-${key}`,
+			JSON.stringify({
+				stgyCodes: validBoards.map((b) => b.stgyCode),
+				folderName,
+			}),
+		);
+
+		navigate({ to: "/editor", search: { import: "multi", key } });
+	}, [boards, navigate]);
+
 	// 短縮リンク生成ハンドラー（複数ボード対応）
 	const handleGenerateShortLink = useCallback(async () => {
 		// 有効なstgyコードを持つボードのみ対象
@@ -544,6 +563,7 @@ function ViewerContent({
 					isGeneratingShortLink={isGeneratingShortLink}
 					copiedShortLink={copiedShortLink}
 					shortLinksEnabled={featureFlags.shortLinksEnabled}
+					onEditAllInEditor={handleEditAllInEditor}
 				/>
 
 				{/* タブUI（タブモード時のみ） */}

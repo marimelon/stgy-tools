@@ -6,13 +6,13 @@
  * - Viewerからのインポート時の挙動
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import * as actions from "../actions";
 import { createTabStore, type TabStore } from "../store";
 
 describe("tab sync logic", () => {
 	let store: TabStore;
-	let onSelectBoard: ReturnType<typeof vi.fn>;
+	let onSelectBoard: Mock<(boardId: string) => boolean>;
 
 	beforeEach(() => {
 		store = createTabStore();
@@ -29,7 +29,13 @@ describe("tab sync logic", () => {
 		existingBoardIds: string[];
 		isInitialMount: boolean;
 	}) {
-		const { currentBoardId, openTabs, activeTabId, existingBoardIds, isInitialMount } = params;
+		const {
+			currentBoardId,
+			openTabs,
+			activeTabId,
+			existingBoardIds,
+			isInitialMount,
+		} = params;
 
 		// ストアの状態を設定
 		store.setState(() => ({ openTabs, activeTabId }));

@@ -4,7 +4,9 @@
 
 import NiceModal from "@ebay/nice-modal-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Check, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
 	AssetPanel,
@@ -30,7 +32,7 @@ import {
 } from "@/components/editor/BoardManager";
 import { ResizableLayout } from "@/components/panel";
 import { CompactAppHeader } from "@/components/ui/AppHeader";
-import { BoardsProvider, useBoards } from "@/lib/boards";
+import { BoardsProvider, useBoards, useFolders } from "@/lib/boards";
 import {
 	convertGroupsToIdBased,
 	convertGroupsToIndexBased,
@@ -80,6 +82,8 @@ const CANVAS_HEIGHT = 384;
 type EditorSearchParams = {
 	stgy?: string;
 	lang?: string;
+	import?: string;
+	key?: string;
 };
 
 export const Route = createFileRoute("/editor")({
@@ -119,6 +123,8 @@ export const Route = createFileRoute("/editor")({
 	validateSearch: (search: Record<string, unknown>): EditorSearchParams => ({
 		stgy: typeof search.stgy === "string" ? search.stgy : undefined,
 		lang: typeof search.lang === "string" ? search.lang : undefined,
+		import: typeof search.import === "string" ? search.import : undefined,
+		key: typeof search.key === "string" ? search.key : undefined,
 	}),
 });
 
@@ -147,6 +153,41 @@ function decodeBoardFromStgy(stgyCode: string): BoardData | null {
 	}
 }
 
+/** Import success toast component */
+interface ImportSuccessToastProps {
+	count: number;
+	folderName: string;
+	onDismiss: () => void;
+}
+
+function ImportSuccessToast({
+	count,
+	folderName,
+	onDismiss,
+}: ImportSuccessToastProps) {
+	const { t } = useTranslation();
+
+	return createPortal(
+		<div
+			className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg bg-foreground text-background shadow-lg animate-in slide-in-from-bottom-4 fade-in duration-200"
+			onPointerDown={(e) => e.stopPropagation()}
+		>
+			<Check className="size-4 text-green-400" />
+			<span className="text-sm">
+				{t("viewer.importComplete", { count, folder: folderName })}
+			</span>
+			<button
+				type="button"
+				onClick={onDismiss}
+				className="text-background/70 hover:text-background transition-colors"
+			>
+				<X className="size-4" />
+			</button>
+		</div>,
+		document.body,
+	);
+}
+
 function EditorPage() {
 	const { featureFlags } = Route.useLoaderData();
 
@@ -166,7 +207,11 @@ interface EditorPageContentProps {
 function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { stgy: codeFromUrl } = Route.useSearch();
+	const {
+		stgy: codeFromUrl,
+		import: importMode,
+		key: importKey,
+	} = Route.useSearch();
 
 	// Board manager state
 	const [currentBoardId, setCurrentBoardId] = useState<string | null>(null);
@@ -190,6 +235,17 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 	// Key to force re-render EditorProvider when switching boards
 	const [editorKey, setEditorKey] = useState(0);
 
+	// Pending board IDs from multi-import (to be opened in tabs)
+	const [pendingImportBoardIds, setPendingImportBoardIds] = useState<
+		string[] | null
+	>(null);
+
+	// Import success toast state
+	const [importSuccess, setImportSuccess] = useState<{
+		count: number;
+		folderName: string;
+	} | null>(null);
+
 	// Ref to prevent multiple initialization attempts
 	const initializingRef = useRef(false);
 
@@ -204,6 +260,9 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 		getBoard,
 		findBoardByContent,
 	} = useBoards();
+
+	// Folder operations
+	const { createFolder, deleteFolder } = useFolders();
 
 	// Handle opening a board
 	const handleOpenBoard = useCallback(
@@ -393,6 +452,65 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 		],
 	);
 
+	// Handle multi-import from viewer
+	const handleMultiImport = useCallback(
+		async (
+			sessionKey: string,
+		): Promise<{ boardIds: string[]; folderName: string }> => {
+			const storageKey = `board-import-${sessionKey}`;
+			const data = sessionStorage.getItem(storageKey);
+			if (!data) return { boardIds: [], folderName: "" };
+
+			try {
+				const parsed = JSON.parse(data) as {
+					stgyCodes: string[];
+					folderName: string;
+				};
+				const { stgyCodes, folderName } = parsed;
+
+				if (!stgyCodes || stgyCodes.length === 0)
+					return { boardIds: [], folderName: "" };
+
+				// Create folder first
+				const folderId = await createFolder(folderName);
+
+				// Create boards
+				const createdBoardIds: string[] = [];
+				for (const stgyCode of stgyCodes) {
+					const decodedBoard = decodeBoardFromStgy(stgyCode);
+					if (!decodedBoard) continue;
+
+					const boardName =
+						decodedBoard.name || t("boardManager.defaultBoardName");
+					const newBoardId = await createBoard(
+						boardName,
+						stgyCode,
+						[],
+						DEFAULT_GRID_SETTINGS,
+						folderId,
+					);
+					createdBoardIds.push(newBoardId);
+				}
+
+				// Clear session storage
+				sessionStorage.removeItem(storageKey);
+
+				// If no boards were created, delete the empty folder
+				if (createdBoardIds.length === 0) {
+					deleteFolder(folderId);
+					return { boardIds: [], folderName: "" };
+				}
+
+				return { boardIds: createdBoardIds, folderName };
+			} catch (error) {
+				console.warn("Failed to parse multi-import data:", error);
+				sessionStorage.removeItem(storageKey);
+				return { boardIds: [], folderName: "" };
+			}
+		},
+		[createBoard, createFolder, deleteFolder, t],
+	);
+
 	// Auto-initialize: create first board or open last edited board
 	useEffect(() => {
 		// Wait for loading to complete, skip if error
@@ -403,6 +521,25 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 		initializingRef.current = true;
 
 		const initializeEditor = async () => {
+			// Check for multi-import from viewer
+			if (importMode === "multi" && importKey) {
+				// Clear URL parameter immediately
+				navigate({ to: "/editor", search: {}, replace: true });
+
+				const { boardIds, folderName } = await handleMultiImport(importKey);
+				if (boardIds.length > 0) {
+					// Set pending board IDs to be opened in tabs by EditorWithTabs
+					setPendingImportBoardIds(boardIds);
+					// Show success toast
+					setImportSuccess({ count: boardIds.length, folderName });
+					// Open the first imported board
+					handleOpenBoard(boardIds[0]);
+					setIsInitialized(true);
+					return;
+				}
+				// No boards created, continue to normal flow
+			}
+
 			// Check for stgy code in URL query parameter (from Image Generator page)
 			if (codeFromUrl) {
 				// Clear URL parameter immediately to prevent re-processing on state updates
@@ -437,11 +574,35 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 		currentBoardId,
 		storageError,
 		codeFromUrl,
+		importMode,
+		importKey,
 		handleCreateNewBoard,
 		handleOpenBoard,
 		handleImportFromUrl,
+		handleMultiImport,
 		navigate,
 	]);
+
+	// Clear pendingImportBoardIds after TabStoreProvider has consumed it
+	useEffect(() => {
+		if (pendingImportBoardIds && isInitialized) {
+			// Clear after a short delay to ensure TabStoreProvider has mounted with the initial state
+			const timer = setTimeout(() => {
+				setPendingImportBoardIds(null);
+			}, 100);
+			return () => clearTimeout(timer);
+		}
+	}, [pendingImportBoardIds, isInitialized]);
+
+	// Auto-dismiss import success toast
+	useEffect(() => {
+		if (importSuccess) {
+			const timer = setTimeout(() => {
+				setImportSuccess(null);
+			}, 5000);
+			return () => clearTimeout(timer);
+		}
+	}, [importSuccess]);
 
 	// Show error state
 	if (storageError) {
@@ -471,75 +632,91 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 	}
 
 	return (
-		<SettingsStoreProvider>
-			<TabStoreProvider>
-				<PanelStoreProvider>
-					<EditorStoreProvider
-						key={editorKey}
-						initialBoard={initialBoard}
-						initialGroups={initialGroups}
-						initialGridSettings={initialGridSettings}
-						boardId={currentBoardId}
-					>
-						<EditorWithTabs
-							boards={boards}
-							currentBoardId={currentBoardId}
-							shortLinksEnabled={featureFlags.shortLinksEnabled}
-							onSaveBoard={(name, stgyCode, groups, gridSettings, objects) => {
-								if (currentBoardId) {
-									const storedGroups = convertGroupsToIndexBased(
-										groups,
-										objects,
-									);
-									void updateBoard(currentBoardId, {
-										name,
-										stgyCode,
-										groups: storedGroups,
-										gridSettings,
-									});
-								}
-							}}
-							onCreateBoardFromImport={async (name, stgyCode) => {
-								// stgyCodeをデコードしてボードデータを取得
-								const decodedBoard = decodeBoardFromStgy(stgyCode);
-								if (!decodedBoard) {
-									console.warn("Failed to decode imported board");
-									return;
-								}
-
-								// 新しいボードをIndexedDBに保存
-								const newBoardId = await createBoard(
+		<>
+			<SettingsStoreProvider>
+				<TabStoreProvider initialBoardIds={pendingImportBoardIds}>
+					<PanelStoreProvider>
+						<EditorStoreProvider
+							key={editorKey}
+							initialBoard={initialBoard}
+							initialGroups={initialGroups}
+							initialGridSettings={initialGridSettings}
+							boardId={currentBoardId}
+						>
+							<EditorWithTabs
+								boards={boards}
+								currentBoardId={currentBoardId}
+								shortLinksEnabled={featureFlags.shortLinksEnabled}
+								onSaveBoard={(
 									name,
 									stgyCode,
-									[],
-									DEFAULT_GRID_SETTINGS,
-								);
+									groups,
+									gridSettings,
+									objects,
+								) => {
+									if (currentBoardId) {
+										const storedGroups = convertGroupsToIndexBased(
+											groups,
+											objects,
+										);
+										void updateBoard(currentBoardId, {
+											name,
+											stgyCode,
+											groups: storedGroups,
+											gridSettings,
+										});
+									}
+								}}
+								onCreateBoardFromImport={async (name, stgyCode) => {
+									// stgyCodeをデコードしてボードデータを取得
+									const decodedBoard = decodeBoardFromStgy(stgyCode);
+									if (!decodedBoard) {
+										console.warn("Failed to decode imported board");
+										return;
+									}
 
-								// 直接エディターを初期化（IndexedDBの反映を待たずに）
-								setCurrentBoardId(newBoardId);
-								setInitialBoard({ ...decodedBoard, name });
-								setInitialGroups([]);
-								setInitialGridSettings(DEFAULT_GRID_SETTINGS);
+									// 新しいボードをIndexedDBに保存
+									const newBoardId = await createBoard(
+										name,
+										stgyCode,
+										[],
+										DEFAULT_GRID_SETTINGS,
+									);
 
-								setEditorKey((prev) => prev + 1);
-							}}
-							onSelectBoard={handleOpenBoard}
-							onCreateNewBoard={handleCreateNewBoard}
-							onDuplicateBoard={(id) => {
-								const board = getBoard(id);
-								if (!board) return;
-								void createBoard(
-									`${board.name} (Copy)`,
-									board.stgyCode,
-									board.groups,
-									board.gridSettings,
-								);
-							}}
-						/>
-					</EditorStoreProvider>
-				</PanelStoreProvider>
-			</TabStoreProvider>
-		</SettingsStoreProvider>
+									// 直接エディターを初期化（IndexedDBの反映を待たずに）
+									setCurrentBoardId(newBoardId);
+									setInitialBoard({ ...decodedBoard, name });
+									setInitialGroups([]);
+									setInitialGridSettings(DEFAULT_GRID_SETTINGS);
+
+									setEditorKey((prev) => prev + 1);
+								}}
+								onSelectBoard={handleOpenBoard}
+								onCreateNewBoard={handleCreateNewBoard}
+								onDuplicateBoard={(id) => {
+									const board = getBoard(id);
+									if (!board) return;
+									void createBoard(
+										`${board.name} (Copy)`,
+										board.stgyCode,
+										board.groups,
+										board.gridSettings,
+									);
+								}}
+							/>
+						</EditorStoreProvider>
+					</PanelStoreProvider>
+				</TabStoreProvider>
+			</SettingsStoreProvider>
+			{/* Import success toast */}
+			{importSuccess && (
+				<ImportSuccessToast
+					count={importSuccess.count}
+					folderName={importSuccess.folderName}
+					onDismiss={() => setImportSuccess(null)}
+				/>
+			)}
+		</>
 	);
 }
 

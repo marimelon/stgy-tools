@@ -11,15 +11,28 @@ export const TabStoreContext = createContext<TabStore | null>(null);
 
 interface TabStoreProviderProps {
 	children: ReactNode;
+	/** If provided, ignore persisted state and initialize with these board IDs */
+	initialBoardIds?: string[] | null;
 }
 
 /**
  * Tab store provider
  * Initializes store and handles persistence
  */
-export function TabStoreProvider({ children }: TabStoreProviderProps) {
-	// Create store with persisted state
+export function TabStoreProvider({
+	children,
+	initialBoardIds,
+}: TabStoreProviderProps) {
+	// Create store with persisted state or initial board IDs
+	// biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only run on mount
 	const store = useMemo(() => {
+		// If initialBoardIds provided, use them instead of persisted state
+		if (initialBoardIds && initialBoardIds.length > 0) {
+			return createTabStore({
+				openTabs: initialBoardIds,
+				activeTabId: initialBoardIds[0],
+			});
+		}
 		const persisted = loadTabState();
 		return createTabStore(persisted ?? undefined);
 	}, []);

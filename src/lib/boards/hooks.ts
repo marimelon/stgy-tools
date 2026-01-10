@@ -145,6 +145,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 			stgyCode: string,
 			groups: StoredObjectGroup[] = [],
 			gridSettings: GridSettings = DEFAULT_GRID_SETTINGS,
+			folderId: string | null = null,
 		): Promise<string> => {
 			const id = crypto.randomUUID();
 			const now = new Date().toISOString();
@@ -156,6 +157,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				// encodeKey は保存しない（CRC32から決定的に計算されるため不要）
 				groups,
 				gridSettings,
+				folderId,
 				createdAt: now,
 				updatedAt: now,
 				contentHash: contentHash ?? undefined,

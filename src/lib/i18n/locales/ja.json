@@ -123,7 +123,8 @@
 			"parseError": "{{count}}件のコードが解析できませんでした",
 			"share": "共有",
 			"noData": "データなし"
-		}
+		},
+		"importComplete": "「{{folder}}」に{{count}}件のボードをインポートしました"
 	},
 	"batchProperty": {
 		"title": "一括編集",
