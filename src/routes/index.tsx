@@ -652,7 +652,7 @@ function ViewerContent({
 										className="flex items-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 										onClick={handleGenerateShortLink}
 										disabled={isGeneratingShortLink}
-										title={t("viewer.shortLink.generate")}
+										title={t("viewer.multiBoard.share")}
 									>
 										{isGeneratingShortLink ? (
 											<Loader2 className="w-4 h-4 animate-spin" />
@@ -664,7 +664,7 @@ function ViewerContent({
 										<span className="hidden sm:inline">
 											{copiedShortLink
 												? t("viewer.shortLink.copied")
-												: t("viewer.shortLink.generate")}
+												: t("viewer.multiBoard.share")}
 										</span>
 									</button>
 								)}
