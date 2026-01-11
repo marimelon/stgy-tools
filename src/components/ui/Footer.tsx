@@ -55,7 +55,7 @@ export function Footer({ className = "" }: { className?: string }) {
 							onClick={() => setExpanded(true)}
 							className="hover:text-muted-foreground transition-colors"
 						>
-							© SQUARE ENIX · STGY Tools is unofficial
+							Data: © SQUARE ENIX | STGY Tools is unofficial
 						</button>
 						<span className="text-muted-foreground/30">|</span>
 						<a
@@ -92,7 +92,7 @@ export function CompactFooter({ className = "" }: { className?: string }) {
 				className,
 			)}
 		>
-			<p>© SQUARE ENIX · STGY Tools is unofficial</p>
+			<p>Data: © SQUARE ENIX | STGY Tools is unofficial</p>
 		</footer>
 	);
 }
