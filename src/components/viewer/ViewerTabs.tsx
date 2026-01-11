@@ -7,6 +7,7 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
+import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
 import {
 	horizontalListSortingStrategy,
 	SortableContext,
@@ -141,6 +142,7 @@ export function ViewerTabs({
 		<DndContext
 			sensors={sensors}
 			collisionDetection={closestCenter}
+			modifiers={[restrictToHorizontalAxis]}
 			onDragEnd={handleDragEnd}
 		>
 			<SortableContext
