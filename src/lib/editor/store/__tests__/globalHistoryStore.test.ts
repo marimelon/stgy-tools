@@ -11,7 +11,7 @@ import {
 	saveHistory,
 } from "../globalHistoryStore";
 
-/** テスト用の履歴エントリを作成 */
+/** Create mock history entry for testing */
 function createMockHistoryEntry(id: string): HistoryEntry {
 	return {
 		id,
@@ -28,14 +28,14 @@ function createMockHistoryEntry(id: string): HistoryEntry {
 
 describe("globalHistoryStore", () => {
 	beforeEach(() => {
-		// ストアをリセット
+		// Reset store
 		globalHistoryStore.setState(() => ({
 			histories: new Map(),
 		}));
 	});
 
 	afterEach(() => {
-		// クリーンアップ
+		// Cleanup
 		globalHistoryStore.setState(() => ({
 			histories: new Map(),
 		}));
@@ -103,7 +103,7 @@ describe("globalHistoryStore", () => {
 
 			const stored = getHistory("board-1");
 			expect(stored?.history).toHaveLength(50);
-			// インデックスも調整される: 55 - (60 - 50) = 45
+			// Index is also adjusted: 55 - (60 - 50) = 45
 			expect(stored?.historyIndex).toBe(45);
 		});
 
@@ -112,12 +112,12 @@ describe("globalHistoryStore", () => {
 				createMockHistoryEntry(`${i}`),
 			);
 
-			// インデックス5は削除される範囲（0-9が削除）
+			// Index 5 is in the range to be deleted (0-9 are deleted)
 			saveHistory("board-1", history, 5);
 
 			const stored = getHistory("board-1");
 			expect(stored?.history).toHaveLength(50);
-			// 5 - 10 = -5 → max(0, -5) = 0
+			// 5 - 10 = -5 -> max(0, -5) = 0
 			expect(stored?.historyIndex).toBe(0);
 		});
 
@@ -166,12 +166,12 @@ describe("globalHistoryStore", () => {
 			saveHistory("board-b", [createMockHistoryEntry("b1")], 0);
 			saveHistory(null, [createMockHistoryEntry("null1")], 0);
 
-			// 各ボードの履歴が独立していることを確認
+			// Verify histories are independent
 			expect(getHistory("board-a")?.history[0].id).toBe("a1");
 			expect(getHistory("board-b")?.history[0].id).toBe("b1");
 			expect(getHistory(null)?.history[0].id).toBe("null1");
 
-			// 一方を更新しても他方に影響しない
+			// Updating one doesn't affect others
 			saveHistory("board-a", [createMockHistoryEntry("a2")], 0);
 			expect(getHistory("board-a")?.history[0].id).toBe("a2");
 			expect(getHistory("board-b")?.history[0].id).toBe("b1");

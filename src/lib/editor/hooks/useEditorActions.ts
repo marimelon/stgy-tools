@@ -1,7 +1,7 @@
 /**
- * エディターアクションフック
+ * Editor actions hook
  *
- * TanStack Store ベースのアクション作成
+ * TanStack Store based action creation
  */
 
 import { useMemo } from "react";
@@ -14,34 +14,25 @@ import {
 import { getEditorStore } from "../store/editorStore";
 import type { AlignmentType, BatchUpdatePayload } from "../types";
 
-/** エディターアクションの型（API互換性のため拡張） */
 export interface EditorActions extends BaseEditorActions {
-	/** オブジェクトを追加（objectIdとpositionから） */
 	addObjectById: (objectId: number, position?: Position) => void;
-	/** 選択中オブジェクトを一括更新 */
 	updateSelectedObjectsBatch: (updates: BatchUpdatePayload) => void;
-	/** ボードメタデータを更新（BackgroundId型） */
 	updateBoardMetaTyped: (updates: {
 		name?: string;
 		backgroundId?: BackgroundId;
 	}) => void;
-	/** 選択中オブジェクトを整列 */
 	alignSelected: (alignment: AlignmentType) => void;
-	/** 選択中オブジェクトを削除 */
 	deleteSelected: () => void;
-	/** 選択中オブジェクトを複製 */
 	duplicateSelected: () => void;
-	/** 選択中オブジェクトをコピー */
 	copySelected: () => void;
-	/** 選択中オブジェクトをグループ化 */
 	groupSelected: () => void;
 }
 
 /**
- * エディターアクションを取得するフック
+ * Get editor actions hook
  *
- * TanStack Store の setState を使用して状態を更新
- * アクションは安定した参照を持つため、再レンダリングの原因にならない
+ * Uses TanStack Store's setState to update state.
+ * Actions have stable references, so they don't cause re-renders.
  */
 export function useEditorActions(): EditorActions {
 	const store = getEditorStore();
@@ -49,7 +40,6 @@ export function useEditorActions(): EditorActions {
 	return useMemo(() => {
 		const baseActions = createAllActions(store);
 
-		// API互換性のための拡張アクション
 		const addObjectById = (objectId: number, position?: Position) => {
 			const object = createDefaultObject(objectId, position);
 			baseActions.addObject(object);
@@ -110,6 +100,5 @@ export function useEditorActions(): EditorActions {
 	}, [store]);
 }
 
-// 後方互換性のための型エクスポート（非推奨）
-/** @deprecated EditorActionsを使用してください */
+/** @deprecated Use EditorActions instead */
 export type UseEditorActionsReturn = EditorActions;

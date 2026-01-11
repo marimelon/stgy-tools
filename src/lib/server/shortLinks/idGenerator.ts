@@ -1,20 +1,18 @@
 /**
- * 短縮ID生成ロジック
+ * Short ID generation logic
  *
- * stgyコードからハッシュベースでIDを生成。
- * 同一stgyコードは同一IDを返す（決定論的）。
- * 衝突時はattemptを増やして再生成。
+ * Generates hash-based ID from stgy code.
+ * Same stgy code returns same ID (deterministic).
+ * On collision, increment attempt and regenerate.
  */
 
 const ID_LENGTH = 7;
 
-/** Base62文字セット（URL-safe） */
 const BASE62_CHARS =
 	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /**
- * Node.js の crypto モジュールを取得
- * Web Crypto API が使えない環境用
+ * Fallback for environments without Web Crypto API
  */
 async function getNodeCrypto(): Promise<typeof import("node:crypto") | null> {
 	try {
@@ -25,20 +23,18 @@ async function getNodeCrypto(): Promise<typeof import("node:crypto") | null> {
 }
 
 /**
- * 文字列をSHA-256でハッシュ化
- * Web Crypto API を使用（Workers/Node.js両対応）
+ * SHA-256 hash using Web Crypto API (supports both Workers and Node.js)
  */
 async function sha256(input: string): Promise<Uint8Array> {
 	const encoder = new TextEncoder();
 	const data = encoder.encode(input);
 
-	// Web Crypto API が利用可能な場合
 	if (crypto?.subtle) {
 		const hashBuffer = await crypto.subtle.digest("SHA-256", data);
 		return new Uint8Array(hashBuffer);
 	}
 
-	// Node.js の crypto モジュールを使用
+	// Fallback to Node.js crypto module
 	const nodeCrypto = await getNodeCrypto();
 	if (nodeCrypto) {
 		const hash = nodeCrypto.createHash("sha256");
@@ -49,13 +45,9 @@ async function sha256(input: string): Promise<Uint8Array> {
 	throw new Error("No crypto implementation available");
 }
 
-/**
- * バイト配列をBase62文字列に変換
- */
 function bytesToBase62(bytes: Uint8Array, length: number): string {
 	let result = "";
 	for (let i = 0; i < length; i++) {
-		// 各バイトをBase62の1文字にマッピング
 		const byte = bytes[i % bytes.length];
 		result += BASE62_CHARS[byte % 62];
 	}
@@ -63,41 +55,30 @@ function bytesToBase62(bytes: Uint8Array, length: number): string {
 }
 
 /**
- * stgyコードから短縮IDを生成
+ * Generate short ID from stgy code
  *
- * @param stgy stgyコード
- * @param attempt 衝突時のリトライ回数（0から開始）
- * @returns 6文字の短縮ID
- *
- * 同一stgyコードと同一attemptなら、常に同じIDを返す（決定論的）
+ * Same stgy code and attempt always returns the same ID (deterministic)
  */
 export async function generateShortId(
 	stgy: string,
 	attempt: number = 0,
 ): Promise<string> {
-	// attemptが0以外の場合はソルトを追加
+	// Add salt when attempt > 0
 	const input = attempt === 0 ? stgy : `${stgy}::${attempt}`;
 	const hash = await sha256(input);
 	return bytesToBase62(hash, ID_LENGTH);
 }
 
-/**
- * 短縮IDの形式が有効かチェック
- */
 export function isValidShortId(id: string): boolean {
 	if (id.length !== ID_LENGTH) return false;
 	return /^[0-9A-Za-z]+$/.test(id);
 }
 
-/**
- * stgyコードの形式が有効かチェック（簡易バリデーション）
- */
 export function isValidStgyCode(stgy: string): boolean {
-	// [stgy: で始まり ] で終わる
+	// Must start with [stgy: and end with ]
 	if (!stgy.startsWith("[stgy:") || !stgy.endsWith("]")) {
 		return false;
 	}
-	// 最低限の長さ
 	if (stgy.length < 10) {
 		return false;
 	}

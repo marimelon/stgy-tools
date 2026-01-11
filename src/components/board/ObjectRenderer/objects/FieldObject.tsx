@@ -15,7 +15,7 @@ export function FieldObject({
 }) {
 	const id = useId();
 
-	// オリジナル画像が有効な場合は画像を使用（色が変更されている場合はSVGを使用）
+	// Use original image if enabled (use SVG if color is modified)
 	const originalIcon = renderOriginalIconIfEnabled(objectId, transform, color);
 	if (originalIcon) return originalIcon;
 	const fill = colorToRgba(color);
@@ -23,15 +23,14 @@ export function FieldObject({
 		? SIZES.FIELD_LARGE
 		: SIZES.FIELD;
 
-	// チェッカーパターンのタイルサイズ（参照画像に合わせて調整）
+	// Checker pattern tile size (adjusted to match reference image)
 	const tileSize = LARGE_FIELD_IDS.includes(objectId) ? 16 : 4;
 
-	// パターンID
 	const checkerPatternId = `checker-${id}`;
 	const marblePatternId = `marble-${id}`;
 	const borderGradientId = `border-${id}`;
 
-	// チェック柄（CircleCheck, SquareCheck）
+	// Checker pattern (CircleCheck, SquareCheck)
 	if (
 		objectId === ObjectIds.CircleCheck ||
 		objectId === ObjectIds.SquareCheck
@@ -40,7 +39,6 @@ export function FieldObject({
 		return (
 			<g transform={transform}>
 				<defs>
-					{/* チェッカーパターン定義 */}
 					<pattern
 						id={checkerPatternId}
 						width={tileSize * 2}
@@ -58,7 +56,6 @@ export function FieldObject({
 							fill="#707070"
 						/>
 					</pattern>
-					{/* 縁のグラデーション */}
 					<linearGradient
 						id={borderGradientId}
 						x1="0%"
@@ -112,7 +109,7 @@ export function FieldObject({
 		);
 	}
 
-	// グレー無地（CircleGraySolid, SquareGraySolid）
+	// Gray solid (CircleGraySolid, SquareGraySolid)
 	if (
 		objectId === ObjectIds.CircleGraySolid ||
 		objectId === ObjectIds.SquareGraySolid
@@ -121,13 +118,11 @@ export function FieldObject({
 		return (
 			<g transform={transform}>
 				<defs>
-					{/* 大理石風グラデーション */}
 					<radialGradient id={marblePatternId} cx="50%" cy="50%" r="70%">
 						<stop offset="0%" stopColor="#d8d8d8" />
 						<stop offset="50%" stopColor="#b8b8b8" />
 						<stop offset="100%" stopColor="#989898" />
 					</radialGradient>
-					{/* 縁のグラデーション */}
 					<linearGradient
 						id={borderGradientId}
 						x1="0%"
@@ -181,7 +176,7 @@ export function FieldObject({
 		);
 	}
 
-	// 白タイル（CircleWhiteTile, SquareWhiteTile）
+	// White tile (CircleWhiteTile, SquareWhiteTile)
 	if (
 		objectId === ObjectIds.CircleWhiteTile ||
 		objectId === ObjectIds.SquareWhiteTile
@@ -190,7 +185,6 @@ export function FieldObject({
 		return (
 			<g transform={transform}>
 				<defs>
-					{/* 白タイルチェッカーパターン */}
 					<pattern
 						id={checkerPatternId}
 						width={tileSize * 2}
@@ -208,7 +202,6 @@ export function FieldObject({
 							fill="#c8c8c8"
 						/>
 					</pattern>
-					{/* 縁のグラデーション */}
 					<linearGradient
 						id={borderGradientId}
 						x1="0%"
@@ -262,7 +255,7 @@ export function FieldObject({
 		);
 	}
 
-	// 白無地（CircleWhiteSolid, SquareWhiteSolid）
+	// White solid (CircleWhiteSolid, SquareWhiteSolid)
 	if (
 		objectId === ObjectIds.CircleWhiteSolid ||
 		objectId === ObjectIds.SquareWhiteSolid
@@ -271,13 +264,11 @@ export function FieldObject({
 		return (
 			<g transform={transform}>
 				<defs>
-					{/* 白大理石風グラデーション */}
 					<radialGradient id={marblePatternId} cx="50%" cy="50%" r="70%">
 						<stop offset="0%" stopColor="#f0f0f0" />
 						<stop offset="50%" stopColor="#e0e0e0" />
 						<stop offset="100%" stopColor="#d0d0d0" />
 					</radialGradient>
-					{/* 縁のグラデーション */}
 					<linearGradient
 						id={borderGradientId}
 						x1="0%"
@@ -331,7 +322,7 @@ export function FieldObject({
 		);
 	}
 
-	// 円形グレー（CircleGray）- 大きめ、縁ありグレー
+	// Circle gray (CircleGray) - larger, with gray border
 	if (objectId === ObjectIds.CircleGray) {
 		return (
 			<g transform={transform}>
@@ -360,7 +351,7 @@ export function FieldObject({
 		);
 	}
 
-	// 正方形グレー（SquareGray）- 大きめ、縁ありグレー
+	// Square gray (SquareGray) - larger, with gray border
 	if (objectId === ObjectIds.SquareGray) {
 		return (
 			<g transform={transform}>
@@ -390,7 +381,7 @@ export function FieldObject({
 		);
 	}
 
-	// フォールバック（カラー指定のシンプルな図形）
+	// Fallback (simple colored shape)
 	const isCircle = CIRCLE_FIELD_IDS.includes(objectId);
 	return (
 		<g transform={transform}>

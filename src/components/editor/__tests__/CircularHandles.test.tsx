@@ -1,7 +1,7 @@
 /**
- * CircularHandles コンポーネントのテスト
+ * CircularHandles component tests
  *
- * ハンドル操作時のclickイベント伝播を検証
+ * Verifies click event propagation prevention during handle interactions
  */
 
 import { fireEvent, render } from "@testing-library/react";
@@ -12,8 +12,8 @@ describe("CircularHandles", () => {
 	const mockCenter = { x: 256, y: 192 };
 	const mockRadius = 100;
 
-	describe("clickイベント伝播の防止", () => {
-		it("中心ハンドル（rect）をクリックしてもイベントが伝播しない", () => {
+	describe("click event propagation prevention", () => {
+		it("clicking center handle (rect) does not propagate event", () => {
 			const onCenterDrag = vi.fn();
 			const onCenterDragEnd = vi.fn();
 			const mockBackgroundClick = vi.fn();
@@ -31,18 +31,15 @@ describe("CircularHandles", () => {
 				</svg>,
 			);
 
-			// 中心ハンドル（rect）を取得
 			const centerHandle = container.querySelector("rect");
 			expect(centerHandle).toBeTruthy();
 
-			// クリックイベント
 			fireEvent.click(centerHandle!);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 
-		it("半径ハンドル（circle）をクリックしてもイベントが伝播しない", () => {
+		it("clicking radius handle (circle) does not propagate event", () => {
 			const onRadiusDrag = vi.fn();
 			const onRadiusDragEnd = vi.fn();
 			const mockBackgroundClick = vi.fn();
@@ -60,18 +57,15 @@ describe("CircularHandles", () => {
 				</svg>,
 			);
 
-			// 半径ハンドル（circle）を取得
 			const radiusHandle = container.querySelector("circle");
 			expect(radiusHandle).toBeTruthy();
 
-			// クリックイベント
 			fireEvent.click(radiusHandle!);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 
-		it("中心ハンドルのドラッグ後のクリックイベントも伝播しない", () => {
+		it("click event after dragging center handle does not propagate", () => {
 			const onCenterDrag = vi.fn();
 			const onCenterDragEnd = vi.fn();
 			const mockBackgroundClick = vi.fn();
@@ -91,16 +85,14 @@ describe("CircularHandles", () => {
 
 			const centerHandle = container.querySelector("rect")!;
 
-			// ドラッグシーケンス（PointerDown → PointerUp → Click）
 			fireEvent.pointerDown(centerHandle);
 			fireEvent.pointerUp(centerHandle);
 			fireEvent.click(centerHandle);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 
-		it("半径ハンドルのドラッグ後のクリックイベントも伝播しない", () => {
+		it("click event after dragging radius handle does not propagate", () => {
 			const onRadiusDrag = vi.fn();
 			const onRadiusDragEnd = vi.fn();
 			const mockBackgroundClick = vi.fn();
@@ -120,18 +112,16 @@ describe("CircularHandles", () => {
 
 			const radiusHandle = container.querySelector("circle")!;
 
-			// ドラッグシーケンス（PointerDown → PointerUp → Click）
 			fireEvent.pointerDown(radiusHandle);
 			fireEvent.pointerUp(radiusHandle);
 			fireEvent.click(radiusHandle);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 	});
 
-	describe("コールバックの動作", () => {
-		it("中心ハンドルのPointerDown/Upで正しくコールバックが呼ばれる", () => {
+	describe("callback behavior", () => {
+		it("callbacks are called correctly on center handle PointerDown/Up", () => {
 			const onCenterDragEnd = vi.fn();
 
 			const { container } = render(
@@ -154,7 +144,7 @@ describe("CircularHandles", () => {
 			expect(onCenterDragEnd).toHaveBeenCalledTimes(1);
 		});
 
-		it("半径ハンドルのPointerDown/Upで正しくコールバックが呼ばれる", () => {
+		it("callbacks are called correctly on radius handle PointerDown/Up", () => {
 			const onRadiusDragEnd = vi.fn();
 
 			const { container } = render(
@@ -178,8 +168,8 @@ describe("CircularHandles", () => {
 		});
 	});
 
-	describe("レンダリング", () => {
-		it("中心ハンドル（rect）が正しくレンダリングされる", () => {
+	describe("rendering", () => {
+		it("center handle (rect) renders correctly", () => {
 			const { container } = render(
 				<svg>
 					<CircularHandles
@@ -198,7 +188,7 @@ describe("CircularHandles", () => {
 			expect(centerHandle?.getAttribute("width")).toBe("10"); // HANDLE_SIZE
 		});
 
-		it("半径ハンドル（circle）が正しくレンダリングされる", () => {
+		it("radius handle (circle) renders correctly", () => {
 			const { container } = render(
 				<svg>
 					<CircularHandles
@@ -217,7 +207,7 @@ describe("CircularHandles", () => {
 			expect(radiusHandle?.getAttribute("r")).toBe("5"); // HANDLE_SIZE / 2
 		});
 
-		it("接続線が正しくレンダリングされる", () => {
+		it("connection line renders correctly", () => {
 			const { container } = render(
 				<svg>
 					<CircularHandles

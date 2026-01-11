@@ -1,7 +1,5 @@
 /**
- * ツールバーボタンコンポーネント
- *
- * shadcn/ui Button をベースにしたツールバー専用ボタン
+ * Toolbar button component based on shadcn/ui Button
  */
 
 import type { ReactNode } from "react";
@@ -15,27 +13,15 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-/**
- * ツールバーボタンのProps
- */
 export interface ToolbarButtonProps {
-	/** ボタンの内容 */
 	children: ReactNode;
-	/** クリック時のコールバック */
 	onClick?: () => void;
-	/** 無効状態 */
 	disabled?: boolean;
-	/** ツールチップ */
 	title?: string;
-	/** 追加のCSSクラス */
 	className?: string;
-	/** アクティブ状態 */
 	active?: boolean;
 }
 
-/**
- * ツールバーボタン
- */
 export function ToolbarButton({
 	children,
 	onClick,
@@ -76,9 +62,6 @@ export function ToolbarButton({
 	return button;
 }
 
-/**
- * 区切り線
- */
 export function Divider() {
 	return <Separator orientation="vertical" className="h-6 mx-1" />;
 }

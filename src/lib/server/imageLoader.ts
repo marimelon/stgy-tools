@@ -1,36 +1,24 @@
 /**
- * サーバーサイドで画像をBase64データURIとして取得
- * Cloudflare Workers と Node.js の両方に対応
+ * Server-side image loading as Base64 data URIs
+ * Supports both Cloudflare Workers and Node.js
  */
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { getGlobalEnv } from "./cloudflareContext";
 import { isCloudflareWorkers } from "./runtime";
 
-// Cloudflare Workers の ASSETS binding の型定義
 export interface AssetsBinding {
 	fetch(request: Request | string): Promise<Response>;
 }
 
-// 画像キャッシュ（メモリ効率のため）
 const imageCache = new Map<number, string>();
-
-// 背景画像キャッシュ
 const backgroundCache = new Map<number, string>();
-
-// フォントキャッシュ
 let fontCache: Uint8Array | null = null;
 
-/**
- * 画像ファイルをBase64データURIとして取得（キャッシュから）
- */
 export function loadImageAsDataUri(objectId: number): string | null {
 	return imageCache.get(objectId) ?? null;
 }
 
-/**
- * 複数の画像を一括でプリロード
- */
 export async function preloadImagesAsync(
 	objectIds: number[],
 	_assets?: AssetsBinding | undefined,
@@ -46,8 +34,8 @@ export async function preloadImagesAsync(
 }
 
 /**
- * Cloudflare Workers 用: env.ASSETS.fetch() を使用
- * icons-hr/ を優先し、なければ icons/ にフォールバック
+ * Cloudflare Workers: uses env.ASSETS.fetch()
+ * Prefers icons-hr/, falls back to icons/
  */
 async function preloadImagesCloudflare(objectIds: number[]): Promise<void> {
 	const env = getGlobalEnv();
@@ -60,7 +48,7 @@ async function preloadImagesCloudflare(objectIds: number[]): Promise<void> {
 
 	const results = await Promise.all(
 		objectIds.map(async (objectId) => {
-			// HR版を優先、なければ通常版にフォールバック
+			// Prefer HR version, fallback to standard
 			const iconPaths = [
 				`/assets/icons-hr/${objectId}.png`,
 				`/assets/icons/${objectId}.png`,
@@ -76,7 +64,7 @@ async function preloadImagesCloudflare(objectIds: number[]): Promise<void> {
 						return { objectId, dataUri: `data:image/png;base64,${base64}` };
 					}
 				} catch {
-					// このパスでは見つからない、次を試す
+					// Not found at this path, try next
 				}
 			}
 			console.error(`[imageLoader] Icon ${objectId} not found`);
@@ -92,12 +80,12 @@ async function preloadImagesCloudflare(objectIds: number[]): Promise<void> {
 }
 
 /**
- * Node.js 用: fs を使用してファイルを読み込む
- * icons-hr/ を優先し、なければ icons/ にフォールバック
+ * Node.js: uses fs to read files
+ * Prefers icons-hr/, falls back to icons/
  */
 async function preloadImagesNode(objectIds: number[]): Promise<void> {
-	// Nitroビルド（.output/public）と開発環境（public）の両方に対応
-	// HR版を優先、なければ通常版にフォールバック
+	// Supports both Nitro build (.output/public) and dev environment (public)
+	// Prefers HR version, falls back to standard
 	const possibleDirs = [
 		join(process.cwd(), ".output", "public", "assets", "icons-hr"),
 		join(process.cwd(), "public", "assets", "icons-hr"),
@@ -114,7 +102,7 @@ async function preloadImagesNode(objectIds: number[]): Promise<void> {
 					const base64 = buffer.toString("base64");
 					return { objectId, dataUri: `data:image/png;base64,${base64}` };
 				} catch {
-					// このディレクトリでは見つからない、次を試す
+					// Not found in this directory, try next
 				}
 			}
 			console.error(
@@ -131,9 +119,6 @@ async function preloadImagesNode(objectIds: number[]): Promise<void> {
 	}
 }
 
-/**
- * ArrayBuffer を Base64 文字列に変換
- */
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
 	const bytes = new Uint8Array(buffer);
 	let binary = "";
@@ -143,17 +128,13 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 	return btoa(binary);
 }
 
-/**
- * 背景画像をBase64データURIとして取得
- */
 export async function loadBackgroundImage(
 	backgroundId: number,
 ): Promise<string | null> {
-	// 既にキャッシュにあれば返す
 	const cached = backgroundCache.get(backgroundId);
 	if (cached) return cached;
 
-	// 1-7 が有効範囲
+	// Valid range: 1-7
 	if (backgroundId < 1 || backgroundId > 7) {
 		return null;
 	}
@@ -165,8 +146,7 @@ export async function loadBackgroundImage(
 }
 
 /**
- * Cloudflare Workers 用: 背景画像読み込み
- * backgrounds-hr/ を優先し、なければ backgrounds/ にフォールバック
+ * Cloudflare Workers: prefers backgrounds-hr/, falls back to backgrounds/
  */
 async function loadBackgroundCloudflare(
 	backgroundId: number,
@@ -179,7 +159,7 @@ async function loadBackgroundCloudflare(
 		return null;
 	}
 
-	// HR版を優先、なければ通常版にフォールバック
+	// Prefer HR version, fallback to standard
 	const bgPaths = [
 		`/assets/backgrounds-hr/${backgroundId}.png`,
 		`/assets/backgrounds/${backgroundId}.png`,
@@ -197,7 +177,7 @@ async function loadBackgroundCloudflare(
 				return dataUri;
 			}
 		} catch {
-			// このパスでは見つからない、次を試す
+			// Not found at this path, try next
 		}
 	}
 
@@ -206,14 +186,13 @@ async function loadBackgroundCloudflare(
 }
 
 /**
- * Node.js 用: 背景画像読み込み
- * backgrounds-hr/ を優先し、なければ backgrounds/ にフォールバック
+ * Node.js: prefers backgrounds-hr/, falls back to backgrounds/
  */
 async function loadBackgroundNode(
 	backgroundId: number,
 ): Promise<string | null> {
-	// Nitroビルド（.output/public）と開発環境（public）の両方に対応
-	// HR版を優先、なければ通常版にフォールバック
+	// Supports both Nitro build (.output/public) and dev environment (public)
+	// Prefers HR version, falls back to standard
 	const possibleDirs = [
 		join(process.cwd(), ".output", "public", "assets", "backgrounds-hr"),
 		join(process.cwd(), "public", "assets", "backgrounds-hr"),
@@ -230,7 +209,7 @@ async function loadBackgroundNode(
 			backgroundCache.set(backgroundId, dataUri);
 			return dataUri;
 		} catch {
-			// このディレクトリでは見つからない、次を試す
+			// Not found in this directory, try next
 		}
 	}
 
@@ -240,9 +219,6 @@ async function loadBackgroundNode(
 	return null;
 }
 
-/**
- * フォントファイルを読み込む（キャッシュ付き）
- */
 export async function loadFont(): Promise<Uint8Array | null> {
 	if (fontCache) {
 		return fontCache;
@@ -255,8 +231,7 @@ export async function loadFont(): Promise<Uint8Array | null> {
 }
 
 /**
- * Cloudflare Workers 用: env.ASSETS.fetch() を使用
- * サブセット化されたフォント（190KB）を優先的に使用
+ * Cloudflare Workers: prefers subset font (190KB)
  */
 async function loadFontCloudflare(): Promise<Uint8Array | null> {
 	const env = getGlobalEnv();
@@ -266,7 +241,7 @@ async function loadFontCloudflare(): Promise<Uint8Array | null> {
 		return null;
 	}
 
-	// サブセット版を優先、なければフル版にフォールバック
+	// Prefer subset font, fallback to full font
 	const fontPaths = [
 		"/fonts/NotoSansJP-Subset.ttf",
 		"/fonts/NotoSansJP-Regular.ttf",
@@ -283,7 +258,7 @@ async function loadFontCloudflare(): Promise<Uint8Array | null> {
 				return fontCache;
 			}
 		} catch {
-			// このベースURLでは見つからない、次を試す
+			// Not found at this base URL, try next
 		}
 	}
 
@@ -291,11 +266,10 @@ async function loadFontCloudflare(): Promise<Uint8Array | null> {
 }
 
 /**
- * Node.js 用: fs を使用してフォントを読み込む
- * サブセット化されたフォント（190KB）を優先的に使用
+ * Node.js: prefers subset font (190KB)
  */
 async function loadFontNode(): Promise<Uint8Array | null> {
-	// サブセット版を優先、なければフル版にフォールバック
+	// Prefer subset font, fallback to full font
 	const fontFiles = ["NotoSansJP-Subset.ttf", "NotoSansJP-Regular.ttf"];
 	const baseDirs = [
 		join(process.cwd(), ".output", "public", "fonts"),
@@ -310,7 +284,7 @@ async function loadFontNode(): Promise<Uint8Array | null> {
 				fontCache = new Uint8Array(buffer);
 				return fontCache;
 			} catch {
-				// このパスでは見つからない、次を試す
+				// Not found at this path, try next
 			}
 		}
 	}

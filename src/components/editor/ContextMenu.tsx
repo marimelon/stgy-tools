@@ -1,5 +1,5 @@
 /**
- * 右クリックコンテキストメニューコンポーネント
+ * Right-click context menu component
  */
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -14,19 +14,12 @@ export interface ContextMenuState {
 }
 
 interface ContextMenuProps {
-	/** メニュー状態 */
 	menuState: ContextMenuState;
-	/** メニューを閉じるコールバック */
 	onClose: () => void;
-	/** 選択中のID */
 	selectedIds: string[];
-	/** クリップボードにデータがあるか */
 	hasClipboard: boolean;
-	/** グループ化可能か */
 	canGroup: boolean;
-	/** 選択中のグループ */
 	selectedGroup: { id: string } | undefined;
-	/** アクション */
 	actions: {
 		copy: () => void;
 		paste: () => void;
@@ -56,9 +49,6 @@ function isDivider(item: MenuItemOrDivider): item is MenuDivider {
 	return "type" in item && item.type === "divider";
 }
 
-/**
- * コンテキストメニュー
- */
 export function ContextMenu({
 	menuState,
 	onClose,
@@ -76,7 +66,6 @@ export function ContextMenu({
 	const hasSelection = selectedIds.length > 0;
 	const singleSelection = selectedIds.length === 1;
 
-	// メニュー位置を計算
 	useLayoutEffect(() => {
 		if (menuState.isOpen && menuRef.current) {
 			const menuRect = menuRef.current.getBoundingClientRect();
@@ -86,22 +75,18 @@ export function ContextMenu({
 			let x = menuState.x;
 			let y = menuState.y;
 
-			// 右端を超える場合は左に調整
 			if (x + menuRect.width > viewportWidth - 8) {
 				x = viewportWidth - menuRect.width - 8;
 			}
 
-			// 下端を超える場合は上に調整
 			if (y + menuRect.height > viewportHeight - 8) {
 				y = viewportHeight - menuRect.height - 8;
 			}
 
-			// 左端を超えないように
 			if (x < 8) {
 				x = 8;
 			}
 
-			// 上端を超えないように
 			if (y < 8) {
 				y = 8;
 			}
@@ -111,14 +96,12 @@ export function ContextMenu({
 		}
 	}, [menuState.isOpen, menuState.x, menuState.y]);
 
-	// 閉じた時にリセット
 	useEffect(() => {
 		if (!menuState.isOpen) {
 			setIsPositioned(false);
 		}
 	}, [menuState.isOpen]);
 
-	// クリック外で閉じる
 	useEffect(() => {
 		if (!menuState.isOpen) return;
 
@@ -128,9 +111,9 @@ export function ContextMenu({
 			}
 		};
 
-		// 次のフレームでリスナーを追加（右クリックイベント自体で閉じないように）
+		// Add listener on next frame to avoid closing on the triggering right-click
 		const rafId = requestAnimationFrame(() => {
-			// キャプチャフェーズでリッスン（stopPropagationの影響を受けない）
+			// Listen on capture phase to detect events before stopPropagation
 			document.addEventListener("pointerdown", handleClickOutside, true);
 		});
 
@@ -140,7 +123,6 @@ export function ContextMenu({
 		};
 	}, [menuState.isOpen, onClose]);
 
-	// Escapeキーで閉じる
 	useEffect(() => {
 		if (!menuState.isOpen) return;
 
@@ -163,7 +145,6 @@ export function ContextMenu({
 		navigator.platform.toUpperCase().indexOf("MAC") >= 0;
 	const modKey = isMac ? "⌘" : "Ctrl+";
 
-	// メニュー項目を構築
 	const menuItems: MenuItemOrDivider[] = [
 		{
 			label: t("contextMenu.copy"),
@@ -280,7 +261,7 @@ export function ContextMenu({
 				if (isDivider(item)) {
 					return (
 						<div
-							// biome-ignore lint/suspicious/noArrayIndexKey: dividerは固定順序で識別子を持たないためindexを使用
+							// biome-ignore lint/suspicious/noArrayIndexKey: dividers have fixed order and no identifier
 							key={`divider-${index}`}
 							className="border-t border-slate-600 my-1"
 						/>

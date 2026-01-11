@@ -1,8 +1,8 @@
 /**
- * 短縮リンク用サーバー関数
+ * Short link server functions
  *
- * createServerFn を使用してサーバーのみで実行される関数を定義
- * loaderからも安全に呼び出し可能
+ * Defines server-only functions using createServerFn.
+ * Safe to call from loaders.
  */
 
 import { createServerFn } from "@tanstack/react-start";
@@ -14,9 +14,6 @@ import {
 } from "./index";
 import type { CreateShortLinkResponse, ShortLinkData } from "./types";
 
-/**
- * 短縮IDからstgyコードを解決するサーバー関数
- */
 export const resolveShortIdFn = createServerFn({ method: "GET" })
 	.inputValidator((data: { shortId: string }) => data)
 	.handler(async ({ data }): Promise<ShortLinkData | null> => {
@@ -27,9 +24,6 @@ export type CreateShortLinkResult =
 	| { success: true; data: CreateShortLinkResponse }
 	| { success: false; error: string; code: string };
 
-/**
- * 短縮リンクを作成するサーバー関数
- */
 export const createShortLinkFn = createServerFn({ method: "POST" })
 	.inputValidator((data: { stgy: string; baseUrl: string }) => data)
 	.handler(async ({ data }): Promise<CreateShortLinkResult> => {

@@ -10,7 +10,6 @@ import {
 } from "@/lib/stgy";
 import type { AssetBounds } from "./schema";
 
-/** オブジェクトのバウンディングボックス計算に必要な最小のプロパティ */
 type BoundsCalculationObject = Pick<BoardObject, "position" | "size">;
 
 /**

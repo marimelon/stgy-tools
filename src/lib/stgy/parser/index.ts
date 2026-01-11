@@ -1,5 +1,5 @@
 /**
- * パーサーモジュールのエクスポート
+ * Parser module exports
  */
 
 export { BinaryReader } from "./BinaryReader";

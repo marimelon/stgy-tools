@@ -1,7 +1,3 @@
-/**
- * 視線攻撃アイコン
- */
-
 import { useId } from "react";
 import type { IconProps } from "../types";
 
@@ -17,7 +13,6 @@ export function GazeIcon({ transform }: IconProps) {
 	const rayLength = 20;
 	const rayInnerRadius = 22;
 
-	// 放射状の光線を生成
 	const rays = [];
 	for (let i = 0; i < rayCount; i++) {
 		const angle = (i * 360) / rayCount - 90;

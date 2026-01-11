@@ -1,5 +1,5 @@
 /**
- * バイナリデータ読み取りユーティリティ
+ * Binary data reading utility
  */
 
 export class BinaryReader {
@@ -26,19 +26,19 @@ export class BinaryReader {
 	}
 
 	readUint16(): number {
-		const value = this.view.getUint16(this.offset, true); // Little Endian
+		const value = this.view.getUint16(this.offset, true);
 		this.offset += 2;
 		return value;
 	}
 
 	readInt16(): number {
-		const value = this.view.getInt16(this.offset, true); // Little Endian
+		const value = this.view.getInt16(this.offset, true);
 		this.offset += 2;
 		return value;
 	}
 
 	readUint32(): number {
-		const value = this.view.getUint32(this.offset, true); // Little Endian
+		const value = this.view.getUint32(this.offset, true);
 		this.offset += 4;
 		return value;
 	}
@@ -55,7 +55,6 @@ export class BinaryReader {
 
 	readString(length: number): string {
 		const bytes = this.readBytes(length);
-		// null終端を除去
 		let end = bytes.indexOf(0);
 		if (end === -1) end = bytes.length;
 		const decoder = new TextDecoder("utf-8");

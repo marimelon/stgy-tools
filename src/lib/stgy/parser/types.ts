@@ -1,11 +1,11 @@
 /**
- * パース中間状態の型定義
+ * Parser intermediate state type definitions
  */
 
 import type { BackgroundId, Color, ObjectFlags, Position } from "../types";
 
 /**
- * パース中間状態
+ * Parser intermediate state
  */
 export interface ParseContext {
 	boardName: string;
@@ -21,12 +21,12 @@ export interface ParseContext {
 	param2s: number[];
 	param3s: number[];
 	sizePaddingByte: number | undefined;
-	/** セクションコンテンツ先頭の空フィールド数 (ラウンドトリップ用) */
+	/** Empty field count at section content start (for round-trip) */
 	emptyFieldCount: number;
 }
 
 /**
- * 初期状態のParseContextを生成
+ * Create initial ParseContext
  */
 export function createParseContext(): ParseContext {
 	return {

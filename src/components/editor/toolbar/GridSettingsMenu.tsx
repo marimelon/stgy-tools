@@ -1,7 +1,5 @@
 /**
- * グリッド設定メニューコンポーネント
- *
- * グリッドスナップと表示設定をドロップダウンで提供
+ * Grid settings menu component
  */
 
 import { Grid3x3 } from "lucide-react";
@@ -15,20 +13,13 @@ import {
 } from "@/lib/editor";
 import { DropdownDivider, DropdownMenu } from "./DropdownMenu";
 
-/** アイコンサイズ */
 const ICON_SIZE = 16;
 
 interface GridSettingsMenuProps {
-	/** 現在のグリッド設定 */
 	gridSettings: GridSettings;
-	/** グリッド設定変更コールバック */
 	onGridSettingsChange: (settings: Partial<GridSettings>) => void;
 }
 
-/**
- * グリッド設定メニュー
- */
-/** オーバーレイタイプの翻訳キー */
 const OVERLAY_TYPE_LABELS: Record<EditorOverlayType, string> = {
 	none: "toolbar.overlayNone",
 	concentric: "toolbar.overlayConcentric",
@@ -55,7 +46,6 @@ export function GridSettingsMenu({
 			title={t("toolbar.gridSettings")}
 		>
 			<div className="p-3 min-w-56">
-				{/* 背景表示 */}
 				<label className="flex items-center gap-2 cursor-pointer mb-3">
 					<input
 						type="checkbox"
@@ -72,7 +62,6 @@ export function GridSettingsMenu({
 
 				<DropdownDivider />
 
-				{/* 編集用オーバーレイ */}
 				<div className="mt-3 mb-3">
 					<label
 						htmlFor={overlayTypeId}
@@ -100,7 +89,6 @@ export function GridSettingsMenu({
 
 				<DropdownDivider />
 
-				{/* グリッドスナップ有効/無効 */}
 				<label className="flex items-center gap-2 cursor-pointer mt-3 mb-3">
 					<input
 						type="checkbox"
@@ -115,7 +103,6 @@ export function GridSettingsMenu({
 					</span>
 				</label>
 
-				{/* グリッドサイズ */}
 				<div className="mb-3">
 					<label
 						htmlFor={gridSizeId}
@@ -140,7 +127,6 @@ export function GridSettingsMenu({
 					</select>
 				</div>
 
-				{/* グリッド表示 */}
 				<label
 					className={`flex items-center gap-2 cursor-pointer ${
 						gridSettings.enabled ? "" : "opacity-50 cursor-not-allowed"

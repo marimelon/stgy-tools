@@ -56,7 +56,7 @@ import {
 export const Route = createFileRoute("/")({
 	component: App,
 	validateSearch: (search: Record<string, unknown>) => {
-		// stgy と s は単一または配列で複数指定可能
+		// stgy and s can be single values or arrays
 		const parseStringOrArray = (
 			value: unknown,
 		): string | string[] | undefined => {
@@ -82,7 +82,6 @@ export const Route = createFileRoute("/")({
 	loader: async ({ deps }) => {
 		const featureFlags = await getFeatureFlagsFn();
 
-		// 配列または単一値を配列に正規化
 		const normalizeToArray = (
 			value: string | string[] | undefined,
 		): string[] => {
@@ -93,7 +92,6 @@ export const Route = createFileRoute("/")({
 		const stgyCodes = normalizeToArray(deps.stgy);
 		const shortIds = normalizeToArray(deps.s);
 
-		// short IDsを解決
 		const resolvedFromShortIds = await Promise.all(
 			shortIds.map(async (shortId) => {
 				const result = await resolveShortIdFn({ data: { shortId } });
@@ -101,13 +99,12 @@ export const Route = createFileRoute("/")({
 			}),
 		);
 
-		// 全ての解決済みstgyコードを結合（stgy直接指定 + short ID解決）
+		// Combine all resolved stgy codes (direct stgy params + resolved short IDs)
 		const allStgyCodes = [
 			...stgyCodes,
 			...resolvedFromShortIds.filter((s): s is string => s !== null),
 		];
 
-		// 少なくとも1つのshort IDが解決できなかった場合
 		const hasUnresolvedShortId =
 			shortIds.length > 0 &&
 			resolvedFromShortIds.some((s) => s === null) &&
@@ -125,7 +122,7 @@ export const Route = createFileRoute("/")({
 	},
 	head: ({ match, loaderData }) => {
 		const { stgy, s, lang } = match.search;
-		// 配列の場合は最初の要素を使用（OGP用）
+		// Use the first element when array (for OGP)
 		const firstStgy = Array.isArray(stgy) ? stgy[0] : stgy;
 		const firstShortId = Array.isArray(s) ? s[0] : s;
 		const resolvedStgyCodes = loaderData?.resolvedStgyCodes ?? [];
@@ -133,18 +130,17 @@ export const Route = createFileRoute("/")({
 		const hasCode = Boolean(resolvedStgy);
 		const seo = getLocalizedSeo("home", lang);
 
-		// 動的OGイメージ: stgyコードがある場合は生成画像を使用
-		// 短縮IDがある場合はそれを使用（OGP用に短いURL）
+		// Dynamic OG image: use generated image when stgy code exists; prefer short ID for shorter URLs
 		const ogImage = hasCode
 			? firstShortId
 				? `${SITE_CONFIG.url}/image?s=${encodeURIComponent(firstShortId)}`
 				: `${SITE_CONFIG.url}/image?stgy=${encodeURIComponent(resolvedStgy as string)}`
 			: `${SITE_CONFIG.url}/favicon.svg`;
 
-		// Twitter Cardタイプ: 画像がある場合はsummary_large_image
+		// Twitter Card type: use summary_large_image when image exists
 		const twitterCard = hasCode ? "summary_large_image" : "summary";
 
-		// 言語に応じた動的OG説明文
+		// Dynamic OG description based on language
 		const boardCount = resolvedStgyCodes.length;
 		const ogDescription = hasCode
 			? seo.lang === "ja"
@@ -232,22 +228,17 @@ export const Route = createFileRoute("/")({
 const SAMPLE_STGY =
 	"[stgy:ag40qa9YRyTPXZgVoFg1PhfYFKZPnDzJzfLyt51cHDkEEDia+PwMEbq7od+fEJ186kZxqHZSMHPrEWXPrSypGr47NcAkRTNWvNc4OQ8QPYGychElb-BvEZo+Os2dqLJFN5bLGkAn9j6mR4eNSYvA+eu-Zar0FYE3f+Zwa8nty3QUC86FlycOdOJ8vxFWYJmHZ0tDKEDcrVmRZol1QuWNRmlqVyTQbcN-m6t1S4EohXk05l6LzIfdDuS4rKemSgCMDOWI0]";
 
-/** デバウンス遅延時間 (ms) */
+/** Debounce delay in ms */
 const DEBOUNCE_DELAY = 300;
 
-/**
- * App: ViewerStoreProviderでラップ
- */
 function App() {
 	const { mode } = Route.useSearch();
 	const { resolvedStgyCodes } = Route.useLoaderData();
 
-	// 初期ボードを生成
 	const initialBoards = useMemo(() => {
 		if (resolvedStgyCodes.length > 0) {
 			return parseMultipleStgyCodes(resolvedStgyCodes.join("\n"));
 		}
-		// 何も指定がない場合は空
 		return [];
 	}, [resolvedStgyCodes]);
 
@@ -265,16 +256,12 @@ function App() {
 	);
 }
 
-/**
- * ViewerContent: 実際のViewer UI
- */
 function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { featureFlags } = Route.useLoaderData();
 	const { shortIds } = Route.useLoaderData();
 
-	// Viewer状態
 	const boards = useViewerBoards();
 	const activeBoard = useViewerActiveBoard();
 	const boardCount = useViewerBoardCount();
@@ -283,22 +270,20 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		useViewerActiveSelection();
 	const actions = useViewerActions();
 
-	// ローカル状態
 	const [stgyInput, setStgyInput] = useState(() =>
 		boards.map((b) => b.stgyCode).join("\n"),
 	);
-	// URLに反映するかどうか（初期コードがある場合のみ反映）
+	// Whether to sync state to URL (only enabled when initial code exists)
 	const [shouldUpdateUrl, setShouldUpdateUrl] = useState(hasInitialCode);
 	const [isExpandModalOpen, setIsExpandModalOpen] = useState(false);
 	const stgyInputId = useId();
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	// 短縮IDで開いた場合は初回のみURLを更新
+	// Replace ?s=xxx with ?stgy=xxx on initial load when opened via short ID
 	const hasInitialized = useRef(false);
 	useEffect(() => {
 		if (!hasInitialized.current && shortIds && shortIds.length > 0) {
 			hasInitialized.current = true;
-			// URLを ?s=xxx から ?stgy=xxx に置き換え
 			const url = new URL(window.location.href);
 			url.searchParams.delete("s");
 			for (const board of boards) {
@@ -310,15 +295,13 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		}
 	}, [shortIds, boards]);
 
-	// ボード順番入れ替え後の同期
+	// Sync text input and URL after board reorder
 	useEffect(() => {
 		if (!reorderPendingRef.current) return;
 		reorderPendingRef.current = false;
 
-		// text inputを同期
 		setStgyInput(boards.map((b) => b.stgyCode).join("\n"));
 
-		// URLを同期
 		if (shouldUpdateUrl) {
 			const codes = boards.map((b) => b.stgyCode).filter((c) => c);
 			const url = new URL(window.location.href);
@@ -331,7 +314,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		}
 	}, [boards, shouldUpdateUrl]);
 
-	// ボードサイズのリサイズ機能
 	const [boardWidth, setBoardWidth] = useState<number | null>(null);
 	const boardContainerRef = useRef<HTMLDivElement>(null);
 	const isResizing = useRef(false);
@@ -358,30 +340,21 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		document.addEventListener("mouseup", handleMouseUp);
 	}, []);
 
-	// 短縮リンク生成
 	const [isGeneratingShortLink, setIsGeneratingShortLink] = useState(false);
 	const [copiedShortLink, setCopiedShortLink] = useState(false);
-
-	// stgyコードコピー
 	const [copiedStgyCode, setCopiedStgyCode] = useState(false);
-
-	// アクティブボードのstgyコードコピー
 	const [copiedBoardCode, setCopiedBoardCode] = useState(false);
-
-	// アクティブボードの情報
 	const boardData = activeBoard?.boardData ?? null;
 	const activeBoardError = activeBoard?.error ?? null;
 
-	// 全体のエラー（デコードに失敗したボードがある場合）
+	// Count boards that failed to decode
 	const failedBoardCount = boards.filter((b) => b.error !== null).length;
 
-	// Editorで編集ボタンのハンドラー
 	const handleEditInEditor = useCallback(() => {
 		if (!activeBoard?.stgyCode || !boardData) return;
 		navigate({ to: "/editor", search: { stgy: activeBoard.stgyCode } });
 	}, [activeBoard, boardData, navigate]);
 
-	// Editorで全て編集ボタンのハンドラー
 	const handleEditAllInEditor = useCallback(() => {
 		const validBoards = boards.filter((b) => b.stgyCode && b.boardData);
 		if (validBoards.length === 0) return;
@@ -400,9 +373,8 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		navigate({ to: "/editor", search: { import: "multi", key } });
 	}, [boards, navigate]);
 
-	// 短縮リンク生成ハンドラー（複数ボード対応）
+	// Generate short links for multiple boards
 	const handleGenerateShortLink = useCallback(async () => {
-		// 有効なstgyコードを持つボードのみ対象
 		const validBoards = boards.filter((b) => b.stgyCode && b.boardData);
 		if (validBoards.length === 0) return;
 
@@ -411,14 +383,12 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		try {
 			const baseUrl = window.location.origin;
 
-			// 全ボードの短縮リンクを並列で生成
 			const results = await Promise.all(
 				validBoards.map((board) =>
 					createShortLinkFn({ data: { stgy: board.stgyCode, baseUrl } }),
 				),
 			);
 
-			// 成功した短縮IDを収集
 			const shortIds = results
 				.filter(
 					(
@@ -431,12 +401,11 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 				.map((r) => r.data.id);
 
 			if (shortIds.length > 0) {
-				// URLを構築
 				const url = new URL(baseUrl);
 				for (const shortId of shortIds) {
 					url.searchParams.append("s", shortId);
 				}
-				// 複数ボードでグリッドモードの場合はmodeパラメータを追加
+				// Add mode param when multiple boards are in grid mode
 				if (shortIds.length > 1 && viewMode === "grid") {
 					url.searchParams.set("mode", "grid");
 				}
@@ -450,7 +419,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		}
 	}, [boards, viewMode]);
 
-	// stgyコードをコピー
 	const handleCopyStgyCode = useCallback(async () => {
 		if (!stgyInput.trim()) return;
 		try {
@@ -458,11 +426,10 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 			setCopiedStgyCode(true);
 			setTimeout(() => setCopiedStgyCode(false), 2000);
 		} catch {
-			// クリップボードAPIが利用できない場合は何もしない
+			// Clipboard API not available
 		}
 	}, [stgyInput]);
 
-	// アクティブボードのstgyコードをコピー
 	const handleCopyBoardCode = useCallback(async () => {
 		if (!activeBoard?.stgyCode) return;
 		try {
@@ -470,17 +437,15 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 			setCopiedBoardCode(true);
 			setTimeout(() => setCopiedBoardCode(false), 2000);
 		} catch {
-			// クリップボードAPIが利用できない場合は何もしない
+			// Clipboard API not available
 		}
 	}, [activeBoard?.stgyCode]);
 
-	// サンプル読み込みハンドラー
 	const handleLoadSample = useCallback(() => {
 		setStgyInput(SAMPLE_STGY);
 		actions.loadBoards(SAMPLE_STGY);
 		setShouldUpdateUrl(true);
 
-		// URLに反映
 		const url = new URL(window.location.href);
 		url.searchParams.delete("stgy");
 		url.searchParams.delete("s");
@@ -488,12 +453,10 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		window.history.replaceState(null, "", url.toString());
 	}, [actions]);
 
-	// 入力変更ハンドラー
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
 			const newValue = e.target.value;
 			setStgyInput(newValue);
-			// 入力があったらURLを更新するようにする
 			if (!shouldUpdateUrl && newValue.trim()) {
 				setShouldUpdateUrl(true);
 			}
@@ -501,17 +464,15 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		[shouldUpdateUrl],
 	);
 
-	// 入力変更時の自動デコード＆URL更新（デバウンス付き）
+	// Auto-decode and URL update on input change (debounced)
 	useEffect(() => {
 		if (debounceTimerRef.current) {
 			clearTimeout(debounceTimerRef.current);
 		}
 
 		debounceTimerRef.current = setTimeout(() => {
-			// 改行区切りで複数ボードをパース
 			actions.loadBoards(stgyInput);
 
-			// URLを更新
 			if (shouldUpdateUrl) {
 				const codes = stgyInput
 					.split("\n")
@@ -537,7 +498,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		};
 	}, [stgyInput, actions, shouldUpdateUrl]);
 
-	// オブジェクト選択ハンドラー
 	const handleSelectObject = useCallback(
 		(objectId: string | null, _object: BoardObject | null) => {
 			if (activeBoard) {
@@ -547,7 +507,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		[activeBoard, actions],
 	);
 
-	// ボード順番入れ替えハンドラー
 	const handleReorderBoards = useCallback(
 		(fromIndex: number, toIndex: number) => {
 			reorderPendingRef.current = true;
@@ -556,7 +515,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		[actions],
 	);
 
-	// ボード削除ハンドラー
 	const handleCloseBoard = useCallback(
 		(id: string) => {
 			reorderPendingRef.current = true;
@@ -611,7 +569,7 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 					/>
 				</div>
 
-				{/* エラー表示: 複数ボード中にデコード失敗があった場合 */}
+				{/* Error display: show when some boards failed to decode */}
 				{failedBoardCount > 0 && (
 					<div className="mb-6 flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
 						<AlertCircle className="size-5" />
@@ -621,7 +579,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 					</div>
 				)}
 
-				{/* アクティブボードのエラー表示 */}
 				{activeBoardError && boardCount === 1 && (
 					<div className="mb-6 flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
 						<AlertCircle className="size-5" />
@@ -629,7 +586,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 					</div>
 				)}
 
-				{/* ツールバー（モード切替・共有リンク） */}
 				<ViewerToolbar
 					viewMode={viewMode}
 					onViewModeChange={actions.setViewMode}
@@ -641,7 +597,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 					onEditAllInEditor={handleEditAllInEditor}
 				/>
 
-				{/* タブUI（タブモード時のみ） */}
 				{viewMode === "tab" && (
 					<ViewerTabs
 						boards={boards}
@@ -652,7 +607,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 					/>
 				)}
 
-				{/* グリッドモード時の表示 */}
 				{viewMode === "grid" && boardCount > 1 && (
 					<ViewerGrid
 						boards={boards}
@@ -665,10 +619,8 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 					/>
 				)}
 
-				{/* タブモード時の詳細表示 */}
 				{viewMode === "tab" && boardData && (
 					<div className="space-y-4">
-						{/* ボード情報ヘッダー（コンパクト） */}
 						<div className="flex flex-wrap items-center justify-between gap-2 p-2 sm:p-3 bg-card border border-border rounded-lg">
 							<div className="flex items-center gap-2 sm:gap-4 text-sm min-w-0">
 								<span className="font-medium truncate">
@@ -751,13 +703,11 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 							</div>
 						</div>
 
-						{/* メインボードビューアー（リサイズ可能） */}
 						<div className="flex justify-center">
 							<div
 								ref={boardContainerRef}
 								className="flex items-stretch"
 								style={{
-									// ユーザー指定の幅、またはデフォルト計算値
 									width: boardWidth
 										? `${boardWidth}px`
 										: "min(896px, calc(70vh * 512 / 384))",
@@ -772,7 +722,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 									onSelectObject={handleSelectObject}
 								/>
 							</div>
-							{/* リサイズハンドル（ボード外側） */}
 							<div
 								role="slider"
 								aria-label={t("viewer.resizeBoard")}
@@ -788,9 +737,7 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 							</div>
 						</div>
 
-						{/* 詳細パネル（ボード下部に横並び） */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							{/* オブジェクト一覧 */}
 							<div className="h-[300px] md:h-[350px]">
 								<ObjectListPanel
 									objects={boardData.objects}
@@ -799,7 +746,6 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 								/>
 							</div>
 
-							{/* 選択オブジェクト情報 */}
 							<div className="p-4 bg-card border border-border rounded-lg">
 								<h2 className="text-lg font-semibold mb-3 font-display">
 									{t("viewer.selectedObject.title")}

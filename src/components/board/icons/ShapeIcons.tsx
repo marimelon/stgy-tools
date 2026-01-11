@@ -1,10 +1,5 @@
-/**
- * 図形関連のアイコンコンポーネント
- */
-
 import type { IconProps } from "./types";
 
-/** 図形マルアイコン（二重円） */
 export function ShapeCircleIcon({ transform }: IconProps) {
 	const strokeColor = "#ccaa44";
 	const fillColor = "#ffffff";
@@ -35,7 +30,6 @@ export function ShapeCircleIcon({ transform }: IconProps) {
 	);
 }
 
-/** 図形バツアイコン（X形状） */
 export function ShapeCrossIcon({ transform }: IconProps) {
 	const strokeColor = "#ccaa44";
 	const fillColor = "#ffffff";
@@ -71,7 +65,6 @@ export function ShapeCrossIcon({ transform }: IconProps) {
 	);
 }
 
-/** 図形シカクアイコン（二重四角形） */
 export function ShapeSquareIcon({ transform }: IconProps) {
 	const strokeColor = "#ccaa44";
 	const fillColor = "#ffffff";
@@ -105,7 +98,6 @@ export function ShapeSquareIcon({ transform }: IconProps) {
 	);
 }
 
-/** 図形サンカクアイコン（二重三角形） */
 export function ShapeTriangleIcon({ transform }: IconProps) {
 	const strokeColor = "#ccaa44";
 	const fillColor = "#ffffff";
@@ -135,7 +127,6 @@ export function ShapeTriangleIcon({ transform }: IconProps) {
 	);
 }
 
-/** 図形ヤジルシアイコン（上向き矢印） */
 export function ShapeArrowIcon({ transform }: IconProps) {
 	const strokeColor = "#ccaa44";
 	const fillColor = "#ffffff";
@@ -164,7 +155,6 @@ export function ShapeArrowIcon({ transform }: IconProps) {
 	);
 }
 
-/** 図形カイテンアイコン（回転矢印） */
 export function ShapeRotationIcon({ transform }: IconProps) {
 	const strokeColor = "#ccaa44";
 	const fillColor = "#ffffff";

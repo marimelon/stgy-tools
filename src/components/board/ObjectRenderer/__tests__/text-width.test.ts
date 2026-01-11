@@ -1,81 +1,77 @@
-/**
- * テキスト幅計算関数のテスト
- */
-
 import { describe, expect, it } from "vitest";
 import { calculateTextWidth, isFullWidthChar, TEXT } from "../constants";
 
 describe("text-width", () => {
 	describe("isFullWidthChar", () => {
-		describe("半角文字", () => {
-			it("ASCII英字", () => {
+		describe("half-width characters", () => {
+			it("ASCII letters", () => {
 				expect(isFullWidthChar("A")).toBe(false);
 				expect(isFullWidthChar("z")).toBe(false);
 			});
 
-			it("ASCII数字", () => {
+			it("ASCII digits", () => {
 				expect(isFullWidthChar("0")).toBe(false);
 				expect(isFullWidthChar("9")).toBe(false);
 			});
 
-			it("ASCII記号", () => {
+			it("ASCII symbols", () => {
 				expect(isFullWidthChar("!")).toBe(false);
 				expect(isFullWidthChar("@")).toBe(false);
 				expect(isFullWidthChar(" ")).toBe(false);
 			});
 
-			it("半角カタカナ", () => {
+			it("half-width katakana", () => {
 				expect(isFullWidthChar("ｱ")).toBe(false); // U+FF71
 				expect(isFullWidthChar("ｶ")).toBe(false); // U+FF76
 				expect(isFullWidthChar("ﾝ")).toBe(false); // U+FF9D
-				expect(isFullWidthChar("ﾞ")).toBe(false); // U+FF9E (濁点)
-				expect(isFullWidthChar("ﾟ")).toBe(false); // U+FF9F (半濁点)
+				expect(isFullWidthChar("ﾞ")).toBe(false); // U+FF9E (dakuten)
+				expect(isFullWidthChar("ﾟ")).toBe(false); // U+FF9F (handakuten)
 			});
 		});
 
-		describe("全角文字", () => {
-			it("ひらがな", () => {
+		describe("full-width characters", () => {
+			it("hiragana", () => {
 				expect(isFullWidthChar("あ")).toBe(true);
 				expect(isFullWidthChar("ん")).toBe(true);
 			});
 
-			it("カタカナ", () => {
+			it("katakana", () => {
 				expect(isFullWidthChar("ア")).toBe(true);
 				expect(isFullWidthChar("ン")).toBe(true);
 			});
 
-			it("漢字 (CJK統合漢字)", () => {
+			it("kanji (CJK Unified Ideographs)", () => {
 				expect(isFullWidthChar("漢")).toBe(true);
 				expect(isFullWidthChar("字")).toBe(true);
 			});
 
-			it("全角英数字", () => {
+			it("full-width alphanumerics", () => {
 				expect(isFullWidthChar("Ａ")).toBe(true); // U+FF21
 				expect(isFullWidthChar("０")).toBe(true); // U+FF10
 			});
 
-			it("全角記号", () => {
+			it("full-width symbols", () => {
 				expect(isFullWidthChar("。")).toBe(true); // U+3002
 				expect(isFullWidthChar("、")).toBe(true); // U+3001
-				expect(isFullWidthChar("　")).toBe(true); // U+3000 (全角スペース)
+				expect(isFullWidthChar("　")).toBe(true); // U+3000 (full-width space)
 			});
 
-			it("CJK統合漢字拡張A", () => {
+			it("CJK Unified Ideographs Extension A", () => {
 				expect(isFullWidthChar("㐀")).toBe(true); // U+3400
 			});
 
-			it("CJK統合漢字拡張B (サロゲートペア)", () => {
+			it("CJK Unified Ideographs Extension B (surrogate pair)", () => {
 				expect(isFullWidthChar("𠀀")).toBe(true); // U+20000
 				expect(isFullWidthChar("𪜀")).toBe(true); // U+2A700
 			});
 		});
 
-		describe("エッジケース", () => {
-			it("空文字列", () => {
+		describe("edge cases", () => {
+			it("empty string", () => {
 				expect(isFullWidthChar("")).toBe(false);
 			});
 
-			it("複数文字の場合は最初の文字のみ判定", () => {
+			it("only evaluates first character for multi-char strings", () => {
 				expect(isFullWidthChar("abc")).toBe(false);
 				expect(isFullWidthChar("あbc")).toBe(true);
 			});
@@ -83,38 +79,34 @@ describe("text-width", () => {
 	});
 
 	describe("calculateTextWidth", () => {
-		it("空文字列", () => {
+		it("empty string", () => {
 			expect(calculateTextWidth("")).toBe(0);
 		});
 
-		it("半角文字のみ", () => {
+		it("half-width only", () => {
 			expect(calculateTextWidth("Hello")).toBe(5 * TEXT.HALF_WIDTH_CHAR);
 			expect(calculateTextWidth("12345")).toBe(5 * TEXT.HALF_WIDTH_CHAR);
 		});
 
-		it("全角文字のみ", () => {
+		it("full-width only", () => {
 			expect(calculateTextWidth("テスト")).toBe(3 * TEXT.FULL_WIDTH_CHAR);
 			expect(calculateTextWidth("漢字")).toBe(2 * TEXT.FULL_WIDTH_CHAR);
 		});
 
-		it("半角・全角混在", () => {
-			// "Helloテスト" = 5半角 + 3全角
+		it("mixed half-width and full-width", () => {
 			const expected = 5 * TEXT.HALF_WIDTH_CHAR + 3 * TEXT.FULL_WIDTH_CHAR;
 			expect(calculateTextWidth("Helloテスト")).toBe(expected);
 		});
 
-		it("半角カタカナ", () => {
-			// "ｱｲｳ" = 3半角
+		it("half-width katakana", () => {
 			expect(calculateTextWidth("ｱｲｳ")).toBe(3 * TEXT.HALF_WIDTH_CHAR);
 		});
 
-		it("サロゲートペア文字", () => {
-			// "𠀀𠀁" = 2全角 (CJK拡張B)
+		it("surrogate pair characters", () => {
 			expect(calculateTextWidth("𠀀𠀁")).toBe(2 * TEXT.FULL_WIDTH_CHAR);
 		});
 
-		it("複合ケース", () => {
-			// "MT1 タンク" = M(半) T(半) 1(半) 空白(半) タ(全) ン(全) ク(全)
+		it("complex case", () => {
 			const expected = 4 * TEXT.HALF_WIDTH_CHAR + 3 * TEXT.FULL_WIDTH_CHAR;
 			expect(calculateTextWidth("MT1 タンク")).toBe(expected);
 		});

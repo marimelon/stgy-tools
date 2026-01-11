@@ -1,5 +1,5 @@
 /**
- * クリップボード操作アクション
+ * Clipboard operation actions
  */
 
 import i18n from "@/lib/i18n";
@@ -9,13 +9,7 @@ import { cloneBoard, pushHistory } from "../../utils";
 import { canAddObjects } from "../../utils/validation";
 import type { EditorStore } from "../types";
 
-/**
- * クリップボードアクションを作成
- */
 export function createClipboardActions(store: EditorStore) {
-	/**
-	 * オブジェクトをコピー（グローバルクリップボードに保存）
-	 */
 	const copyObjects = () => {
 		const state = store.state;
 		if (state.selectedIds.length === 0) return;
@@ -27,20 +21,14 @@ export function createClipboardActions(store: EditorStore) {
 
 		if (copiedObjects.length === 0) return;
 
-		// グローバルストアに保存（タブ間共有）
+		// Save to global store (shared across tabs)
 		writeToClipboard(copiedObjects);
 	};
 
-	/**
-	 * 選択オブジェクトをコピー
-	 */
 	const copySelected = () => {
 		copyObjects();
 	};
 
-	/**
-	 * オブジェクトを貼り付け（グローバルクリップボードから）
-	 */
 	const paste = (position?: Position) => {
 		const clipboardObjects = readFromClipboard();
 
@@ -49,7 +37,6 @@ export function createClipboardActions(store: EditorStore) {
 		}
 
 		store.setState((state) => {
-			// バリデーション
 			const validation = canAddObjects(state.board, clipboardObjects);
 			if (!validation.canAdd) {
 				return {
@@ -63,12 +50,9 @@ export function createClipboardActions(store: EditorStore) {
 
 			const newBoard = cloneBoard(state.board);
 
-			// ペーストするオブジェクトを準備（新しいIDを生成）
 			const pastedObjects = clipboardObjects.map((obj) => {
 				const pasted = structuredClone(obj);
-				// 新しいIDを生成
 				pasted.id = crypto.randomUUID();
-				// 位置をオフセット
 				if (position) {
 					pasted.position = { ...position };
 				} else {
@@ -78,13 +62,12 @@ export function createClipboardActions(store: EditorStore) {
 				return pasted;
 			});
 
-			// 配列の先頭に追加（最前面レイヤーに配置）
+			// Insert at front (topmost layer)
 			newBoard.objects.unshift(...pastedObjects);
 
-			// 新しいIDを収集
 			const newIds = pastedObjects.map((obj) => obj.id);
 
-			// 連続ペースト用にグローバルクリップボードも更新
+			// Update clipboard for consecutive paste
 			writeToClipboard(pastedObjects);
 
 			return {

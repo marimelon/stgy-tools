@@ -1,11 +1,6 @@
-/**
- * 特殊アイコンコンポーネント（ロックオン、強調図形、バフ/デバフ等）
- */
-
 import { useId } from "react";
 import type { IconProps } from "./types";
 
-/** ロックオン赤マーカーアイコン */
 export function LockOnRedIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `lockOnRedGlow-${id}`;
@@ -68,7 +63,6 @@ export function LockOnRedIcon({ transform }: IconProps) {
 	);
 }
 
-/** ロックオン青マーカーアイコン */
 export function LockOnBlueIcon({ transform }: IconProps) {
 	const id = useId();
 	const outerGlowId = `lockOnBlueOuterGlow-${id}`;
@@ -152,7 +146,6 @@ export function LockOnBlueIcon({ transform }: IconProps) {
 	);
 }
 
-/** ロックオン紫マーカーアイコン */
 export function LockOnPurpleIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `lockOnPurpleGlow-${id}`;
@@ -208,7 +201,6 @@ export function LockOnPurpleIcon({ transform }: IconProps) {
 	);
 }
 
-/** ロックオン緑マーカーアイコン */
 export function LockOnGreenIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `lockOnGreenGlow-${id}`;
@@ -254,7 +246,6 @@ export function LockOnGreenIcon({ transform }: IconProps) {
 	);
 }
 
-/** 強調マルアイコン */
 export function EmphasisCircleIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `emphasisCircleGlow-${id}`;
@@ -291,7 +282,6 @@ export function EmphasisCircleIcon({ transform }: IconProps) {
 	);
 }
 
-/** 強調バツアイコン */
 export function EmphasisCrossIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `emphasisCrossGlow-${id}`;
@@ -343,7 +333,6 @@ export function EmphasisCrossIcon({ transform }: IconProps) {
 	);
 }
 
-/** 強調四角アイコン */
 export function EmphasisSquareIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `emphasisSquareGlow-${id}`;
@@ -391,7 +380,6 @@ export function EmphasisSquareIcon({ transform }: IconProps) {
 	);
 }
 
-/** 強調三角アイコン */
 export function EmphasisTriangleIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `emphasisTriangleGlow-${id}`;
@@ -434,7 +422,6 @@ export function EmphasisTriangleIcon({ transform }: IconProps) {
 	);
 }
 
-/** 時計回りアイコン */
 export function ClockwiseIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `clockwiseGlow-${id}`;
@@ -465,7 +452,6 @@ export function ClockwiseIcon({ transform }: IconProps) {
 	);
 }
 
-/** 反時計回りアイコン */
 export function CounterClockwiseIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `counterClockwiseGlow-${id}`;
@@ -496,7 +482,6 @@ export function CounterClockwiseIcon({ transform }: IconProps) {
 	);
 }
 
-/** バフアイコン */
 export function BuffIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `buffGlow-${id}`;
@@ -527,7 +512,6 @@ export function BuffIcon({ transform }: IconProps) {
 	);
 }
 
-/** デバフアイコン */
 export function DebuffIcon({ transform }: IconProps) {
 	const id = useId();
 	const glowId = `debuffGlow-${id}`;

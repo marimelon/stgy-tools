@@ -1,10 +1,9 @@
 /**
- * stgy フォーマット用変換テーブル
+ * stgy format conversion tables
  */
 
 /**
- * KEY_TABLE: キー文字 → key値 (0-63) への変換
- * キー文字のASCIIコードをインデックスとして使用
+ * KEY_TABLE: Key character -> key value (0-63) conversion
  */
 export const KEY_TABLE: Record<string, string> = {
 	"+": "N",
@@ -74,7 +73,7 @@ export const KEY_TABLE: Record<string, string> = {
 };
 
 /**
- * ALPHABET_TABLE: カスタム文字 → 標準Base64文字 への変換
+ * ALPHABET_TABLE: Custom character -> standard Base64 character conversion
  */
 export const ALPHABET_TABLE: Record<string, string> = {
 	b: "-",
@@ -144,7 +143,7 @@ export const ALPHABET_TABLE: Record<string, string> = {
 };
 
 /**
- * Base64文字 → 値 (0-63) への変換
+ * Base64 character -> value (0-63) conversion
  * A-Z: 0-25, a-z: 26-51, 0-9: 52-61, -: 62, _: 63
  */
 export function base64CharToValue(char: string): number {
@@ -171,7 +170,7 @@ export function base64CharToValue(char: string): number {
 }
 
 /**
- * 値 (0-63) → Base64文字 への変換
+ * Value (0-63) -> Base64 character conversion
  */
 export function valueToBase64Char(value: number): string {
 	if (value < 0 || value > 63) {

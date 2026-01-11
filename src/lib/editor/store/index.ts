@@ -1,5 +1,5 @@
 /**
- * エディターストア - Public exports
+ * Editor store - Public exports
  */
 
 // Store

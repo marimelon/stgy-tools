@@ -286,11 +286,7 @@ function calculateConfidence(
 }
 
 /**
- * ボード領域を自動検出
- *
- * @param imageData - 検出対象の画像データ
- * @param options - 検出オプション
- * @returns 検出された領域、または検出失敗時はnull
+ * Auto-detect board region from image
  */
 export function detectBoardRegion(
 	imageData: ImageData,

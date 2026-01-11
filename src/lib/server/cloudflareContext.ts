@@ -1,6 +1,6 @@
 /**
- * Cloudflare Workers の env をグローバルに保存・取得するためのユーティリティ
- * AsyncLocalStorage を使用してリクエストごとに独立したコンテキストを保持
+ * Utility for storing/retrieving Cloudflare Workers env globally
+ * Uses AsyncLocalStorage to maintain independent context per request
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { AssetsBinding } from "./imageLoader";
@@ -8,32 +8,32 @@ import type { AssetsBinding } from "./imageLoader";
 export interface CloudflareEnv {
 	ASSETS?: AssetsBinding;
 	/**
-	 * 外部画像レンダラーのURL
-	 * 設定されている場合、PNG生成を外部サーバーに委譲する
-	 * 例: "https://render.example.com/image"
+	 * External image renderer URL
+	 * When set, delegates PNG generation to external server
+	 * e.g., "https://render.example.com/image"
 	 */
 	EXTERNAL_IMAGE_RENDERER_URL?: string;
 	/**
-	 * 短縮リンク機能の有効/無効
-	 * "true" で有効化、それ以外または未設定で無効
+	 * Enable/disable short links feature
+	 * "true" to enable, anything else or unset to disable
 	 */
 	SHORT_LINKS_ENABLED?: string;
 	/**
-	 * 短縮リンク用 Cloudflare KV Namespace (Workers直接バインディング)
-	 * wrangler.jsonc で binding: "SHORT_LINKS" として設定
+	 * Short links Cloudflare KV Namespace (Workers direct binding)
+	 * Set as binding: "SHORT_LINKS" in wrangler.jsonc
 	 */
 	SHORT_LINKS?: unknown;
 	/**
-	 * Cloudflare Account ID (KV REST API用)
+	 * Cloudflare Account ID (for KV REST API)
 	 */
 	CLOUDFLARE_ACCOUNT_ID?: string;
 	/**
-	 * Cloudflare KV Namespace ID (KV REST API用)
+	 * Cloudflare KV Namespace ID (for KV REST API)
 	 */
 	CLOUDFLARE_KV_NAMESPACE_ID?: string;
 	/**
-	 * Cloudflare API Token (KV REST API用)
-	 * Account.Workers KV Storage 権限が必要
+	 * Cloudflare API Token (for KV REST API)
+	 * Requires Account.Workers KV Storage permission
 	 */
 	CLOUDFLARE_API_TOKEN?: string;
 	[key: string]: unknown;
@@ -49,26 +49,16 @@ interface ExecutionContext {
 	passThroughOnException(): void;
 }
 
-// AsyncLocalStorage を使用してリクエストごとのコンテキストを保存
 const cloudflareContextStorage = new AsyncLocalStorage<CloudflareContext>();
 
-/**
- * 現在のリクエストの Cloudflare コンテキストを取得
- */
 export function getCloudflareContext(): CloudflareContext | undefined {
 	return cloudflareContextStorage.getStore();
 }
 
-/**
- * 現在のリクエストの env を取得
- */
 export function getCloudflareEnv(): CloudflareEnv | undefined {
 	return cloudflareContextStorage.getStore()?.env;
 }
 
-/**
- * Cloudflare コンテキストを設定してコールバックを実行
- */
 export function runWithCloudflareContext<T>(
 	context: CloudflareContext,
 	callback: () => T,
@@ -76,9 +66,7 @@ export function runWithCloudflareContext<T>(
 	return cloudflareContextStorage.run(context, callback);
 }
 
-/**
- * グローバルな env ストレージ（AsyncLocalStorage が使えない場合のフォールバック）
- */
+// Fallback when AsyncLocalStorage is not available
 let globalEnv: CloudflareEnv | undefined;
 
 export function setGlobalEnv(env: CloudflareEnv): void {
@@ -86,18 +74,16 @@ export function setGlobalEnv(env: CloudflareEnv): void {
 }
 
 /**
- * 環境変数を取得
- *
- * 優先順位:
- * 1. setGlobalEnv で設定された値
- * 2. process.env からの読み取り (Node.js環境用)
+ * Priority:
+ * 1. Value set by setGlobalEnv
+ * 2. Read from process.env (for Node.js environment)
  */
 export function getGlobalEnv(): CloudflareEnv | undefined {
 	if (globalEnv) {
 		return globalEnv;
 	}
 
-	// Node.js環境の場合は process.env から読み取り
+	// Read from process.env in Node.js environment
 	if (process?.env) {
 		return {
 			EXTERNAL_IMAGE_RENDERER_URL: process.env.EXTERNAL_IMAGE_RENDERER_URL,

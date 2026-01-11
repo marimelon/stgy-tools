@@ -1,5 +1,5 @@
 /**
- * エディターアクション - 統合エントリポイント
+ * Editor actions - Unified entry point
  */
 
 import type { EditorStore } from "../types";
@@ -21,7 +21,6 @@ import {
 	type SelectionActions,
 } from "./selectionActions";
 
-/** 全アクションの型 */
 export interface EditorActions
 	extends SelectionActions,
 		ObjectActions,
@@ -32,9 +31,6 @@ export interface EditorActions
 		AlignmentActions,
 		ModeActions {}
 
-/**
- * 全アクションを作成
- */
 export function createAllActions(store: EditorStore): EditorActions {
 	return {
 		...createSelectionActions(store),

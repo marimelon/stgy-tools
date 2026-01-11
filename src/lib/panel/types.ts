@@ -1,8 +1,8 @@
 /**
- * パネルレイアウト設定の型定義
+ * Panel layout configuration type definitions
  */
 
-/** パネル識別子 */
+/** Panel identifier */
 export type PanelId =
 	| "objectPalette"
 	| "layerPanel"
@@ -11,28 +11,28 @@ export type PanelId =
 	| "assetPanel"
 	| "debugPanel";
 
-/** パネル配置スロット */
+/** Panel placement slot */
 export type PanelSlot = "left" | "right";
 
-/** パネル設定 */
+/** Panel configuration */
 export interface PanelConfig {
-	/** 配置スロット */
+	/** Placement slot */
 	slot: PanelSlot;
-	/** スロット内の順序 */
+	/** Order within slot */
 	order: number;
-	/** 表示/非表示 */
+	/** Visible/hidden */
 	visible: boolean;
-	/** 折りたたみ状態 */
+	/** Collapsed state */
 	collapsed: boolean;
 }
 
-/** レイアウト全体設定 */
+/** Overall layout configuration */
 export interface PanelLayoutConfig {
-	/** パネル設定 */
+	/** Panel configurations */
 	panels: Record<PanelId, PanelConfig>;
 }
 
-/** デフォルトレイアウト */
+/** Default layout */
 export const DEFAULT_PANEL_LAYOUT: PanelLayoutConfig = {
 	panels: {
 		objectPalette: { slot: "left", order: 0, visible: true, collapsed: false },

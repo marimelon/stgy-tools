@@ -1,29 +1,25 @@
 /**
- * Feature Flags - サーバーサイドの機能フラグ管理
+ * Feature Flags - Server-side feature flag management
  *
- * 環境変数に基づいて機能の有効/無効を制御し、
- * クライアントサイドで利用可能な形式で提供する
+ * Controls feature enable/disable based on environment variables
+ * and provides them in a client-consumable format
  */
 
 import { createServerFn } from "@tanstack/react-start";
 
-/**
- * Feature Flags の型定義
- */
 export interface FeatureFlags {
-	/** 短縮URL機能が有効かどうか */
+	/** Whether short links feature is enabled */
 	shortLinksEnabled: boolean;
 }
 
 /**
- * Feature Flags を取得するサーバー関数
+ * Server function to get feature flags
  *
- * クライアントサイドからルートのloaderで呼び出して使用する
- * 動的インポートを使用してサーバー専用モジュールをクライアントバンドルから除外
+ * Called from route loaders on the client side.
+ * Uses dynamic imports to exclude server-only modules from client bundle.
  */
 export const getFeatureFlagsFn = createServerFn({ method: "GET" }).handler(
 	async (): Promise<FeatureFlags> => {
-		// 動的インポートでサーバー専用モジュールをロード
 		const { isShortLinksEnabled } = await import("./shortLinks");
 		return {
 			shortLinksEnabled: isShortLinksEnabled(),

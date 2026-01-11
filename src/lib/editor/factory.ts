@@ -144,8 +144,8 @@ export function duplicateObject(
 }
 
 /**
- * @deprecated stgyバイナリフォーマットにはボードサイズは含まれないため、この関数は不要になりました。
- * キャンバスサイズはDEFAULT_CANVAS_WIDTH/DEFAULT_CANVAS_HEIGHTを使用してください。
+ * @deprecated Board size is not included in stgy binary format.
+ * Use DEFAULT_CANVAS_WIDTH/DEFAULT_CANVAS_HEIGHT for canvas size.
  */
 export function calculateTextBoardSize(_textLength: number): {
 	width: number;
@@ -155,8 +155,8 @@ export function calculateTextBoardSize(_textLength: number): {
 }
 
 /**
- * @deprecated stgyバイナリフォーマットにはボードサイズは含まれないため、この関数は不要になりました。
- * キャンバスサイズはDEFAULT_CANVAS_WIDTH/DEFAULT_CANVAS_HEIGHTを使用してください。
+ * @deprecated Board size is not included in stgy binary format.
+ * Use DEFAULT_CANVAS_WIDTH/DEFAULT_CANVAS_HEIGHT for canvas size.
  */
 export function recalculateBoardSize(_board: BoardData): {
 	width: number;

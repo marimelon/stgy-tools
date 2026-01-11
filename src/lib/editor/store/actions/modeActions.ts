@@ -1,5 +1,5 @@
 /**
- * モード関連アクション（円形配置、テキスト編集、エラー）
+ * Mode-related actions (circular arrangement, text editing, errors)
  */
 
 import i18n from "@/lib/i18n";
@@ -8,27 +8,19 @@ import type { EditorError } from "../../types";
 import { cloneBoard, updateObjectInBoard } from "../../utils";
 import type { EditorStore } from "../types";
 
-/** 最小半径 */
 const MIN_RADIUS = 10;
 
-/**
- * モードアクションを作成
- */
 export function createModeActions(store: EditorStore) {
 	// ============================================
-	// 円形配置モード
+	// Circular arrangement mode
 	// ============================================
 
-	/**
-	 * 円形配置モードに入る
-	 */
 	const enterCircularMode = (
 		center: Position,
 		radius: number,
 		objectIds: string[],
 	) => {
 		store.setState((state) => {
-			// 各オブジェクトの初期角度を計算
 			const objectAngles = new Map<string, number>();
 			for (const id of objectIds) {
 				const obj = state.board.objects.find((o) => o.id === id);
@@ -53,9 +45,6 @@ export function createModeActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * 円形配置モードを終了
-	 */
 	const exitCircularMode = () => {
 		store.setState((state) => ({
 			...state,
@@ -64,7 +53,7 @@ export function createModeActions(store: EditorStore) {
 	};
 
 	/**
-	 * 円の中心を更新（全オブジェクトを移動）
+	 * Update circle center (moves all objects)
 	 */
 	const updateCircularCenter = (center: Position) => {
 		store.setState((state) => {
@@ -76,7 +65,6 @@ export function createModeActions(store: EditorStore) {
 
 			let newBoard = cloneBoard(state.board);
 
-			// 参加オブジェクトを移動
 			for (const id of state.circularMode.participatingIds) {
 				const obj = newBoard.objects.find((o) => o.id === id);
 				if (obj) {
@@ -101,7 +89,7 @@ export function createModeActions(store: EditorStore) {
 	};
 
 	/**
-	 * 円の半径を更新（全オブジェクトを新しい半径で再配置）
+	 * Update circle radius (repositions all objects at new radius)
 	 */
 	const updateCircularRadius = (radius: number) => {
 		store.setState((state) => {
@@ -112,7 +100,7 @@ export function createModeActions(store: EditorStore) {
 
 			let newBoard = cloneBoard(state.board);
 
-			// 各オブジェクトを新しい半径で再配置（角度は保持）
+			// Reposition each object at new radius (preserve angle)
 			for (const [id, angle] of objectAngles) {
 				newBoard = updateObjectInBoard(newBoard, id, {
 					position: {
@@ -133,9 +121,6 @@ export function createModeActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * オブジェクトを円周上で移動
-	 */
 	const moveObjectOnCircle = (objectId: string, angle: number) => {
 		store.setState((state) => {
 			if (!state.circularMode) return state;
@@ -143,10 +128,8 @@ export function createModeActions(store: EditorStore) {
 			const { center, radius, participatingIds, objectAngles } =
 				state.circularMode;
 
-			// 参加オブジェクトでない場合は無視
 			if (!participatingIds.includes(objectId)) return state;
 
-			// オブジェクトを新しい角度の位置に移動
 			let newBoard = cloneBoard(state.board);
 			newBoard = updateObjectInBoard(newBoard, objectId, {
 				position: {
@@ -155,7 +138,6 @@ export function createModeActions(store: EditorStore) {
 				},
 			});
 
-			// 角度を更新
 			const newObjectAngles = new Map(objectAngles);
 			newObjectAngles.set(objectId, angle);
 
@@ -171,22 +153,18 @@ export function createModeActions(store: EditorStore) {
 	};
 
 	// ============================================
-	// テキスト編集モード
+	// Text editing mode
 	// ============================================
 
-	/**
-	 * テキスト編集を開始
-	 */
 	const startTextEdit = (objectId: string) => {
 		store.setState((state) => {
 			const obj = state.board.objects.find((o) => o.id === objectId);
 
-			// テキストオブジェクトのみ編集可能
+			// Only text objects can be edited
 			if (!obj || obj.objectId !== ObjectIds.Text) {
 				return state;
 			}
 
-			// ロック中は編集不可
 			if (obj.flags.locked) {
 				return state;
 			}
@@ -199,9 +177,6 @@ export function createModeActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * テキスト編集を終了
-	 */
 	const endTextEdit = (save: boolean, text?: string) => {
 		store.setState((state) => {
 			if (state.editingTextId === null) {
@@ -216,14 +191,14 @@ export function createModeActions(store: EditorStore) {
 
 			let newState = { ...state, editingTextId: null };
 
-			// テキストが実際に変更された場合のみ更新
+			// Update only if text actually changed
 			if (
 				save &&
 				text !== undefined &&
 				text !== currentText &&
 				editingIndex !== -1
 			) {
-				// 空文字の場合はデフォルトテキストに戻す
+				// Revert to default text if empty
 				const finalText =
 					text.trim() === "" ? i18n.t("common.defaultText") : text;
 				const newObjects = [...state.board.objects];
@@ -242,12 +217,9 @@ export function createModeActions(store: EditorStore) {
 	};
 
 	// ============================================
-	// エラー管理
+	// Error management
 	// ============================================
 
-	/**
-	 * エラーを設定
-	 */
 	const setError = (error: EditorError) => {
 		store.setState((state) => ({
 			...state,
@@ -255,9 +227,6 @@ export function createModeActions(store: EditorStore) {
 		}));
 	};
 
-	/**
-	 * エラーをクリア
-	 */
 	const clearError = () => {
 		store.setState((state) => ({
 			...state,
@@ -266,16 +235,16 @@ export function createModeActions(store: EditorStore) {
 	};
 
 	return {
-		// 円形配置モード
+		// Circular arrangement mode
 		enterCircularMode,
 		exitCircularMode,
 		updateCircularCenter,
 		updateCircularRadius,
 		moveObjectOnCircle,
-		// テキスト編集
+		// Text editing
 		startTextEdit,
 		endTextEdit,
-		// エラー管理
+		// Error management
 		setError,
 		clearError,
 	};

@@ -1,32 +1,22 @@
 /**
- * Node.js向け画像比較テストユーティリティ
+ * Node.js image comparison test utilities
  */
 
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 
 export interface PixelComparisonResult {
-	/** 一致率 (0-100%) */
 	matchPercentage: number;
-	/** 差分ピクセル数 */
 	diffPixelCount: number;
-	/** 総ピクセル数 */
 	totalPixels: number;
 }
 
-/**
- * PNGバッファからPNGオブジェクトをパース
- */
 export function parsePng(buffer: Buffer): PNG {
 	return PNG.sync.read(buffer);
 }
 
 /**
- * 2つのPNG画像をピクセル単位で比較
- * @param img1 - 比較元のPNG
- * @param img2 - 比較先のPNG
- * @param threshold - 色差分の許容値 (0-1、デフォルト: 0.1)
- * @returns 比較結果
+ * Compare two PNG images pixel by pixel
  */
 export function comparePixels(
 	img1: PNG,
@@ -42,11 +32,10 @@ export function comparePixels(
 	const { width, height } = img1;
 	const totalPixels = width * height;
 
-	// pixelmatchで差分ピクセル数を計算
 	const diffPixelCount = pixelmatch(
 		img1.data,
 		img2.data,
-		undefined, // 差分画像は生成しない
+		undefined,
 		width,
 		height,
 		{ threshold },
@@ -62,11 +51,7 @@ export function comparePixels(
 }
 
 /**
- * PNGを指定サイズにリサイズ（簡易的なニアレストネイバー補間）
- * @param png - リサイズ元のPNG
- * @param targetWidth - ターゲット幅
- * @param targetHeight - ターゲット高さ
- * @returns リサイズされたPNG
+ * Resize PNG using nearest neighbor interpolation
  */
 export function resizePng(
 	png: PNG,
@@ -95,10 +80,7 @@ export function resizePng(
 }
 
 /**
- * PNG画像から指定領域を抽出
- * @param png - 元のPNG
- * @param region - 抽出領域 { x, y, width, height }
- * @returns 抽出されたPNG
+ * Extract region from PNG image
  */
 export function extractRegion(
 	png: PNG,
@@ -112,7 +94,6 @@ export function extractRegion(
 			const srcY = region.y + y;
 
 			if (srcX < 0 || srcX >= png.width || srcY < 0 || srcY >= png.height) {
-				// 範囲外は透明
 				const dstIdx = (y * region.width + x) * 4;
 				extracted.data[dstIdx] = 0;
 				extracted.data[dstIdx + 1] = 0;
@@ -135,7 +116,7 @@ export function extractRegion(
 }
 
 /**
- * RGB to HSL変換
+ * Convert RGB to HSL
  * @returns {h: 0-360, s: 0-100, l: 0-100}
  */
 export function rgbToHsl(
@@ -174,18 +155,13 @@ export function rgbToHsl(
 	return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
-/**
- * グレーボードピクセル判定
- */
 function isGrayBoardPixel(r: number, g: number, b: number): boolean {
 	const hsl = rgbToHsl(r, g, b);
 	return hsl.s < 15 && hsl.l >= 25 && hsl.l <= 40;
 }
 
 /**
- * ボード領域を自動検出（Node.js向け簡易版）
- * @param png - 検出対象のPNG
- * @returns 検出された領域、または検出失敗時はnull
+ * Auto-detect board region (simplified Node.js version)
  */
 export function detectBoardRegion(
 	png: PNG,
@@ -198,7 +174,6 @@ export function detectBoardRegion(
 	let maxY = 0;
 	let grayCount = 0;
 
-	// グレーピクセルのバウンディングボックスを計算
 	for (let y = 0; y < height; y++) {
 		for (let x = 0; x < width; x++) {
 			const idx = (y * width + x) * 4;
@@ -216,7 +191,6 @@ export function detectBoardRegion(
 		}
 	}
 
-	// 十分なグレーピクセルがない場合は失敗
 	if (grayCount < 1000) {
 		return null;
 	}
@@ -224,7 +198,6 @@ export function detectBoardRegion(
 	const regionWidth = maxX - minX + 1;
 	const regionHeight = maxY - minY + 1;
 
-	// 最小サイズチェック
 	if (regionWidth < 100 || regionHeight < 75) {
 		return null;
 	}

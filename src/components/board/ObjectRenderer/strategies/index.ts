@@ -22,12 +22,12 @@ import type { RenderStrategy, StrategyEntry } from "./types";
 import { WaymarkStrategy } from "./WaymarkStrategy";
 
 export const RENDER_STRATEGIES: ReadonlyArray<StrategyEntry> = [
-	// 特定ID判定（優先度高）
+	// Specific ID checks (high priority)
 	{ guard: (id) => id === ObjectIds.Line, strategy: LineStrategy },
 	{ guard: (id) => id === ObjectIds.Text, strategy: TextStrategy },
 	{ guard: (id) => id === ObjectIds.Group, strategy: GroupStrategy },
 
-	// カテゴリ判定
+	// Category checks
 	{ guard: isFieldObject, strategy: FieldObjectStrategy },
 	{ guard: isAoEObject, strategy: AoEObjectStrategy },
 	{ guard: isJobIcon, strategy: JobIconStrategy },

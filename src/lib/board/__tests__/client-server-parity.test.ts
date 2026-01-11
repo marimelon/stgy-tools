@@ -1,12 +1,12 @@
 /**
- * クライアント/サーバー レンダリング一致テスト
+ * Client/Server rendering parity tests
  *
- * 共通化されたロジック（transform, color, params, svg-paths）が
- * 正しく動作することを検証する。
+ * Verifies that shared logic (transform, color, params, svg-paths)
+ * works correctly.
  *
- * テスト対象:
- * 1. 共通ロジックの単体テスト（transform, color, params, svg-paths）
- * 2. PNG出力による視覚的比較テスト（サーバーレンダリング）
+ * Test targets:
+ * 1. Unit tests for shared logic (transform, color, params, svg-paths)
+ * 2. Visual comparison tests via PNG output (server rendering)
  */
 
 import { describe, expect, it } from "vitest";
@@ -29,7 +29,7 @@ import type { BoardData, BoardObject } from "@/lib/stgy/types";
 import { BackgroundId, ObjectIds } from "@/lib/stgy/types";
 
 // ====================================================================
-// 共通計算ロジックの単体テスト
+// Unit tests for shared calculation logic
 // ====================================================================
 
 describe("Shared calculation logic", () => {
@@ -104,34 +104,23 @@ describe("Shared calculation logic", () => {
 
 	describe("calculateLineEndpoint", () => {
 		it("should calculate endpoint with position fallback", () => {
-			// param が未指定の場合、position.x * 10 + 2560 をデフォルトとして使用
 			const result = calculateLineEndpoint({ x: 100, y: 100 });
-			// x: (100 * 10 + 2560) / 10 = 356
-			// y: (100 * 10) / 10 = 100
 			expect(result).toEqual({ x: 356, y: 100 });
 		});
 
 		it("should use provided params (divided by 10)", () => {
-			// param1, param2 は 10倍された整数値として保存される
 			const result = calculateLineEndpoint({ x: 100, y: 100 }, 3000, 2500);
-			// 3000 / 10 = 300, 2500 / 10 = 250
 			expect(result).toEqual({ x: 300, y: 250 });
 		});
 	});
 
 	describe("calculateDonutInnerRadius", () => {
 		it("should calculate inner radius based on donutRange (0-240)", () => {
-			// donutRange=120 は中間値（240の半分）
-			// innerRadius = maxInnerRadius * (donutRange / 240)
-			// maxInnerRadius = outerRadius * (1 - minThicknessRatio) = 100 * 0.9 = 90
-			// innerRadius = 90 * (120 / 240) = 45
 			const result = calculateDonutInnerRadius(100, 120);
 			expect(result).toBe(45);
 		});
 
 		it("should calculate max inner radius at donutRange=240", () => {
-			// donutRange=240 で最大内径
-			// innerRadius = 90 * (240 / 240) = 90
 			const result = calculateDonutInnerRadius(100, 240);
 			expect(result).toBe(90);
 		});
@@ -142,9 +131,6 @@ describe("Shared calculation logic", () => {
 		});
 
 		it("should respect custom minThicknessRatio", () => {
-			// minThicknessRatio = 0.2
-			// maxInnerRadius = 100 * 0.8 = 80
-			// innerRadius = 80 * (120 / 240) = 40
 			const result = calculateDonutInnerRadius(100, 120, 0.2);
 			expect(result).toBe(40);
 		});
@@ -212,19 +198,15 @@ describe("Shared calculation logic", () => {
 
 		it("should generate cone path when innerRadius is 0", () => {
 			const result = generateDonutPath(90, 100, 0);
-			// 内径0の場合は扇形（内穴なし）
 			expect(result.path).toContain("Z");
 		});
 	});
 });
 
 // ====================================================================
-// PNG出力比較テスト
+// PNG output comparison tests
 // ====================================================================
 
-/**
- * 基本的なBoardDataを生成
- */
 function createTestBoardData(objects: BoardObject[]): BoardData {
 	return {
 		version: 1,
@@ -234,9 +216,6 @@ function createTestBoardData(objects: BoardObject[]): BoardData {
 	};
 }
 
-/**
- * 基本的なオブジェクトを生成
- */
 function createObject(
 	objectId: number,
 	overrides: Partial<BoardObject> = {},
@@ -268,7 +247,6 @@ describe("Server rendering consistency", () => {
 			}),
 		]);
 
-		// 2回レンダリングして結果が同じことを確認
 		const svg1 = await renderBoardToSVG(boardData);
 		const svg2 = await renderBoardToSVG(boardData);
 
@@ -280,7 +258,6 @@ describe("Server rendering consistency", () => {
 
 		const comparison = comparePixels(img1, img2, 0.01);
 
-		// 完全一致を期待
 		expect(comparison.matchPercentage).toBe(100);
 	});
 
@@ -310,7 +287,6 @@ describe("Server rendering consistency", () => {
 
 		const comparison = comparePixels(img1, img2, 0.1);
 
-		// 完全一致ではないことを期待
 		expect(comparison.matchPercentage).toBeLessThan(100);
 	});
 
@@ -347,11 +323,9 @@ describe("Server rendering consistency", () => {
 
 		const svg = await renderBoardToSVG(boardData);
 
-		// SVGが有効であることを確認
 		expect(svg).toContain("<svg");
 		expect(svg).toContain("</svg>");
 
-		// PNGに変換できることを確認
 		const png = await renderSvgToPng(svg, { fitTo: { mode: "original" } });
 		expect(png.length).toBeGreaterThan(0);
 
@@ -372,7 +346,6 @@ describe("Server rendering consistency", () => {
 
 		const svg = await renderBoardToSVG(boardData);
 
-		// line要素が含まれていることを確認
 		expect(svg).toContain("<line");
 		expect(svg).toContain("x1=");
 		expect(svg).toContain("y1=");
@@ -392,7 +365,6 @@ describe("Server rendering consistency", () => {
 
 		const svg = await renderBoardToSVG(boardData);
 
-		// text要素が含まれていることを確認
 		expect(svg).toContain("<text");
 		expect(svg).toContain("Test");
 	});
@@ -414,7 +386,6 @@ describe("Server rendering consistency", () => {
 
 		const svg = await renderBoardToSVG(boardData);
 
-		// transform属性が含まれていることを確認
 		expect(svg).toContain("transform=");
 		expect(svg).toContain("translate(256, 192)");
 		expect(svg).toContain("rotate(45)");
@@ -423,22 +394,18 @@ describe("Server rendering consistency", () => {
 });
 
 // ====================================================================
-// 共通ロジック使用検証テスト
+// Shared logic usage verification tests
 // ====================================================================
 
 describe("Shared logic usage verification", () => {
 	it("should use same color calculation for server and client", () => {
-		// サーバーとクライアントが同じ関数を使用していることを確認
-		// これはインポートパスで検証（コンパイル時エラーで検出）
 		const testColor = { r: 123, g: 45, b: 67, opacity: 35 };
 		const rgba = colorToRgba(testColor);
 
-		// 正しいフォーマットであることを確認
 		expect(rgba).toMatch(/^rgba\(\d+, \d+, \d+, [\d.]+\)$/);
 	});
 
 	it("should use same transform calculation for server and client", () => {
-		// buildTransformとbuildFullTransformが一貫していることを確認
 		const transform1 = buildTransform(100, 200, 45, 1.5, true, false);
 		const transform2 = buildFullTransform(100, 200, 45, 1.5, true, false);
 
@@ -447,7 +414,6 @@ describe("Shared logic usage verification", () => {
 
 	it("should use same line endpoint calculation", () => {
 		const position = { x: 100, y: 100 };
-		// param1, param2 は10倍された整数値
 		const endpoint = calculateLineEndpoint(position, 3000, 2500);
 
 		expect(endpoint).toEqual({ x: 300, y: 250 });
@@ -455,11 +421,9 @@ describe("Shared logic usage verification", () => {
 
 	it("should use same donut inner radius calculation", () => {
 		const outerRadius = 100;
-		const donutRange = 120; // 0-240の範囲
+		const donutRange = 120;
 		const innerRadius = calculateDonutInnerRadius(outerRadius, donutRange);
 
-		// maxInnerRadius = 100 * 0.9 = 90
-		// innerRadius = 90 * (120 / 240) = 45
 		expect(innerRadius).toBe(45);
 	});
 });

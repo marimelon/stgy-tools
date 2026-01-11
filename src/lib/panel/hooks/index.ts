@@ -1,5 +1,5 @@
 /**
- * Panel フック エクスポート
+ * Panel hooks exports
  */
 
 export { usePanelActions } from "./usePanelActions";

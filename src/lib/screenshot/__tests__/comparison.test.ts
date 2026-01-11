@@ -1,10 +1,10 @@
 /**
- * スクリーンショット比較テスト
+ * Screenshot comparison tests
  *
- * ゲーム内スクリーンショットとstgyコードからのレンダリング結果を比較し、
- * 一致率が閾値以上であることを検証する。
+ * Compare in-game screenshots with rendered stgy code results,
+ * verifying the match percentage exceeds the threshold.
  *
- * テストデータは __fixtures__/ ディレクトリに配置:
+ * Test data in __fixtures__/ directory:
  *   001.png + 001.txt
  *   002.png + 002.txt
  *   ...
@@ -24,15 +24,12 @@ import {
 	resizePng,
 } from "./testUtils";
 
-// 一致率の閾値（%）
 const MATCH_THRESHOLD = 95;
 
-// フィクスチャディレクトリ
 const FIXTURES_DIR = resolve(import.meta.dirname, "./__fixtures__");
 
 /**
- * フィクスチャディレクトリから全てのテストケースを取得
- * @returns テストケースの配列 [{ id, pngPath, txtPath }]
+ * Discover all test cases from fixtures directory
  */
 function discoverTestCases(): Array<{
 	id: string;
@@ -57,7 +54,6 @@ function discoverTestCases(): Array<{
 		}
 	}
 
-	// IDでソート
 	testCases.sort((a, b) =>
 		a.id.localeCompare(b.id, undefined, { numeric: true }),
 	);
@@ -65,9 +61,6 @@ function discoverTestCases(): Array<{
 	return testCases;
 }
 
-/**
- * 単一のスクリーンショット比較を実行
- */
 async function runComparison(
 	pngPath: string,
 	txtPath: string,
@@ -76,17 +69,14 @@ async function runComparison(
 	diffPixelCount: number;
 	totalPixels: number;
 }> {
-	// 1. スクリーンショットを読み込み
 	const screenshotBuffer = readFileSync(pngPath);
 	const screenshotPng = parsePng(screenshotBuffer);
 
-	// 2. stgyコードを読み込み
 	const stgyCode = readFileSync(txtPath, "utf-8").trim();
 	if (!/^\[stgy:a[^\]]+\]$/.test(stgyCode)) {
 		throw new Error(`Invalid stgy code format in ${txtPath}`);
 	}
 
-	// 3. stgyコードをデコード
 	const decoded = decodeStgy(stgyCode);
 	if (decoded === null) {
 		throw new Error(`Failed to decode stgy code from ${txtPath}`);
@@ -97,7 +87,6 @@ async function runComparison(
 	}
 	const boardData = assignBoardObjectIds(parsed);
 
-	// 4. stgyコードをPNGにレンダリング
 	const renderResult = await renderImage({
 		boardData,
 		format: "png",
@@ -108,13 +97,11 @@ async function runComparison(
 
 	const renderedPng = parsePng(Buffer.from(renderResult.data));
 
-	// 5. スクリーンショットからボード領域を検出
 	const detectedRegion = detectBoardRegion(screenshotPng);
 	if (detectedRegion === null) {
 		throw new Error(`Failed to detect board region in ${pngPath}`);
 	}
 
-	// 6. 検出された領域を抽出してリサイズ
 	const extractedPng = extractRegion(screenshotPng, detectedRegion);
 	const resizedPng = resizePng(
 		extractedPng,
@@ -122,18 +109,15 @@ async function runComparison(
 		TARGET_BOARD_HEIGHT,
 	);
 
-	// 7. 画像を比較
 	return comparePixels(resizedPng, renderedPng, 0.1);
 }
 
-// テストケースを取得
 const testCases = discoverTestCases();
 
 describe("Screenshot Comparison", () => {
 	if (testCases.length === 0) {
 		it.skip("No test fixtures found", () => {});
 	} else {
-		// 各テストケースに対してテストを生成
 		for (const testCase of testCases) {
 			it(`[${testCase.id}] should match screenshot with rendered stgy code`, async () => {
 				const result = await runComparison(testCase.pngPath, testCase.txtPath);
@@ -147,7 +131,6 @@ describe("Screenshot Comparison", () => {
 			});
 		}
 
-		// サマリーテスト（全ケースの統計）
 		it("should have all test cases pass threshold", async () => {
 			const results: Array<{ id: string; matchPercentage: number }> = [];
 
@@ -159,7 +142,6 @@ describe("Screenshot Comparison", () => {
 				});
 			}
 
-			// 統計を計算
 			const percentages = results.map((r) => r.matchPercentage);
 			const avg = percentages.reduce((a, b) => a + b, 0) / percentages.length;
 			const min = Math.min(...percentages);
@@ -171,7 +153,6 @@ describe("Screenshot Comparison", () => {
 			console.log(`Min: ${min.toFixed(2)}%`);
 			console.log(`Max: ${max.toFixed(2)}%`);
 
-			// 閾値未満のケースを報告
 			const failed = results.filter((r) => r.matchPercentage < MATCH_THRESHOLD);
 			if (failed.length > 0) {
 				console.log(`\nFailed (< ${MATCH_THRESHOLD}%):`);

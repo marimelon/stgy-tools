@@ -1,14 +1,10 @@
 /**
- * グループのインデックス⇔ID変換ユーティリティ
- * インフラ層でのみ使用
+ * Group index-to-ID conversion utilities (infrastructure layer only)
  */
 
 import type { ObjectGroup } from "@/lib/editor/types";
 import type { BoardObject } from "@/lib/stgy/types";
 
-/**
- * 保存形式のグループ（インデックスベース）
- */
 export interface StoredObjectGroup {
 	id: string;
 	objectIndices: number[];
@@ -17,10 +13,7 @@ export interface StoredObjectGroup {
 }
 
 /**
- * インデックスベースのグループをIDベースに変換
- * @param storedGroups 保存形式のグループ
- * @param objects ID付きのオブジェクト配列
- * @returns IDベースのグループ
+ * Convert index-based groups to ID-based groups
  */
 export function convertGroupsToIdBased(
 	storedGroups: StoredObjectGroup[],
@@ -37,10 +30,7 @@ export function convertGroupsToIdBased(
 }
 
 /**
- * IDベースのグループをインデックスベースに変換
- * @param groups IDベースのグループ
- * @param objects ID付きのオブジェクト配列
- * @returns 保存形式のグループ
+ * Convert ID-based groups to index-based groups
  */
 export function convertGroupsToIndexBased(
 	groups: ObjectGroup[],

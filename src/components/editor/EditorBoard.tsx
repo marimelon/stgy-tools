@@ -422,7 +422,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 									endX={endX}
 									endY={endY}
 									onStartPointDrag={(x, y) => {
-										// 始点移動：positionを更新
 										updateObject(selectedId, {
 											position: { x, y },
 										});
@@ -431,7 +430,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 										commitHistory(t("toolbar.lineStartMoved"));
 									}}
 									onEndPointDrag={(x, y) => {
-										// 終点移動：param1, param2を更新、角度も再計算
 										const dx = x - selectedObject.position.x;
 										const dy = y - selectedObject.position.y;
 										const angle = (Math.atan2(dy, dx) * 180) / Math.PI;

@@ -12,7 +12,6 @@ export function AttackMarkerIcon({
 	const glowId = `attackMarkerGlow-${id}`;
 	const gradId = `attackMarkerGrad-${id}`;
 
-	// 数字を取得
 	const numberMap: Record<number, number> = {
 		[ObjectIds.Attack1]: 1,
 		[ObjectIds.Attack2]: 2,
@@ -25,7 +24,7 @@ export function AttackMarkerIcon({
 	};
 	const num = numberMap[objectId] ?? 1;
 
-	// 六角形のパス（下にタブ付き）
+	// Hexagon path with tab at bottom
 	const hexPath = `
 		M 0 -20
 		L 17 -10
@@ -41,7 +40,6 @@ export function AttackMarkerIcon({
 
 	return (
 		<g transform={transform}>
-			{/* 透明な背景（クリック領域） */}
 			<rect x={-20} y={-22} width={40} height={48} fill="transparent" />
 			<defs>
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
@@ -58,7 +56,6 @@ export function AttackMarkerIcon({
 				</linearGradient>
 			</defs>
 
-			{/* グロー効果 */}
 			<path
 				d={hexPath}
 				fill="none"
@@ -68,7 +65,6 @@ export function AttackMarkerIcon({
 				opacity="0.6"
 			/>
 
-			{/* 六角形の縁 */}
 			<path
 				d={hexPath}
 				fill="none"
@@ -77,7 +73,6 @@ export function AttackMarkerIcon({
 				strokeLinejoin="round"
 			/>
 
-			{/* 内側の六角形 */}
 			<path
 				d={`
 					M 0 -16
@@ -95,7 +90,6 @@ export function AttackMarkerIcon({
 				stroke="none"
 			/>
 
-			{/* 数字 */}
 			<text
 				x={0}
 				y={2}

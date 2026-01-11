@@ -1,5 +1,5 @@
 /**
- * パネルレイアウトアクションのテスト
+ * Panel layout actions tests
  */
 
 import { Store } from "@tanstack/store";
@@ -13,14 +13,12 @@ describe("layoutActions", () => {
 	let actions: ReturnType<typeof createLayoutActions>;
 
 	beforeEach(() => {
-		// 各テスト前に新しいストアを作成
 		store = new Store<PanelState>(structuredClone(DEFAULT_PANEL_LAYOUT));
 		actions = createLayoutActions(store);
 	});
 
 	describe("togglePanelVisibility", () => {
-		it("パネルを非表示にできる", () => {
-			// 初期状態: objectPaletteは表示
+		it("can hide a panel", () => {
 			expect(store.state.panels.objectPalette.visible).toBe(true);
 
 			actions.togglePanelVisibility("objectPalette");
@@ -28,8 +26,7 @@ describe("layoutActions", () => {
 			expect(store.state.panels.objectPalette.visible).toBe(false);
 		});
 
-		it("非表示のパネルを表示にできる", () => {
-			// 初期状態: historyPanelは非表示
+		it("can show a hidden panel", () => {
 			expect(store.state.panels.historyPanel.visible).toBe(false);
 
 			actions.togglePanelVisibility("historyPanel");
@@ -37,7 +34,7 @@ describe("layoutActions", () => {
 			expect(store.state.panels.historyPanel.visible).toBe(true);
 		});
 
-		it("2回トグルで元に戻る", () => {
+		it("returns to original state after two toggles", () => {
 			const initialVisible = store.state.panels.assetPanel.visible;
 
 			actions.togglePanelVisibility("assetPanel");
@@ -48,8 +45,7 @@ describe("layoutActions", () => {
 	});
 
 	describe("updatePanelSlot", () => {
-		it("パネルを左から右に移動できる", () => {
-			// 初期状態: objectPaletteは左
+		it("can move panel from left to right", () => {
 			expect(store.state.panels.objectPalette.slot).toBe("left");
 
 			actions.updatePanelSlot("objectPalette", "right");
@@ -57,8 +53,7 @@ describe("layoutActions", () => {
 			expect(store.state.panels.objectPalette.slot).toBe("right");
 		});
 
-		it("パネルを右から左に移動できる", () => {
-			// 初期状態: layerPanelは右
+		it("can move panel from right to left", () => {
 			expect(store.state.panels.layerPanel.slot).toBe("right");
 
 			actions.updatePanelSlot("layerPanel", "left");
@@ -66,75 +61,60 @@ describe("layoutActions", () => {
 			expect(store.state.panels.layerPanel.slot).toBe("left");
 		});
 
-		it("移動先スロットで最後の順序になる", () => {
-			// 右スロットのパネルを確認
+		it("places panel at end of target slot", () => {
 			const rightPanels = Object.entries(store.state.panels)
 				.filter(([_, cfg]) => cfg.slot === "right")
 				.map(([_, cfg]) => cfg.order);
 			const maxRightOrder = Math.max(...rightPanels);
 
-			// objectPaletteを右に移動
 			actions.updatePanelSlot("objectPalette", "right");
 
-			// 新しい順序は既存の最大順序より大きい
 			expect(store.state.panels.objectPalette.order).toBe(maxRightOrder + 1);
 		});
 	});
 
 	describe("reorderPanel", () => {
-		it("パネルを上に移動できる", () => {
-			// assetPanelはorder=1、objectPaletteはorder=0（両方とも左スロット）
+		it("can move panel up", () => {
 			const assetInitialOrder = store.state.panels.assetPanel.order;
 			const objectInitialOrder = store.state.panels.objectPalette.order;
 
-			// assetPanelはvisible=trueでないと移動できないので、まず表示する
-			// 初期状態でassetPanelはvisible=true（collapsed=trueだが表示されている）
-
 			actions.reorderPanel("assetPanel", "up");
 
-			// 順序がswapされる
 			expect(store.state.panels.assetPanel.order).toBe(objectInitialOrder);
 			expect(store.state.panels.objectPalette.order).toBe(assetInitialOrder);
 		});
 
-		it("パネルを下に移動できる", () => {
+		it("can move panel down", () => {
 			const assetInitialOrder = store.state.panels.assetPanel.order;
 			const objectInitialOrder = store.state.panels.objectPalette.order;
 
 			actions.reorderPanel("objectPalette", "down");
 
-			// 順序がswapされる
 			expect(store.state.panels.objectPalette.order).toBe(assetInitialOrder);
 			expect(store.state.panels.assetPanel.order).toBe(objectInitialOrder);
 		});
 
-		it("最上位のパネルは上に移動できない", () => {
-			// objectPaletteをorder=0として最上位に配置
+		it("cannot move topmost panel up", () => {
 			const initialOrder = store.state.panels.objectPalette.order;
 
 			actions.reorderPanel("objectPalette", "up");
 
-			// 順序は変わらない
 			expect(store.state.panels.objectPalette.order).toBe(initialOrder);
 		});
 
-		it("非表示のパネルは順序変更に含まれない", () => {
-			// historyPanelは非表示 (visible=false)
+		it("excludes hidden panels from reordering", () => {
 			const propertyInitialOrder = store.state.panels.propertyPanel.order;
 			const layerInitialOrder = store.state.panels.layerPanel.order;
 
-			// layerPanelを上に移動（historyPanelはスキップされる）
 			actions.reorderPanel("layerPanel", "up");
 
-			// propertyPanelとlayerPanelがswap
 			expect(store.state.panels.layerPanel.order).toBe(propertyInitialOrder);
 			expect(store.state.panels.propertyPanel.order).toBe(layerInitialOrder);
 		});
 	});
 
 	describe("togglePanelCollapsed", () => {
-		it("パネルを折りたためる", () => {
-			// 初期状態: objectPaletteは展開されている
+		it("can collapse a panel", () => {
 			expect(store.state.panels.objectPalette.collapsed).toBe(false);
 
 			actions.togglePanelCollapsed("objectPalette");
@@ -142,8 +122,7 @@ describe("layoutActions", () => {
 			expect(store.state.panels.objectPalette.collapsed).toBe(true);
 		});
 
-		it("折りたたまれたパネルを展開できる", () => {
-			// 初期状態: assetPanelは折りたたまれている
+		it("can expand a collapsed panel", () => {
 			expect(store.state.panels.assetPanel.collapsed).toBe(true);
 
 			actions.togglePanelCollapsed("assetPanel");
@@ -151,7 +130,7 @@ describe("layoutActions", () => {
 			expect(store.state.panels.assetPanel.collapsed).toBe(false);
 		});
 
-		it("2回トグルで元に戻る", () => {
+		it("returns to original state after two toggles", () => {
 			const initialCollapsed = store.state.panels.layerPanel.collapsed;
 
 			actions.togglePanelCollapsed("layerPanel");
@@ -162,35 +141,28 @@ describe("layoutActions", () => {
 	});
 
 	describe("resetToDefault", () => {
-		it("デフォルトレイアウトにリセットできる", () => {
-			// 複数の変更を加える
+		it("can reset to default layout", () => {
 			actions.togglePanelVisibility("objectPalette");
 			actions.updatePanelSlot("layerPanel", "left");
 			actions.togglePanelCollapsed("propertyPanel");
 
-			// 変更されていることを確認
 			expect(store.state.panels.objectPalette.visible).toBe(false);
 			expect(store.state.panels.layerPanel.slot).toBe("left");
 			expect(store.state.panels.propertyPanel.collapsed).toBe(true);
 
-			// リセット
 			actions.resetToDefault();
 
-			// デフォルトに戻る
 			expect(store.state.panels.objectPalette.visible).toBe(true);
 			expect(store.state.panels.layerPanel.slot).toBe("right");
 			expect(store.state.panels.propertyPanel.collapsed).toBe(false);
 		});
 
-		it("リセット後はデフォルトと完全に一致", () => {
-			// 変更を加える
+		it("matches default exactly after reset", () => {
 			actions.togglePanelVisibility("assetPanel");
 			actions.reorderPanel("layerPanel", "up");
 
-			// リセット
 			actions.resetToDefault();
 
-			// 全てのパネルがデフォルトと一致
 			const panelIds: PanelId[] = [
 				"objectPalette",
 				"assetPanel",
@@ -206,32 +178,23 @@ describe("layoutActions", () => {
 		});
 	});
 
-	describe("複合操作", () => {
-		it("複数の操作を連続して行える", () => {
-			// オブジェクトパレットを右に移動
+	describe("compound operations", () => {
+		it("can perform multiple operations in sequence", () => {
 			actions.updatePanelSlot("objectPalette", "right");
-
-			// 履歴パネルを表示
 			actions.togglePanelVisibility("historyPanel");
-
-			// レイヤーパネルを折りたたむ
 			actions.togglePanelCollapsed("layerPanel");
 
-			// 結果を確認
 			expect(store.state.panels.objectPalette.slot).toBe("right");
 			expect(store.state.panels.historyPanel.visible).toBe(true);
 			expect(store.state.panels.layerPanel.collapsed).toBe(true);
 		});
 
-		it("パネル移動後に順序変更できる", () => {
-			// objectPaletteを右に移動
+		it("can reorder after moving panel", () => {
 			actions.updatePanelSlot("objectPalette", "right");
 
-			// 右スロットで上に移動
 			const initialOrder = store.state.panels.objectPalette.order;
 			actions.reorderPanel("objectPalette", "up");
 
-			// 移動していることを確認（順序が変わっている）
 			expect(store.state.panels.objectPalette.order).toBeLessThan(initialOrder);
 		});
 	});

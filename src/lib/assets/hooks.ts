@@ -14,8 +14,7 @@ import {
 import { calculateAssetBounds } from "./utils";
 
 /**
- * オブジェクトにランタイムIDを付与
- * アセットはIDなしで保存されている可能性があるため、読み込み時に生成
+ * Add runtime IDs to objects (assets may be stored without IDs)
  */
 function addRuntimeIds(objects: StoredAsset["objects"]): BoardObject[] {
 	return objects.map((obj) => ({
@@ -24,16 +23,10 @@ function addRuntimeIds(objects: StoredAsset["objects"]): BoardObject[] {
 	}));
 }
 
-/**
- * ランタイムID付きのアセット型
- */
 export type AssetWithRuntimeIds = Omit<StoredAsset, "objects"> & {
 	objects: BoardObject[];
 };
 
-/**
- * アセットのオブジェクトにランタイムIDを付与
- */
 function addRuntimeIdsToAsset(asset: StoredAsset): AssetWithRuntimeIds {
 	return {
 		...asset,

@@ -1,5 +1,5 @@
 /**
- * CRC32計算ユーティリティ
+ * CRC32 calculation utility
  */
 
 import {
@@ -8,9 +8,6 @@ import {
 	CRC32_POLYNOMIAL,
 } from "./constants";
 
-/**
- * CRC32計算用テーブル
- */
 const CRC32_TABLE = (() => {
 	const table = new Uint32Array(256);
 	for (let i = 0; i < 256; i++) {
@@ -24,9 +21,7 @@ const CRC32_TABLE = (() => {
 })();
 
 /**
- * CRC32を計算
- * @param data バイト配列
- * @returns CRC32チェックサム
+ * Calculate CRC32 checksum
  */
 export function calculateCRC32(data: Uint8Array): number {
 	let crc = CRC32_INITIAL_VALUE;

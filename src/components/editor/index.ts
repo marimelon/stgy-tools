@@ -1,15 +1,14 @@
 /**
- * エディターコンポーネントのエクスポート
+ * Editor component exports
  */
 
-// 型は @/lib/editor から再エクスポート（後方互換性のため）
+// Re-export types from @/lib/editor for backward compatibility
 export type { HandleType, ResizeHandle } from "@/lib/editor";
 export { AssetPanel, AssetPanelActions } from "./AssetPanel";
 export type { BoardPropertyPanelProps } from "./BoardPropertyPanel";
 export { BoardPropertyPanel } from "./BoardPropertyPanel";
 export { BoardTabs } from "./BoardTabs";
 export type { ColorPaletteProps } from "./ColorPalette";
-// カラーパレット
 export { ColorPalette } from "./ColorPalette";
 export { DebugPanel } from "./DebugPanel";
 export type {
@@ -28,7 +27,6 @@ export type {
 	NumberInputProps,
 	SliderInputProps,
 } from "./FormInputs";
-// フォーム入力コンポーネント
 export {
 	Checkbox,
 	NumberInput,
@@ -36,7 +34,6 @@ export {
 	SliderInput,
 } from "./FormInputs";
 export type { GridOverlayProps, SelectionIndicatorProps } from "./GridOverlay";
-// SVGオーバーレイ
 export { GridOverlay, SelectionIndicator } from "./GridOverlay";
 export { HistoryPanel, HistoryPanelActions } from "./HistoryPanel";
 export type { ImportResult } from "./ImportModal";
@@ -48,5 +45,4 @@ export { ObjectPropertyPanel } from "./ObjectPropertyPanel";
 export { PropertyPanel } from "./PropertyPanel";
 export { SelectionHandles } from "./SelectionHandles";
 export type { ToolbarButtonProps } from "./ToolbarButton";
-// ツールバー部品
 export { Divider, ToolbarButton } from "./ToolbarButton";

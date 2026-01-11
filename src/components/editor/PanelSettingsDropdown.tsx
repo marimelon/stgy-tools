@@ -1,8 +1,7 @@
 /**
- * パネル設定ドロップダウンコンポーネント
+ * Panel settings dropdown component
  *
- * パネルの表示/非表示、配置を設定
- * React Portalを使用してbody直下にレンダリングし、親要素のoverflowの影響を受けない
+ * Uses React Portal to render directly under body to avoid parent overflow clipping.
  */
 
 import {
@@ -31,15 +30,9 @@ import {
 	usePanelActions,
 } from "@/lib/panel";
 
-/** アイコンサイズ */
 const ICON_SIZE = 16;
-
-/** メニュー幅 */
 const MENU_WIDTH = 320;
 
-/**
- * パネル設定ドロップダウン
- */
 export function PanelSettingsDropdown() {
 	const { t } = useTranslation();
 	const config = useConfig();
@@ -55,7 +48,6 @@ export function PanelSettingsDropdown() {
 	const menuRef = useRef<HTMLDivElement>(null);
 	const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
-	// メニュー位置を計算（画面端を超えないように調整）
 	useLayoutEffect(() => {
 		if (isOpen && buttonRef.current) {
 			const buttonRect = buttonRef.current.getBoundingClientRect();
@@ -63,12 +55,10 @@ export function PanelSettingsDropdown() {
 
 			let left = buttonRect.left;
 
-			// 右端を超える場合は左に調整
 			if (left + MENU_WIDTH > viewportWidth - 8) {
 				left = viewportWidth - MENU_WIDTH - 8;
 			}
 
-			// 左端を超えないように
 			if (left < 8) {
 				left = 8;
 			}
@@ -81,14 +71,12 @@ export function PanelSettingsDropdown() {
 		}
 	}, [isOpen]);
 
-	// 閉じた時にリセット
 	useEffect(() => {
 		if (!isOpen) {
 			setIsPositioned(false);
 		}
 	}, [isOpen]);
 
-	// クリック外で閉じる（キャプチャフェーズで捕捉してエディタ上のクリックも検知）
 	useEffect(() => {
 		if (!isOpen) return;
 
@@ -104,8 +92,7 @@ export function PanelSettingsDropdown() {
 			}
 		};
 
-		// キャプチャフェーズで捕捉することで、stopPropagationされる前にイベントを検知
-		// SVGキャンバスはpointerdownを使用しているため、両方を監視
+		// Listen on capture phase to detect events before stopPropagation
 		document.addEventListener("mousedown", handleClickOutside, true);
 		document.addEventListener("pointerdown", handleClickOutside, true);
 		return () => {
@@ -114,10 +101,8 @@ export function PanelSettingsDropdown() {
 		};
 	}, [isOpen]);
 
-	// DEFAULT_PANEL_LAYOUTから動的にパネルIDを取得
 	const panelIds = Object.keys(DEFAULT_PANEL_LAYOUT.panels) as PanelId[];
 
-	// スロット内の表示中パネルをソート順で取得（メモ化）
 	const getVisiblePanelsInSlot = useCallback(
 		(slot: PanelSlot) => {
 			return (Object.entries(config.panels) as [PanelId, PanelConfig][])
@@ -128,7 +113,6 @@ export function PanelSettingsDropdown() {
 		[config.panels],
 	);
 
-	// 左右スロットの表示パネルをメモ化
 	const leftVisiblePanels = useMemo(
 		() => getVisiblePanelsInSlot("left"),
 		[getVisiblePanelsInSlot],
@@ -168,7 +152,6 @@ export function PanelSettingsDropdown() {
 							visibility: isPositioned ? "visible" : "hidden",
 						}}
 					>
-						{/* パネル一覧（表示/配置統合） */}
 						<div className="p-2 border-b border-slate-700">
 							{panelIds.map((panelId) => {
 								const isVisible = config.panels[panelId].visible;
@@ -197,7 +180,6 @@ export function PanelSettingsDropdown() {
 											</span>
 										</label>
 
-										{/* 順序変更ボタン（表示中のパネルのみ） */}
 										{isVisible && (
 											<div className="flex gap-0.5">
 												<button
@@ -260,7 +242,6 @@ export function PanelSettingsDropdown() {
 							})}
 						</div>
 
-						{/* リセット */}
 						<div className="p-2">
 							<button
 								type="button"

@@ -1,16 +1,15 @@
 /**
- * PanelStore シングルトンインスタンス管理
+ * PanelStore singleton instance management
  */
 
 import { Store } from "@tanstack/store";
 import type { PanelState, PanelStore } from "./types";
 
-/** シングルトンインスタンス */
 let store: PanelStore | null = null;
 
 /**
- * PanelStoreを作成
- * 既存のストアがある場合は上書き
+ * Create PanelStore
+ * Overwrites existing store if present
  */
 export function createPanelStore(initialState: PanelState): PanelStore {
 	store = new Store<PanelState>(initialState);
@@ -18,8 +17,8 @@ export function createPanelStore(initialState: PanelState): PanelStore {
 }
 
 /**
- * PanelStoreを取得
- * ストアが未初期化の場合はエラー
+ * Get PanelStore
+ * Throws error if store is not initialized
  */
 export function getPanelStore(): PanelStore {
 	if (!store) {
@@ -31,8 +30,8 @@ export function getPanelStore(): PanelStore {
 }
 
 /**
- * PanelStoreを安全に取得（null許容）
- * タイミング問題が発生する可能性がある場所で使用
+ * Get PanelStore safely (null-safe)
+ * Use where timing issues may occur
  */
 export function getPanelStoreSafe(): PanelStore | null {
 	return store;

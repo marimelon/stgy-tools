@@ -192,7 +192,9 @@ export function BatchPropertyPanel({
 								unit="%"
 								onChange={handleSizeChange}
 								onBlur={() =>
-									onCommitHistory(t("batchProperty.sizeChanged", "Size changed"))
+									onCommitHistory(
+										t("batchProperty.sizeChanged", "Size changed"),
+									)
 								}
 							/>
 						</div>
@@ -209,7 +211,9 @@ export function BatchPropertyPanel({
 										value={displayColor}
 										onChange={(e) => handleColorChange(e.target.value)}
 										onBlur={() =>
-											onCommitHistory(t("batchProperty.colorChanged", "Color changed"))
+											onCommitHistory(
+												t("batchProperty.colorChanged", "Color changed"),
+											)
 										}
 										className="w-10 h-8 cursor-pointer border-0 bg-transparent"
 									/>
@@ -230,7 +234,9 @@ export function BatchPropertyPanel({
 								}
 								onColorSelect={(color) => {
 									onUpdate({ color: { r: color.r, g: color.g, b: color.b } });
-									onCommitHistory(t("batchProperty.colorChanged", "Color changed"));
+									onCommitHistory(
+										t("batchProperty.colorChanged", "Color changed"),
+									);
 								}}
 							/>
 						)}

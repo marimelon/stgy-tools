@@ -1,15 +1,15 @@
 /**
- * Panel アクション集約
+ * Panel actions aggregation
  */
 
 import type { PanelStore } from "../types";
 import { createLayoutActions, type LayoutActions } from "./layoutActions";
 
-/** 全アクションのインターフェース */
+/** All actions interface */
 export interface PanelActions extends LayoutActions {}
 
 /**
- * 全アクションを作成
+ * Create all actions
  */
 export function createPanelActions(store: PanelStore): PanelActions {
 	return {

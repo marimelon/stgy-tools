@@ -11,7 +11,6 @@ export function BindMarkerIcon({
 	const id = useId();
 	const glowId = `bindMarkerGlow-${id}`;
 
-	// 数字を取得
 	const numberMap: Record<number, number> = {
 		[ObjectIds.Bind1]: 1,
 		[ObjectIds.Bind2]: 2,
@@ -19,13 +18,12 @@ export function BindMarkerIcon({
 	};
 	const num = numberMap[objectId] ?? 1;
 
-	// 楕円形のチェーンリンク（縦長の楕円）
-	const rx = 8; // 横の半径
-	const ry = 12; // 縦の半径
+	// Elliptical chain link (vertical ellipse)
+	const rx = 8;
+	const ry = 12;
 
 	return (
 		<g transform={transform}>
-			{/* 透明な背景（クリック領域） */}
 			<rect x={-20} y={-30} width={44} height={64} fill="transparent" />
 			<defs>
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
@@ -37,7 +35,6 @@ export function BindMarkerIcon({
 				</filter>
 			</defs>
 
-			{/* グロー効果 */}
 			<g filter={`url(#${glowId})`} opacity="0.5">
 				<ellipse
 					cx={-4}
@@ -68,7 +65,7 @@ export function BindMarkerIcon({
 				/>
 			</g>
 
-			{/* リンク1（上）- 外側の白い縁 */}
+			{/* Link 1 (top) - outer white border */}
 			<ellipse
 				cx={-4}
 				cy={-14}
@@ -78,7 +75,7 @@ export function BindMarkerIcon({
 				stroke="#ffffff"
 				strokeWidth="3"
 			/>
-			{/* リンク1 - 内側の紫 */}
+			{/* Link 1 - inner purple */}
 			<ellipse
 				cx={-4}
 				cy={-14}
@@ -89,7 +86,7 @@ export function BindMarkerIcon({
 				strokeWidth="1.5"
 			/>
 
-			{/* リンク2（中央）- 外側の白い縁 */}
+			{/* Link 2 (center) - outer white border */}
 			<ellipse
 				cx={4}
 				cy={0}
@@ -99,7 +96,7 @@ export function BindMarkerIcon({
 				stroke="#ffffff"
 				strokeWidth="3"
 			/>
-			{/* リンク2 - 内側の紫 */}
+			{/* Link 2 - inner purple */}
 			<ellipse
 				cx={4}
 				cy={0}
@@ -110,7 +107,7 @@ export function BindMarkerIcon({
 				strokeWidth="1.5"
 			/>
 
-			{/* リンク3（下）- 外側の白い縁 */}
+			{/* Link 3 (bottom) - outer white border */}
 			<ellipse
 				cx={-4}
 				cy={14}
@@ -120,7 +117,7 @@ export function BindMarkerIcon({
 				stroke="#ffffff"
 				strokeWidth="3"
 			/>
-			{/* リンク3 - 内側の紫 */}
+			{/* Link 3 - inner purple */}
 			<ellipse
 				cx={-4}
 				cy={14}
@@ -131,7 +128,6 @@ export function BindMarkerIcon({
 				strokeWidth="1.5"
 			/>
 
-			{/* 数字 */}
 			<text
 				x={16}
 				y={-16}

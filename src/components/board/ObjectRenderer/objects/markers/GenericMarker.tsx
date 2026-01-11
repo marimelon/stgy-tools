@@ -14,7 +14,6 @@ export function GenericMarkerIcon({
 
 	return (
 		<g transform={transform}>
-			{/* 透明な背景（クリック領域） */}
 			<rect x={-24} y={-24} width={48} height={48} fill="transparent" />
 			<defs>
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
@@ -33,7 +32,6 @@ export function GenericMarkerIcon({
 
 			{objectId === ObjectIds.Square && (
 				<>
-					{/* グロー */}
 					<rect
 						x={-16}
 						y={-16}
@@ -47,7 +45,6 @@ export function GenericMarkerIcon({
 						filter={`url(#${glowId})`}
 						opacity="0.5"
 					/>
-					{/* 外側の四角 */}
 					<rect
 						x={-16}
 						y={-16}
@@ -59,7 +56,6 @@ export function GenericMarkerIcon({
 						stroke={`url(#${gradId})`}
 						strokeWidth="3"
 					/>
-					{/* 内側の四角 */}
 					<rect
 						x={-10}
 						y={-10}
@@ -76,7 +72,6 @@ export function GenericMarkerIcon({
 
 			{objectId === ObjectIds.Circle && (
 				<>
-					{/* グロー */}
 					<circle
 						cx={0}
 						cy={0}
@@ -87,7 +82,6 @@ export function GenericMarkerIcon({
 						filter={`url(#${glowId})`}
 						opacity="0.5"
 					/>
-					{/* 外側の円 */}
 					<circle
 						cx={0}
 						cy={0}
@@ -96,7 +90,6 @@ export function GenericMarkerIcon({
 						stroke={`url(#${gradId})`}
 						strokeWidth="3"
 					/>
-					{/* 内側の円 */}
 					<circle
 						cx={0}
 						cy={0}
@@ -110,7 +103,6 @@ export function GenericMarkerIcon({
 
 			{objectId === ObjectIds.Plus && (
 				<>
-					{/* グロー */}
 					<g filter={`url(#${glowId})`} opacity="0.5">
 						<line
 							x1={0}
@@ -129,7 +121,6 @@ export function GenericMarkerIcon({
 							strokeWidth="10"
 						/>
 					</g>
-					{/* プラス記号 */}
 					<line
 						x1={0}
 						y1={-16}
@@ -153,7 +144,6 @@ export function GenericMarkerIcon({
 
 			{objectId === ObjectIds.Triangle && (
 				<>
-					{/* グロー */}
 					<path
 						d="M 0 -18 L 16 14 L -16 14 Z"
 						fill="none"
@@ -163,7 +153,6 @@ export function GenericMarkerIcon({
 						opacity="0.5"
 						strokeLinejoin="round"
 					/>
-					{/* 外側の三角形 */}
 					<path
 						d="M 0 -18 L 16 14 L -16 14 Z"
 						fill="none"
@@ -171,7 +160,6 @@ export function GenericMarkerIcon({
 						strokeWidth="3"
 						strokeLinejoin="round"
 					/>
-					{/* 内側の三角形 */}
 					<path
 						d="M 0 -10 L 10 8 L -10 8 Z"
 						fill="none"

@@ -97,7 +97,7 @@ export const storedBoardSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	stgyCode: z.string(),
-	encodeKey: z.number().min(0).max(63).optional(), // 後方互換性のため残すが、新規保存では使用しない
+	encodeKey: z.number().min(0).max(63).optional(), // Kept for backward compatibility but not used in new saves
 	groups: z.array(objectGroupSchema),
 	gridSettings: gridSettingsSchema,
 	createdAt: z.string(),

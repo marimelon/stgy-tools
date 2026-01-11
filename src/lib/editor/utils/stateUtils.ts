@@ -1,5 +1,5 @@
 /**
- * エディター状態操作用ユーティリティ関数
+ * Editor state manipulation utilities
  */
 
 import type {
@@ -17,20 +17,16 @@ import {
 } from "../types";
 
 /**
- * 履歴の最大保持数
- * @deprecated MAX_HISTORY_SIZE を使用してください
+ * @deprecated Use MAX_HISTORY_SIZE instead
  */
 export const MAX_HISTORY = MAX_HISTORY_SIZE;
 
-/**
- * 履歴エントリ用のユニークIDを生成
- */
 export function generateHistoryId(): string {
 	return `history-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 // ============================================
-// 状態比較用 deepEqual 関数群
+// Deep equality functions for state comparison
 // ============================================
 
 function equalPosition(a: Position, b: Position): boolean {
@@ -108,13 +104,12 @@ function deepEqualGroups(a: ObjectGroup[], b: ObjectGroup[]): boolean {
 }
 
 /**
- * 履歴エントリを追加
+ * Add history entry (skips if no changes detected)
  */
 export function pushHistory(
 	state: EditorState,
 	description: string,
 ): Pick<EditorState, "history" | "historyIndex" | "isDirty"> {
-	// 現在位置の履歴エントリと比較し、変更がなければスキップ
 	const currentEntry = state.history[state.historyIndex];
 	if (
 		currentEntry &&
@@ -128,10 +123,9 @@ export function pushHistory(
 		};
 	}
 
-	// 現在位置以降の履歴を削除
+	// Truncate future history
 	const newHistory = state.history.slice(0, state.historyIndex + 1);
 
-	// 新しいエントリを追加
 	const entry: HistoryEntry = {
 		id: generateHistoryId(),
 		board: structuredClone(state.board),
@@ -140,7 +134,7 @@ export function pushHistory(
 	};
 	newHistory.push(entry);
 
-	// 履歴が多すぎる場合は古いものを削除
+	// Remove oldest entry if exceeding limit
 	if (newHistory.length > MAX_HISTORY_SIZE) {
 		newHistory.shift();
 	}
@@ -152,18 +146,12 @@ export function pushHistory(
 	};
 }
 
-/**
- * グループIDを生成
- */
 export function generateGroupId(): string {
 	return `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**
- * オブジェクト削除時にグループを更新（ID-based）
- * @param groups 既存のグループ配列
- * @param deletedIds 削除されたオブジェクトのID配列
- * @returns 更新されたグループ配列（空のグループは除外）
+ * Update groups after object deletion (removes empty groups)
  */
 export function updateGroupsAfterDelete(
 	groups: ObjectGroup[],
@@ -178,15 +166,12 @@ export function updateGroupsAfterDelete(
 		.filter((group) => group.objectIds.length > 0);
 }
 
-/**
- * ボードデータをディープコピー
- */
 export function cloneBoard(board: BoardData): BoardData {
 	return structuredClone(board);
 }
 
 /**
- * オブジェクトを更新（ID-based）
+ * Update object in board (merges nested objects)
  */
 export function updateObjectInBoard(
 	board: BoardData,
@@ -199,7 +184,6 @@ export function updateObjectInBoard(
 		newBoard.objects[index] = {
 			...newBoard.objects[index],
 			...updates,
-			// ネストしたオブジェクトは個別にマージ
 			flags: {
 				...newBoard.objects[index].flags,
 				...(updates.flags ?? {}),
@@ -217,9 +201,6 @@ export function updateObjectInBoard(
 	return newBoard;
 }
 
-/**
- * IDからオブジェクトを検索
- */
 export function findObjectById(
 	board: BoardData,
 	objectId: string,
@@ -227,9 +208,6 @@ export function findObjectById(
 	return board.objects.find((obj) => obj.id === objectId);
 }
 
-/**
- * IDからオブジェクトのインデックスを取得
- */
 export function findObjectIndex(board: BoardData, objectId: string): number {
 	return board.objects.findIndex((obj) => obj.id === objectId);
 }

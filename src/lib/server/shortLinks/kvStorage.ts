@@ -1,5 +1,5 @@
 /**
- * Cloudflare KV を使用した短縮リンクストレージ実装
+ * Cloudflare KV storage implementation for short links
  */
 
 import type { ShortLinkStorage } from "./storage";

@@ -1,7 +1,3 @@
-/**
- * 円形範囲攻撃：移動型アイコン
- */
-
 import { useId } from "react";
 import type { IconProps } from "../types";
 

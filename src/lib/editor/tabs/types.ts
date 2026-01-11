@@ -27,7 +27,7 @@ export const TABS_STORAGE_KEY = "strategy-board-editor:tabs";
 export const TABS_SAVE_DEBOUNCE_MS = 500;
 
 /**
- * ボードが「削除された」と判定するまでの連続消失回数の閾値
- * IndexedDBの非同期クエリによる一時的なデータ消失を無視するため
+ * Threshold for consecutive missing board counts before considering it deleted.
+ * Ignores temporary data absence from asynchronous IndexedDB queries.
  */
 export const MISSING_BOARD_THRESHOLD = 5;

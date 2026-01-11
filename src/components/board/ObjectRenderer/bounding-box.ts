@@ -38,7 +38,7 @@ export function getObjectBoundingBox(
 		const outerRadius = 256; // 512 / 2
 		const innerRadius = outerRadius * (donutRange / 240);
 
-		// 360度以上の場合は完全な円
+		// Full circle for 360 degrees or more
 		if (angle >= 360) {
 			return {
 				width: outerRadius * 2,

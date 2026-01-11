@@ -1,7 +1,5 @@
 /**
- * ボードプロパティパネルコンポーネント
- *
- * shadcn/ui ベースのボード設定パネル
+ * Board property panel component
  */
 
 import { useId } from "react";
@@ -36,14 +34,12 @@ import type { BackgroundId } from "@/lib/stgy";
 import { BackgroundId as BgId, MAX_BOARD_NAME_LENGTH } from "@/lib/stgy";
 import { PropertySection } from "./FormInputs";
 
-/** オーバーレイタイプの翻訳キー */
 const OVERLAY_TYPE_LABELS: Record<EditorOverlayType, string> = {
 	none: "toolbar.overlayNone",
 	concentric: "toolbar.overlayConcentric",
 	square: "toolbar.overlaySquare",
 };
 
-/** 背景ID一覧 */
 const BACKGROUND_IDS: BackgroundId[] = [
 	BgId.None,
 	BgId.FullCheck,
@@ -54,24 +50,17 @@ const BACKGROUND_IDS: BackgroundId[] = [
 	BgId.SquareGray,
 ];
 
-/**
- * ボードプロパティパネルのProps
- */
 export interface BoardPropertyPanelProps {
-	/** メタデータ更新時のコールバック */
 	onUpdateMeta: (updates: {
 		name?: string;
 		backgroundId?: BackgroundId;
 	}) => void;
-	/** 履歴コミット時のコールバック */
 	onCommitHistory: (description: string) => void;
 }
 
 /**
- * ボードプロパティパネル
- *
- * オブジェクト移動時の再レンダリングを避けるため、
- * board全体ではなくuseBoardName/useBackgroundIdを使用
+ * Uses fine-grained selectors (useBoardName/useBackgroundId) to avoid
+ * re-rendering on object movement.
  */
 export function BoardPropertyPanel({
 	onUpdateMeta,
@@ -80,7 +69,6 @@ export function BoardPropertyPanel({
 	const { t } = useTranslation();
 	const debugMode = useDebugMode();
 
-	// 細粒度のセレクタを使用（オブジェクト移動で再レンダリングしない）
 	const boardName = useBoardName();
 	const backgroundId = useBackgroundId();
 	const gridSettings = useGridSettings();
@@ -106,7 +94,6 @@ export function BoardPropertyPanel({
 	return (
 		<div className="h-full overflow-y-auto">
 			<div className="p-4 space-y-1">
-				{/* ボード名 */}
 				<PropertySection
 					title={t("boardPanel.boardName")}
 					rightContent={`${boardName.length}/${MAX_BOARD_NAME_LENGTH}`}
@@ -116,7 +103,7 @@ export function BoardPropertyPanel({
 						value={boardName}
 						onChange={(e) => onUpdateMeta({ name: e.target.value })}
 						onCompositionEnd={(e) => {
-							// IME確定時に文字数制限を適用
+							// Apply character limit on IME composition end
 							if (!debugMode) {
 								const value = e.currentTarget.value;
 								if (value.length > MAX_BOARD_NAME_LENGTH) {
@@ -127,7 +114,7 @@ export function BoardPropertyPanel({
 							}
 						}}
 						onBlur={() => {
-							// 確定時に文字数制限を適用（非IME入力用）
+							// Apply character limit on blur (for non-IME input)
 							if (!debugMode && boardName.length > MAX_BOARD_NAME_LENGTH) {
 								onUpdateMeta({
 									name: boardName.slice(0, MAX_BOARD_NAME_LENGTH),
@@ -139,7 +126,6 @@ export function BoardPropertyPanel({
 					/>
 				</PropertySection>
 
-				{/* 背景: プルダウン + 表示チェックボックス */}
 				<PropertySection title={t("boardPanel.background")}>
 					<div className="flex items-center gap-2">
 						<Select
@@ -178,7 +164,6 @@ export function BoardPropertyPanel({
 					</div>
 				</PropertySection>
 
-				{/* キャンバス色（背景非表示時のみ） */}
 				{!gridSettings.showBackground && (
 					<PropertySection title={t("boardPanel.canvasColor")}>
 						<div className="flex items-center gap-1.5 flex-wrap">
@@ -203,7 +188,6 @@ export function BoardPropertyPanel({
 					</PropertySection>
 				)}
 
-				{/* 編集用オーバーレイ */}
 				<PropertySection title={t("toolbar.editorOverlay")}>
 					<Select
 						value={gridSettings.overlayType}
@@ -224,11 +208,9 @@ export function BoardPropertyPanel({
 					</Select>
 				</PropertySection>
 
-				{/* オーバーレイ詳細設定（オーバーレイが有効な場合のみ） */}
 				{gridSettings.overlayType !== "none" && (
 					<PropertySection title={t("overlaySettings.title")}>
 						<div className="space-y-3">
-							{/* 密度設定 */}
 							<div className="space-y-1">
 								<div className="flex items-center justify-between">
 									<span className="text-xs text-slate-400">
@@ -275,7 +257,6 @@ export function BoardPropertyPanel({
 								)}
 							</div>
 
-							{/* 色設定 */}
 							<div className="space-y-1">
 								<span className="text-xs text-slate-400">
 									{t("overlaySettings.color")}
@@ -305,7 +286,6 @@ export function BoardPropertyPanel({
 								</div>
 							</div>
 
-							{/* 透明度設定 */}
 							<div className="space-y-1">
 								<div className="flex items-center justify-between">
 									<span className="text-xs text-slate-400">
@@ -326,7 +306,6 @@ export function BoardPropertyPanel({
 								/>
 							</div>
 
-							{/* 要素表示設定 */}
 							<div className="flex flex-wrap gap-x-3 gap-y-1">
 								<div className="flex items-center">
 									<Checkbox
@@ -388,10 +367,8 @@ export function BoardPropertyPanel({
 					</PropertySection>
 				)}
 
-				{/* グリッドスナップ: 横並びでコンパクトに */}
 				<PropertySection title={t("moreMenu.gridSnap")}>
 					<div className="flex items-center gap-2 flex-wrap">
-						{/* スナップ有効 */}
 						<div className="flex items-center shrink-0">
 							<Checkbox
 								id={gridSnapId}
@@ -408,7 +385,6 @@ export function BoardPropertyPanel({
 							</label>
 						</div>
 
-						{/* グリッドサイズ */}
 						<Select
 							value={String(gridSettings.size)}
 							onValueChange={(value) =>
@@ -428,7 +404,6 @@ export function BoardPropertyPanel({
 							</SelectContent>
 						</Select>
 
-						{/* グリッド表示 */}
 						<div className="flex items-center shrink-0">
 							<Checkbox
 								id={showGridId}

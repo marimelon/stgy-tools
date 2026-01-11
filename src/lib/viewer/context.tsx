@@ -17,15 +17,10 @@ import {
 	type ViewerState,
 } from "./types";
 
-// ストアの型
 type ViewerStore = Store<ViewerState>;
 
-// コンテキスト
 const ViewerStoreContext = createContext<ViewerStore | null>(null);
 
-/**
- * stgyコードをデコードしてViewerBoardを生成
- */
 function createViewerBoard(stgyCode: string, index: number): ViewerBoard {
 	const id = nanoid();
 	const trimmedCode = stgyCode.trim();
@@ -63,8 +58,7 @@ function createViewerBoard(stgyCode: string, index: number): ViewerBoard {
 }
 
 /**
- * 複数のstgyコードをパースしてViewerBoard配列を生成
- * 改行区切りで複数コードを受け付ける
+ * Parse multiple stgy codes (newline separated) into ViewerBoard array
  */
 export function parseMultipleStgyCodes(input: string): ViewerBoard[] {
 	const lines = input
@@ -72,7 +66,6 @@ export function parseMultipleStgyCodes(input: string): ViewerBoard[] {
 		.map((line) => line.trim())
 		.filter((line) => line.length > 0);
 
-	// 上限を超えた場合は切り捨て
 	const limitedLines = lines.slice(0, MAX_BOARDS);
 
 	return limitedLines.map((code, index) => createViewerBoard(code, index));
@@ -85,10 +78,6 @@ interface ViewerStoreProviderProps {
 	initialViewMode?: ViewerMode;
 }
 
-/**
- * ViewerStoreProvider
- * Viewer画面の状態管理を提供
- */
 export function ViewerStoreProvider({
 	children,
 	initialBoards = [],
@@ -114,9 +103,6 @@ export function ViewerStoreProvider({
 	);
 }
 
-/**
- * ストアインスタンスを取得するフック
- */
 export function useViewerStoreInstance(): ViewerStore {
 	const store = useContext(ViewerStoreContext);
 	if (!store) {
@@ -126,11 +112,11 @@ export function useViewerStoreInstance(): ViewerStore {
 }
 
 /**
- * セレクタを使って状態を購読するフック
+ * Subscribe to state using a selector.
  *
- * 注意: selectorは参照が安定している必要があります。
- * インラインで渡す場合は、プリミティブな値を返すセレクタのみ使用してください。
- * 複雑なセレクタはuseCallbackでメモ化するか、hooks.tsの事前定義セレクタを使用してください。
+ * Note: Selector reference must be stable. For inline selectors,
+ * only use those returning primitive values. For complex selectors,
+ * memoize with useCallback or use predefined selectors from hooks.ts.
  */
 export function useViewerSelector<T>(selector: (state: ViewerState) => T): T {
 	const store = useViewerStoreInstance();
@@ -148,18 +134,11 @@ export function useViewerSelector<T>(selector: (state: ViewerState) => T): T {
 	return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
-/**
- * Viewerのアクション関数を返すフック
- */
 export function useViewerActions() {
 	const store = useViewerStoreInstance();
 
 	return useMemo(
 		() => ({
-			/**
-			 * 複数のstgyコードをボードとして読み込む
-			 * 既存のボードは置き換えられる
-			 */
 			loadBoards: (input: string) => {
 				const boards = parseMultipleStgyCodes(input);
 				store.setState((state) => ({
@@ -170,9 +149,6 @@ export function useViewerActions() {
 				}));
 			},
 
-			/**
-			 * 単一ボードを追加
-			 */
 			addBoard: (stgyCode: string) => {
 				const currentBoards = store.state.boards;
 				if (currentBoards.length >= MAX_BOARDS) {
@@ -187,16 +163,12 @@ export function useViewerActions() {
 				return true;
 			},
 
-			/**
-			 * ボードを削除
-			 */
 			removeBoard: (id: string) => {
 				store.setState((state) => {
 					const newBoards = state.boards.filter((b) => b.id !== id);
 					const newSelectedObjectIds = { ...state.selectedObjectIds };
 					delete newSelectedObjectIds[id];
 
-					// 削除したのがアクティブだった場合、次のボードをアクティブに
 					let newActiveId = state.activeId;
 					if (state.activeId === id) {
 						const deletedIndex = state.boards.findIndex((b) => b.id === id);
@@ -215,9 +187,6 @@ export function useViewerActions() {
 				});
 			},
 
-			/**
-			 * アクティブなボードを変更
-			 */
 			setActiveBoard: (id: string) => {
 				store.setState((state) => ({
 					...state,
@@ -225,9 +194,6 @@ export function useViewerActions() {
 				}));
 			},
 
-			/**
-			 * 表示モードを変更
-			 */
 			setViewMode: (mode: ViewerMode) => {
 				store.setState((state) => ({
 					...state,
@@ -235,9 +201,6 @@ export function useViewerActions() {
 				}));
 			},
 
-			/**
-			 * ボードの選択オブジェクトを設定
-			 */
 			setSelectedObject: (boardId: string, objectId: string | null) => {
 				store.setState((state) => ({
 					...state,
@@ -248,9 +211,6 @@ export function useViewerActions() {
 				}));
 			},
 
-			/**
-			 * 全ボードをクリア
-			 */
 			clearBoards: () => {
 				store.setState((state) => ({
 					...state,
@@ -260,9 +220,6 @@ export function useViewerActions() {
 				}));
 			},
 
-			/**
-			 * ボードの順番を入れ替え
-			 */
 			reorderBoards: (fromIndex: number, toIndex: number) => {
 				store.setState((state) => {
 					const { boards } = state;

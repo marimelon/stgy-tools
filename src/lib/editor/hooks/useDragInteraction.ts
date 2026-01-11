@@ -1,7 +1,7 @@
 /**
- * ドラッグ/回転/リサイズインタラクションフック
+ * Drag/rotate/resize interaction hook
  *
- * オブジェクトのドラッグ移動、回転、リサイズ操作を管理
+ * Manages object drag movement, rotation, and resize operations
  */
 
 import { type RefObject, useCallback, useState } from "react";
@@ -22,9 +22,6 @@ import type {
 } from "../types";
 import { isPointInObject } from "./hit-testing";
 
-/**
- * オブジェクトタイプに応じたサイズ制限を取得
- */
 function getSizeLimits(objectId: number): { min: number; max: number } {
 	const editParams = OBJECT_EDIT_PARAMS[objectId] ?? DEFAULT_EDIT_PARAMS;
 	const sizeParamId = editParams.includes(EditParamIds.SizeSmall)
@@ -39,9 +36,9 @@ export interface UseDragInteractionParams {
 	objects: BoardObject[];
 	selectedIds: string[];
 	gridSettings: GridSettings;
-	/** フォーカス中のグループID（null = フォーカスなし） */
+	/** Focused group ID (null = no focus) */
 	focusedGroupId: string | null;
-	/** 円形配置モード状態（null = モードなし） */
+	/** Circular arrangement mode state (null = mode disabled) */
 	circularMode: CircularModeState | null;
 	selectObject: (objectId: string, additive?: boolean) => void;
 	selectGroup: (groupId: string) => void;
@@ -50,14 +47,13 @@ export interface UseDragInteractionParams {
 	) => { id: string; objectIds: string[] } | undefined;
 	updateObject: (objectId: string, updates: Partial<BoardObject>) => void;
 	moveObjects: (objectIds: string[], deltaX: number, deltaY: number) => void;
-	/** グリッドスナップ付きバッチ移動（パフォーマンス最適化） */
+	/** Batch move with grid snap (performance optimized) */
 	moveObjectsWithSnap: (
 		startPositions: Map<string, Position>,
 		deltaX: number,
 		deltaY: number,
 		gridSize: number,
 	) => void;
-	/** 円周上でオブジェクトを移動 */
 	moveObjectOnCircle: (objectId: string, angle: number) => void;
 	commitHistory: (description: string) => void;
 }
@@ -72,9 +68,6 @@ export interface UseDragInteractionReturn {
 	completeDrag: () => void;
 }
 
-/**
- * ドラッグ/回転/リサイズインタラクションフック
- */
 export function useDragInteraction({
 	svgRef,
 	objects,
@@ -95,33 +88,28 @@ export function useDragInteraction({
 	const [dragState, setDragState] = useState<DragState | null>(null);
 
 	/**
-	 * フォーカスモード中に、指定オブジェクトがフォーカス外かどうかを判定
+	 * Check if object is outside the focused group
 	 */
 	const isOutsideFocus = useCallback(
 		(objectId: string): boolean => {
 			if (focusedGroupId === null) return false;
 			const focusedGroup = getGroupForObject(objectId);
-			// フォーカス中のグループに属していない場合はフォーカス外
 			return focusedGroup?.id !== focusedGroupId;
 		},
 		[focusedGroupId, getGroupForObject],
 	);
 
-	/**
-	 * オブジェクトクリック（グループ対応）
-	 */
 	const handleObjectClick = useCallback(
 		(objectId: string, e: React.MouseEvent) => {
 			e.stopPropagation();
 
-			// フォーカスモード中、フォーカス外のオブジェクトはクリック無視
 			if (isOutsideFocus(objectId)) return;
 
-			// Shift, Command (Mac), Ctrl (Windows) で追加選択
+			// Shift, Command (Mac), Ctrl (Windows) for additive selection
 			const additive = e.shiftKey || e.metaKey || e.ctrlKey;
 
 			const group = getGroupForObject(objectId);
-			// フォーカスモード中は個別オブジェクト選択（グループ選択しない）
+			// In focus mode, select individual object (not group)
 			if (group && !additive && focusedGroupId === null) {
 				selectGroup(group.id);
 			} else {
@@ -138,16 +126,15 @@ export function useDragInteraction({
 	);
 
 	/**
-	 * オブジェクトドラッグ開始（グループ対応）
+	 * Start object drag (with group support)
 	 *
-	 * 選択中のオブジェクトがクリック位置にある場合は、
-	 * 選択を変更せずに既存の選択をドラッグする（Figma等と同様の動作）
+	 * If a selected object is at click position, drag existing selection
+	 * without changing it (same behavior as Figma etc.)
 	 */
 	const handleObjectPointerDown = useCallback(
 		(objectId: string, e: React.PointerEvent) => {
 			if (e.button !== 0) return;
 
-			// フォーカスモード中、フォーカス外のオブジェクトはドラッグ無視
 			if (isOutsideFocus(objectId)) return;
 
 			const svg = svgRef.current;
@@ -156,30 +143,24 @@ export function useDragInteraction({
 			e.stopPropagation();
 			e.preventDefault();
 
-			// Shift, Command (Mac), Ctrl (Windows) で追加選択
 			const additive = e.shiftKey || e.metaKey || e.ctrlKey;
 			const startPointer = screenToSVG(e, svg);
 
 			const group = getGroupForObject(objectId);
 			let idsToMove = selectedIds;
 
-			// クリックされたオブジェクトが選択されていない場合
 			if (!selectedIds.includes(objectId)) {
-				// 選択中のオブジェクトがクリック位置にあるかチェック
-				// あれば選択を維持してそのままドラッグ（前面オブジェクトをクリックスルー）
+				// Check if any selected object is at click position
+				// If so, maintain selection and drag (click-through to front object)
 				const selectedObjectAtPoint = selectedIds.find((id) => {
 					const obj = objects.find((o) => o.id === id);
 					return obj && isPointInObject(startPointer, obj);
 				});
 
 				if (selectedObjectAtPoint !== undefined) {
-					// 選択中のオブジェクトがクリック位置にある場合は、
-					// 選択を変更せずに既存の選択をドラッグ
 					idsToMove = selectedIds;
 				} else {
-					// 選択中のオブジェクトがクリック位置にない場合は、
-					// クリックされたオブジェクトを選択
-					// フォーカスモード中は個別オブジェクト選択（グループ選択しない）
+					// In focus mode, select individual object (not group)
 					if (group && !additive && focusedGroupId === null) {
 						selectGroup(group.id);
 						idsToMove = group.objectIds;
@@ -190,8 +171,8 @@ export function useDragInteraction({
 				}
 			}
 
-			// ロックされたオブジェクトはドラッグ不可（選択のみ）
-			// 複数選択時は、移動対象にロックされていないオブジェクトが含まれていれば移動可能
+			// Locked objects cannot be dragged (selection only)
+			// For multi-select, allow if any unlocked object exists
 			const allLocked = idsToMove.every((id) => {
 				const obj = objects.find((o) => o.id === id);
 				return obj?.flags.locked;
@@ -234,9 +215,6 @@ export function useDragInteraction({
 		],
 	);
 
-	/**
-	 * 回転開始
-	 */
 	const handleRotateStart = useCallback(
 		(e: React.PointerEvent) => {
 			if (selectedIds.length !== 1) return;
@@ -248,7 +226,6 @@ export function useDragInteraction({
 			const obj = objects.find((o) => o.id === selectedId);
 			if (!obj) return;
 
-			// ロックされたオブジェクトは回転不可
 			if (obj.flags.locked) {
 				return;
 			}
@@ -270,9 +247,6 @@ export function useDragInteraction({
 		[svgRef, objects, selectedIds],
 	);
 
-	/**
-	 * リサイズ開始
-	 */
 	const handleResizeStart = useCallback(
 		(handle: ResizeHandle, e: React.PointerEvent) => {
 			if (selectedIds.length !== 1) return;
@@ -284,7 +258,6 @@ export function useDragInteraction({
 			const obj = objects.find((o) => o.id === selectedId);
 			if (!obj) return;
 
-			// ロックされたオブジェクトはリサイズ不可
 			if (obj.flags.locked) {
 				return;
 			}
@@ -306,9 +279,6 @@ export function useDragInteraction({
 		[svgRef, objects, selectedIds],
 	);
 
-	/**
-	 * ドラッグ/回転/リサイズ中の移動処理
-	 */
 	const handleDragMove = useCallback(
 		(currentPointer: Position) => {
 			if (!dragState) return;
@@ -317,8 +287,7 @@ export function useDragInteraction({
 				dragState;
 
 			if (mode === "drag") {
-				// 円形モード中で、ドラッグ対象が円形配置に参加している場合
-				// 円周上のみに移動を制約
+				// In circular mode, constrain movement to circle circumference
 				if (objectId && circularMode?.participatingIds.includes(objectId)) {
 					const angle = Math.atan2(
 						currentPointer.y - circularMode.center.y,
@@ -332,7 +301,6 @@ export function useDragInteraction({
 				const deltaY = currentPointer.y - startPointer.y;
 
 				if (gridSettings.enabled && startPositions.size > 0) {
-					// バッチ更新で1回のstate更新に最適化
 					moveObjectsWithSnap(
 						startPositions,
 						deltaX,
@@ -382,9 +350,6 @@ export function useDragInteraction({
 		],
 	);
 
-	/**
-	 * ドラッグ完了（履歴コミット）
-	 */
 	const completeDrag = useCallback(() => {
 		if (!dragState) return;
 

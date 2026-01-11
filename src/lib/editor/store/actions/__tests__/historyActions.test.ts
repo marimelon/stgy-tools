@@ -1,5 +1,5 @@
 /**
- * 履歴アクションのテスト
+ * History action tests
  */
 
 import { Store } from "@tanstack/store";
@@ -18,7 +18,7 @@ describe("historyActions", () => {
 	let objectActions: ReturnType<typeof createObjectActions>;
 
 	beforeEach(() => {
-		const board = createEmptyBoard("テストボード");
+		const board = createEmptyBoard("Test Board");
 		const initialState = createInitialStateWithOptions({ board });
 		store = new Store<EditorState>(initialState);
 		historyActions = createHistoryActions(store);
@@ -26,7 +26,7 @@ describe("historyActions", () => {
 	});
 
 	describe("undo", () => {
-		it("変更を元に戻せる", () => {
+		it("can undo changes", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			objectActions.addObject(obj);
 
@@ -37,7 +37,7 @@ describe("historyActions", () => {
 			expect(store.state.board.objects).toHaveLength(0);
 		});
 
-		it("初期状態では何も起きない", () => {
+		it("does nothing in initial state", () => {
 			const initialHistoryIndex = store.state.historyIndex;
 
 			historyActions.undo();
@@ -45,7 +45,7 @@ describe("historyActions", () => {
 			expect(store.state.historyIndex).toBe(initialHistoryIndex);
 		});
 
-		it("連続してundoできる", () => {
+		it("can undo consecutively", () => {
 			const obj1 = createDefaultObject(ObjectIds.Tank);
 			const obj2 = createDefaultObject(ObjectIds.Healer);
 
@@ -61,7 +61,7 @@ describe("historyActions", () => {
 			expect(store.state.board.objects).toHaveLength(0);
 		});
 
-		it("選択が解除される", () => {
+		it("clears selection", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			objectActions.addObject(obj);
 
@@ -74,7 +74,7 @@ describe("historyActions", () => {
 	});
 
 	describe("redo", () => {
-		it("undoした変更をやり直せる", () => {
+		it("can redo undone changes", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			objectActions.addObject(obj);
 			historyActions.undo();
@@ -86,7 +86,7 @@ describe("historyActions", () => {
 			expect(store.state.board.objects).toHaveLength(1);
 		});
 
-		it("undoしていない状態では何も起きない", () => {
+		it("does nothing when not undone", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			objectActions.addObject(obj);
 
@@ -97,7 +97,7 @@ describe("historyActions", () => {
 			expect(store.state.historyIndex).toBe(historyIndex);
 		});
 
-		it("連続してredoできる", () => {
+		it("can redo consecutively", () => {
 			const obj1 = createDefaultObject(ObjectIds.Tank);
 			const obj2 = createDefaultObject(ObjectIds.Healer);
 
@@ -116,8 +116,8 @@ describe("historyActions", () => {
 		});
 	});
 
-	describe("undo/redo の組み合わせ", () => {
-		it("undoしてから新しい変更をすると、redo履歴が消える", () => {
+	describe("undo/redo combination", () => {
+		it("new changes after undo clear redo history", () => {
 			const obj1 = createDefaultObject(ObjectIds.Tank);
 			const obj2 = createDefaultObject(ObjectIds.Healer);
 			const obj3 = createDefaultObject(ObjectIds.DPS);
@@ -126,13 +126,13 @@ describe("historyActions", () => {
 			objectActions.addObject(obj2);
 			historyActions.undo();
 
-			// obj2を追加した状態からundoしたので、obj1だけの状態
+			// After undoing obj2 add, only obj1 remains
 			expect(store.state.board.objects).toHaveLength(1);
 
-			// 新しいオブジェクトを追加
+			// Add new object
 			objectActions.addObject(obj3);
 
-			// redoしても何も起きない（履歴が上書きされている）
+			// Redo does nothing (history was overwritten)
 			historyActions.redo();
 			expect(store.state.board.objects).toHaveLength(2);
 			expect(store.state.board.objects.some((o) => o.id === obj3.id)).toBe(
@@ -145,46 +145,46 @@ describe("historyActions", () => {
 	});
 
 	describe("setBoard", () => {
-		it("ボードを設定できる", () => {
-			const newBoard = createEmptyBoard("新しいボード");
+		it("can set board", () => {
+			const newBoard = createEmptyBoard("New Board");
 			newBoard.backgroundId = 3;
 
 			historyActions.setBoard(newBoard);
 
-			expect(store.state.board.name).toBe("新しいボード");
+			expect(store.state.board.name).toBe("New Board");
 			expect(store.state.board.backgroundId).toBe(3);
 		});
 
-		it("選択とグループがリセットされる", () => {
+		it("resets selection and groups", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			objectActions.addObject(obj);
 
-			const newBoard = createEmptyBoard("新しいボード");
+			const newBoard = createEmptyBoard("New Board");
 			historyActions.setBoard(newBoard);
 
 			expect(store.state.selectedIds).toHaveLength(0);
 			expect(store.state.groups).toHaveLength(0);
 		});
 
-		it("履歴がリセットされる", () => {
+		it("resets history", () => {
 			const obj1 = createDefaultObject(ObjectIds.Tank);
 			const obj2 = createDefaultObject(ObjectIds.Healer);
 			objectActions.addObject(obj1);
 			objectActions.addObject(obj2);
 
-			const newBoard = createEmptyBoard("新しいボード");
+			const newBoard = createEmptyBoard("New Board");
 			historyActions.setBoard(newBoard);
 
 			expect(store.state.history).toHaveLength(1);
 			expect(store.state.historyIndex).toBe(0);
 		});
 
-		it("isDirtyがfalseになる", () => {
+		it("sets isDirty to false", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			objectActions.addObject(obj);
 			expect(store.state.isDirty).toBe(true);
 
-			const newBoard = createEmptyBoard("新しいボード");
+			const newBoard = createEmptyBoard("New Board");
 			historyActions.setBoard(newBoard);
 
 			expect(store.state.isDirty).toBe(false);
@@ -192,54 +192,54 @@ describe("historyActions", () => {
 	});
 
 	describe("updateBoardMeta", () => {
-		it("ボード名を更新できる", () => {
-			historyActions.updateBoardMeta({ name: "更新された名前" });
+		it("can update board name", () => {
+			historyActions.updateBoardMeta({ name: "Updated Name" });
 
-			expect(store.state.board.name).toBe("更新された名前");
+			expect(store.state.board.name).toBe("Updated Name");
 		});
 
-		it("背景IDを更新できる", () => {
+		it("can update background ID", () => {
 			historyActions.updateBoardMeta({ backgroundId: 5 });
 
 			expect(store.state.board.backgroundId).toBe(5);
 		});
 
-		it("isDirtyがtrueになる", () => {
+		it("sets isDirty to true", () => {
 			expect(store.state.isDirty).toBe(false);
 
-			historyActions.updateBoardMeta({ name: "新しい名前" });
+			historyActions.updateBoardMeta({ name: "New Name" });
 
 			expect(store.state.isDirty).toBe(true);
 		});
 	});
 
 	describe("commitHistory", () => {
-		it("履歴にエントリを追加できる", () => {
+		it("can add history entry", () => {
 			const initialLength = store.state.history.length;
 
-			// 直接状態を変更（通常はactionを通すが、テスト用）
+			// Directly modify state (normally through action, but for testing)
 			store.setState((s) => ({
 				...s,
-				board: { ...s.board, name: "変更後" },
+				board: { ...s.board, name: "Changed" },
 			}));
 
-			historyActions.commitHistory("名前変更");
+			historyActions.commitHistory("Name change");
 
 			expect(store.state.history.length).toBe(initialLength + 1);
 		});
 
-		it("変更がない場合は履歴に追加されない", () => {
+		it("does not add history if no changes", () => {
 			const initialLength = store.state.history.length;
 
-			// 何も変更せずにcommit
-			historyActions.commitHistory("何もなし");
+			// Commit without changes
+			historyActions.commitHistory("Nothing");
 
 			expect(store.state.history.length).toBe(initialLength);
 		});
 	});
 
 	describe("jumpToHistory", () => {
-		it("任意の履歴位置に移動できる", () => {
+		it("can jump to any history position", () => {
 			const obj1 = createDefaultObject(ObjectIds.Tank);
 			const obj2 = createDefaultObject(ObjectIds.Healer);
 			const obj3 = createDefaultObject(ObjectIds.DPS);
@@ -248,8 +248,8 @@ describe("historyActions", () => {
 			objectActions.addObject(obj2);
 			objectActions.addObject(obj3);
 
-			// 履歴: [初期, obj1追加, obj2追加, obj3追加]
-			// index: 0      1         2         3
+			// History: [initial, add obj1, add obj2, add obj3]
+			// index:    0        1          2          3
 
 			historyActions.jumpToHistory(1);
 
@@ -257,7 +257,7 @@ describe("historyActions", () => {
 			expect(store.state.historyIndex).toBe(1);
 		});
 
-		it("範囲外のインデックスでは何も起きない", () => {
+		it("does nothing for out-of-range index", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			objectActions.addObject(obj);
 
@@ -268,7 +268,7 @@ describe("historyActions", () => {
 			expect(store.state.historyIndex).toBe(historyIndex);
 		});
 
-		it("同じ位置への移動は無視される", () => {
+		it("ignores jump to same position", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			objectActions.addObject(obj);
 
@@ -276,13 +276,13 @@ describe("historyActions", () => {
 
 			historyActions.jumpToHistory(historyIndex);
 
-			// 同じ状態が維持される
+			// Same state maintained
 			expect(store.state.historyIndex).toBe(historyIndex);
 		});
 	});
 
 	describe("clearHistory", () => {
-		it("履歴をクリアできる", () => {
+		it("can clear history", () => {
 			const obj1 = createDefaultObject(ObjectIds.Tank);
 			const obj2 = createDefaultObject(ObjectIds.Healer);
 			objectActions.addObject(obj1);
@@ -296,13 +296,13 @@ describe("historyActions", () => {
 			expect(store.state.historyIndex).toBe(0);
 		});
 
-		it("現在のボード状態は維持される", () => {
+		it("preserves current board state", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			objectActions.addObject(obj);
 
 			historyActions.clearHistory();
 
-			// オブジェクトは残っている
+			// Object is preserved
 			expect(store.state.board.objects).toHaveLength(1);
 		});
 	});

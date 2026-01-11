@@ -1,14 +1,11 @@
 /**
- * 実行環境の判定とユーティリティ
+ * Runtime environment detection utilities
  */
 
 export type RuntimeEnvironment = "cloudflare" | "node";
 
-/**
- * 現在の実行環境を判定
- */
 export function getRuntimeEnvironment(): RuntimeEnvironment {
-	// Cloudflare Workers の場合は navigator.userAgent に "Cloudflare-Workers" が含まれる
+	// navigator.userAgent contains "Cloudflare-Workers" in Workers environment
 	if (
 		typeof navigator !== "undefined" &&
 		navigator.userAgent === "Cloudflare-Workers"
@@ -16,9 +13,8 @@ export function getRuntimeEnvironment(): RuntimeEnvironment {
 		return "cloudflare";
 	}
 
-	// globalThis に caches が存在する場合は Cloudflare Workers
+	// globalThis.caches with "default" property indicates Cloudflare Workers
 	if (typeof globalThis !== "undefined" && "caches" in globalThis) {
-		// Cloudflare Workers の caches は ServiceWorkerGlobalScope
 		const caches = (globalThis as unknown as { caches: unknown }).caches;
 		if (caches && typeof caches === "object" && "default" in caches) {
 			return "cloudflare";
@@ -28,16 +24,10 @@ export function getRuntimeEnvironment(): RuntimeEnvironment {
 	return "node";
 }
 
-/**
- * Cloudflare Workers 環境かどうか
- */
 export function isCloudflareWorkers(): boolean {
 	return getRuntimeEnvironment() === "cloudflare";
 }
 
-/**
- * Node.js 環境かどうか
- */
 export function isNodeEnvironment(): boolean {
 	return getRuntimeEnvironment() === "node";
 }

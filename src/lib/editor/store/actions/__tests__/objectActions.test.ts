@@ -1,5 +1,5 @@
 /**
- * オブジェクトアクションのテスト
+ * Object action tests
  */
 
 import { Store } from "@tanstack/store";
@@ -16,14 +16,14 @@ describe("objectActions", () => {
 	let actions: ReturnType<typeof createObjectActions>;
 
 	beforeEach(() => {
-		const board = createEmptyBoard("テストボード");
+		const board = createEmptyBoard("Test Board");
 		const initialState = createInitialStateWithOptions({ board });
 		store = new Store<EditorState>(initialState);
 		actions = createObjectActions(store);
 	});
 
 	describe("addObject", () => {
-		it("オブジェクトを追加できる", () => {
+		it("can add object", () => {
 			const obj = createDefaultObject(ObjectIds.Tank, { x: 100, y: 100 });
 			actions.addObject(obj);
 
@@ -33,7 +33,7 @@ describe("objectActions", () => {
 			expect(state.board.objects[0].position).toEqual({ x: 100, y: 100 });
 		});
 
-		it("追加されたオブジェクトが選択される", () => {
+		it("added object is selected", () => {
 			const obj = createDefaultObject(ObjectIds.Healer);
 			actions.addObject(obj);
 
@@ -42,7 +42,7 @@ describe("objectActions", () => {
 			expect(state.selectedIds[0]).toBe(obj.id);
 		});
 
-		it("配列の先頭に追加される（最前面レイヤー）", () => {
+		it("adds to beginning of array (front layer)", () => {
 			const obj1 = createDefaultObject(ObjectIds.Tank);
 			const obj2 = createDefaultObject(ObjectIds.Healer);
 
@@ -54,7 +54,7 @@ describe("objectActions", () => {
 			expect(state.board.objects[1].objectId).toBe(ObjectIds.Tank);
 		});
 
-		it("履歴に追加される", () => {
+		it("is added to history", () => {
 			const obj = createDefaultObject(ObjectIds.DPS);
 			actions.addObject(obj);
 
@@ -65,7 +65,7 @@ describe("objectActions", () => {
 	});
 
 	describe("deleteObjects", () => {
-		it("オブジェクトを削除できる", () => {
+		it("can delete object", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			actions.addObject(obj);
 
@@ -75,7 +75,7 @@ describe("objectActions", () => {
 			expect(state.board.objects).toHaveLength(0);
 		});
 
-		it("選択が解除される", () => {
+		it("selection is cleared", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			actions.addObject(obj);
 
@@ -85,7 +85,7 @@ describe("objectActions", () => {
 			expect(state.selectedIds).toHaveLength(0);
 		});
 
-		it("複数オブジェクトを一度に削除できる", () => {
+		it("can delete multiple objects at once", () => {
 			const obj1 = createDefaultObject(ObjectIds.Tank);
 			const obj2 = createDefaultObject(ObjectIds.Healer);
 			const obj3 = createDefaultObject(ObjectIds.DPS);
@@ -101,7 +101,7 @@ describe("objectActions", () => {
 			expect(state.board.objects[0].id).toBe(obj2.id);
 		});
 
-		it("空の配列では何も起きない", () => {
+		it("empty array does nothing", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			actions.addObject(obj);
 			const beforeState = store.state;
@@ -114,7 +114,7 @@ describe("objectActions", () => {
 	});
 
 	describe("updateObject", () => {
-		it("オブジェクトの位置を更新できる", () => {
+		it("can update object position", () => {
 			const obj = createDefaultObject(ObjectIds.Tank, { x: 100, y: 100 });
 			actions.addObject(obj);
 
@@ -124,7 +124,7 @@ describe("objectActions", () => {
 			expect(state.board.objects[0].position).toEqual({ x: 200, y: 150 });
 		});
 
-		it("オブジェクトの回転を更新できる", () => {
+		it("can update object rotation", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			actions.addObject(obj);
 
@@ -134,7 +134,7 @@ describe("objectActions", () => {
 			expect(state.board.objects[0].rotation).toBe(45);
 		});
 
-		it("オブジェクトの色を更新できる", () => {
+		it("can update object color", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			actions.addObject(obj);
 
@@ -149,11 +149,11 @@ describe("objectActions", () => {
 			expect(state.board.objects[0].color.opacity).toBe(50);
 		});
 
-		it("isDirtyがtrueになる", () => {
+		it("sets isDirty to true", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			actions.addObject(obj);
 
-			// 履歴をコミットしてisDirtyをリセット
+			// Commit history to reset isDirty
 			store.setState((s) => ({ ...s, isDirty: false }));
 
 			actions.updateObject(obj.id, { rotation: 90 });
@@ -163,7 +163,7 @@ describe("objectActions", () => {
 	});
 
 	describe("duplicateObjects", () => {
-		it("オブジェクトを複製できる", () => {
+		it("can duplicate object", () => {
 			const obj = createDefaultObject(ObjectIds.Tank, { x: 100, y: 100 });
 			actions.addObject(obj);
 
@@ -173,7 +173,7 @@ describe("objectActions", () => {
 			expect(state.board.objects).toHaveLength(2);
 		});
 
-		it("複製されたオブジェクトが選択される", () => {
+		it("duplicated object is selected", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			actions.addObject(obj);
 
@@ -184,7 +184,7 @@ describe("objectActions", () => {
 			expect(state.selectedIds[0]).not.toBe(obj.id);
 		});
 
-		it("複製は新しいIDを持つ", () => {
+		it("duplicate has new ID", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			actions.addObject(obj);
 
@@ -195,7 +195,7 @@ describe("objectActions", () => {
 			expect(new Set(ids).size).toBe(2);
 		});
 
-		it("複数オブジェクトを一度に複製できる", () => {
+		it("can duplicate multiple objects at once", () => {
 			const obj1 = createDefaultObject(ObjectIds.Tank);
 			const obj2 = createDefaultObject(ObjectIds.Healer);
 			actions.addObject(obj1);
@@ -209,7 +209,7 @@ describe("objectActions", () => {
 	});
 
 	describe("moveObjects", () => {
-		it("オブジェクトを移動できる", () => {
+		it("can move object", () => {
 			const obj = createDefaultObject(ObjectIds.Tank, { x: 100, y: 100 });
 			actions.addObject(obj);
 
@@ -219,7 +219,7 @@ describe("objectActions", () => {
 			expect(state.board.objects[0].position).toEqual({ x: 150, y: 130 });
 		});
 
-		it("複数オブジェクトを一度に移動できる", () => {
+		it("can move multiple objects at once", () => {
 			const obj1 = createDefaultObject(ObjectIds.Tank, { x: 100, y: 100 });
 			const obj2 = createDefaultObject(ObjectIds.Healer, { x: 200, y: 200 });
 			actions.addObject(obj1);
@@ -234,7 +234,7 @@ describe("objectActions", () => {
 			expect(healer?.position).toEqual({ x: 210, y: 220 });
 		});
 
-		it("Lineオブジェクトは終点も移動する", () => {
+		it("Line object also moves endpoint", () => {
 			const obj = createDefaultObject(ObjectIds.Line, { x: 100, y: 100 });
 			const originalParam1 = obj.param1;
 			const originalParam2 = obj.param2;
@@ -250,11 +250,11 @@ describe("objectActions", () => {
 	});
 
 	describe("deleteSelected", () => {
-		it("選択中のオブジェクトを削除する", () => {
+		it("deletes selected objects", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			actions.addObject(obj);
 
-			// addObjectで自動選択されている
+			// Auto-selected by addObject
 			actions.deleteSelected();
 
 			const state = store.state;
@@ -263,11 +263,11 @@ describe("objectActions", () => {
 	});
 
 	describe("duplicateSelected", () => {
-		it("選択中のオブジェクトを複製する", () => {
+		it("duplicates selected objects", () => {
 			const obj = createDefaultObject(ObjectIds.Tank);
 			actions.addObject(obj);
 
-			// addObjectで自動選択されている
+			// Auto-selected by addObject
 			actions.duplicateSelected();
 
 			const state = store.state;

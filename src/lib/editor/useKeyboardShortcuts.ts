@@ -1,5 +1,5 @@
 /**
- * エディター用キーボードショートカットフック
+ * Editor keyboard shortcuts hook
  */
 
 import { useEffect } from "react";
@@ -15,13 +15,10 @@ import {
 } from "./hooks/useEditorDerived";
 import { useEditingTextId, useSelectedIds } from "./hooks/useEditorStore";
 
-/** 移動量 */
+/** Movement step sizes */
 const MOVE_STEP = 1;
 const MOVE_STEP_LARGE = 10;
 
-/**
- * キーボードショートカットを有効化するフック
- */
 export function useKeyboardShortcuts() {
 	const { t } = useTranslation();
 
@@ -59,25 +56,19 @@ export function useKeyboardShortcuts() {
 	const hasSelection = selectedIds.length > 0;
 	const hasSingleSelection = selectedIds.length === 1;
 
-	/**
-	 * オブジェクトを移動
-	 */
 	const handleMove = (deltaX: number, deltaY: number) => {
 		if (selectedIds.length === 0) return;
 		moveObjects(selectedIds, deltaX, deltaY);
 		commitHistory(t("history.moveObject"));
 	};
 
-	/**
-	 * キーダウンイベントハンドラー
-	 */
 	const handleKeyDown = (e: KeyboardEvent) => {
-		// テキスト編集中は無視
+		// Ignore during text editing
 		if (editingTextId !== null) {
 			return;
 		}
 
-		// 入力フィールドにフォーカス中は無視
+		// Ignore when input field is focused
 		const target = e.target as HTMLElement;
 		if (
 			target.tagName === "INPUT" ||
@@ -90,7 +81,7 @@ export function useKeyboardShortcuts() {
 		const isMod = e.ctrlKey || e.metaKey;
 		const isShift = e.shiftKey;
 
-		// Ctrl/Cmd + Z: 元に戻す
+		// Ctrl/Cmd + Z: Undo
 		if (isMod && !isShift && e.key === "z") {
 			if (canUndo) {
 				e.preventDefault();
@@ -99,7 +90,7 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// Ctrl/Cmd + Y または Ctrl/Cmd + Shift + Z: やり直す
+		// Ctrl/Cmd + Y or Ctrl/Cmd + Shift + Z: Redo
 		if ((isMod && e.key === "y") || (isMod && isShift && e.key === "z")) {
 			if (canRedo) {
 				e.preventDefault();
@@ -108,7 +99,7 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// Ctrl/Cmd + C: コピー
+		// Ctrl/Cmd + C: Copy
 		if (isMod && e.key === "c") {
 			if (hasSelection) {
 				e.preventDefault();
@@ -117,14 +108,14 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// Ctrl/Cmd + V: 貼り付け
+		// Ctrl/Cmd + V: Paste
 		if (isMod && e.key === "v") {
 			e.preventDefault();
 			paste();
 			return;
 		}
 
-		// Ctrl/Cmd + D: 複製
+		// Ctrl/Cmd + D: Duplicate
 		if (isMod && e.key === "d") {
 			if (hasSelection) {
 				e.preventDefault();
@@ -133,14 +124,14 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// Ctrl/Cmd + A: 全選択
+		// Ctrl/Cmd + A: Select all
 		if (isMod && e.key === "a") {
 			e.preventDefault();
 			selectAll();
 			return;
 		}
 
-		// Ctrl/Cmd + G: グループ化
+		// Ctrl/Cmd + G: Group
 		if (isMod && !isShift && e.key === "g") {
 			if (canGroup) {
 				e.preventDefault();
@@ -149,7 +140,7 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// Ctrl/Cmd + Shift + G: グループ解除
+		// Ctrl/Cmd + Shift + G: Ungroup
 		if (isMod && isShift && e.key === "g") {
 			if (selectedGroup) {
 				e.preventDefault();
@@ -158,7 +149,7 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// Delete / Backspace: 削除
+		// Delete / Backspace: Delete
 		if (e.key === "Delete" || e.key === "Backspace") {
 			if (hasSelection) {
 				e.preventDefault();
@@ -167,27 +158,27 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// Escape: 円形モード解除 → フォーカス解除 → 選択解除
+		// Escape: Exit circular mode -> Exit focus mode -> Deselect
 		if (e.key === "Escape") {
 			e.preventDefault();
-			// 円形モード中は先に円形モードを終了
+			// Exit circular mode first if active
 			if (isCircularMode) {
 				exitCircularMode();
 				return;
 			}
-			// フォーカスモード中は次にフォーカスを解除
+			// Exit focus mode next if active
 			if (isFocusMode) {
 				unfocus();
 				return;
 			}
-			// 選択がある場合は選択解除
+			// Deselect if there's a selection
 			if (hasSelection) {
 				deselectAll();
 			}
 			return;
 		}
 
-		// Ctrl/Cmd + ]: 前面へ / Ctrl/Cmd + Shift + ]: 最前面へ
+		// Ctrl/Cmd + ]: Bring forward / Ctrl/Cmd + Shift + ]: Bring to front
 		if (isMod && e.key === "]") {
 			if (hasSingleSelection) {
 				e.preventDefault();
@@ -196,7 +187,7 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// Ctrl/Cmd + [: 背面へ / Ctrl/Cmd + Shift + [: 最背面へ
+		// Ctrl/Cmd + [: Send backward / Ctrl/Cmd + Shift + [: Send to back
 		if (isMod && e.key === "[") {
 			if (hasSingleSelection) {
 				e.preventDefault();
@@ -205,7 +196,7 @@ export function useKeyboardShortcuts() {
 			return;
 		}
 
-		// 矢印キー: 移動
+		// Arrow keys: Move
 		if (hasSelection) {
 			const step = isShift ? MOVE_STEP_LARGE : MOVE_STEP;
 
@@ -236,24 +227,22 @@ export function useKeyboardShortcuts() {
 	});
 }
 
-/**
- * ショートカット一覧
- */
+/** Keyboard shortcuts reference */
 export const KEYBOARD_SHORTCUTS = [
-	{ key: "Ctrl+Z", description: "元に戻す" },
-	{ key: "Ctrl+Y", description: "やり直す" },
-	{ key: "Ctrl+C", description: "コピー" },
-	{ key: "Ctrl+V", description: "貼り付け" },
-	{ key: "Ctrl+D", description: "複製" },
-	{ key: "Ctrl+A", description: "全選択" },
-	{ key: "Ctrl+G", description: "グループ化" },
-	{ key: "Ctrl+Shift+G", description: "グループ解除" },
-	{ key: "Ctrl+]", description: "前面へ" },
-	{ key: "Ctrl+[", description: "背面へ" },
-	{ key: "Ctrl+Shift+]", description: "最前面へ" },
-	{ key: "Ctrl+Shift+[", description: "最背面へ" },
-	{ key: "Delete", description: "削除" },
-	{ key: "Escape", description: "フォーカス解除/選択解除" },
-	{ key: "↑↓←→", description: "1px移動" },
-	{ key: "Shift+↑↓←→", description: "10px移動" },
+	{ key: "Ctrl+Z", description: "Undo" },
+	{ key: "Ctrl+Y", description: "Redo" },
+	{ key: "Ctrl+C", description: "Copy" },
+	{ key: "Ctrl+V", description: "Paste" },
+	{ key: "Ctrl+D", description: "Duplicate" },
+	{ key: "Ctrl+A", description: "Select all" },
+	{ key: "Ctrl+G", description: "Group" },
+	{ key: "Ctrl+Shift+G", description: "Ungroup" },
+	{ key: "Ctrl+]", description: "Bring forward" },
+	{ key: "Ctrl+[", description: "Send backward" },
+	{ key: "Ctrl+Shift+]", description: "Bring to front" },
+	{ key: "Ctrl+Shift+[", description: "Send to back" },
+	{ key: "Delete", description: "Delete" },
+	{ key: "Escape", description: "Exit focus/Deselect" },
+	{ key: "Arrow keys", description: "Move 1px" },
+	{ key: "Shift+Arrow keys", description: "Move 10px" },
 ] as const;

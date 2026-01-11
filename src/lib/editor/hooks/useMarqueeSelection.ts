@@ -1,7 +1,7 @@
 /**
- * マーキー（範囲）選択フック
+ * Marquee (rectangular) selection hook
  *
- * 背景をドラッグして複数オブジェクトを範囲選択する機能を提供
+ * Provides functionality to select multiple objects by dragging on background
  */
 
 import { type RefObject, useCallback, useRef, useState } from "react";
@@ -12,9 +12,8 @@ import type { MarqueeState } from "../types";
 export interface UseMarqueeSelectionParams {
 	svgRef: RefObject<SVGSVGElement | null>;
 	objects: BoardObject[];
-	/** フォーカス中のグループID（null = フォーカスなし） */
+	/** Focused group ID (null = no focus) */
 	focusedGroupId: string | null;
-	/** オブジェクトが属するグループを取得 */
 	getGroupForObject: (
 		objectId: string,
 	) => { id: string; objectIds: string[] } | undefined;
@@ -31,9 +30,6 @@ export interface UseMarqueeSelectionReturn {
 	skipNextClickRef: React.MutableRefObject<boolean>;
 }
 
-/**
- * マーキー選択フック
- */
 export function useMarqueeSelection({
 	svgRef,
 	objects,
@@ -46,9 +42,6 @@ export function useMarqueeSelection({
 	const marqueeStateRef = useRef<MarqueeState | null>(null);
 	const skipNextClickRef = useRef(false);
 
-	/**
-	 * 背景ポインターダウンでマーキー選択開始
-	 */
 	const handleBackgroundPointerDown = useCallback(
 		(e: React.PointerEvent) => {
 			if (e.button !== 0) return;
@@ -72,8 +65,7 @@ export function useMarqueeSelection({
 	);
 
 	/**
-	 * マーキー位置を更新
-	 * @returns マーキー選択中の場合true
+	 * @returns true if marquee selection is active
 	 */
 	const updateMarqueePosition = useCallback(
 		(currentPointer: Position): boolean => {
@@ -90,9 +82,6 @@ export function useMarqueeSelection({
 		[],
 	);
 
-	/**
-	 * マーキー範囲内のオブジェクトを取得
-	 */
 	const getObjectsInMarquee = useCallback(
 		(marquee: MarqueeState): string[] => {
 			const { startPoint, currentPoint } = marquee;
@@ -105,7 +94,7 @@ export function useMarqueeSelection({
 			for (const obj of objects) {
 				if (!obj.flags.visible) continue;
 
-				// フォーカスモード中はフォーカス外のオブジェクトを除外
+				// Skip objects outside focused group
 				if (focusedGroupId !== null) {
 					const group = getGroupForObject(obj.id);
 					if (group?.id !== focusedGroupId) continue;
@@ -121,9 +110,6 @@ export function useMarqueeSelection({
 		[objects, focusedGroupId, getGroupForObject],
 	);
 
-	/**
-	 * マーキー選択を完了
-	 */
 	const completeMarquee = useCallback(() => {
 		if (!marqueeStateRef.current) return;
 
@@ -131,7 +117,7 @@ export function useMarqueeSelection({
 		const width = Math.abs(currentPoint.x - startPoint.x);
 		const height = Math.abs(currentPoint.y - startPoint.y);
 
-		// ドラッグせずクリックした場合（5px未満）は選択解除
+		// Click without drag (< 5px) clears selection
 		const isClick = width < 5 && height < 5;
 
 		if (isClick) {

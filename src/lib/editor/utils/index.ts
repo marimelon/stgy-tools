@@ -1,5 +1,5 @@
 /**
- * エディターユーティリティのエクスポート
+ * Editor utilities exports
  */
 
 export {

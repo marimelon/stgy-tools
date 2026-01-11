@@ -1,38 +1,26 @@
 /**
- * 円形配置モードハンドルコンポーネント
+ * Circular arrangement mode handle component
  *
- * 中心移動と半径変更のためのドラッグ可能なハンドルを提供
+ * Provides draggable handles for center movement and radius adjustment.
  */
 
 import { useState } from "react";
 import { screenToSVG } from "@/lib/editor/coordinates";
 import type { Position } from "@/lib/stgy";
 
-/** ハンドルサイズ */
 const HANDLE_SIZE = 10;
-/** 中心ハンドルの色 */
 const CENTER_HANDLE_COLOR = "#8b5cf6";
-/** 半径ハンドルの色 */
 const RADIUS_HANDLE_COLOR = "#22c55e";
 
 interface CircularHandlesProps {
-	/** 円の中心 */
 	center: Position;
-	/** 円の半径 */
 	radius: number;
-	/** 中心ドラッグ時のコールバック */
 	onCenterDrag: (center: Position) => void;
-	/** 中心ドラッグ終了時のコールバック */
 	onCenterDragEnd: () => void;
-	/** 半径ドラッグ時のコールバック */
 	onRadiusDrag: (radius: number) => void;
-	/** 半径ドラッグ終了時のコールバック */
 	onRadiusDragEnd: () => void;
 }
 
-/**
- * 円形配置モードハンドル
- */
 export function CircularHandles({
 	center,
 	radius,
@@ -44,7 +32,6 @@ export function CircularHandles({
 	const [draggingCenter, setDraggingCenter] = useState(false);
 	const [draggingRadius, setDraggingRadius] = useState(false);
 
-	// 半径ハンドルの位置（右側）
 	const radiusHandleX = center.x + radius;
 	const radiusHandleY = center.y;
 
@@ -73,7 +60,6 @@ export function CircularHandles({
 		if (draggingCenter) {
 			onCenterDrag(svgPoint);
 		} else if (draggingRadius) {
-			// 中心からの距離を計算
 			const dx = svgPoint.x - center.x;
 			const dy = svgPoint.y - center.y;
 			const newRadius = Math.max(10, Math.sqrt(dx * dx + dy * dy));
@@ -95,7 +81,6 @@ export function CircularHandles({
 
 	return (
 		<g>
-			{/* 中心から半径ハンドルへの接続線 */}
 			<line
 				x1={center.x}
 				y1={center.y}
@@ -107,7 +92,6 @@ export function CircularHandles({
 				pointerEvents="none"
 			/>
 
-			{/* 中心ハンドル（ダイヤモンド形） */}
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction */}
 			<rect
 				x={center.x - HANDLE_SIZE / 2}
@@ -125,7 +109,6 @@ export function CircularHandles({
 				onPointerUp={handlePointerUp}
 			/>
 
-			{/* 半径ハンドル（円形） */}
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction */}
 			<circle
 				cx={radiusHandleX}

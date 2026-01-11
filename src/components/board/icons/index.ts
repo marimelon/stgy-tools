@@ -1,8 +1,3 @@
-/**
- * アイコンコンポーネントのエクスポート
- */
-
-// AoE関連アイコン
 export {
 	Area1PIcon,
 	Area2PIcon,
@@ -17,7 +12,7 @@ export {
 	StackIcon,
 	StackLineIcon,
 } from "./aoe";
-// 図形アイコン
+
 export {
 	ShapeArrowIcon,
 	ShapeCircleIcon,
@@ -27,7 +22,6 @@ export {
 	ShapeTriangleIcon,
 } from "./ShapeIcons";
 
-// 特殊アイコン
 export {
 	BuffIcon,
 	ClockwiseIcon,
@@ -42,5 +36,5 @@ export {
 	LockOnPurpleIcon,
 	LockOnRedIcon,
 } from "./SpecialIcons";
-// 型
+
 export type { IconProps } from "./types";

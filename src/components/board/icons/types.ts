@@ -1,9 +1,5 @@
-/**
- * アイコンコンポーネント共通の型定義
- */
-
-/** アイコンコンポーネントの共通Props */
+/** Common props for icon components */
 export interface IconProps {
-	/** SVG transform属性 */
+	/** SVG transform attribute */
 	transform: string;
 }

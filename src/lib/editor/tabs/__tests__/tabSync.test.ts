@@ -1,16 +1,16 @@
 /**
  * Tab synchronization logic tests
  *
- * EditorWithTabs内のタブ同期ロジックをテスト
- * - 初回マウント時（リロード後）の挙動
- * - Viewerからのインポート時の挙動
+ * Tests tab sync logic in EditorWithTabs
+ * - Behavior on initial mount (after reload)
+ * - Behavior on import from Viewer
  */
 
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 import * as actions from "../actions";
 import { createTabStore, type TabStore } from "../store";
 
-/** ボードの型（テスト用簡易版） */
+/** Board type (simplified for testing) */
 interface TestBoard {
 	id: string;
 }
@@ -25,7 +25,7 @@ describe("tab sync logic", () => {
 	});
 
 	/**
-	 * EditorWithTabsのuseEffect内の同期ロジックをシミュレート
+	 * Simulate sync logic in EditorWithTabs useEffect
 	 */
 	function simulateTabSync(params: {
 		currentBoardId: string;
@@ -42,10 +42,10 @@ describe("tab sync logic", () => {
 			isInitialMount,
 		} = params;
 
-		// ストアの状態を設定
+		// Set store state
 		store.setState(() => ({ openTabs, activeTabId }));
 
-		// 同期ロジック
+		// Sync logic
 		if (openTabs.length === 0) {
 			const existingSet = new Set(existingBoardIds);
 			if (existingSet.has(currentBoardId)) {
@@ -60,8 +60,8 @@ describe("tab sync logic", () => {
 		}
 	}
 
-	describe("初回マウント時（リロード後）", () => {
-		it("タブが空の場合、currentBoardIdで初期化される", () => {
+	describe("initial mount (after reload)", () => {
+		it("initializes with currentBoardId when tabs are empty", () => {
 			simulateTabSync({
 				currentBoardId: "board-1",
 				openTabs: [],
@@ -74,7 +74,7 @@ describe("tab sync logic", () => {
 			expect(store.state.activeTabId).toBe("board-1");
 		});
 
-		it("既存のタブがあり、activeTabIdが有効な場合、activeTabIdに切り替える", () => {
+		it("switches to activeTabId when existing tabs and valid activeTabId", () => {
 			simulateTabSync({
 				currentBoardId: "board-new",
 				openTabs: ["board-1", "board-2"],
@@ -83,46 +83,46 @@ describe("tab sync logic", () => {
 				isInitialMount: true,
 			});
 
-			// activeTabIdに切り替え（onSelectBoardが呼ばれる）
+			// Switches to activeTabId (onSelectBoard is called)
 			expect(onSelectBoard).toHaveBeenCalledWith("board-1");
-			// タブは変更されない
+			// Tabs remain unchanged
 			expect(store.state.openTabs).toEqual(["board-1", "board-2"]);
 		});
 
-		it("既存のタブがあるが、activeTabIdが無効な場合、currentBoardIdをタブに追加", () => {
+		it("adds currentBoardId to tabs when existing tabs but invalid activeTabId", () => {
 			simulateTabSync({
 				currentBoardId: "board-new",
 				openTabs: ["board-1", "board-2"],
-				activeTabId: "board-deleted", // 存在しないボード
+				activeTabId: "board-deleted", // Non-existent board
 				existingBoardIds: ["board-1", "board-2", "board-new"],
 				isInitialMount: true,
 			});
 
-			// currentBoardIdがタブに追加される
+			// currentBoardId is added to tabs
 			expect(store.state.openTabs).toEqual(["board-1", "board-2", "board-new"]);
 			expect(store.state.activeTabId).toBe("board-new");
 		});
 	});
 
-	describe("Viewerからのインポート時（初回マウント後）", () => {
-		it("新しいボードがタブに追加される", () => {
+	describe("import from Viewer (after initial mount)", () => {
+		it("adds new board to tabs", () => {
 			simulateTabSync({
 				currentBoardId: "board-new",
 				openTabs: ["board-1", "board-2"],
 				activeTabId: "board-1",
 				existingBoardIds: ["board-1", "board-2", "board-new"],
-				isInitialMount: false, // 初回マウント後
+				isInitialMount: false, // After initial mount
 			});
 
-			// onSelectBoardは呼ばれない
+			// onSelectBoard is not called
 			expect(onSelectBoard).not.toHaveBeenCalled();
-			// 新しいボードがタブに追加される
+			// New board is added to tabs
 			expect(store.state.openTabs).toEqual(["board-1", "board-2", "board-new"]);
 			expect(store.state.activeTabId).toBe("board-new");
 		});
 
-		it("既存のボードを開く場合、タブに切り替える", () => {
-			// addTabは既存タブの場合、追加せずにアクティブに切り替える
+		it("switches to existing board tab", () => {
+			// addTab switches to active without adding if tab already exists
 			simulateTabSync({
 				currentBoardId: "board-1",
 				openTabs: ["board-1", "board-2"],
@@ -131,35 +131,35 @@ describe("tab sync logic", () => {
 				isInitialMount: false,
 			});
 
-			// board-1は既にタブにあるので、openTabsは変わらない
-			// ただし、この場合useEffectの条件 !openTabs.includes(currentBoardId) がfalseなのでスキップ
-			// このテストではその条件に入らない
+			// board-1 is already in tabs so openTabs doesn't change
+			// However, the !openTabs.includes(currentBoardId) condition is false so it's skipped
+			// This test doesn't enter that condition
 		});
 	});
 
-	describe("replaceAllTabs後のリロード", () => {
-		it("replaceAllTabsで設定されたタブがリロード後も維持される", () => {
-			// replaceAllTabsでタブを設定
+	describe("reload after replaceAllTabs", () => {
+		it("tabs set by replaceAllTabs are maintained after reload", () => {
+			// Set tabs with replaceAllTabs
 			actions.replaceAllTabs(store, ["board-a", "board-b", "board-c"]);
 
 			expect(store.state.openTabs).toEqual(["board-a", "board-b", "board-c"]);
 			expect(store.state.activeTabId).toBe("board-a");
 
-			// リロードをシミュレート（初期化で別のボードが選ばれる）
-			// isInitialMount=trueで、activeTabIdが有効な場合、activeTabIdに切り替え
+			// Simulate reload (different board selected during initialization)
+			// isInitialMount=true with valid activeTabId switches to activeTabId
 			onSelectBoard.mockClear();
 
 			simulateTabSync({
-				currentBoardId: "board-x", // 初期化で選ばれたボード（タブにない）
+				currentBoardId: "board-x", // Board selected during initialization (not in tabs)
 				openTabs: ["board-a", "board-b", "board-c"],
 				activeTabId: "board-a",
 				existingBoardIds: ["board-a", "board-b", "board-c", "board-x"],
 				isInitialMount: true,
 			});
 
-			// activeTabId（board-a）に切り替え
+			// Switches to activeTabId (board-a)
 			expect(onSelectBoard).toHaveBeenCalledWith("board-a");
-			// タブは変更されない
+			// Tabs remain unchanged
 			expect(store.state.openTabs).toEqual(["board-a", "board-b", "board-c"]);
 		});
 	});
@@ -175,9 +175,9 @@ describe("deleted board tab sync logic (confirmed boards)", () => {
 	});
 
 	/**
-	 * EditorWithTabsの削除されたボードのタブ同期ロジックをシミュレート
-	 * (src/routes/editor.tsx の useEffect をテスト)
-	 * confirmed boardsアプローチ：一度確認されたボードのみ削除検出の対象
+	 * Simulate deleted board tab sync logic in EditorWithTabs
+	 * (tests useEffect in src/routes/editor.tsx)
+	 * Confirmed boards approach: only detect deletion for boards that have been confirmed
 	 */
 	function simulateDeletedBoardSync(params: {
 		boards: TestBoard[];
@@ -185,18 +185,18 @@ describe("deleted board tab sync logic (confirmed boards)", () => {
 	}): { removedTabs: string[] } {
 		const { boards, openTabs } = params;
 
-		// ストアの状態を設定
+		// Set store state
 		store.setState((s) => ({ ...s, openTabs }));
 
 		const currentBoardIds = new Set(boards.map((b) => b.id));
 		const removedTabs: string[] = [];
 
-		// 現在存在するボードを「確認済み」に追加
+		// Add currently existing boards to "confirmed"
 		for (const boardId of currentBoardIds) {
 			confirmedBoards.add(boardId);
 		}
 
-		// 確認済みだったが消えたボード = 削除された
+		// Boards that were confirmed but are now gone = deleted
 		for (const tabId of store.state.openTabs) {
 			if (confirmedBoards.has(tabId) && !currentBoardIds.has(tabId)) {
 				const replacementId = boards.length > 0 ? boards[0].id : undefined;
@@ -209,33 +209,33 @@ describe("deleted board tab sync logic (confirmed boards)", () => {
 		return { removedTabs };
 	}
 
-	describe("未確認ボードのタブ", () => {
-		it("まだboardsに現れていないボードのタブは削除されない", () => {
-			// Viewerからのインポート時のシナリオ：
-			// タブは設定されているが、useLiveQueryのboardsにはまだ反映されていない
+	describe("unconfirmed board tabs", () => {
+		it("tabs for boards not yet in boards are not deleted", () => {
+			// Scenario when importing from Viewer:
+			// Tabs are set but useLiveQuery boards hasn't reflected yet
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2", "board-3"],
 				activeTabId: "board-1",
 			}));
 
-			// boardsにはboard-1のみ存在（board-2, board-3はまだ反映されていない）
+			// Only board-1 exists in boards (board-2, board-3 not yet reflected)
 			const result = simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }],
 				openTabs: store.state.openTabs,
 			});
 
-			// board-2, board-3は未確認なので削除されない
+			// board-2, board-3 are unconfirmed so not deleted
 			expect(result.removedTabs).toEqual([]);
 			expect(store.state.openTabs).toEqual(["board-1", "board-2", "board-3"]);
 		});
 
-		it("ボードがboardsに現れた後、confirmedに追加される", () => {
+		it("boards are added to confirmed when they appear in boards", () => {
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2", "board-3"],
 				activeTabId: "board-1",
 			}));
 
-			// 最初はboard-1のみ
+			// Initially only board-1
 			simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }],
 				openTabs: store.state.openTabs,
@@ -243,7 +243,7 @@ describe("deleted board tab sync logic (confirmed boards)", () => {
 			expect(confirmedBoards.has("board-1")).toBe(true);
 			expect(confirmedBoards.has("board-2")).toBe(false);
 
-			// 次にboard-2, board-3も現れる
+			// Then board-2, board-3 also appear
 			simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-2" }, { id: "board-3" }],
 				openTabs: store.state.openTabs,
@@ -253,37 +253,37 @@ describe("deleted board tab sync logic (confirmed boards)", () => {
 		});
 	});
 
-	describe("確認済みボードの削除検出", () => {
-		it("確認済みボードが消えるとタブが削除される", () => {
+	describe("confirmed board deletion detection", () => {
+		it("tab is deleted when confirmed board disappears", () => {
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2", "board-3"],
 				activeTabId: "board-2",
 			}));
 
-			// 最初にすべてのボードを確認
+			// First confirm all boards
 			simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-2" }, { id: "board-3" }],
 				openTabs: store.state.openTabs,
 			});
 
-			// board-2が削除される
+			// board-2 is deleted
 			const result = simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-3" }],
 				openTabs: store.state.openTabs,
 			});
 
-			// board-2のタブが閉じられる
+			// board-2 tab is closed
 			expect(result.removedTabs).toEqual(["board-2"]);
 			expect(store.state.openTabs).not.toContain("board-2");
 		});
 
-		it("複数のボードが同時に削除された場合、すべてのタブが閉じられる", () => {
+		it("all tabs are closed when multiple boards are deleted simultaneously", () => {
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2", "board-3", "board-4"],
 				activeTabId: "board-1",
 			}));
 
-			// 最初にすべてのボードを確認
+			// First confirm all boards
 			simulateDeletedBoardSync({
 				boards: [
 					{ id: "board-1" },
@@ -294,7 +294,7 @@ describe("deleted board tab sync logic (confirmed boards)", () => {
 				openTabs: store.state.openTabs,
 			});
 
-			// board-2とboard-3が削除される（フォルダ削除をシミュレート）
+			// board-2 and board-3 are deleted (simulate folder deletion)
 			const result = simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-4" }],
 				openTabs: store.state.openTabs,
@@ -305,15 +305,15 @@ describe("deleted board tab sync logic (confirmed boards)", () => {
 		});
 	});
 
-	describe("Viewerからのマルチインポートシナリオ", () => {
-		it("インポート完了後にボードが正常に確認される", () => {
-			// Step 1: タブが先に設定される（boardsは空）
+	describe("multi-import from Viewer scenario", () => {
+		it("boards are confirmed normally after import completes", () => {
+			// Step 1: Tabs are set first (boards is empty)
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2", "board-3"],
 				activeTabId: "board-1",
 			}));
 
-			// Step 2: boardsが空の状態で同期（タブは削除されない）
+			// Step 2: Sync with empty boards (tabs are not deleted)
 			let result = simulateDeletedBoardSync({
 				boards: [],
 				openTabs: store.state.openTabs,
@@ -321,7 +321,7 @@ describe("deleted board tab sync logic (confirmed boards)", () => {
 			expect(result.removedTabs).toEqual([]);
 			expect(store.state.openTabs).toEqual(["board-1", "board-2", "board-3"]);
 
-			// Step 3: boardsが更新される（すべてのボードが確認される）
+			// Step 3: boards is updated (all boards are confirmed)
 			result = simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-2" }, { id: "board-3" }],
 				openTabs: store.state.openTabs,
@@ -329,7 +329,7 @@ describe("deleted board tab sync logic (confirmed boards)", () => {
 			expect(result.removedTabs).toEqual([]);
 			expect(confirmedBoards.size).toBe(3);
 
-			// Step 4: 後でboard-2を削除すると、タブも閉じられる
+			// Step 4: Later deleting board-2 also closes its tab
 			result = simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-3" }],
 				openTabs: store.state.openTabs,
@@ -339,7 +339,7 @@ describe("deleted board tab sync logic (confirmed boards)", () => {
 	});
 });
 
-// 旧実装のテスト - 現在は使用されていないが参考用に残す
+// Legacy implementation test - kept for reference, not currently used
 describe.skip("deleted board tab sync logic (legacy prevBoardIds)", () => {
 	let store: TabStore;
 	let prevBoardIds: Set<string>;
@@ -350,8 +350,8 @@ describe.skip("deleted board tab sync logic (legacy prevBoardIds)", () => {
 	});
 
 	/**
-	 * 旧実装のテスト（prevBoardIdsベース）
-	 * 参考用に残す
+	 * Legacy implementation test (prevBoardIds based)
+	 * Kept for reference
 	 */
 	function simulateDeletedBoardSync(params: {
 		boards: TestBoard[];
@@ -359,17 +359,17 @@ describe.skip("deleted board tab sync logic (legacy prevBoardIds)", () => {
 	}) {
 		const { boards, openTabs } = params;
 
-		// ストアの状態を設定
+		// Set store state
 		store.setState((s) => ({ ...s, openTabs }));
 
 		const currentBoardIds = new Set(boards.map((b) => b.id));
 
-		// 前回存在していて、今回存在しないボードが「削除された」ボード
+		// Boards that existed before but not now are "deleted"
 		const deletedBoardIds = [...prevBoardIds].filter(
 			(id) => !currentBoardIds.has(id),
 		);
 
-		// 削除されたボードのタブを閉じる
+		// Close tabs of deleted boards
 		for (const deletedId of deletedBoardIds) {
 			if (store.state.openTabs.includes(deletedId)) {
 				const replacementId = boards.length > 0 ? boards[0].id : undefined;
@@ -377,20 +377,20 @@ describe.skip("deleted board tab sync logic (legacy prevBoardIds)", () => {
 			}
 		}
 
-		// 現在のボードIDを保存
+		// Save current board IDs
 		prevBoardIds = currentBoardIds;
 	}
 
-	describe("ボード削除時", () => {
-		it("削除されたボードのタブが閉じられる", () => {
-			// 初期状態: 3つのボードとタブ
+	describe("board deletion", () => {
+		it("deleted board tab is closed", () => {
+			// Initial state: 3 boards and tabs
 			prevBoardIds = new Set(["board-1", "board-2", "board-3"]);
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2", "board-3"],
 				activeTabId: "board-2",
 			}));
 
-			// board-2を削除
+			// Delete board-2
 			simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-3" }],
 				openTabs: ["board-1", "board-2", "board-3"],
@@ -400,15 +400,15 @@ describe.skip("deleted board tab sync logic (legacy prevBoardIds)", () => {
 			expect(store.state.openTabs).not.toContain("board-2");
 		});
 
-		it("複数のボードが同時に削除された場合、すべてのタブが閉じられる", () => {
-			// 初期状態: 4つのボードとタブ
+		it("all tabs closed when multiple boards deleted simultaneously", () => {
+			// Initial state: 4 boards and tabs
 			prevBoardIds = new Set(["board-1", "board-2", "board-3", "board-4"]);
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2", "board-3", "board-4"],
 				activeTabId: "board-1",
 			}));
 
-			// board-2とboard-3を削除（フォルダ削除をシミュレート）
+			// Delete board-2 and board-3 (simulate folder deletion)
 			simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-4" }],
 				openTabs: ["board-1", "board-2", "board-3", "board-4"],
@@ -419,79 +419,79 @@ describe.skip("deleted board tab sync logic (legacy prevBoardIds)", () => {
 			expect(store.state.openTabs).not.toContain("board-3");
 		});
 
-		it("タブに開かれていないボードが削除されても影響しない", () => {
-			// board-3はボードとして存在するがタブには開かれていない
+		it("deleting board not open in tabs has no effect", () => {
+			// board-3 exists as board but is not open in tabs
 			prevBoardIds = new Set(["board-1", "board-2", "board-3"]);
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2"],
 				activeTabId: "board-1",
 			}));
 
-			// board-3を削除
+			// Delete board-3
 			simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-2" }],
 				openTabs: ["board-1", "board-2"],
 			});
 
-			// タブは変わらない
+			// Tabs unchanged
 			expect(store.state.openTabs).toEqual(["board-1", "board-2"]);
 		});
 	});
 
-	describe("ボード追加時", () => {
-		it("新しいボードが追加されても既存のタブは影響を受けない", () => {
-			// 初期状態: 2つのボードとタブ
+	describe("board addition", () => {
+		it("adding new board doesn't affect existing tabs", () => {
+			// Initial state: 2 boards and tabs
 			prevBoardIds = new Set(["board-1", "board-2"]);
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2"],
 				activeTabId: "board-1",
 			}));
 
-			// 新しいボードを追加
+			// Add new board
 			simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-2" }, { id: "board-new" }],
 				openTabs: ["board-1", "board-2"],
 			});
 
-			// 既存のタブは変わらない（新しいボードはまだタブに追加されていない）
+			// Existing tabs unchanged (new board not yet added to tabs)
 			expect(store.state.openTabs).toEqual(["board-1", "board-2"]);
 		});
 
-		it("新しいボードがタブに追加された後も既存のタブは維持される", () => {
-			// 初期状態
+		it("existing tabs maintained after new board added to tabs", () => {
+			// Initial state
 			prevBoardIds = new Set(["board-1", "board-2"]);
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2", "board-new"],
 				activeTabId: "board-new",
 			}));
 
-			// ボードリストが更新される（board-newが追加された後）
+			// Board list updated (after board-new was added)
 			simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-2" }, { id: "board-new" }],
 				openTabs: ["board-1", "board-2", "board-new"],
 			});
 
-			// すべてのタブが維持される
+			// All tabs maintained
 			expect(store.state.openTabs).toEqual(["board-1", "board-2", "board-new"]);
 		});
 	});
 
-	describe("初回レンダリング時", () => {
-		it("prevBoardIdsが空の場合、タブは削除されない", () => {
-			// 初回レンダリング時はprevBoardIdsが空
+	describe("initial render", () => {
+		it("tabs are not deleted when prevBoardIds is empty", () => {
+			// prevBoardIds is empty on initial render
 			prevBoardIds = new Set();
 			store.setState(() => ({
 				openTabs: ["board-1", "board-2"],
 				activeTabId: "board-1",
 			}));
 
-			// ボードリストが初めてロードされる
+			// Board list loaded for the first time
 			simulateDeletedBoardSync({
 				boards: [{ id: "board-1" }, { id: "board-2" }],
 				openTabs: ["board-1", "board-2"],
 			});
 
-			// タブは変わらない
+			// Tabs unchanged
 			expect(store.state.openTabs).toEqual(["board-1", "board-2"]);
 		});
 	});
@@ -499,7 +499,7 @@ describe.skip("deleted board tab sync logic (legacy prevBoardIds)", () => {
 
 describe("initialBoardIds ordering", () => {
 	describe("createTabStore with initial state", () => {
-		it("initialStateで指定した順序でタブが初期化される", () => {
+		it("tabs initialized in order specified by initialState", () => {
 			const store = createTabStore({
 				openTabs: ["board-a", "board-b", "board-c"],
 				activeTabId: "board-a",
@@ -509,7 +509,7 @@ describe("initialBoardIds ordering", () => {
 			expect(store.state.activeTabId).toBe("board-a");
 		});
 
-		it("空のinitialStateでは空のタブで初期化される", () => {
+		it("empty initialState initializes with empty tabs", () => {
 			const store = createTabStore();
 
 			expect(store.state.openTabs).toEqual([]);
@@ -518,7 +518,7 @@ describe("initialBoardIds ordering", () => {
 	});
 
 	describe("replaceAllTabs", () => {
-		it("指定した順序でタブが置き換えられる", () => {
+		it("replaces tabs in specified order", () => {
 			const store = createTabStore({
 				openTabs: ["old-1", "old-2"],
 				activeTabId: "old-1",
@@ -530,22 +530,22 @@ describe("initialBoardIds ordering", () => {
 			expect(store.state.activeTabId).toBe("new-a");
 		});
 
-		it("replaceAllTabs後も順序が維持される", () => {
+		it("order is maintained after replaceAllTabs", () => {
 			const store = createTabStore();
 
-			// Viewerからの複数インポートをシミュレート
-			// 順序: board-5, board-6, board-4
+			// Simulate multiple imports from Viewer
+			// Order: board-5, board-6, board-4
 			actions.replaceAllTabs(store, ["board-5", "board-6", "board-4"]);
 
-			// 順序が維持されていることを確認
+			// Verify order is maintained
 			expect(store.state.openTabs).toEqual(["board-5", "board-6", "board-4"]);
 			expect(store.state.activeTabId).toBe("board-5");
 		});
 
-		it("多数のボードでも順序が維持される", () => {
+		it("order maintained with many boards", () => {
 			const store = createTabStore();
 
-			// 10個のボードを特定の順序で追加
+			// Add 10 boards in specific order
 			const boardIds = [
 				"id-7",
 				"id-3",
@@ -560,30 +560,30 @@ describe("initialBoardIds ordering", () => {
 			];
 			actions.replaceAllTabs(store, boardIds);
 
-			// 順序が完全に維持されていることを確認
+			// Verify order is completely maintained
 			expect(store.state.openTabs).toEqual(boardIds);
 		});
 	});
 
 	describe("multi-import from Viewer simulation", () => {
-		it("Viewerからの複数インポート時に順序が保持される", () => {
-			// シナリオ: Viewerで3つのボードを選択してEditorに送る
-			// Viewerでの表示順: ⑤, 全体, ⑥ (左から右)
+		it("order is preserved when importing multiple from Viewer", () => {
+			// Scenario: Select 3 boards in Viewer and send to Editor
+			// Display order in Viewer: 5, All, 6 (left to right)
 			const importOrder = ["board-5", "board-zentai", "board-6"];
 
-			// TabStoreProviderがinitialBoardIdsを受け取った時の動作をシミュレート
+			// Simulate TabStoreProvider receiving initialBoardIds
 			const store = createTabStore({
 				openTabs: importOrder,
 				activeTabId: importOrder[0],
 			});
 
-			// タブの順序が維持されていることを確認
+			// Verify tab order is maintained
 			expect(store.state.openTabs).toEqual([
 				"board-5",
 				"board-zentai",
 				"board-6",
 			]);
-			// 最初のタブがアクティブ
+			// First tab is active
 			expect(store.state.activeTabId).toBe("board-5");
 		});
 	});

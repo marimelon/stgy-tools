@@ -1,7 +1,5 @@
 /**
- * 整列メニューコンポーネント
- *
- * オブジェクトの整列・配置機能をドロップダウンで提供
+ * Alignment menu component
  */
 
 import {
@@ -21,17 +19,13 @@ import { useTranslation } from "react-i18next";
 import type { AlignmentType } from "@/lib/editor";
 import { DropdownDivider, DropdownItem, DropdownMenu } from "./DropdownMenu";
 
-/** アイコンサイズ */
 const ICON_SIZE = 16;
 
 interface AlignmentMenuProps {
-	/** 整列実行コールバック */
 	onAlign: (type: AlignmentType) => void;
-	/** 整列可能かどうか */
 	canAlign: boolean;
 }
 
-/** 整列オプションの定義 */
 const ALIGNMENT_OPTIONS: {
 	type: AlignmentType;
 	i18nKey: string;
@@ -94,9 +88,6 @@ const ALIGNMENT_OPTIONS: {
 	},
 ];
 
-/**
- * 整列メニュー
- */
 export function AlignmentMenu({ onAlign, canAlign }: AlignmentMenuProps) {
 	const { t } = useTranslation();
 	const horizontalOptions = ALIGNMENT_OPTIONS.filter(

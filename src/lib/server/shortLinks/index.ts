@@ -1,7 +1,7 @@
 /**
- * 短縮リンク機能
+ * Short link functionality
  *
- * ストレージの抽象化により、KV以外のバックエンドにも対応可能
+ * Storage abstraction allows support for backends other than KV
  */
 
 import { getGlobalEnv } from "../cloudflareContext";
@@ -26,26 +26,19 @@ export type {
 	ShortLinkErrorCode,
 } from "./types";
 
-/** 最大リトライ回数（ID衝突時） */
 const MAX_RETRY_ATTEMPTS = 10;
 
-/** ストレージインスタンスのキャッシュ */
 let cachedStorage: ShortLinkStorage | null = null;
 let cachedStorageKey: string | null = null;
 
 /**
- * 短縮リンク機能が有効かどうかをチェック
- *
- * 環境変数 SHORT_LINKS_ENABLED が "true" の場合のみ有効
+ * Only enabled when SHORT_LINKS_ENABLED env var is "true"
  */
 export function isShortLinksEnabled(): boolean {
 	const env = getGlobalEnv();
 	return env?.SHORT_LINKS_ENABLED === "true";
 }
 
-/**
- * 現在の環境設定からキャッシュキーを生成
- */
 function getStorageCacheKey(): string {
 	const env = getGlobalEnv();
 	return JSON.stringify({
@@ -58,12 +51,12 @@ function getStorageCacheKey(): string {
 }
 
 /**
- * 現在の環境に応じたストレージを取得（シングルトン）
+ * Get storage based on current environment (singleton)
  *
- * 優先順位:
- * 1. Workers直接バインディング (SHORT_LINKS)
+ * Priority:
+ * 1. Workers direct binding (SHORT_LINKS)
  * 2. KV REST API (CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_KV_NAMESPACE_ID, CLOUDFLARE_API_TOKEN)
- * 3. Nullストレージ (ストレージ利用不可)
+ * 3. Null storage (storage unavailable)
  */
 export function getShortLinkStorage(): ShortLinkStorage {
 	const cacheKey = getStorageCacheKey();
@@ -97,12 +90,6 @@ export function getShortLinkStorage(): ShortLinkStorage {
 	return storage;
 }
 
-/**
- * 短縮IDからstgyコードを解決
- *
- * @param shortId 短縮ID
- * @returns stgyコード、または見つからない場合はnull
- */
 export async function resolveShortId(
 	shortId: string,
 ): Promise<ShortLinkData | null> {
@@ -118,14 +105,6 @@ export async function resolveShortId(
 	return storage.get(shortId);
 }
 
-/**
- * 短縮リンクを作成
- *
- * @param stgy stgyコード
- * @param baseUrl ベースURL（短縮URLの生成に使用）
- * @returns 作成結果
- * @throws エラー時は ShortLinkError をスロー
- */
 export async function createShortLink(
 	stgy: string,
 	baseUrl: string,
@@ -159,7 +138,7 @@ export async function createShortLink(
 			id = candidateId;
 			break;
 		}
-		// ハッシュ衝突 → リトライ
+		// Hash collision, retry
 	}
 
 	if (!id) {
@@ -177,9 +156,6 @@ export async function createShortLink(
 	};
 }
 
-/**
- * 短縮リンク機能のカスタムエラー
- */
 export class ShortLinkError extends Error {
 	code: ShortLinkErrorCode;
 

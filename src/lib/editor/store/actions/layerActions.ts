@@ -1,27 +1,19 @@
 /**
- * レイヤー操作アクション
+ * Layer operation actions
  */
 
 import i18n from "@/lib/i18n";
 import { cloneBoard, pushHistory } from "../../utils";
 import type { EditorStore } from "../types";
 
-/** レイヤー移動方向 */
 export type LayerDirection = "front" | "back" | "forward" | "backward";
 
-/**
- * レイヤーアクションを作成
- */
 export function createLayerActions(store: EditorStore) {
-	/**
-	 * レイヤーを移動
-	 */
 	const moveLayer = (objectId: string, direction: LayerDirection) => {
 		store.setState((state) => {
 			const objects = state.board.objects;
 			const index = objects.findIndex((obj) => obj.id === objectId);
 
-			// 範囲外チェック
 			if (index < 0 || index >= objects.length) return state;
 
 			const newBoard = cloneBoard(state.board);
@@ -30,19 +22,15 @@ export function createLayerActions(store: EditorStore) {
 			let newIndex: number;
 			switch (direction) {
 				case "front":
-					// 最前面（配列の先頭）
 					newIndex = 0;
 					break;
 				case "back":
-					// 最背面（配列の末尾）
 					newIndex = newBoard.objects.length;
 					break;
 				case "forward":
-					// 1つ前面へ（配列で前へ）
 					newIndex = Math.max(0, index - 1);
 					break;
 				case "backward":
-					// 1つ背面へ（配列で後ろへ）
 					newIndex = Math.min(newBoard.objects.length, index + 1);
 					break;
 			}
@@ -65,9 +53,6 @@ export function createLayerActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * 選択中オブジェクトのレイヤーを移動
-	 */
 	const moveSelectedLayer = (direction: LayerDirection) => {
 		const state = store.state;
 		if (state.selectedIds.length !== 1) return;
@@ -75,23 +60,21 @@ export function createLayerActions(store: EditorStore) {
 	};
 
 	/**
-	 * レイヤーを任意の位置に移動（ドラッグ&ドロップ用）
+	 * Reorder layer to arbitrary position (for drag & drop)
 	 */
 	const reorderLayer = (objectId: string, toIndex: number) => {
 		store.setState((state) => {
 			const objects = state.board.objects;
 			const fromIndex = objects.findIndex((obj) => obj.id === objectId);
 
-			// 範囲外チェック
 			if (fromIndex < 0 || fromIndex >= objects.length) return state;
 			if (toIndex < 0 || toIndex > objects.length) return state;
-			// 同じ位置への移動は無視
 			if (fromIndex === toIndex || fromIndex === toIndex - 1) return state;
 
 			const newBoard = cloneBoard(state.board);
 			const [movedObject] = newBoard.objects.splice(fromIndex, 1);
 
-			// fromIndex より後ろに挿入する場合、削除により位置がずれるので調整
+			// Adjust index when inserting after fromIndex (due to splice)
 			const adjustedToIndex = toIndex > fromIndex ? toIndex - 1 : toIndex;
 			newBoard.objects.splice(adjustedToIndex, 0, movedObject);
 
@@ -108,17 +91,16 @@ export function createLayerActions(store: EditorStore) {
 	};
 
 	/**
-	 * グループ全体を任意の位置に移動
+	 * Reorder entire group to arbitrary position
 	 */
 	const reorderGroup = (groupId: string, toIndex: number) => {
 		store.setState((state) => {
-			// グループを探す
 			const group = state.groups.find((g) => g.id === groupId);
 			if (!group) return state;
 
 			const newBoard = cloneBoard(state.board);
 
-			// グループ内オブジェクトの現在のインデックスを取得（配列順）
+			// Get current indices of group objects (sorted by array order)
 			const groupIndices = group.objectIds
 				.map((id) => newBoard.objects.findIndex((obj) => obj.id === id))
 				.filter((idx) => idx !== -1)
@@ -129,30 +111,25 @@ export function createLayerActions(store: EditorStore) {
 			const groupSize = groupIndices.length;
 			const firstIndex = groupIndices[0];
 
-			// 同じ位置への移動は無視
 			if (toIndex === firstIndex || toIndex === firstIndex + groupSize) {
 				return state;
 			}
 
-			// グループ内オブジェクトを取り出す（インデックス順）
 			const groupObjects = groupIndices.map((i) => newBoard.objects[i]);
 
-			// 削除（後ろから削除してインデックスがずれないように）
+			// Remove from back to front to preserve indices
 			for (let i = groupIndices.length - 1; i >= 0; i--) {
 				newBoard.objects.splice(groupIndices[i], 1);
 			}
 
-			// 挿入位置を計算（削除によりインデックスがずれる可能性）
+			// Adjust insertion index (may shift due to removal)
 			let insertAt = toIndex;
 			if (toIndex > firstIndex) {
-				// 削除された分を差し引く
 				insertAt = toIndex - groupSize;
 			}
 
-			// 挿入
 			newBoard.objects.splice(insertAt, 0, ...groupObjects);
 
-			// 選択を更新（IDは変わらない）
 			const newSelectedIds = groupObjects.map((obj) => obj.id);
 
 			return {

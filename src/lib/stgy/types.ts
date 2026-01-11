@@ -1,20 +1,20 @@
 /**
- * stgy ボードデータの型定義
+ * stgy board data type definitions
  */
 
 /**
- * RGBA色情報
+ * RGBA color information
  */
 export interface Color {
 	r: number;
 	g: number;
 	b: number;
-	/** 透過度 0-100 */
+	/** Opacity 0-100 */
 	opacity: number;
 }
 
 /**
- * 座標 (1/10ピクセル単位で格納、表示時はピクセルに変換)
+ * Position (stored in 1/10 pixel units, converted to pixels for display)
  */
 export interface Position {
 	x: number;
@@ -22,56 +22,49 @@ export interface Position {
 }
 
 /**
- * オブジェクトの状態フラグ
+ * Object state flags
  */
 export interface ObjectFlags {
-	/** 表示状態 */
 	visible: boolean;
-	/** 左右反転 */
 	flipHorizontal: boolean;
-	/** 上下反転 */
 	flipVertical: boolean;
-	/** ロック状態 */
 	locked: boolean;
 }
 
 /**
- * ボード上のオブジェクト（IDなし、パーサー出力用）
- * パーサーから出力され、assignObjectIdsでIDが付与される
+ * Board object without ID (parser output)
+ * Output from parser, ID is assigned by assignObjectIds
  */
 export interface BoardObjectWithoutId {
-	/** オブジェクトID (オブジェクト種別を示す) */
+	/** Object ID (indicates object type) */
 	objectId: number;
-	/** テキスト内容 (テキストオブジェクトの場合) */
+	/** Text content (for text objects) */
 	text?: string;
-	/** 状態フラグ */
 	flags: ObjectFlags;
-	/** 座標 (ピクセル単位) */
+	/** Position (in pixels) */
 	position: Position;
-	/** 回転角度 (-180〜180度) */
+	/** Rotation angle (-180 to 180 degrees) */
 	rotation: number;
-	/** サイズ (50〜200, 100=100%) */
+	/** Size (50-200, 100=100%) */
 	size: number;
-	/** 色・透過度 */
 	color: Color;
-	/** 固有パラメータ1 (扇範囲攻撃の範囲角度など) */
+	/** Object-specific parameter 1 (e.g., cone angle for cone AoE) */
 	param1?: number;
-	/** 固有パラメータ2 (輪形範囲攻撃のドーナツ範囲など) */
+	/** Object-specific parameter 2 (e.g., donut range for donut AoE) */
 	param2?: number;
-	/** 固有パラメータ3 */
 	param3?: number;
 }
 
 /**
- * ボード上のオブジェクト（ランタイムID付き）
+ * Board object with runtime ID
  */
 export interface BoardObject extends BoardObjectWithoutId {
-	/** ランタイムID（保存時は破棄される） */
+	/** Runtime ID (discarded on save) */
 	id: string;
 }
 
 /**
- * 背景ID
+ * Background ID
  */
 export enum BackgroundId {
 	None = 1,
@@ -84,63 +77,57 @@ export enum BackgroundId {
 }
 
 /**
- * ボードデータ（ランタイムID付きオブジェクト）
+ * Board data with runtime ID objects
  *
- * 注意: stgyバイナリフォーマットにはボードサイズ（幅/高さ）は含まれていません。
- * キャンバスサイズは固定値(512x384)または描画時に計算されます。
+ * Note: The stgy binary format does not include board size (width/height).
+ * Canvas size is fixed (512x384) or calculated at render time.
  */
 export interface BoardData {
-	/** バージョン (= 2) */
+	/** Version (= 2) */
 	version: number;
-	/** ボード名 */
 	name: string;
-	/** 背景ID */
 	backgroundId: BackgroundId;
-	/** オブジェクトリスト */
 	objects: BoardObject[];
-	/** サイズ配列後のパディングバイト (ラウンドトリップ用、内部使用) */
+	/** Padding byte after size array (for round-trip, internal use) */
 	_sizePaddingByte?: number;
-	/** セクションコンテンツ先頭の空フィールド数 (ラウンドトリップ用、内部使用) */
+	/** Empty field count at section content start (for round-trip, internal use) */
 	_emptyFieldCount?: number;
 }
 
 /**
- * パース済みボードデータ（IDなしオブジェクト）
- * parseBoardDataの出力型。assignObjectIdsでBoardDataに変換される。
+ * Parsed board data (objects without ID)
+ * Output type of parseBoardData. Converted to BoardData by assignObjectIds.
  */
 export interface ParsedBoardData {
-	/** バージョン (= 2) */
+	/** Version (= 2) */
 	version: number;
-	/** ボード名 */
 	name: string;
-	/** 背景ID */
 	backgroundId: BackgroundId;
-	/** オブジェクトリスト（IDなし） */
+	/** Object list (without ID) */
 	objects: BoardObjectWithoutId[];
-	/** サイズ配列後のパディングバイト (ラウンドトリップ用、内部使用) */
+	/** Padding byte after size array (for round-trip, internal use) */
 	_sizePaddingByte?: number;
-	/** セクションコンテンツ先頭の空フィールド数 (ラウンドトリップ用、内部使用) */
+	/** Empty field count at section content start (for round-trip, internal use) */
 	_emptyFieldCount?: number;
 }
 
 /**
- * オブジェクトID定数
+ * Object name map (i18n keys)
  */
-/** オブジェクト名マップ */
 export const ObjectNames: Record<number, string> = {
-	// フィールド
-	1: "円形白無地フィールド", // 未使用 (CSV: False)
-	2: "円形白タイルフィールド", // 未使用 (CSV: False)
-	3: "円形グレー無地フィールド", // 未使用 (CSV: False)
+	// Field
+	1: "円形白無地フィールド", // unused (CSV: False)
+	2: "円形白タイルフィールド", // unused (CSV: False)
+	3: "円形グレー無地フィールド", // unused (CSV: False)
 	4: "円形チェック",
-	5: "四角形白無地フィールド", // 未使用 (CSV: False)
-	6: "四角形白タイルフィールド", // 未使用 (CSV: False)
-	7: "四角形グレー無地フィールド", // 未使用 (CSV: False)
+	5: "四角形白無地フィールド", // unused (CSV: False)
+	6: "四角形白タイルフィールド", // unused (CSV: False)
+	7: "四角形グレー無地フィールド", // unused (CSV: False)
 	8: "正方形チェック",
 	124: "円形グレー",
 	125: "正方形グレー",
 
-	// 攻撃範囲
+	// AoE
 	9: "円形範囲攻撃",
 	10: "扇範囲攻撃",
 	11: "直線範囲攻撃",
@@ -163,7 +150,7 @@ export const ObjectNames: Record<number, string> = {
 	129: "3人用エリア",
 	130: "4人用エリア",
 
-	// ジョブアイコン
+	// Job icons
 	18: "剣術士",
 	19: "格闘士",
 	20: "斧術士",
@@ -196,7 +183,7 @@ export const ObjectNames: Record<number, string> = {
 	101: "ヴァイパー",
 	102: "ピクトマンサー",
 
-	// ロールアイコン
+	// Role icons
 	47: "タンク",
 	48: "タンク1",
 	49: "タンク2",
@@ -215,12 +202,12 @@ export const ObjectNames: Record<number, string> = {
 	122: "ピュアヒーラー",
 	123: "バリアヒーラー",
 
-	// エネミー
+	// Enemy
 	60: "エネミー小",
 	62: "エネミー中",
 	64: "エネミー大",
 
-	// 攻撃マーカー
+	// Attack markers
 	65: "攻撃1",
 	66: "攻撃2",
 	67: "攻撃3",
@@ -230,22 +217,22 @@ export const ObjectNames: Record<number, string> = {
 	116: "攻撃7",
 	117: "攻撃8",
 
-	// 足止めマーカー
+	// Bind markers
 	70: "足止め1",
 	71: "足止め2",
 	72: "足止め3",
 
-	// 禁止マーカー
+	// Ignore markers
 	73: "禁止1",
 	74: "禁止2",
 
-	// 汎用マーカー
+	// Generic markers
 	75: "シカク",
 	76: "マル",
 	77: "プラス",
 	78: "サンカク",
 
-	// フィールドマーカー
+	// Waymarks
 	79: "フィールドマーカーA",
 	80: "フィールドマーカーB",
 	81: "フィールドマーカーC",
@@ -255,17 +242,17 @@ export const ObjectNames: Record<number, string> = {
 	85: "フィールドマーカー3",
 	86: "フィールドマーカー4",
 
-	// バフ/デバフ
+	// Buff/Debuff
 	113: "バフ効果",
 	114: "デバフ効果",
 
-	// ロックオンマーカー
+	// Lock-on markers
 	131: "ロックオン赤",
 	132: "ロックオン青",
 	133: "ロックオン紫",
 	134: "ロックオン緑",
 
-	// 図形
+	// Shapes
 	87: "図形マル",
 	88: "図形バツ",
 	89: "図形サンカク",
@@ -279,31 +266,31 @@ export const ObjectNames: Record<number, string> = {
 	139: "時計回り",
 	140: "反時計回り",
 
-	// その他
+	// Other
 	100: "テキスト",
 	105: "グループ",
 };
 
 export const ObjectIds = {
-	// フィールド
-	/** @deprecated 未使用 (CSV: False) */
+	// Field
+	/** @deprecated unused (CSV: False) */
 	CircleWhiteSolid: 1,
-	/** @deprecated 未使用 (CSV: False) */
+	/** @deprecated unused (CSV: False) */
 	CircleWhiteTile: 2,
-	/** @deprecated 未使用 (CSV: False) */
+	/** @deprecated unused (CSV: False) */
 	CircleGraySolid: 3,
 	CircleCheck: 4,
-	/** @deprecated 未使用 (CSV: False) */
+	/** @deprecated unused (CSV: False) */
 	SquareWhiteSolid: 5,
-	/** @deprecated 未使用 (CSV: False) */
+	/** @deprecated unused (CSV: False) */
 	SquareWhiteTile: 6,
-	/** @deprecated 未使用 (CSV: False) */
+	/** @deprecated unused (CSV: False) */
 	SquareGraySolid: 7,
 	SquareCheck: 8,
 	CircleGray: 124,
 	SquareGray: 125,
 
-	// 攻撃範囲
+	// AoE
 	CircleAoE: 9,
 	ConeAoE: 10,
 	LineAoE: 11,
@@ -326,7 +313,7 @@ export const ObjectIds = {
 	Area3P: 129,
 	Area4P: 130,
 
-	// ジョブアイコン
+	// Job icons
 	Gladiator: 18,
 	Pugilist: 19,
 	Marauder: 20,
@@ -359,7 +346,7 @@ export const ObjectIds = {
 	Viper: 101,
 	Pictomancer: 102,
 
-	// ロールアイコン
+	// Role icons
 	Tank: 47,
 	Tank1: 48,
 	Tank2: 49,
@@ -378,12 +365,12 @@ export const ObjectIds = {
 	PureHealer: 122,
 	BarrierHealer: 123,
 
-	// エネミー
+	// Enemy
 	EnemySmall: 60,
 	EnemyMedium: 62,
 	EnemyLarge: 64,
 
-	// 攻撃マーカー
+	// Attack markers
 	Attack1: 65,
 	Attack2: 66,
 	Attack3: 67,
@@ -393,22 +380,22 @@ export const ObjectIds = {
 	Attack7: 116,
 	Attack8: 117,
 
-	// 足止めマーカー
+	// Bind markers
 	Bind1: 70,
 	Bind2: 71,
 	Bind3: 72,
 
-	// 禁止マーカー
+	// Ignore markers
 	Ignore1: 73,
 	Ignore2: 74,
 
-	// 汎用マーカー
+	// Generic markers
 	Square: 75,
 	Circle: 76,
 	Plus: 77,
 	Triangle: 78,
 
-	// フィールドマーカー
+	// Waymarks
 	WaymarkA: 79,
 	WaymarkB: 80,
 	WaymarkC: 81,
@@ -418,17 +405,17 @@ export const ObjectIds = {
 	Waymark3: 85,
 	Waymark4: 86,
 
-	// バフ/デバフ
+	// Buff/Debuff
 	Buff: 113,
 	Debuff: 114,
 
-	// ロックオンマーカー
+	// Lock-on markers
 	LockOnRed: 131,
 	LockOnBlue: 132,
 	LockOnPurple: 133,
 	LockOnGreen: 134,
 
-	// 図形
+	// Shapes
 	ShapeCircle: 87,
 	ShapeCross: 88,
 	ShapeTriangle: 89,
@@ -442,137 +429,133 @@ export const ObjectIds = {
 	Clockwise: 139,
 	CounterClockwise: 140,
 
-	// その他
+	// Other
 	Text: 100,
 	Group: 105,
 } as const;
 
 /**
- * オブジェクトの反転可能フラグ (CSV カラム19=左右反転, カラム20=上下反転)
- * プロパティパネルで反転オプションの表示制御に使用
+ * Object flip flags (CSV column 19=horizontal flip, column 20=vertical flip)
+ * Used for controlling flip option visibility in property panel
  */
 export const OBJECT_FLIP_FLAGS: Record<
 	number,
 	{ horizontal: boolean; vertical: boolean }
 > = {
-	// フィールド
-	4: { horizontal: false, vertical: false }, // 円形チェック
-	8: { horizontal: false, vertical: false }, // 正方形チェック
-	124: { horizontal: false, vertical: false }, // 円形グレー
-	125: { horizontal: false, vertical: false }, // 正方形グレー
+	// Field
+	4: { horizontal: false, vertical: false },
+	8: { horizontal: false, vertical: false },
+	124: { horizontal: false, vertical: false },
+	125: { horizontal: false, vertical: false },
 
-	// 攻撃範囲
-	9: { horizontal: false, vertical: false }, // 円形範囲攻撃
-	10: { horizontal: true, vertical: true }, // 扇範囲攻撃
-	11: { horizontal: false, vertical: false }, // 直線範囲攻撃
-	12: { horizontal: false, vertical: false }, // ライン
-	13: { horizontal: false, vertical: false }, // 視線攻撃
-	14: { horizontal: false, vertical: false }, // 頭割りダメージ攻撃
-	15: { horizontal: false, vertical: true }, // 頭割りダメージ攻撃：直線型
-	16: { horizontal: false, vertical: false }, // 距離減衰ダメージ攻撃
-	17: { horizontal: true, vertical: true }, // 輪形範囲攻撃
-	106: { horizontal: false, vertical: false }, // 頭割りダメージ攻撃：連続型
-	107: { horizontal: false, vertical: true }, // 距離減衰ダメージ攻撃：対象発動型
-	108: { horizontal: false, vertical: false }, // 強攻撃
-	109: { horizontal: false, vertical: false }, // ノックバック攻撃：放射型
-	110: { horizontal: false, vertical: true }, // ノックバック攻撃：直線型
-	111: { horizontal: false, vertical: false }, // 受け止め攻撃
-	112: { horizontal: false, vertical: false }, // ターゲット予兆
-	126: { horizontal: false, vertical: true }, // 円形範囲攻撃：移動型
-	127: { horizontal: false, vertical: false }, // 1人用エリア
-	128: { horizontal: false, vertical: false }, // 2人用エリア
-	129: { horizontal: false, vertical: false }, // 3人用エリア
-	130: { horizontal: false, vertical: false }, // 4人用エリア
+	// AoE
+	9: { horizontal: false, vertical: false },
+	10: { horizontal: true, vertical: true },
+	11: { horizontal: false, vertical: false },
+	12: { horizontal: false, vertical: false },
+	13: { horizontal: false, vertical: false },
+	14: { horizontal: false, vertical: false },
+	15: { horizontal: false, vertical: true },
+	16: { horizontal: false, vertical: false },
+	17: { horizontal: true, vertical: true },
+	106: { horizontal: false, vertical: false },
+	107: { horizontal: false, vertical: true },
+	108: { horizontal: false, vertical: false },
+	109: { horizontal: false, vertical: false },
+	110: { horizontal: false, vertical: true },
+	111: { horizontal: false, vertical: false },
+	112: { horizontal: false, vertical: false },
+	126: { horizontal: false, vertical: true },
+	127: { horizontal: false, vertical: false },
+	128: { horizontal: false, vertical: false },
+	129: { horizontal: false, vertical: false },
+	130: { horizontal: false, vertical: false },
 
-	// エネミー
-	60: { horizontal: false, vertical: true }, // エネミー小
-	62: { horizontal: false, vertical: true }, // エネミー中
-	64: { horizontal: false, vertical: true }, // エネミー大
+	// Enemy
+	60: { horizontal: false, vertical: true },
+	62: { horizontal: false, vertical: true },
+	64: { horizontal: false, vertical: true },
 
-	// バフ/デバフ
-	113: { horizontal: true, vertical: true }, // バフ効果
-	114: { horizontal: true, vertical: true }, // デバフ効果
+	// Buff/Debuff
+	113: { horizontal: true, vertical: true },
+	114: { horizontal: true, vertical: true },
 
-	// 図形
-	87: { horizontal: false, vertical: false }, // 図形マル
-	88: { horizontal: false, vertical: false }, // 図形バツ
-	89: { horizontal: false, vertical: true }, // 図形サンカク
-	90: { horizontal: false, vertical: false }, // 図形シカク
-	94: { horizontal: false, vertical: true }, // 図形ヤジルシ
-	103: { horizontal: true, vertical: true }, // 図形カイテン
-	135: { horizontal: false, vertical: false }, // 強調マル
-	136: { horizontal: false, vertical: false }, // 強調バツ
-	137: { horizontal: false, vertical: false }, // 強調シカク
-	138: { horizontal: false, vertical: false }, // 強調サンカク
-	139: { horizontal: false, vertical: false }, // 時計回り
-	140: { horizontal: false, vertical: false }, // 反時計回り
+	// Shapes
+	87: { horizontal: false, vertical: false },
+	88: { horizontal: false, vertical: false },
+	89: { horizontal: false, vertical: true },
+	90: { horizontal: false, vertical: false },
+	94: { horizontal: false, vertical: true },
+	103: { horizontal: true, vertical: true },
+	135: { horizontal: false, vertical: false },
+	136: { horizontal: false, vertical: false },
+	137: { horizontal: false, vertical: false },
+	138: { horizontal: false, vertical: false },
+	139: { horizontal: false, vertical: false },
+	140: { horizontal: false, vertical: false },
 };
 
-/** デフォルトの反転フラグ（未定義のオブジェクト用） */
+/** Default flip flags (for undefined objects) */
 export const DEFAULT_FLIP_FLAGS = { horizontal: false, vertical: false };
 
 /**
- * 未使用オブジェクトID一覧 (CSV 2カラム目が False)
- * パレットやエディタUIで非表示にするために使用
+ * Unused object ID list (CSV column 2 is False)
+ * Used to hide objects in palette and editor UI
  */
 export const DISABLED_OBJECT_IDS: readonly number[] = [
-	// フィールド (未使用)
-	ObjectIds.CircleWhiteSolid, // 1
-	ObjectIds.CircleWhiteTile, // 2
-	ObjectIds.CircleGraySolid, // 3
-	ObjectIds.SquareWhiteSolid, // 5
-	ObjectIds.SquareWhiteTile, // 6
-	ObjectIds.SquareGraySolid, // 7
-	// ロール (未使用)
-	58, // DPS5
-	59, // DPS6
-	// エネミー (未使用)
-	61, // エネミー小2
-	63, // エネミー中2
-	// 図形 (未使用)
-	91, // 未使用
-	92, // 未使用
-	93, // 未使用
-	95, // 未使用
-	96, // 未使用
-	97, // 未使用
-	98, // 未使用
-	99, // 未使用
-	104, // 図形：矢印右回り
+	// Field (unused)
+	ObjectIds.CircleWhiteSolid,
+	ObjectIds.CircleWhiteTile,
+	ObjectIds.CircleGraySolid,
+	ObjectIds.SquareWhiteSolid,
+	ObjectIds.SquareWhiteTile,
+	ObjectIds.SquareGraySolid,
+	// Role (unused)
+	58,
+	59,
+	// Enemy (unused)
+	61,
+	63,
+	// Shapes (unused)
+	91,
+	92,
+	93,
+	95,
+	96,
+	97,
+	98,
+	99,
+	104,
 ] as const;
 
 /**
- * 編集パラメータID (TofuEditParam.ja.csv)
+ * Edit parameter IDs (TofuEditParam.ja.csv)
  */
 export const EditParamIds = {
 	None: 0,
-	Size: 1, // サイズ (100, 50-200)
-	Rotation: 2, // 角度 (0, -180-180)
-	Opacity: 3, // 透過度 (0, 0-100)
-	Height: 4, // 縦幅 (128, 16-384)
-	Width: 5, // 横幅 (128, 16-512)
-	ConeAngle: 6, // 範囲角度 (90, 10-360)
-	DonutRange: 7, // ドーナツ範囲 (50, 0-240)
-	DisplayCount: 8, // 表示数 (1, 1-5)
-	HeightCount: 9, // 縦幅数 (1, 1-5)
-	WidthCount: 10, // 横幅数 (1, 1-5)
-	LineWidth: 11, // 縦幅/線幅 (6, 2-10)
-	SizeSmall: 12, // サイズ (50, 10-200) - 攻撃範囲用
+	Size: 1,
+	Rotation: 2,
+	Opacity: 3,
+	Height: 4,
+	Width: 5,
+	ConeAngle: 6,
+	DonutRange: 7,
+	DisplayCount: 8,
+	HeightCount: 9,
+	WidthCount: 10,
+	LineWidth: 11,
+	SizeSmall: 12,
 } as const;
 
 /**
- * 編集パラメータ定義 (TofuEditParam.ja.csv から)
+ * Edit parameter definition (from TofuEditParam.ja.csv)
  */
 export interface EditParamDefinition {
-	/** パラメータ名 */
+	/** Parameter name (i18n key) */
 	name: string;
-	/** デフォルト値 */
 	defaultValue: number;
-	/** 最小値 */
 	min: number;
-	/** 最大値 */
 	max: number;
-	/** スライダー表示するか */
 	useSlider: boolean;
 }
 
@@ -664,11 +647,11 @@ export const EDIT_PARAMS: Record<number, EditParamDefinition> = {
 };
 
 /**
- * オブジェクトごとの編集可能パラメータスロット (TofuObject.ja.csv カラム10-14)
- * [param1, param2, param3, param4, param5] の順でEditParamIdsを指定
+ * Editable parameter slots per object (TofuObject.ja.csv columns 10-14)
+ * Specify EditParamIds in order [param1, param2, param3, param4, param5]
  */
 export const OBJECT_EDIT_PARAMS: Record<number, readonly number[]> = {
-	// フィールド (サイズ、角度、透過度)
+	// Field
 	[ObjectIds.CircleCheck]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
@@ -690,125 +673,124 @@ export const OBJECT_EDIT_PARAMS: Record<number, readonly number[]> = {
 		EditParamIds.Opacity,
 	],
 
-	// 攻撃範囲
+	// AoE
 	[ObjectIds.CircleAoE]: [
 		EditParamIds.SizeSmall,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 12,2,3
+	],
 	[ObjectIds.ConeAoE]: [
 		EditParamIds.SizeSmall,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
 		EditParamIds.ConeAngle,
-	], // 12,2,3,6
+	],
 	[ObjectIds.LineAoE]: [
 		EditParamIds.Height,
 		EditParamIds.Width,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 4,5,2,3
+	],
 	[ObjectIds.Line]: [
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
 		EditParamIds.LineWidth,
-	], // 2,3,11
+	],
 	[ObjectIds.Gaze]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.Stack]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.StackLine]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
 		EditParamIds.DisplayCount,
-	], // 1,2,3,8
+	],
 	[ObjectIds.Proximity]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.DonutAoE]: [
 		EditParamIds.SizeSmall,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
 		EditParamIds.ConeAngle,
 		EditParamIds.DonutRange,
-	], // 12,2,3,6,7
+	],
 	[ObjectIds.StackChain]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.ProximityTarget]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.Tankbuster]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.KnockbackRadial]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.KnockbackLine]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
 		EditParamIds.HeightCount,
 		EditParamIds.WidthCount,
-	], // 1,2,3,9,10
+	],
 	[ObjectIds.Block]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.TargetMarker]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.CircleAoEMoving]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.Area1P]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.Area2P]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.Area3P]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 	[ObjectIds.Area4P]: [
 		EditParamIds.Size,
 		EditParamIds.Rotation,
 		EditParamIds.Opacity,
-	], // 1,2,3
+	],
 
-	// ジョブ・ロール・エネミー・マーカー等 (サイズ、角度、透過度)
-	// 基本的に 1,2,3 なのでデフォルトとして扱う
+	// Job/Role/Enemy/Markers etc. use DEFAULT_EDIT_PARAMS
 };
 
-/** デフォルトの編集パラメータ（ほとんどのオブジェクト用: サイズ、角度、透過度） */
+/** Default edit parameters (for most objects: Size, Rotation, Opacity) */
 export const DEFAULT_EDIT_PARAMS: readonly number[] = [
 	EditParamIds.Size,
 	EditParamIds.Rotation,
@@ -816,13 +798,13 @@ export const DEFAULT_EDIT_PARAMS: readonly number[] = [
 ];
 
 /**
- * オブジェクト配置数制限 (CSV カラム22から)
- * -1: 制限なし, 0: テキスト用, その他: 最大配置数
+ * Object placement limits (from CSV column 22)
+ * -1: no limit, 0: for text, other: max placement count
  */
 export const OBJECT_LIMITS: Partial<Record<number, number>> = {
-	[ObjectIds.LineAoE]: 10, // 直線範囲攻撃: 10個まで
-	[ObjectIds.Line]: 10, // ライン: 10個まで
+	[ObjectIds.LineAoE]: 10,
+	[ObjectIds.Line]: 10,
 };
 
-/** 全オブジェクトの最大配置数 */
+/** Maximum total objects on a board */
 export const MAX_TOTAL_OBJECTS = 50;

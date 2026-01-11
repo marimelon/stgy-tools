@@ -1,5 +1,5 @@
 /**
- * 整列操作アクション
+ * Alignment operation actions
  */
 
 import i18n from "@/lib/i18n";
@@ -7,7 +7,6 @@ import type { AlignmentType, CircularModeState } from "../../types";
 import { cloneBoard, pushHistory, updateObjectInBoard } from "../../utils";
 import type { EditorStore } from "../types";
 
-/** 整列タイプの説明キー */
 const ALIGNMENT_DESCRIPTION_KEYS: Record<AlignmentType, string> = {
 	left: "history.alignLeft",
 	center: "history.alignCenterH",
@@ -20,18 +19,11 @@ const ALIGNMENT_DESCRIPTION_KEYS: Record<AlignmentType, string> = {
 	circular: "history.circularArrangement",
 };
 
-/**
- * 整列アクションを作成
- */
 export function createAlignmentActions(store: EditorStore) {
-	/**
-	 * オブジェクトを整列
-	 */
 	const alignObjects = (objectIds: string[], alignment: AlignmentType) => {
 		if (objectIds.length < 2) return;
 
 		store.setState((state) => {
-			// 有効なオブジェクトのみフィルタ
 			const validObjects = objectIds
 				.map((id) => state.board.objects.find((obj) => obj.id === id))
 				.filter((obj): obj is NonNullable<typeof obj> => obj !== undefined);
@@ -39,7 +31,6 @@ export function createAlignmentActions(store: EditorStore) {
 
 			const validIds = validObjects.map((obj) => obj.id);
 
-			// 位置の境界を計算
 			const positions = validObjects.map((obj) => obj.position);
 			const minX = Math.min(...positions.map((p) => p.x));
 			const maxX = Math.max(...positions.map((p) => p.x));
@@ -50,7 +41,6 @@ export function createAlignmentActions(store: EditorStore) {
 
 			let newBoard = cloneBoard(state.board);
 
-			// 整列タイプに応じて位置を更新
 			switch (alignment) {
 				case "left":
 					for (const id of validIds) {
@@ -113,7 +103,6 @@ export function createAlignmentActions(store: EditorStore) {
 					}
 					break;
 				case "distribute-h": {
-					// X座標でソート
 					const sortedByX = [...validObjects].sort(
 						(a, b) => a.position.x - b.position.x,
 					);
@@ -132,7 +121,6 @@ export function createAlignmentActions(store: EditorStore) {
 					break;
 				}
 				case "distribute-v": {
-					// Y座標でソート
 					const sortedByY = [...validObjects].sort(
 						(a, b) => a.position.y - b.position.y,
 					);
@@ -151,23 +139,21 @@ export function createAlignmentActions(store: EditorStore) {
 					break;
 				}
 				case "circular": {
-					// 円の中心と半径を決定
 					let circleCenterX: number;
 					let circleCenterY: number;
 					let circularRadius: number;
 
 					if (state.circularMode) {
-						// 既に円形モード中の場合は、既存の中心と半径を維持
+						// In circular mode, maintain existing center and radius
 						circleCenterX = state.circularMode.center.x;
 						circleCenterY = state.circularMode.center.y;
 						circularRadius = state.circularMode.radius;
 					} else {
-						// 新規: バウンディングボックスの中心を使用（安定した結果のため）
+						// New: use bounding box center for stable results
 						circleCenterX = centerX;
 						circleCenterY = centerY;
 
-						// 中心からの最大距離を半径とする
-						// 最小半径は50に制限
+						// Use max distance from center as radius, minimum 50
 						const calculatedRadius = Math.max(
 							...positions.map((p) =>
 								Math.sqrt(
@@ -178,20 +164,17 @@ export function createAlignmentActions(store: EditorStore) {
 						circularRadius = Math.max(50, calculatedRadius);
 					}
 
-					// 各オブジェクトの角度を計算・保存
 					const objectAngles = new Map<string, number>();
 
-					// 各オブジェクトの元の角度を保持したまま、半径だけを揃えて円周上に配置
+					// Place on circle circumference at same angle, only adjusting radius
 					for (let i = 0; i < validObjects.length; i++) {
 						const obj = validObjects[i];
 						const pos = positions[i];
-						// 現在の角度を計算
 						const angle = Math.atan2(
 							pos.y - circleCenterY,
 							pos.x - circleCenterX,
 						);
 						objectAngles.set(obj.id, angle);
-						// 同じ角度で半径を揃える
 						newBoard = updateObjectInBoard(newBoard, obj.id, {
 							position: {
 								x: circleCenterX + circularRadius * Math.cos(angle),
@@ -200,7 +183,6 @@ export function createAlignmentActions(store: EditorStore) {
 						});
 					}
 
-					// 円形配置モードを有効化
 					const circularModeState: CircularModeState = {
 						center: { x: circleCenterX, y: circleCenterY },
 						radius: circularRadius,
@@ -228,9 +210,6 @@ export function createAlignmentActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * 選択オブジェクトを整列
-	 */
 	const alignSelected = (alignment: AlignmentType) => {
 		const state = store.state;
 		if (state.selectedIds.length < 2) return;

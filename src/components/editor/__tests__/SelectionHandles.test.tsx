@@ -1,7 +1,7 @@
 /**
- * SelectionHandles コンポーネントのテスト
+ * SelectionHandles component tests
  *
- * ハンドル操作時のclickイベント伝播を検証
+ * Verifies click event propagation prevention during handle interactions
  */
 
 import { fireEvent, render } from "@testing-library/react";
@@ -9,8 +9,8 @@ import { describe, expect, it, vi } from "vitest";
 import { SelectionHandles } from "../SelectionHandles";
 
 describe("SelectionHandles", () => {
-	describe("clickイベント伝播の防止", () => {
-		it("回転ハンドル（circle）をクリックしてもイベントが伝播しない", () => {
+	describe("click event propagation prevention", () => {
+		it("clicking rotate handle (circle) does not propagate event", () => {
 			const onRotateStart = vi.fn();
 			const mockBackgroundClick = vi.fn();
 
@@ -27,18 +27,15 @@ describe("SelectionHandles", () => {
 				</svg>,
 			);
 
-			// 回転ハンドル（circle）を取得
 			const rotateHandle = container.querySelector("circle");
 			expect(rotateHandle).toBeTruthy();
 
-			// クリックイベント
 			fireEvent.click(rotateHandle!);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 
-		it("リサイズハンドル（rect）をクリックしてもイベントが伝播しない", () => {
+		it("clicking resize handle (rect) does not propagate event", () => {
 			const onResizeStart = vi.fn();
 			const mockBackgroundClick = vi.fn();
 
@@ -55,21 +52,18 @@ describe("SelectionHandles", () => {
 				</svg>,
 			);
 
-			// リサイズハンドル（rect、width=8のもの）を取得
 			const resizeHandles = container.querySelectorAll("rect");
 			const resizeHandle = Array.from(resizeHandles).find(
 				(rect) => rect.getAttribute("width") === "8",
 			);
 			expect(resizeHandle).toBeTruthy();
 
-			// クリックイベント
 			fireEvent.click(resizeHandle!);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 
-		it("回転ハンドルのドラッグ後のクリックイベントも伝播しない", () => {
+		it("click event after dragging rotate handle does not propagate", () => {
 			const onRotateStart = vi.fn();
 			const mockBackgroundClick = vi.fn();
 
@@ -88,16 +82,14 @@ describe("SelectionHandles", () => {
 
 			const rotateHandle = container.querySelector("circle")!;
 
-			// ドラッグシーケンス（PointerDown → PointerUp → Click）
 			fireEvent.pointerDown(rotateHandle);
 			fireEvent.pointerUp(rotateHandle);
 			fireEvent.click(rotateHandle);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 
-		it("リサイズハンドルのドラッグ後のクリックイベントも伝播しない", () => {
+		it("click event after dragging resize handle does not propagate", () => {
 			const onResizeStart = vi.fn();
 			const mockBackgroundClick = vi.fn();
 
@@ -119,18 +111,16 @@ describe("SelectionHandles", () => {
 				(rect) => rect.getAttribute("width") === "8",
 			)!;
 
-			// ドラッグシーケンス（PointerDown → PointerUp → Click）
 			fireEvent.pointerDown(resizeHandle);
 			fireEvent.pointerUp(resizeHandle);
 			fireEvent.click(resizeHandle);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 	});
 
-	describe("コールバックの動作", () => {
-		it("回転ハンドルのPointerDownでonRotateStartが呼ばれる", () => {
+	describe("callback behavior", () => {
+		it("onRotateStart is called on rotate handle PointerDown", () => {
 			const onRotateStart = vi.fn();
 
 			const { container } = render(
@@ -152,7 +142,7 @@ describe("SelectionHandles", () => {
 			expect(onRotateStart).toHaveBeenCalledTimes(1);
 		});
 
-		it("リサイズハンドルのPointerDownでonResizeStartが呼ばれる", () => {
+		it("onResizeStart is called on resize handle PointerDown", () => {
 			const onResizeStart = vi.fn();
 
 			const { container } = render(
@@ -178,8 +168,8 @@ describe("SelectionHandles", () => {
 		});
 	});
 
-	describe("レンダリング", () => {
-		it("4つのリサイズハンドルが正しくレンダリングされる", () => {
+	describe("rendering", () => {
+		it("4 resize handles render correctly", () => {
 			const { container } = render(
 				<svg>
 					<SelectionHandles
@@ -193,14 +183,14 @@ describe("SelectionHandles", () => {
 			);
 
 			const resizeHandles = container.querySelectorAll("rect");
-			// 選択枠1つ + リサイズハンドル4つ = 5つのrect
+			// selection frame (1) + resize handles (4) = 5 rects
 			const handleRects = Array.from(resizeHandles).filter(
 				(rect) => rect.getAttribute("width") === "8",
 			);
 			expect(handleRects).toHaveLength(4);
 		});
 
-		it("回転ハンドルが正しくレンダリングされる", () => {
+		it("rotate handle renders correctly", () => {
 			const { container } = render(
 				<svg>
 					<SelectionHandles

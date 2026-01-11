@@ -1,7 +1,3 @@
-/**
- * AoE関連アイコンコンポーネントのエクスポート
- */
-
 export { Area1PIcon } from "./Area1PIcon";
 export { Area2PIcon } from "./Area2PIcon";
 export { Area3PIcon } from "./Area3PIcon";

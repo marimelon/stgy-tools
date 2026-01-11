@@ -1,5 +1,5 @@
 /**
- * オブジェクト操作アクション
+ * Object operation actions
  */
 
 import { calculateLineEndpoint } from "@/lib/board";
@@ -16,13 +16,7 @@ import {
 import { canAddObject, canAddObjects } from "../../utils/validation";
 import type { EditorStore } from "../types";
 
-/**
- * オブジェクトアクションを作成
- */
 export function createObjectActions(store: EditorStore) {
-	/**
-	 * オブジェクトを更新
-	 */
 	const updateObject = (objectId: string, updates: Partial<BoardObject>) => {
 		store.setState((state) => {
 			const newBoard = updateObjectInBoard(state.board, objectId, updates);
@@ -34,12 +28,8 @@ export function createObjectActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * オブジェクトを追加
-	 */
 	const addObject = (object: BoardObject) => {
 		store.setState((state) => {
-			// バリデーション
 			const validation = canAddObject(state.board, object.objectId);
 			if (!validation.canAdd) {
 				return {
@@ -67,9 +57,6 @@ export function createObjectActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * オブジェクトを削除
-	 */
 	const deleteObjects = (objectIds: string[]) => {
 		if (objectIds.length === 0) return;
 
@@ -79,7 +66,6 @@ export function createObjectActions(store: EditorStore) {
 			newBoard.objects = newBoard.objects.filter(
 				(obj) => !idsToDelete.has(obj.id),
 			);
-			// グループを更新
 			const updatedGroups = updateGroupsAfterDelete(state.groups, objectIds);
 			return {
 				...state,
@@ -94,22 +80,15 @@ export function createObjectActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * 選択オブジェクトを削除
-	 */
 	const deleteSelected = () => {
 		const state = store.state;
 		deleteObjects(state.selectedIds);
 	};
 
-	/**
-	 * オブジェクトを複製
-	 */
 	const duplicateObjects = (objectIds: string[]) => {
 		if (objectIds.length === 0) return;
 
 		store.setState((state) => {
-			// 複製対象のオブジェクトを収集
 			const objectsToDuplicate: BoardObject[] = [];
 			for (const id of objectIds) {
 				const obj = state.board.objects.find((o) => o.id === id);
@@ -118,7 +97,6 @@ export function createObjectActions(store: EditorStore) {
 				}
 			}
 
-			// バリデーション
 			const validation = canAddObjects(state.board, objectsToDuplicate);
 			if (!validation.canAdd) {
 				return {
@@ -152,17 +130,11 @@ export function createObjectActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * 選択オブジェクトを複製
-	 */
 	const duplicateSelected = () => {
 		const state = store.state;
 		duplicateObjects(state.selectedIds);
 	};
 
-	/**
-	 * オブジェクトを移動
-	 */
 	const moveObjects = (objectIds: string[], deltaX: number, deltaY: number) => {
 		if (objectIds.length === 0) return;
 
@@ -172,7 +144,7 @@ export function createObjectActions(store: EditorStore) {
 				const obj = newBoard.objects.find((o) => o.id === objectId);
 				if (!obj) continue;
 
-				// Lineオブジェクトの場合は終点座標（param1, param2）も移動
+				// Move endpoint (param1, param2) for Line objects
 				if (obj.objectId === ObjectIds.Line) {
 					const deltaX10 = Math.round(deltaX * 10);
 					const deltaY10 = Math.round(deltaY * 10);
@@ -203,8 +175,8 @@ export function createObjectActions(store: EditorStore) {
 	};
 
 	/**
-	 * オブジェクトをグリッドスナップ付きで移動（バッチ最適化版）
-	 * ドラッグ操作時のパフォーマンス最適化のため単一のstate更新で処理
+	 * Move objects with grid snap (batch optimized).
+	 * Single state update for drag operation performance.
 	 */
 	const moveObjectsWithSnap = (
 		startPositions: Map<string, Position>,
@@ -225,7 +197,7 @@ export function createObjectActions(store: EditorStore) {
 				const newX = Math.round((startPos.x + deltaX) / gridSize) * gridSize;
 				const newY = Math.round((startPos.y + deltaY) / gridSize) * gridSize;
 
-				// Lineオブジェクトの場合は終点座標も移動
+				// Move endpoint for Line objects
 				if (obj.objectId === ObjectIds.Line) {
 					const currentDeltaX = newX - obj.position.x;
 					const currentDeltaY = newY - obj.position.y;
@@ -253,9 +225,6 @@ export function createObjectActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * 複数オブジェクトを一括更新
-	 */
 	const updateObjectsBatch = (
 		objectIds: string[],
 		updates: BatchUpdatePayload,
@@ -263,7 +232,6 @@ export function createObjectActions(store: EditorStore) {
 		if (objectIds.length === 0 || Object.keys(updates).length === 0) return;
 
 		store.setState((state) => {
-			// 単一クローンで効率的にバッチ更新
 			const newBoard = cloneBoard(state.board);
 
 			for (const objectId of objectIds) {
@@ -272,7 +240,7 @@ export function createObjectActions(store: EditorStore) {
 
 				const obj = newBoard.objects[index];
 
-				// Lineオブジェクトのrotation更新は中点を軸に回転させる
+				// For Line rotation, rotate around midpoint
 				if (obj.objectId === ObjectIds.Line && updates.rotation !== undefined) {
 					const startX = obj.position.x;
 					const startY = obj.position.y;
@@ -282,21 +250,17 @@ export function createObjectActions(store: EditorStore) {
 						obj.param2,
 					);
 
-					// 中点を計算
 					const centerX = (startX + endpoint.x) / 2;
 					const centerY = (startY + endpoint.y) / 2;
 
-					// 線の長さの半分
 					const dx = endpoint.x - startX;
 					const dy = endpoint.y - startY;
 					const halfLength = Math.sqrt(dx * dx + dy * dy) / 2;
 
-					// 新しい角度で座標を計算
 					const radians = (updates.rotation * Math.PI) / 180;
 					const offsetX = halfLength * Math.cos(radians);
 					const offsetY = halfLength * Math.sin(radians);
 
-					// 新しい始点・終点を計算
 					const newStartX = centerX - offsetX;
 					const newStartY = centerY - offsetY;
 					const newEndX = centerX + offsetX;
@@ -320,7 +284,6 @@ export function createObjectActions(store: EditorStore) {
 						},
 					};
 				} else {
-					// 通常のオブジェクト更新
 					newBoard.objects[index] = {
 						...obj,
 						...(updates.rotation !== undefined && {

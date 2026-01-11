@@ -77,7 +77,7 @@ describe("utils", () => {
 		});
 
 		it("should return correct length for Japanese characters", () => {
-			// 日本語は1文字3バイト (UTF-8)
+			// Japanese characters are 3 bytes each (UTF-8)
 			expect(getUtf8ByteLength("あ")).toBe(3);
 			expect(getUtf8ByteLength("あいう")).toBe(9);
 			expect(getUtf8ByteLength("テスト")).toBe(9);
@@ -89,7 +89,7 @@ describe("utils", () => {
 		});
 
 		it("should return correct length for emoji", () => {
-			// 絵文字は4バイト
+			// Emoji are 4 bytes
 			expect(getUtf8ByteLength("😀")).toBe(4);
 			expect(getUtf8ByteLength("👍")).toBe(4);
 		});
@@ -108,21 +108,21 @@ describe("utils", () => {
 		});
 
 		it("should truncate Japanese without breaking characters", () => {
-			// "あいう" = 9 bytes, truncate to 6 should give "あい"
+			// 3 Japanese chars = 9 bytes, truncate to 6 should give 2 chars
 			expect(truncateToUtf8Bytes("あいう", 6)).toBe("あい");
-			// truncate to 3 should give "あ"
+			// truncate to 3 should give 1 char
 			expect(truncateToUtf8Bytes("あいう", 3)).toBe("あ");
-			// truncate to 4 should give "あ" (can't fit partial second char)
+			// truncate to 4 should give 1 char (can't fit partial second char)
 			expect(truncateToUtf8Bytes("あいう", 4)).toBe("あ");
-			// truncate to 5 should give "あ" (can't fit partial second char)
+			// truncate to 5 should give 1 char (can't fit partial second char)
 			expect(truncateToUtf8Bytes("あいう", 5)).toBe("あ");
 		});
 
 		it("should handle mixed content correctly", () => {
-			// "aあb" = 1 + 3 + 1 = 5 bytes
+			// ASCII + Japanese + ASCII = 1 + 3 + 1 = 5 bytes
 			expect(truncateToUtf8Bytes("aあb", 5)).toBe("aあb");
 			expect(truncateToUtf8Bytes("aあb", 4)).toBe("aあ");
-			expect(truncateToUtf8Bytes("aあb", 3)).toBe("a"); // can't fit "あ" in 2 bytes
+			expect(truncateToUtf8Bytes("aあb", 3)).toBe("a"); // can't fit Japanese char in 2 bytes
 			expect(truncateToUtf8Bytes("aあb", 1)).toBe("a");
 		});
 

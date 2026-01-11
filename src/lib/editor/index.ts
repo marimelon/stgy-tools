@@ -1,5 +1,5 @@
 /**
- * エディターライブラリのエクスポート
+ * Editor library exports
  */
 
 export type { BatchPropertyValues, MixedValue } from "./batchUtils";
@@ -123,7 +123,7 @@ export {
 	isEditorStoreInitialized,
 	resetEditorStore,
 } from "./store/editorStore";
-// Global History Store (内部使用のみ、型定義のみエクスポート)
+// Global History Store (internal use only, exports types only)
 export type { StoredHistory } from "./store/globalHistoryStore";
 export type { EditorStore, EditorStoreOptions } from "./store/types";
 // Tab Management
@@ -162,8 +162,8 @@ export type {
 	UseCanvasInteractionReturn,
 } from "./useCanvasInteraction";
 export { useCanvasInteraction } from "./useCanvasInteraction";
-// useDebugMode は @/lib/settings に移行済み
-// 後方互換性のため KEYBOARD_SHORTCUTS のみエクスポート継続
+// useDebugMode moved to @/lib/settings
+// KEYBOARD_SHORTCUTS export retained for backward compatibility
 export type { ImportResult, UseImportExportReturn } from "./useImportExport";
 export { useImportExport } from "./useImportExport";
 export {

@@ -12,18 +12,17 @@ export function EnemyIcon({
 }) {
 	const id = useId();
 
-	// オリジナル画像が有効な場合は画像を使用
 	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
 	if (originalIcon) return originalIcon;
 	const size = ENEMY_SIZES[objectId] ?? SIZES.ENEMY_SMALL;
-	// 元のSVGは100x100なのでスケール係数を計算
+	// Original SVG is 100x100, calculate scale factor
 	const scale = size / 100;
 
-	// エネミータイプに応じた色設定
+	// Color scheme based on enemy type
 	const getColorScheme = () => {
 		switch (objectId) {
 			case ObjectIds.EnemySmall:
-				// 紫色のシールド（グロー効果あり）
+				// Purple shield (with glow effect)
 				return {
 					gradientId: `enemySmallGrad-${id}`,
 					glowId: `enemySmallGlow-${id}`,
@@ -33,7 +32,7 @@ export function EnemyIcon({
 					hasGlow: true,
 				};
 			case ObjectIds.EnemyMedium:
-				// 青色のシールド
+				// Blue shield
 				return {
 					gradientId: `enemyMediumGrad-${id}`,
 					glowId: null,
@@ -43,7 +42,7 @@ export function EnemyIcon({
 					hasGlow: false,
 				};
 			default:
-				// 赤茶色のシールド
+				// Red-brown shield
 				return {
 					gradientId: `enemyLargeGrad-${id}`,
 					glowId: null,
@@ -57,17 +56,17 @@ export function EnemyIcon({
 
 	const colors = getColorScheme();
 
-	// シールドのパス（元SVGのパスをスケーリング）
+	// Shield path (scaling from original SVG paths)
 	const shieldPath =
 		objectId === ObjectIds.EnemySmall
-			? // エネミー小：角が上に尖った形状
+			? // Small enemy: pointed corners at top
 				`M ${22 * scale} ${30 * scale}
 				Q ${15 * scale} ${10 * scale} ${8 * scale} ${2 * scale}
 				Q ${50 * scale} ${22 * scale} ${92 * scale} ${2 * scale}
 				Q ${85 * scale} ${10 * scale} ${78 * scale} ${30 * scale}
 				C ${88 * scale} ${50 * scale} ${82 * scale} ${80 * scale} ${50 * scale} ${98 * scale}
 				C ${18 * scale} ${80 * scale} ${12 * scale} ${50 * scale} ${22 * scale} ${30 * scale} Z`
-			: // エネミー中・大：少し丸みのある形状
+			: // Medium/large enemy: slightly rounded shape
 				`M ${20 * scale} ${25 * scale}
 				L ${15 * scale} ${15 * scale}
 				Q ${50 * scale} ${25 * scale} ${85 * scale} ${15 * scale}
@@ -75,7 +74,7 @@ export function EnemyIcon({
 				C ${90 * scale} ${45 * scale} ${85 * scale} ${75 * scale} ${50 * scale} ${95 * scale}
 				C ${15 * scale} ${75 * scale} ${10 * scale} ${45 * scale} ${20 * scale} ${25 * scale} Z`;
 
-	// エネミー大のみ外縁を追加
+	// Add outer border for large enemy only
 	const outerPath =
 		objectId === ObjectIds.EnemyLarge
 			? `M ${18 * scale} ${20 * scale}
@@ -120,10 +119,8 @@ export function EnemyIcon({
 				)}
 			</defs>
 
-			{/* エネミー大の外縁 */}
 			{outerPath && <path d={outerPath} fill="#ffccaa" stroke="none" />}
 
-			{/* シールド本体 */}
 			<path
 				d={shieldPath}
 				fill={`url(#${colors.gradientId})`}
@@ -137,7 +134,6 @@ export function EnemyIcon({
 				}
 			/>
 
-			{/* 顔のパーツ */}
 			<g
 				fill={colors.faceColor}
 				opacity={objectId === ObjectIds.EnemySmall ? 1 : 0.9}
@@ -145,19 +141,16 @@ export function EnemyIcon({
 					colors.hasGlow && colors.glowId ? `url(#${colors.glowId})` : undefined
 				}
 			>
-				{/* 左目 */}
 				<path
 					d={`M ${32 * scale} ${35 * scale}
 						L ${45 * scale} ${38 * scale}
 						L ${35 * scale} ${48 * scale} Z`}
 				/>
-				{/* 右目 */}
 				<path
 					d={`M ${68 * scale} ${35 * scale}
 						L ${55 * scale} ${38 * scale}
 						L ${65 * scale} ${48 * scale} Z`}
 				/>
-				{/* 口 */}
 				<path
 					d={`M ${32 * scale} ${56 * scale}
 						Q ${50 * scale} ${62 * scale} ${68 * scale} ${56 * scale}

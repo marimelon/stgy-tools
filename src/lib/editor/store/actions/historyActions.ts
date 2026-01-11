@@ -1,5 +1,5 @@
 /**
- * 履歴・ボード操作アクション
+ * History and board operation actions
  */
 
 import i18n from "@/lib/i18n";
@@ -10,17 +10,14 @@ import { getCurrentBoardId } from "../editorStore";
 import { saveHistory } from "../globalHistoryStore";
 import type { EditorStore } from "../types";
 
-/**
- * 履歴をグローバルストアに同期
- */
 function syncToGlobalHistory(state: EditorState): void {
 	const boardId = getCurrentBoardId();
 	saveHistory(boardId, state.history, state.historyIndex);
 }
 
 /**
- * 円形配置モードをボード状態から再計算
- * Undo/Redo後に円形モードを維持するために使用
+ * Recalculate circular mode from board state.
+ * Used to maintain circular mode after undo/redo.
  */
 function recalculateCircularMode(
 	board: BoardData,
@@ -28,7 +25,6 @@ function recalculateCircularMode(
 ): CircularModeState {
 	const { participatingIds } = circularMode;
 
-	// 有効なオブジェクトのみフィルタ（IDで検索）
 	const boardIdSet = new Set(board.objects.map((obj) => obj.id));
 	const validIds = participatingIds.filter((id) => boardIdSet.has(id));
 
@@ -36,7 +32,6 @@ function recalculateCircularMode(
 		return circularMode;
 	}
 
-	// 参加オブジェクトの位置を取得
 	const positions = validIds
 		.map((id) => board.objects.find((obj) => obj.id === id)?.position)
 		.filter((pos): pos is NonNullable<typeof pos> => pos !== undefined);
@@ -45,20 +40,19 @@ function recalculateCircularMode(
 		return circularMode;
 	}
 
-	// 重心を中心として計算
+	// Calculate centroid as center
 	const sumX = positions.reduce((sum, p) => sum + p.x, 0);
 	const sumY = positions.reduce((sum, p) => sum + p.y, 0);
 	const centerX = sumX / positions.length;
 	const centerY = sumY / positions.length;
 
-	// 平均距離を半径として計算
+	// Use average distance as radius
 	const distances = positions.map((p) =>
 		Math.sqrt((p.x - centerX) ** 2 + (p.y - centerY) ** 2),
 	);
 	const avgRadius = distances.reduce((sum, d) => sum + d, 0) / distances.length;
 	const radius = Math.max(10, avgRadius);
 
-	// 各オブジェクトの角度を再計算
 	const objectAngles = new Map<string, number>();
 	for (const id of validIds) {
 		const obj = board.objects.find((o) => o.id === id);
@@ -79,12 +73,9 @@ function recalculateCircularMode(
 	};
 }
 
-/**
- * 履歴アクションを作成
- */
 export function createHistoryActions(store: EditorStore) {
 	/**
-	 * ボードを設定（円形配置モードをリセット）
+	 * Set board (resets circular arrangement mode)
 	 */
 	const setBoard = (board: BoardData) => {
 		store.setState((state) => {
@@ -110,9 +101,6 @@ export function createHistoryActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * ボードメタデータを更新
-	 */
 	const updateBoardMeta = (updates: {
 		name?: string;
 		backgroundId?: number;
@@ -133,9 +121,6 @@ export function createHistoryActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * 履歴をコミット
-	 */
 	const commitHistory = (description: string) => {
 		store.setState((state) => {
 			const newState = {
@@ -147,9 +132,6 @@ export function createHistoryActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * 元に戻す
-	 */
 	const undo = () => {
 		store.setState((state) => {
 			if (state.historyIndex <= 0) return state;
@@ -158,7 +140,7 @@ export function createHistoryActions(store: EditorStore) {
 			const entry = state.history[newIndex];
 			const newBoard = structuredClone(entry.board);
 
-			// 円形配置モード中は再計算して維持
+			// Recalculate and maintain circular mode
 			const newCircularMode = state.circularMode
 				? recalculateCircularMode(newBoard, state.circularMode)
 				: null;
@@ -177,9 +159,6 @@ export function createHistoryActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * やり直す
-	 */
 	const redo = () => {
 		store.setState((state) => {
 			if (state.historyIndex >= state.history.length - 1) return state;
@@ -188,7 +167,6 @@ export function createHistoryActions(store: EditorStore) {
 			const entry = state.history[newIndex];
 			const newBoard = structuredClone(entry.board);
 
-			// 円形配置モード中は再計算して維持
 			const newCircularMode = state.circularMode
 				? recalculateCircularMode(newBoard, state.circularMode)
 				: null;
@@ -207,17 +185,12 @@ export function createHistoryActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * 任意の履歴位置に移動
-	 */
 	const jumpToHistory = (index: number) => {
 		store.setState((state) => {
-			// 範囲チェック
 			if (index < 0 || index >= state.history.length) {
 				return state;
 			}
 
-			// 同じ位置なら何もしない
 			if (index === state.historyIndex) {
 				return state;
 			}
@@ -225,7 +198,6 @@ export function createHistoryActions(store: EditorStore) {
 			const entry = state.history[index];
 			const newBoard = structuredClone(entry.board);
 
-			// 円形配置モード中は再計算して維持
 			const newCircularMode = state.circularMode
 				? recalculateCircularMode(newBoard, state.circularMode)
 				: null;
@@ -245,7 +217,7 @@ export function createHistoryActions(store: EditorStore) {
 	};
 
 	/**
-	 * 履歴をクリア（現在の状態を維持し、履歴のみリセット）
+	 * Clear history (keeps current state, resets history only)
 	 */
 	const clearHistory = () => {
 		store.setState((state) => {
@@ -267,15 +239,14 @@ export function createHistoryActions(store: EditorStore) {
 	};
 
 	/**
-	 * デバッグパネルからボードを更新
-	 * グループ・選択を調整しつつ履歴に追加
+	 * Update board from debug panel.
+	 * Adjusts groups/selection and adds to history.
 	 */
 	const updateBoardFromDebug = (board: BoardData) => {
 		store.setState((state) => {
-			// ボード内のオブジェクトIDセット
 			const boardIdSet = new Set(board.objects.map((obj) => obj.id));
 
-			// グループIDの調整（存在しないオブジェクトを除外）
+			// Adjust group IDs (remove non-existent objects)
 			const newGroups = state.groups
 				.map((group) => ({
 					...group,
@@ -283,7 +254,6 @@ export function createHistoryActions(store: EditorStore) {
 				}))
 				.filter((group) => group.objectIds.length > 0);
 
-			// 選択IDの調整
 			const newSelectedIds = state.selectedIds.filter((id) =>
 				boardIdSet.has(id),
 			);
@@ -294,7 +264,7 @@ export function createHistoryActions(store: EditorStore) {
 				groups: newGroups,
 				selectedIds: newSelectedIds,
 				isDirty: true,
-				circularMode: null, // デバッグ編集時は円形配置モードをリセット
+				circularMode: null,
 			};
 
 			const newState = {

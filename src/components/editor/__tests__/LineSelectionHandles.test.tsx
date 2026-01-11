@@ -1,7 +1,7 @@
 /**
- * LineSelectionHandles コンポーネントのテスト
+ * LineSelectionHandles component tests
  *
- * ハンドル操作時のclickイベント伝播を検証
+ * Verifies click event propagation prevention during handle interactions
  */
 
 import { fireEvent, render } from "@testing-library/react";
@@ -9,8 +9,8 @@ import { describe, expect, it, vi } from "vitest";
 import { LineSelectionHandles } from "../LineSelectionHandles";
 
 describe("LineSelectionHandles", () => {
-	describe("clickイベント伝播の防止", () => {
-		it("始点ハンドル（rect）をクリックしてもイベントが伝播しない", () => {
+	describe("click event propagation prevention", () => {
+		it("clicking start handle (rect) does not propagate event", () => {
 			const onStartPointDrag = vi.fn();
 			const onStartPointDragEnd = vi.fn();
 			const mockBackgroundClick = vi.fn();
@@ -28,18 +28,15 @@ describe("LineSelectionHandles", () => {
 				</svg>,
 			);
 
-			// 始点ハンドル（rect）を取得
 			const startHandle = container.querySelector("rect");
 			expect(startHandle).toBeTruthy();
 
-			// クリックイベント
 			fireEvent.click(startHandle!);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 
-		it("終点ハンドル（circle）をクリックしてもイベントが伝播しない", () => {
+		it("clicking end handle (circle) does not propagate event", () => {
 			const onEndPointDrag = vi.fn();
 			const onEndPointDragEnd = vi.fn();
 			const mockBackgroundClick = vi.fn();
@@ -57,18 +54,15 @@ describe("LineSelectionHandles", () => {
 				</svg>,
 			);
 
-			// 終点ハンドル（circle）を取得
 			const endHandle = container.querySelector("circle");
 			expect(endHandle).toBeTruthy();
 
-			// クリックイベント
 			fireEvent.click(endHandle!);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 
-		it("始点ハンドルのドラッグ後のクリックイベントも伝播しない", () => {
+		it("click event after dragging start handle does not propagate", () => {
 			const onStartPointDrag = vi.fn();
 			const onStartPointDragEnd = vi.fn();
 			const mockBackgroundClick = vi.fn();
@@ -88,16 +82,14 @@ describe("LineSelectionHandles", () => {
 
 			const startHandle = container.querySelector("rect")!;
 
-			// ドラッグシーケンス（PointerDown → PointerUp → Click）
 			fireEvent.pointerDown(startHandle, { clientX: 100, clientY: 100 });
 			fireEvent.pointerUp(startHandle, { clientX: 105, clientY: 105 });
 			fireEvent.click(startHandle);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 
-		it("終点ハンドルのドラッグ後のクリックイベントも伝播しない", () => {
+		it("click event after dragging end handle does not propagate", () => {
 			const onEndPointDrag = vi.fn();
 			const onEndPointDragEnd = vi.fn();
 			const mockBackgroundClick = vi.fn();
@@ -117,18 +109,16 @@ describe("LineSelectionHandles", () => {
 
 			const endHandle = container.querySelector("circle")!;
 
-			// ドラッグシーケンス（PointerDown → PointerUp → Click）
 			fireEvent.pointerDown(endHandle, { clientX: 200, clientY: 200 });
 			fireEvent.pointerUp(endHandle, { clientX: 205, clientY: 205 });
 			fireEvent.click(endHandle);
 
-			// 背景のonClickが呼ばれていないことを確認
 			expect(mockBackgroundClick).not.toHaveBeenCalled();
 		});
 	});
 
-	describe("コールバックの動作", () => {
-		it("始点ハンドルのPointerDownでonStartPointDragStartが呼ばれる", () => {
+	describe("callback behavior", () => {
+		it("onStartPointDragStart is called on start handle PointerDown", () => {
 			const onStartPointDragStart = vi.fn();
 			const onStartPointDrag = vi.fn();
 
@@ -151,7 +141,7 @@ describe("LineSelectionHandles", () => {
 			expect(onStartPointDragStart).toHaveBeenCalledTimes(1);
 		});
 
-		it("終点ハンドルのPointerDownでonEndPointDragStartが呼ばれる", () => {
+		it("onEndPointDragStart is called on end handle PointerDown", () => {
 			const onEndPointDragStart = vi.fn();
 			const onEndPointDrag = vi.fn();
 

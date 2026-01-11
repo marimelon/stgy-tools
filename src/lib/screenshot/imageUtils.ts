@@ -149,7 +149,7 @@ export function fileToDataUrl(file: File): Promise<string> {
 }
 
 /**
- * RGB to HSL変換
+ * Convert RGB to HSL
  * @returns {h: 0-360, s: 0-100, l: 0-100}
  */
 export function rgbToHsl(
@@ -264,10 +264,7 @@ export function compareImages(
 }
 
 /**
- * SVG要素をCanvasに描画してImageDataを取得
- * @param svgElement - SVG要素
- * @param width - 幅
- * @param height - 高さ
+ * Render SVG element to Canvas and get ImageData
  */
 export async function svgToImageData(
 	svgElement: SVGSVGElement,

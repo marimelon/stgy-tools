@@ -22,9 +22,7 @@ interface TabStoreProviderProps {
 	initialBoardIds?: string[] | null;
 }
 
-/**
- * 配列が等しいかどうかを比較
- */
+/** Compare arrays for equality */
 function arraysEqual(a: string[], b: string[]): boolean {
 	if (a.length !== b.length) return false;
 	return a.every((id, i) => id === b[i]);

@@ -1,35 +1,33 @@
 /**
- * オブジェクトID生成ユーティリティ
- * ランタイムでのみ使用され、保存時には破棄される
+ * Object ID generation utilities
+ * Used only at runtime, discarded on save
  *
- * ID生成戦略:
- * - 新規作成: nanoid() を使用（非決定論的、21文字）
- * - stgyコードからの読み込み: シンプルな連番（obj-0, obj-1, ...）
- *   （同じstgyCode → 同じID、デバッグ容易、yjs統合に有効）
+ * ID generation strategy:
+ * - New creation: use nanoid() (non-deterministic, 21 chars)
+ * - Loading from stgy code: simple sequential (obj-0, obj-1, ...)
+ *   (same stgyCode -> same ID, easier debugging, useful for yjs integration)
  */
 
 import { nanoid } from "nanoid";
 import type { BoardData, BoardObject, ParsedBoardData } from "./types";
 
 /**
- * ランタイムID生成（新規作成用、非決定論的）
+ * Generate runtime ID (for new creation, non-deterministic)
  */
 export function generateObjectId(): string {
 	return nanoid();
 }
 
 /**
- * 決定論的ID生成（stgyコードからの読み込み用）
- * シンプルな連番形式（obj-0, obj-1, ...）
- * @param index オブジェクトのインデックス
- * @returns 決定論的なID
+ * Generate deterministic ID (for loading from stgy code)
+ * Simple sequential format (obj-0, obj-1, ...)
  */
 export function generateDeterministicObjectId(index: number): string {
 	return `obj-${index}`;
 }
 
 /**
- * IDなしのオブジェクトにIDを付与する（非決定論的）
+ * Assign ID to object without ID (non-deterministic)
  */
 export function assignObjectId<T extends Omit<BoardObject, "id">>(
 	obj: T,
@@ -41,7 +39,7 @@ export function assignObjectId<T extends Omit<BoardObject, "id">>(
 }
 
 /**
- * オブジェクト配列にIDを付与する（非決定論的）
+ * Assign IDs to object array (non-deterministic)
  */
 export function assignObjectIds<T extends Omit<BoardObject, "id">>(
 	objects: T[],
@@ -50,8 +48,7 @@ export function assignObjectIds<T extends Omit<BoardObject, "id">>(
 }
 
 /**
- * オブジェクト配列に決定論的IDを付与する
- * @param objects ID なしオブジェクト配列
+ * Assign deterministic IDs to object array
  */
 export function assignDeterministicObjectIds<T extends Omit<BoardObject, "id">>(
 	objects: T[],
@@ -63,7 +60,7 @@ export function assignDeterministicObjectIds<T extends Omit<BoardObject, "id">>(
 }
 
 /**
- * ParsedBoardDataをBoardDataに変換（IDを付与、非決定論的）
+ * Convert ParsedBoardData to BoardData (assign IDs, non-deterministic)
  */
 export function assignBoardObjectIds(parsed: ParsedBoardData): BoardData {
 	return {
@@ -73,8 +70,7 @@ export function assignBoardObjectIds(parsed: ParsedBoardData): BoardData {
 }
 
 /**
- * ParsedBoardDataをBoardDataに変換（決定論的IDを付与）
- * @param parsed パース済みボードデータ
+ * Convert ParsedBoardData to BoardData (assign deterministic IDs)
  */
 export function assignBoardObjectIdsDeterministic(
 	parsed: ParsedBoardData,

@@ -1,18 +1,14 @@
 /**
- * SVGハンドル用の共通イベントハンドラフック
+ * Common event handler hook for SVG handles
  *
- * SVGハンドル要素（rect, circle等）で使用する共通のイベントハンドラを提供。
- * onClick で stopPropagation を呼ぶことで、ドラッグ終了時に背景のクリックイベントが
- * 発火して選択が解除されるバグを防ぐ。
+ * Provides common event handlers for SVG handle elements (rect, circle, etc.).
+ * stopPropagation on onClick prevents the bug where background click event fires
+ * on drag end, causing selection to clear.
  */
 
 import { useCallback } from "react";
 
 /**
- * SVGハンドル用の共通イベントハンドラを提供するフック
- *
- * @returns stopPropagation - clickイベントの伝播を止めるハンドラ
- *
  * @example
  * ```tsx
  * function MyHandleComponent() {
@@ -31,9 +27,6 @@ import { useCallback } from "react";
  * ```
  */
 export function useSVGHandleEvents() {
-	/**
-	 * イベントの伝播を止める（背景クリックによる選択解除を防ぐ）
-	 */
 	const stopPropagation = useCallback((e: React.SyntheticEvent) => {
 		e.stopPropagation();
 	}, []);

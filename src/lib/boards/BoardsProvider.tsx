@@ -1,8 +1,8 @@
 /**
- * Boards Provider - コレクションの初期化とフォールバック管理
+ * Boards Provider - collection initialization and fallback management
  *
- * IndexedDBが利用可能な場合はDexieを使用し、
- * 利用不可の場合はlocalOnlyCollectionにフォールバックする
+ * Uses Dexie when IndexedDB is available,
+ * falls back to localOnlyCollection otherwise
  */
 
 import {
@@ -20,28 +20,20 @@ import {
 import { dexieCollectionOptions } from "tanstack-dexie-db-collection";
 import { storedBoardSchema, storedFolderSchema } from "./schema";
 
-/** ストレージモード */
 export type StorageMode = "persistent" | "memory";
 
-// Dexie collection と localOnly collection の型が互換性がないため any を使用
 // biome-ignore lint/suspicious/noExplicitAny: Collection types are incompatible
 type AnyCollection = any;
 
-/** コンテキストの型 */
 interface BoardsContextValue {
-	/** アクティブなボードコレクション */
 	collection: AnyCollection;
-	/** アクティブなフォルダコレクション */
 	foldersCollection: AnyCollection;
-	/** ストレージモード */
 	storageMode: StorageMode;
-	/** 初期化中かどうか */
 	isInitializing: boolean;
 }
 
 const BoardsContext = createContext<BoardsContextValue | null>(null);
 
-/** Dexie (IndexedDB) コレクション */
 const dexieCollection = createCollection(
 	dexieCollectionOptions({
 		id: "boards",
@@ -52,7 +44,6 @@ const dexieCollection = createCollection(
 	}),
 );
 
-/** メモリのみのコレクション（フォールバック用） */
 const localOnlyCollection = createCollection(
 	localOnlyCollectionOptions({
 		id: "boards-memory",
@@ -61,7 +52,6 @@ const localOnlyCollection = createCollection(
 	}),
 );
 
-/** Dexie (IndexedDB) フォルダコレクション */
 const dexieFoldersCollection = createCollection(
 	dexieCollectionOptions({
 		id: "folders",
@@ -72,7 +62,6 @@ const dexieFoldersCollection = createCollection(
 	}),
 );
 
-/** メモリのみのフォルダコレクション（フォールバック用） */
 const localOnlyFoldersCollection = createCollection(
 	localOnlyCollectionOptions({
 		id: "folders-memory",
@@ -81,16 +70,12 @@ const localOnlyFoldersCollection = createCollection(
 	}),
 );
 
-/**
- * IndexedDBが利用可能かチェック
- */
 async function checkIndexedDBAvailable(): Promise<boolean> {
 	if (typeof indexedDB === "undefined") {
 		return false;
 	}
 
 	try {
-		// 実際にDBを開いてみてテスト
 		const testDbName = "__indexeddb_test__";
 		const request = indexedDB.open(testDbName);
 
@@ -103,7 +88,6 @@ async function checkIndexedDBAvailable(): Promise<boolean> {
 				indexedDB.deleteDatabase(testDbName);
 				resolve(true);
 			};
-			// タイムアウト対策
 			setTimeout(() => resolve(false), 1000);
 		});
 	} catch {
@@ -115,14 +99,10 @@ interface BoardsProviderProps {
 	children: ReactNode;
 }
 
-/**
- * Boards Provider コンポーネント
- */
 export function BoardsProvider({ children }: BoardsProviderProps) {
 	const [storageMode, setStorageMode] = useState<StorageMode>("persistent");
 	const [isInitializing, setIsInitializing] = useState(true);
 
-	// 初期化時にIndexedDBの利用可否をチェック
 	useEffect(() => {
 		let mounted = true;
 
@@ -172,9 +152,6 @@ export function BoardsProvider({ children }: BoardsProviderProps) {
 	);
 }
 
-/**
- * Boards コンテキストを取得するフック
- */
 export function useBoardsContext(): BoardsContextValue {
 	const context = useContext(BoardsContext);
 	if (!context) {
@@ -183,16 +160,10 @@ export function useBoardsContext(): BoardsContextValue {
 	return context;
 }
 
-/**
- * ストレージモードのみを取得するフック
- */
 export function useStorageMode(): StorageMode {
 	return useBoardsContext().storageMode;
 }
 
-/**
- * 永続ストレージが使用されているかどうか
- */
 export function useIsPersistent(): boolean {
 	return useBoardsContext().storageMode === "persistent";
 }

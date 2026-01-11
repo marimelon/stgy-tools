@@ -154,7 +154,6 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				id,
 				name,
 				stgyCode,
-				// encodeKey は保存しない（CRC32から決定的に計算されるため不要）
 				groups,
 				gridSettings,
 				folderId,
@@ -344,10 +343,8 @@ export function useBoards(options: UseBoardsOptions = {}) {
 	}, []);
 
 	/**
-	 * Load board with ID assignment (index → ID conversion)
-	 * 決定論的ID生成を使用（同じstgyCode → 同じID）
-	 * @param id Board ID
-	 * @returns Board data with IDs assigned, or null if not found
+	 * Load board with ID assignment (index -> ID conversion)
+	 * Uses deterministic ID generation (same stgyCode -> same ID)
 	 */
 	const loadBoard = useCallback(
 		(
@@ -386,9 +383,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 	);
 
 	/**
-	 * Save board with ID removal (ID → index conversion)
-	 * @param id Board ID
-	 * @param data Board data with IDs
+	 * Save board with ID removal (ID -> index conversion)
 	 */
 	const saveBoard = useCallback(
 		async (
@@ -420,7 +415,6 @@ export function useBoards(options: UseBoardsOptions = {}) {
 
 	/**
 	 * Create and save a new board with ID-based data
-	 * @returns New board ID
 	 */
 	const createAndSaveBoard = useCallback(
 		async (

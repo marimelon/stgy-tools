@@ -1,19 +1,15 @@
 /**
- * オブジェクトのヒットテスト関数
+ * Object hit testing functions
  *
- * バウンディングボックスと回転を考慮した正確な当たり判定を提供
+ * Provides accurate hit detection considering bounding box and rotation
  */
 
 import { getObjectBoundingBox } from "@/components/board";
 import type { BoardObject, Position } from "@/lib/stgy";
 
 /**
- * 指定位置がオブジェクトのバウンディングボックス内にあるかを判定
- * 回転を考慮した正確なヒットテスト
- *
- * @param point - 判定するポイント（SVG座標）
- * @param object - 判定対象のオブジェクト
- * @returns ポイントがオブジェクト内にある場合true
+ * Check if point is within object's bounding box.
+ * Uses rotation-aware accurate hit testing.
  */
 export function isPointInObject(point: Position, object: BoardObject): boolean {
 	if (!object.flags.visible) return false;
@@ -32,18 +28,18 @@ export function isPointInObject(point: Position, object: BoardObject): boolean {
 	const offsetX = (bbox.offsetX ?? 0) * scale;
 	const offsetY = (bbox.offsetY ?? 0) * scale;
 
-	// ポイントをオブジェクトの中心からの相対座標に変換
+	// Convert point to relative coordinates from object center
 	const dx = point.x - object.position.x;
 	const dy = point.y - object.position.y;
 
-	// オブジェクトの回転の逆回転を適用してローカル座標に変換
+	// Apply inverse rotation to convert to local coordinates
 	const rad = (-object.rotation * Math.PI) / 180;
 	const cos = Math.cos(rad);
 	const sin = Math.sin(rad);
 	const localX = dx * cos - dy * sin;
 	const localY = dx * sin + dy * cos;
 
-	// オフセットを考慮してバウンディングボックス内かチェック
+	// Check if within bounding box considering offset
 	const left = offsetX - halfWidth;
 	const right = offsetX + halfWidth;
 	const top = offsetY - halfHeight;

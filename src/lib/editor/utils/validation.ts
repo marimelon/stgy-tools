@@ -1,5 +1,5 @@
 /**
- * オブジェクト配置数制限のバリデーション
+ * Object placement limit validation
  */
 
 import { getDebugMode } from "@/lib/settings";
@@ -18,18 +18,16 @@ export interface ValidationResult {
 }
 
 /**
- * 単一オブジェクト追加可能かチェック
+ * Check if a single object can be added
  */
 export function canAddObject(
 	board: BoardData,
 	objectId: number,
 ): ValidationResult {
-	// デバッグモード時は制限なし
 	if (getDebugMode()) {
 		return { canAdd: true };
 	}
 
-	// 合計数チェック
 	if (board.objects.length >= MAX_TOTAL_OBJECTS) {
 		return {
 			canAdd: false,
@@ -38,7 +36,6 @@ export function canAddObject(
 		};
 	}
 
-	// 個別制限チェック
 	const limit = OBJECT_LIMITS[objectId];
 	if (limit !== undefined) {
 		const count = board.objects.filter((o) => o.objectId === objectId).length;
@@ -58,7 +55,7 @@ export function canAddObject(
 }
 
 /**
- * 複数オブジェクト追加可能かチェック
+ * Check if multiple objects can be added
  */
 export function canAddObjects(
 	board: BoardData,
@@ -68,12 +65,10 @@ export function canAddObjects(
 		return { canAdd: true };
 	}
 
-	// デバッグモード時は制限なし
 	if (getDebugMode()) {
 		return { canAdd: true };
 	}
 
-	// 合計数チェック
 	const newTotal = board.objects.length + objects.length;
 	if (newTotal > MAX_TOTAL_OBJECTS) {
 		return {
@@ -87,7 +82,7 @@ export function canAddObjects(
 		};
 	}
 
-	// オブジェクト種別ごとにカウント
+	// Count by object type
 	const currentCountMap = new Map<number, number>();
 	for (const obj of board.objects) {
 		currentCountMap.set(
@@ -96,7 +91,6 @@ export function canAddObjects(
 		);
 	}
 
-	// 追加するオブジェクトのカウント
 	const addingCountMap = new Map<number, number>();
 	for (const obj of objects) {
 		addingCountMap.set(
@@ -105,7 +99,7 @@ export function canAddObjects(
 		);
 	}
 
-	// 個別制限チェック
+	// Check per-type limits
 	for (const [objectId, addingCount] of addingCountMap) {
 		const limit = OBJECT_LIMITS[objectId];
 		if (limit !== undefined) {

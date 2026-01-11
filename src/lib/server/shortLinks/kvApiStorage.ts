@@ -1,7 +1,7 @@
 /**
- * Cloudflare KV REST API を使用したストレージ実装
+ * Cloudflare KV REST API storage implementation
  *
- * Node.js環境など、Workers直接バインディングが使えない場合に使用
+ * Used in Node.js environments where Workers direct binding is unavailable
  */
 
 import type { ShortLinkStorage } from "./storage";
@@ -47,7 +47,7 @@ export class KVApiShortLinkStorage implements ShortLinkStorage {
 				return null;
 			}
 
-			// KV REST API は値を直接返す（JSONでラップされていない）
+			// KV REST API returns value directly (not wrapped in JSON)
 			const text = await response.text();
 			try {
 				return JSON.parse(text) as ShortLinkData;

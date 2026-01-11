@@ -385,7 +385,7 @@ export function LayerContextMenu({
 				if (isDivider(item)) {
 					return (
 						<div
-							// biome-ignore lint/suspicious/noArrayIndexKey: dividerは固定順序で識別子を持たないためindexを使用
+							// biome-ignore lint/suspicious/noArrayIndexKey: dividers have fixed order and no identifier
 							key={`divider-${index}`}
 							className="border-t border-slate-600 my-1"
 						/>

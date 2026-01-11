@@ -1,19 +1,18 @@
 /**
- * 長押し検出フック
+ * Long press detection hook
  *
- * タッチデバイスでのコンテキストメニュー表示に使用
+ * Used to show context menu on touch devices
  */
 
 import { useCallback, useRef } from "react";
 import type { Position } from "@/lib/stgy";
 
-/** 長押し判定時間（ミリ秒） */
+/** Long press detection duration (ms) */
 const LONG_PRESS_DURATION = 500;
-/** 長押し判定の移動閾値（ピクセル） */
+/** Movement threshold for long press detection (px) */
 const LONG_PRESS_MOVE_THRESHOLD = 10;
 
 export interface UseLongPressParams {
-	/** 長押し検出時のコールバック */
 	onLongPress: (
 		clientX: number,
 		clientY: number,
@@ -22,11 +21,8 @@ export interface UseLongPressParams {
 }
 
 export interface UseLongPressReturn {
-	/** ポインターダウン時に呼び出す（長押しタイマー開始） */
 	startLongPress: (e: React.PointerEvent, objectId: string | null) => void;
-	/** ポインター移動時に呼び出す（閾値超えでキャンセル） */
 	moveLongPress: (e: React.PointerEvent) => void;
-	/** ポインターアップ時に呼び出す（タイマーキャンセル） */
 	cancelLongPress: () => void;
 }
 
@@ -36,17 +32,11 @@ interface LongPressState {
 	objectId: string | null;
 }
 
-/**
- * 長押し検出フック
- */
 export function useLongPress({
 	onLongPress,
 }: UseLongPressParams): UseLongPressReturn {
 	const longPressStateRef = useRef<LongPressState | null>(null);
 
-	/**
-	 * 長押しタイマーをクリア
-	 */
 	const clearLongPressTimer = useCallback(() => {
 		if (longPressStateRef.current) {
 			clearTimeout(longPressStateRef.current.timerId);
@@ -54,15 +44,11 @@ export function useLongPress({
 		}
 	}, []);
 
-	/**
-	 * 長押しタイマーを開始
-	 */
 	const startLongPress = useCallback(
 		(e: React.PointerEvent, objectId: string | null) => {
-			// マウスの場合は長押し不要（右クリックがある）
+			// Skip for mouse (has right-click)
 			if (e.pointerType === "mouse") return;
 
-			// 既存のタイマーをクリア
 			clearLongPressTimer();
 
 			const clientX = e.clientX;
@@ -82,9 +68,6 @@ export function useLongPress({
 		[onLongPress, clearLongPressTimer],
 	);
 
-	/**
-	 * ポインター移動時（閾値超えでキャンセル）
-	 */
 	const moveLongPress = useCallback(
 		(e: React.PointerEvent) => {
 			if (!longPressStateRef.current) return;
@@ -94,7 +77,6 @@ export function useLongPress({
 			const dy = e.clientY - startPosition.y;
 			const distance = Math.sqrt(dx * dx + dy * dy);
 
-			// 移動距離が閾値を超えたらキャンセル
 			if (distance > LONG_PRESS_MOVE_THRESHOLD) {
 				clearLongPressTimer();
 			}
@@ -102,9 +84,6 @@ export function useLongPress({
 		[clearLongPressTimer],
 	);
 
-	/**
-	 * 長押しをキャンセル
-	 */
 	const cancelLongPress = useCallback(() => {
 		clearLongPressTimer();
 	}, [clearLongPressTimer]);

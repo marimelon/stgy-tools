@@ -1,6 +1,6 @@
 /**
- * サーバーサイドでBoardDataをSVG文字列にレンダリングする
- * オリジナル画像をBase64でインライン化
+ * Server-side rendering of BoardData to SVG string
+ * Original images are inlined as Base64
  */
 
 import { renderToStaticMarkup } from "react-dom/server";
@@ -27,20 +27,15 @@ import {
 	preloadImagesAsync,
 } from "./imageLoader";
 
-/**
- * SVGレンダリングオプション
- */
 export interface RenderOptions {
-	/** ボード名（タイトル）を表示するか */
+	/** Whether to display the board name as a title bar */
 	showTitle?: boolean;
 }
 
-/** タイトルバーの高さ */
 const TITLE_BAR_HEIGHT = 32;
 
 /**
- * AoEオブジェクトのIDセット
- * Note: Line (ObjectId: 12) は絶対座標線として別処理するため含めない
+ * Line (ObjectId: 12) is excluded as it uses absolute coordinates
  */
 const AOE_OBJECT_IDS = new Set<number>([
 	ObjectIds.CircleAoE,
@@ -50,8 +45,7 @@ const AOE_OBJECT_IDS = new Set<number>([
 ]);
 
 /**
- * 色変更が有効なオブジェクトID
- * 直線範囲攻撃、ライン、テキストのみ色変更に対応
+ * Only LineAoE, Line, and Text support color changes
  */
 const COLOR_CHANGEABLE_OBJECT_IDS = new Set<number>([
 	ObjectIds.LineAoE,
@@ -59,14 +53,8 @@ const COLOR_CHANGEABLE_OBJECT_IDS = new Set<number>([
 	ObjectIds.Text,
 ]);
 
-/**
- * デフォルトのAoE塗りつぶし色
- */
 const DEFAULT_AOE_FILL = "rgba(255, 150, 0, 0.4)";
 
-/**
- * パラメータまたは色が変更されたAoEオブジェクトをSVGでレンダリング
- */
 function renderColoredAoE(
 	objectId: number,
 	transform: string,
@@ -75,7 +63,7 @@ function renderColoredAoE(
 	param1?: number,
 	param2?: number,
 ): React.ReactNode | null {
-	// 色変更対応オブジェクト（LineAoE, Line）は指定色を使用、それ以外はデフォルトAoE色
+	// Color-changeable objects use specified color, others use default AoE color
 	const fill = COLOR_CHANGEABLE_OBJECT_IDS.has(objectId)
 		? colorToRgba(color)
 		: DEFAULT_AOE_FILL;
@@ -97,15 +85,15 @@ function renderColoredAoE(
 				</g>
 			);
 		case ObjectIds.ConeAoE: {
-			// ConeAoE: param1 = 角度（デフォルト90度）
-			// 起点は12時方向（上）、そこから時計回りに範囲角度分広がる
-			// 10.png（円形グラデーション画像）を扇形にクリップして表示
+			// param1 = angle (default 90 degrees)
+			// Origin is 12 o'clock, expanding clockwise by the angle
+			// Clips circular gradient image (10.png) into a sector
 			const angle = param1 ?? 90;
 			const radius = 256;
 
-			// SVGの座標系: 0度=右、90度=下、-90度=上
-			const startRad = -Math.PI / 2; // 12時方向（上）
-			const endRad = startRad + (angle * Math.PI) / 180; // 時計回りに範囲角度分
+			// SVG coordinate system: 0deg=right, 90deg=down, -90deg=up
+			const startRad = -Math.PI / 2; // 12 o'clock (top)
+			const endRad = startRad + (angle * Math.PI) / 180;
 
 			const x1 = Math.cos(startRad) * radius;
 			const y1 = Math.sin(startRad) * radius;
@@ -113,7 +101,7 @@ function renderColoredAoE(
 			const y2 = Math.sin(endRad) * radius;
 			const largeArc = angle > 180 ? 1 : 0;
 
-			// バウンディングボックスの中心がオブジェクト座標に来るようにオフセット計算
+			// Calculate offset so bounding box center aligns with object coordinates
 			const startAngle = -90;
 			const endAngle = -90 + angle;
 			const points = [
@@ -138,10 +126,10 @@ function renderColoredAoE(
 			const cx = -((minX + maxX) / 2);
 			const cy = -((minY + maxY) / 2);
 
-			// 時計回り（sweep=1）で描画
+			// Clockwise arc (sweep=1)
 			const d = `M ${cx} ${cy} L ${cx + x1} ${cy + y1} A ${radius} ${radius} 0 ${largeArc} 1 ${cx + x2} ${cy + y2} Z`;
 
-			// 円形グラデーション画像（10.png）をBase64で取得
+			// Circular gradient image (10.png) as Base64
 			const imageDataUri = loadImageAsDataUri(ObjectIds.ConeAoE);
 			const clipId = `cone-clip-${Math.random().toString(36).slice(2, 9)}`;
 
@@ -152,7 +140,7 @@ function renderColoredAoE(
 							<path d={d} />
 						</clipPath>
 					</defs>
-					{/* 円形グラデーション画像を扇形にクリップ */}
+					{/* Clip circular gradient image into sector */}
 					{imageDataUri && (
 						<image
 							href={imageDataUri}
@@ -167,9 +155,8 @@ function renderColoredAoE(
 			);
 		}
 		case ObjectIds.LineAoE: {
-			// LineAoE: param1 = 縦幅（長さ）、param2 = 横幅（太さ）
-			// 中央基準（中心が原点）
-			// クライアント側と同様: length → rectのwidth, thickness → rectのheight
+			// param1 = length, param2 = thickness
+			// Centered at origin
 			const length = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
 			const thickness = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
 			return (
@@ -186,18 +173,17 @@ function renderColoredAoE(
 			);
 		}
 		case ObjectIds.DonutAoE: {
-			// ドーナツ型AoE（中央に穴あき、角度対応）
 			const coneAngle = param1 ?? DEFAULT_PARAMS.FULL_CIRCLE_ANGLE;
-			const outerRadius = 256; // クライアント側と同じサイズ
+			const outerRadius = 256;
 			const donutRange = param2 ?? DEFAULT_PARAMS.DONUT_RANGE;
-			// 共通関数で内径を計算（Line param3=8 と同じ太さを最小として残す）
+			// Use shared function to calculate inner radius (minimum thickness matches Line param3=8)
 			const innerRadius = calculateDonutInnerRadius(outerRadius, donutRange);
 			const maskId = `donut-mask-${Math.random().toString(36).slice(2, 9)}`;
 
-			// オリジナル画像をBase64で取得
+			// Load original image as Base64
 			const imageDataUri = loadImageAsDataUri(ObjectIds.DonutAoE);
 
-			// 360度以上の場合は完全な円ドーナツ
+			// Full circle donut for 360+ degrees
 			if (coneAngle >= 360) {
 				return (
 					<g transform={transform} opacity={opacity}>
@@ -227,8 +213,7 @@ function renderColoredAoE(
 				);
 			}
 
-			// 360度未満の場合は扇形ドーナツを画像+maskで描画
-			// 共通のパス生成関数を使用
+			// Sector donut for less than 360 degrees, rendered with image + mask
 			const {
 				path: maskPath,
 				offsetX,
@@ -260,20 +245,14 @@ function renderColoredAoE(
 	}
 }
 
-/**
- * 単一オブジェクトをレンダリング
- */
 function ObjectRenderer({ object }: { object: BoardObject }) {
 	const { objectId, position, rotation, size, color, flags, param1, param2 } =
 		object;
 
-	// サイズスケール計算
 	const scale = size / 100;
-
-	// バウンディングボックスサイズ取得（共通モジュールから）
 	const bboxSize = OBJECT_BBOX_SIZES[objectId] ?? DEFAULT_BBOX_SIZE;
 
-	// 透過度をSVGのopacityに変換 (color.opacity: 0=不透明, 100=透明)
+	// Convert opacity: color.opacity 0=opaque, 100=transparent
 	const opacity = 1 - color.opacity / 100;
 
 	const transform = buildFullTransform(
@@ -285,7 +264,7 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 		flags.flipVertical,
 	);
 
-	// テキストオブジェクトは特別処理
+	// Text object requires special handling
 	if (objectId === ObjectIds.Text && object.text) {
 		return (
 			<g transform={transform}>
@@ -308,14 +287,14 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 		);
 	}
 
-	// グループオブジェクトはスキップ
+	// Skip group objects
 	if (objectId === ObjectIds.Group) {
 		return null;
 	}
 
-	// Line (ObjectId: 12): 始点(position)から終点(param1/10, param2/10)への絶対座標線
-	// param1, param2 は座標を10倍した整数値（小数第一位まで対応）
-	// param3 は線の太さ（デフォルト6）
+	// Line (ObjectId: 12): absolute coordinate line from start(position) to end(param1/10, param2/10)
+	// param1, param2 are coordinates multiplied by 10 (supports one decimal place)
+	// param3 is line thickness (default 6)
 	if (objectId === ObjectIds.Line) {
 		const endpoint = calculateLineEndpoint(position, param1, param2);
 		const lineThickness = object.param3 ?? DEFAULT_PARAMS.LINE_THICKNESS;
@@ -334,9 +313,9 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 		);
 	}
 
-	// ConeAoE, LineAoE, DonutAoEは常にSVGでレンダリング（画像はサイドバーアイコンのみ）
-	// 色変更可能なのは LineAoE, Text のみ（Lineは上で特別処理）
-	// その他のAoEオブジェクトはパラメータ変更時のみSVGでレンダリング（色変更は無視）
+	// ConeAoE, LineAoE, DonutAoE are always rendered as SVG (images only for sidebar icons)
+	// Only LineAoE, Text support color changes (Line is handled above)
+	// Other AoE objects are rendered as SVG only when parameters are changed
 	const alwaysSvgObjects =
 		objectId === ObjectIds.ConeAoE ||
 		objectId === ObjectIds.LineAoE ||
@@ -358,10 +337,9 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 		if (coloredAoE) return coloredAoE;
 	}
 
-	// 画像をBase64で読み込み
 	const imageDataUri = loadImageAsDataUri(objectId);
 
-	// 画像がない場合はプレースホルダー
+	// Placeholder if image not found
 	if (!imageDataUri) {
 		return (
 			<g transform={transform}>
@@ -404,16 +382,11 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 	);
 }
 
-/** 枠線の太さ */
 const BORDER_WIDTH = 2;
 
-/**
- * タイトルバーコンポーネント（左上にタイトル表示）
- */
 function TitleBar({ title, width }: { title: string; width: number }) {
 	return (
 		<g>
-			{/* 背景バー */}
 			<rect
 				x={BORDER_WIDTH}
 				y={BORDER_WIDTH}
@@ -421,7 +394,6 @@ function TitleBar({ title, width }: { title: string; width: number }) {
 				height={TITLE_BAR_HEIGHT}
 				fill="#D2D2D2"
 			/>
-			{/* 下線 */}
 			<line
 				x1={BORDER_WIDTH}
 				y1={TITLE_BAR_HEIGHT + BORDER_WIDTH}
@@ -430,7 +402,6 @@ function TitleBar({ title, width }: { title: string; width: number }) {
 				stroke="rgba(128, 128, 128, 0.3)"
 				strokeWidth={1}
 			/>
-			{/* タイトルテキスト（左上に配置） */}
 			<text
 				x={BORDER_WIDTH + 12}
 				y={BORDER_WIDTH + TITLE_BAR_HEIGHT / 2}
@@ -447,9 +418,6 @@ function TitleBar({ title, width }: { title: string; width: number }) {
 	);
 }
 
-/**
- * 画像全体を囲む白い枠
- */
 function BorderFrame({ width, height }: { width: number; height: number }) {
 	return (
 		<rect
@@ -464,9 +432,6 @@ function BorderFrame({ width, height }: { width: number; height: number }) {
 	);
 }
 
-/**
- * BoardDataをSVG文字列にレンダリング
- */
 export async function renderBoardToSVG(
 	boardData: BoardData,
 	options: RenderOptions = {},
@@ -474,7 +439,7 @@ export async function renderBoardToSVG(
 	const { backgroundId, objects, name } = boardData;
 	const { showTitle = false } = options;
 
-	// 画像をプリロード（Cloudflare Workers の ASSETS バインディングを使用）
+	// Preload images (using Cloudflare Workers ASSETS binding)
 	const objectIds = objects
 		.filter(
 			(obj) =>
@@ -486,21 +451,21 @@ export async function renderBoardToSVG(
 		.map((obj) => obj.objectId);
 	const uniqueObjectIds = [...new Set(objectIds)];
 
-	// オブジェクト画像と背景画像を並列で読み込み
+	// Load object and background images in parallel
 	const [, backgroundDataUri] = await Promise.all([
 		preloadImagesAsync(uniqueObjectIds),
 		loadBackgroundImage(backgroundId),
 	]);
 
-	// タイトル表示時は高さを拡張
+	// Extend height when showing title
 	const totalHeight = showTitle
 		? CANVAS_HEIGHT + TITLE_BAR_HEIGHT
 		: CANVAS_HEIGHT;
 
-	// 表示するオブジェクトのみフィルタ（逆順で描画）
+	// Filter visible objects only (reverse order for drawing)
 	const visibleObjects = objects.filter((obj) => obj.flags.visible).reverse();
 
-	// コンテンツ領域のYオフセット（タイトル表示時はタイトルバーの下から）
+	// Y offset for content area (below title bar when shown)
 	const contentOffsetY = showTitle ? TITLE_BAR_HEIGHT : 0;
 
 	const svgElement = (
@@ -513,15 +478,11 @@ export async function renderBoardToSVG(
 			role="img"
 			aria-label={`Strategy board: ${name}`}
 		>
-			{/* 全体背景色 */}
 			<rect width={CANVAS_WIDTH} height={totalHeight} fill="#1a1a1a" />
 
-			{/* タイトルバー（オプション） */}
 			{showTitle && <TitleBar title={name} width={CANVAS_WIDTH} />}
 
-			{/* コンテンツ領域 */}
 			<g transform={`translate(0, ${contentOffsetY})`}>
-				{/* 背景画像（共通コンポーネント使用） */}
 				<BackgroundRenderer
 					backgroundId={backgroundId}
 					width={CANVAS_WIDTH}
@@ -529,7 +490,6 @@ export async function renderBoardToSVG(
 					imageDataUri={backgroundDataUri ?? undefined}
 				/>
 
-				{/* オブジェクト */}
 				{visibleObjects.map((obj) => (
 					<ObjectRenderer
 						key={`${obj.objectId}-${obj.position.x}-${obj.position.y}`}
@@ -538,7 +498,6 @@ export async function renderBoardToSVG(
 				))}
 			</g>
 
-			{/* 画像全体を囲む白い枠（最前面に描画） */}
 			{showTitle && <BorderFrame width={CANVAS_WIDTH} height={totalHeight} />}
 		</svg>
 	);

@@ -1,7 +1,7 @@
 /**
- * キャンバスインタラクション管理のカスタムフック
+ * Canvas interaction management hook
  *
- * ドラッグ、回転、リサイズ、マーキー選択などのインタラクションを統合管理
+ * Integrates drag, rotate, resize, and marquee selection interactions
  */
 
 import { type RefObject, useCallback } from "react";
@@ -17,88 +17,66 @@ import type {
 	ResizeHandle,
 } from "./types";
 
-/**
- * フックに渡すパラメータ
- */
 export interface UseCanvasInteractionParams {
-	/** SVG要素のRef */
+	/** SVG element ref */
 	svgRef: RefObject<SVGSVGElement | null>;
-	/** オブジェクト配列 */
+	/** Object array */
 	objects: BoardObject[];
-	/** 選択中のID */
+	/** Selected IDs */
 	selectedIds: string[];
-	/** グリッド設定 */
+	/** Grid settings */
 	gridSettings: GridSettings;
-	/** フォーカス中のグループID（null = フォーカスなし） */
+	/** Focused group ID (null = no focus) */
 	focusedGroupId: string | null;
-	/** 円形配置モード状態（null = モードなし） */
+	/** Circular arrangement mode state (null = mode not active) */
 	circularMode: CircularModeState | null;
-	/** オブジェクト選択 */
 	selectObject: (objectId: string, additive?: boolean) => void;
-	/** 複数オブジェクト選択 */
 	selectObjects: (objectIds: string[]) => void;
-	/** グループ選択 */
 	selectGroup: (groupId: string) => void;
-	/** オブジェクトが属するグループを取得 */
+	/** Get the group an object belongs to */
 	getGroupForObject: (
 		objectId: string,
 	) => { id: string; objectIds: string[] } | undefined;
-	/** オブジェクト更新 */
 	updateObject: (objectId: string, updates: Partial<BoardObject>) => void;
-	/** オブジェクト移動 */
 	moveObjects: (objectIds: string[], deltaX: number, deltaY: number) => void;
-	/** グリッドスナップ付きバッチ移動（パフォーマンス最適化） */
+	/** Batch move with grid snap (performance optimized) */
 	moveObjectsWithSnap: (
 		startPositions: Map<string, Position>,
 		deltaX: number,
 		deltaY: number,
 		gridSize: number,
 	) => void;
-	/** 円周上でオブジェクトを移動 */
+	/** Move object along circle */
 	moveObjectOnCircle: (objectId: string, angle: number) => void;
-	/** 履歴をコミット */
 	commitHistory: (description: string) => void;
-	/** オブジェクト追加 */
 	addObject: (objectId: number, position?: Position) => void;
-	/** 選択解除 */
 	deselectAll: () => void;
 }
 
-/**
- * フックの戻り値
- */
 export interface UseCanvasInteractionReturn {
-	/** 現在のドラッグ状態 */
+	/** Current drag state */
 	dragState: DragState | null;
-	/** マーキー選択状態 */
+	/** Marquee selection state */
 	marqueeState: MarqueeState | null;
-	/** 背景クリックハンドラ */
+	/** Background click handler */
 	handleBackgroundClick: () => void;
-	/** 背景ポインターダウンハンドラ（マーキー選択開始） */
+	/** Background pointer down handler (starts marquee selection) */
 	handleBackgroundPointerDown: (e: React.PointerEvent) => void;
-	/** ドラッグオーバーハンドラ */
 	handleDragOver: (e: React.DragEvent) => void;
-	/** ドロップハンドラ */
 	handleDrop: (e: React.DragEvent) => void;
-	/** オブジェクトクリックハンドラ */
 	handleObjectClick: (objectId: string, e: React.MouseEvent) => void;
-	/** オブジェクトポインターダウンハンドラ */
 	handleObjectPointerDown: (objectId: string, e: React.PointerEvent) => void;
-	/** 回転開始ハンドラ */
 	handleRotateStart: (e: React.PointerEvent) => void;
-	/** リサイズ開始ハンドラ */
 	handleResizeStart: (handle: ResizeHandle, e: React.PointerEvent) => void;
-	/** ポインター移動ハンドラ */
 	handlePointerMove: (e: React.PointerEvent) => void;
-	/** ポインターアップハンドラ */
 	handlePointerUp: (e: React.PointerEvent) => void;
 }
 
 /**
- * キャンバスインタラクション管理フック
+ * Canvas interaction management hook
  *
- * マーキー選択とドラッグ/回転/リサイズを統合し、
- * 統一されたハンドラを提供
+ * Integrates marquee selection and drag/rotate/resize,
+ * providing unified handlers
  */
 export function useCanvasInteraction({
 	svgRef,
@@ -119,7 +97,7 @@ export function useCanvasInteraction({
 	addObject,
 	deselectAll,
 }: UseCanvasInteractionParams): UseCanvasInteractionReturn {
-	// マーキー選択フック
+	// Marquee selection hook
 	const {
 		marqueeState,
 		marqueeStateRef,
@@ -136,7 +114,7 @@ export function useCanvasInteraction({
 		deselectAll,
 	});
 
-	// ドラッグ/回転/リサイズフック
+	// Drag/rotate/resize hook
 	const {
 		dragState,
 		handleObjectClick,
@@ -162,10 +140,8 @@ export function useCanvasInteraction({
 		commitHistory,
 	});
 
-	/**
-	 * 背景クリックで選択解除
-	 */
-	// biome-ignore lint/correctness/useExhaustiveDependencies: skipNextClickRef はRefなので依存配列に含めない
+	/** Background click deselects all */
+	// biome-ignore lint/correctness/useExhaustiveDependencies: skipNextClickRef is a ref, exclude from deps
 	const handleBackgroundClick = useCallback(() => {
 		if (skipNextClickRef.current) {
 			skipNextClickRef.current = false;
@@ -174,9 +150,7 @@ export function useCanvasInteraction({
 		deselectAll();
 	}, [deselectAll]);
 
-	/**
-	 * ドラッグオーバー（ドロップを許可）
-	 */
+	/** Drag over (allow drop) */
 	const handleDragOver = useCallback((e: React.DragEvent) => {
 		if (e.dataTransfer.types.includes("application/x-object-id")) {
 			e.preventDefault();
@@ -184,9 +158,7 @@ export function useCanvasInteraction({
 		}
 	}, []);
 
-	/**
-	 * ドロップでオブジェクト追加
-	 */
+	/** Drop to add object */
 	const handleDrop = useCallback(
 		(e: React.DragEvent) => {
 			e.preventDefault();
@@ -205,9 +177,7 @@ export function useCanvasInteraction({
 		[svgRef, addObject],
 	);
 
-	/**
-	 * ポインター移動（マーキー/ドラッグ/回転/リサイズ統合）
-	 */
+	/** Pointer move (integrated marquee/drag/rotate/resize) */
 	const handlePointerMove = useCallback(
 		(e: React.PointerEvent) => {
 			const svg = svgRef.current;
@@ -215,31 +185,29 @@ export function useCanvasInteraction({
 
 			const currentPointer = screenToSVG(e, svg);
 
-			// マーキー選択中
+			// During marquee selection
 			if (updateMarqueePosition(currentPointer)) {
 				return;
 			}
 
-			// ドラッグ/回転/リサイズ中
+			// During drag/rotate/resize
 			handleDragMove(currentPointer);
 		},
 		[svgRef, updateMarqueePosition, handleDragMove],
 	);
 
-	/**
-	 * ポインターアップ（マーキー/ドラッグ統合）
-	 */
+	/** Pointer up (integrated marquee/drag) */
 	const handlePointerUp = useCallback(
 		(e: React.PointerEvent) => {
 			(e.target as Element).releasePointerCapture(e.pointerId);
 
-			// マーキー選択の完了
+			// Complete marquee selection
 			if (marqueeStateRef.current) {
 				completeMarquee();
 				return;
 			}
 
-			// ドラッグ/回転/リサイズの完了
+			// Complete drag/rotate/resize
 			completeDrag();
 		},
 		[marqueeStateRef, completeMarquee, completeDrag],

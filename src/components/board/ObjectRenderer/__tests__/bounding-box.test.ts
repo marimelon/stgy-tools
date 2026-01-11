@@ -1,7 +1,3 @@
-/**
- * バウンディングボックス計算のテスト
- */
-
 import { describe, expect, it } from "vitest";
 import { ObjectIds } from "@/lib/stgy";
 import {
@@ -12,63 +8,60 @@ import {
 
 describe("bounding-box", () => {
 	describe("getConeBoundingBox", () => {
-		it("90度扇形", () => {
+		it("90-degree cone", () => {
 			const bbox = getConeBoundingBox(90, 100);
-			// 12時方向から時計回りに90度 = 3時方向まで
-			// 点: (0,0), (0,-100), (100,0)
+			// From 12 o'clock clockwise 90 degrees = to 3 o'clock
+			// Points: (0,0), (0,-100), (100,0)
 			expect(bbox.minX).toBeCloseTo(0, 5);
 			expect(bbox.minY).toBeCloseTo(-100, 5);
 			expect(bbox.width).toBeCloseTo(100, 5);
 			expect(bbox.height).toBeCloseTo(100, 5);
 		});
 
-		it("180度扇形", () => {
+		it("180-degree cone", () => {
 			const bbox = getConeBoundingBox(180, 100);
-			// 12時方向から時計回りに180度 = 6時方向まで
-			// 点: (0,0), (0,-100), (0,100), 0度(100,0)が範囲内
+			// From 12 o'clock clockwise 180 degrees = to 6 o'clock
+			// Points: (0,0), (0,-100), (0,100), 0 degrees (100,0) is in range
 			expect(bbox.minX).toBeCloseTo(0, 5);
 			expect(bbox.minY).toBeCloseTo(-100, 5);
 			expect(bbox.width).toBeCloseTo(100, 5);
 			expect(bbox.height).toBeCloseTo(200, 5);
 		});
 
-		it("360度扇形（完全な円）", () => {
+		it("360-degree cone (full circle)", () => {
 			const bbox = getConeBoundingBox(360, 100);
-			// 全方向をカバー
 			expect(bbox.minX).toBeCloseTo(-100, 5);
 			expect(bbox.minY).toBeCloseTo(-100, 5);
 			expect(bbox.width).toBeCloseTo(200, 5);
 			expect(bbox.height).toBeCloseTo(200, 5);
 		});
 
-		it("小さい角度", () => {
+		it("small angle", () => {
 			const bbox = getConeBoundingBox(30, 100);
-			// 12時方向から30度だけ
 			expect(bbox.width).toBeGreaterThan(0);
 			expect(bbox.height).toBeGreaterThan(0);
 		});
 	});
 
 	describe("getDonutConeBoundingBox", () => {
-		it("90度ドーナツ扇形", () => {
+		it("90-degree donut cone", () => {
 			const bbox = getDonutConeBoundingBox(90, 100, 50);
-			// 外弧と内弧の点のみ（中心点を含まない）
+			// Only outer and inner arc points (no center point)
 			expect(bbox.width).toBeGreaterThan(0);
 			expect(bbox.height).toBeGreaterThan(0);
-			// 外半径より小さいはず
 			expect(bbox.width).toBeLessThanOrEqual(100);
 		});
 
-		it("180度ドーナツ扇形", () => {
+		it("180-degree donut cone", () => {
 			const bbox = getDonutConeBoundingBox(180, 100, 50);
 			expect(bbox.width).toBeGreaterThan(0);
 			expect(bbox.height).toBeGreaterThan(0);
 		});
 
-		it("内径0は扇形と同じ挙動", () => {
+		it("inner radius 0 behaves like regular cone", () => {
 			const donut = getDonutConeBoundingBox(90, 100, 0);
 			const cone = getConeBoundingBox(90, 100);
-			// ドーナツの内径0は中心点を含まないが、近い値になる
+			// Donut with inner radius 0 excludes center, but values are close
 			expect(donut.width).toBeCloseTo(cone.width, 0);
 		});
 	});
@@ -80,19 +73,19 @@ describe("bounding-box", () => {
 			expect(bbox.height).toBeGreaterThan(0);
 		});
 
-		it("ConeAoEのデフォルト角度", () => {
+		it("ConeAoE default angle", () => {
 			const bbox = getObjectBoundingBox(ObjectIds.ConeAoE);
 			expect(bbox.width).toBeGreaterThan(0);
 			expect(bbox.height).toBeGreaterThan(0);
 		});
 
-		it("DonutAoE 360度（完全な円）", () => {
+		it("DonutAoE 360 degrees (full circle)", () => {
 			const bbox = getObjectBoundingBox(ObjectIds.DonutAoE, 360, 50);
-			expect(bbox.width).toBe(512); // outerRadius * 2
+			expect(bbox.width).toBe(512);
 			expect(bbox.height).toBe(512);
 		});
 
-		it("DonutAoE 扇形", () => {
+		it("DonutAoE cone", () => {
 			const bbox = getObjectBoundingBox(ObjectIds.DonutAoE, 90, 50);
 			expect(bbox.width).toBeGreaterThan(0);
 			expect(bbox.height).toBeGreaterThan(0);
@@ -110,7 +103,7 @@ describe("bounding-box", () => {
 			expect(bbox.height).toBeGreaterThan(0);
 		});
 
-		it("Textのデフォルト", () => {
+		it("Text default", () => {
 			const bbox = getObjectBoundingBox(ObjectIds.Text);
 			expect(bbox.width).toBeGreaterThan(0);
 			expect(bbox.height).toBeGreaterThan(0);
@@ -120,9 +113,9 @@ describe("bounding-box", () => {
 			const position = { x: 100, y: 100 };
 			const bbox = getObjectBoundingBox(
 				ObjectIds.Line,
-				2000, // endX * 10
-				1500, // endY * 10
-				6, // thickness
+				2000,
+				1500,
+				6,
 				undefined,
 				position,
 			);
@@ -130,84 +123,76 @@ describe("bounding-box", () => {
 			expect(bbox.height).toBeGreaterThan(0);
 		});
 
-		it("Line: 水平線のBBoxは長さ×太さ", () => {
+		it("Line: horizontal line bbox is length x thickness", () => {
 			const position = { x: 100, y: 100 };
-			// 終点 (200, 100) -> 水平線 長さ100
 			const bbox = getObjectBoundingBox(
 				ObjectIds.Line,
-				2000, // endX * 10 = 200
-				1000, // endY * 10 = 100
-				10, // thickness
+				2000,
+				1000,
+				10,
 				undefined,
 				position,
 			);
-			// 長さ100、太さ10
-			expect(bbox.width).toBeCloseTo(100, 5);
-			expect(bbox.height).toBe(10);
-			// offsetXは線の中点（長さの半分）
-			expect(bbox.offsetX).toBeCloseTo(50, 5);
-			expect(bbox.offsetY).toBe(0);
-		});
-
-		it("Line: 垂直線のBBoxは長さ×太さ", () => {
-			const position = { x: 100, y: 100 };
-			// 終点 (100, 200) -> 垂直線 長さ100
-			const bbox = getObjectBoundingBox(
-				ObjectIds.Line,
-				1000, // endX * 10 = 100
-				2000, // endY * 10 = 200
-				10, // thickness
-				undefined,
-				position,
-			);
-			// 長さ100、太さ10
 			expect(bbox.width).toBeCloseTo(100, 5);
 			expect(bbox.height).toBe(10);
 			expect(bbox.offsetX).toBeCloseTo(50, 5);
 			expect(bbox.offsetY).toBe(0);
 		});
 
-		it("Line: 斜め線のBBoxは長さ×太さ", () => {
+		it("Line: vertical line bbox is length x thickness", () => {
+			const position = { x: 100, y: 100 };
+			const bbox = getObjectBoundingBox(
+				ObjectIds.Line,
+				1000,
+				2000,
+				10,
+				undefined,
+				position,
+			);
+			expect(bbox.width).toBeCloseTo(100, 5);
+			expect(bbox.height).toBe(10);
+			expect(bbox.offsetX).toBeCloseTo(50, 5);
+			expect(bbox.offsetY).toBe(0);
+		});
+
+		it("Line: diagonal line bbox is length x thickness", () => {
 			const position = { x: 0, y: 0 };
-			// 終点 (30, 40) -> 斜め線 長さ50 (3-4-5三角形)
+			// Endpoint (30, 40) -> diagonal line length 50 (3-4-5 triangle)
 			const bbox = getObjectBoundingBox(
 				ObjectIds.Line,
-				300, // endX * 10 = 30
-				400, // endY * 10 = 40
-				8, // thickness
+				300,
+				400,
+				8,
 				undefined,
 				position,
 			);
-			// 長さ50、太さ8
 			expect(bbox.width).toBeCloseTo(50, 5);
 			expect(bbox.height).toBe(8);
 			expect(bbox.offsetX).toBeCloseTo(25, 5);
 			expect(bbox.offsetY).toBe(0);
 		});
 
-		it("Line: 長さ0の場合は太さがwidth", () => {
+		it("Line: zero length uses thickness as width", () => {
 			const position = { x: 100, y: 100 };
-			// 終点が始点と同じ
 			const bbox = getObjectBoundingBox(
 				ObjectIds.Line,
-				1000, // endX * 10 = 100
-				1000, // endY * 10 = 100
-				20, // thickness
+				1000,
+				1000,
+				20,
 				undefined,
 				position,
 			);
-			// 長さ0なのでwidthは太さになる
 			expect(bbox.width).toBe(20);
 			expect(bbox.height).toBe(20);
 		});
 
 		it("LineAoE", () => {
 			const bbox = getObjectBoundingBox(ObjectIds.LineAoE, 200, 30);
-			expect(bbox.width).toBe(200); // length
-			expect(bbox.height).toBe(30); // thickness
+			expect(bbox.width).toBe(200);
+			expect(bbox.height).toBe(30);
 		});
 
-		it("LineAoEのデフォルト", () => {
+		it("LineAoE default", () => {
 			const bbox = getObjectBoundingBox(ObjectIds.LineAoE);
 			expect(bbox.width).toBeGreaterThan(0);
 			expect(bbox.height).toBeGreaterThan(0);
@@ -225,7 +210,7 @@ describe("bounding-box", () => {
 			expect(bbox.height).toBeGreaterThan(0);
 		});
 
-		it("未知のオブジェクトはデフォルト値", () => {
+		it("unknown object returns default", () => {
 			const bbox = getObjectBoundingBox(99999);
 			expect(bbox.width).toBeGreaterThan(0);
 			expect(bbox.height).toBeGreaterThan(0);

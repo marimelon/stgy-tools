@@ -1,7 +1,7 @@
 /**
- * PNGメタデータ埋め込み/抽出ユーティリティ
+ * PNG metadata embedding/extraction utility
  *
- * iTXtチャンク（UTF-8対応）を使用してPNG画像にメタデータを埋め込む
+ * Uses iTXt chunks (UTF-8 support) to embed metadata in PNG images
  */
 
 import { decodeSync, encodeSync, type ITxtChunk } from "png-chunk-itxt";
@@ -11,35 +11,27 @@ import encodeChunks from "png-chunks-encode";
 // @ts-expect-error - png-chunks-extract has no type definitions
 import extractChunks from "png-chunks-extract";
 
-// png-chunks-extract / png-chunks-encode の型定義
 interface PngChunk {
 	name: string;
 	data: Uint8Array;
 }
 
-/** デフォルトのソフトウェア名 */
 const DEFAULT_SOFTWARE = "STGY Tools";
 
-/** stgyコード圧縮の閾値（バイト） */
+/** Compression threshold for stgy code (bytes) */
 const COMPRESSION_THRESHOLD = 1000;
 
-/**
- * 埋め込むメタデータ
- */
 export interface PngMetadata {
-	/** stgyコード全文 */
+	/** Full stgy code */
 	stgy?: string;
-	/** ボード名（UTF-8対応） */
+	/** Board name (UTF-8 supported) */
 	title?: string;
-	/** 生成ソフトウェア名 */
+	/** Generator software name */
 	software?: string;
-	/** カスタムメタデータ (任意のkey-value) */
+	/** Custom metadata (arbitrary key-value pairs) */
 	custom?: Record<string, string>;
 }
 
-/**
- * 抽出されたメタデータ
- */
 export interface ExtractedPngMetadata {
 	stgy?: string;
 	title?: string;
@@ -47,7 +39,6 @@ export interface ExtractedPngMetadata {
 	[key: string]: string | undefined;
 }
 
-/** 標準キーワードのマッピング */
 const KEYWORD_MAP: Record<
 	keyof Omit<PngMetadata, "custom">,
 	{ keyword: string; compress: boolean }
@@ -57,19 +48,10 @@ const KEYWORD_MAP: Record<
 	software: { keyword: "Software", compress: false },
 };
 
-/** 逆引きマップ */
 const REVERSE_KEYWORD_MAP = Object.fromEntries(
 	Object.entries(KEYWORD_MAP).map(([key, { keyword }]) => [keyword, key]),
 );
 
-/**
- * iTXtチャンクを作成
- *
- * @param keyword - メタデータキーワード
- * @param text - メタデータ値
- * @param options - オプション（圧縮、言語タグ）
- * @returns PNGチャンクオブジェクト
- */
 function createItxtChunk(
 	keyword: string,
 	text: string,
@@ -91,24 +73,13 @@ function createItxtChunk(
 	return { name: "iTXt", data: buffer };
 }
 
-/**
- * PNGバッファにメタデータを埋め込む
- *
- * @param pngBuffer - 元のPNGバッファ
- * @param metadata - 埋め込むメタデータ
- * @returns メタデータが埋め込まれたPNGバッファ
- */
 export function embedMetadata(
 	pngBuffer: Uint8Array,
 	metadata: PngMetadata,
 ): Uint8Array {
-	// 1. PNGからチャンクを抽出
 	const chunks: PngChunk[] = extractChunks(pngBuffer);
-
-	// 2. メタデータをiTXtチャンクに変換
 	const textChunks: Array<{ name: string; data: Uint8Array }> = [];
 
-	// 標準キーワード
 	for (const [key, config] of Object.entries(KEYWORD_MAP)) {
 		const value = metadata[key as keyof typeof KEYWORD_MAP];
 		if (value) {
@@ -118,7 +89,6 @@ export function embedMetadata(
 		}
 	}
 
-	// カスタムメタデータ
 	if (metadata.custom) {
 		for (const [key, value] of Object.entries(metadata.custom)) {
 			if (value) {
@@ -127,38 +97,29 @@ export function embedMetadata(
 		}
 	}
 
-	// 3. チャンクを挿入（IDATチャンクの前に配置）
-	// PNG仕様: tEXt/iTXtはIHDRの後、IDATの前に配置するのが推奨
+	// Insert before IDAT chunk (per PNG spec: tEXt/iTXt should be after IHDR, before IDAT)
 	const idatIndex = chunks.findIndex((chunk) => chunk.name === "IDAT");
 	const insertIndex = idatIndex > 0 ? idatIndex : chunks.length - 1;
 
 	chunks.splice(insertIndex, 0, ...textChunks);
 
-	// 4. PNGバッファを再構築
 	return encodeChunks(chunks);
 }
 
-/**
- * PNGバッファからメタデータを抽出
- *
- * @param pngBuffer - PNGバッファ
- * @returns 抽出されたメタデータ
- */
 export function extractMetadata(pngBuffer: Uint8Array): ExtractedPngMetadata {
 	const chunks: PngChunk[] = extractChunks(pngBuffer);
 	const result: ExtractedPngMetadata = {};
 
-	// iTXtチャンクを探してデコード
 	for (const chunk of chunks) {
 		if (chunk.name === "iTXt") {
 			try {
 				const decoded = decodeSync(chunk.data);
-				// 標準キーワードを正規化
+				// Normalize standard keywords
 				const normalizedKey =
 					REVERSE_KEYWORD_MAP[decoded.keyword] ?? decoded.keyword;
 				result[normalizedKey] = decoded.text;
 			} catch {
-				// デコード失敗時はスキップ
+				// Skip on decode failure
 			}
 		}
 	}
@@ -166,13 +127,6 @@ export function extractMetadata(pngBuffer: Uint8Array): ExtractedPngMetadata {
 	return result;
 }
 
-/**
- * デフォルトメタデータを生成
- *
- * @param stgyCode - stgyコード
- * @param boardName - ボード名（オプション）
- * @returns デフォルトメタデータ
- */
 export function createDefaultMetadata(
 	stgyCode: string,
 	boardName?: string,

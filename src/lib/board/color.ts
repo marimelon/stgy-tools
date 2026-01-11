@@ -1,12 +1,12 @@
 /**
- * 色関連ユーティリティ
- * サーバーサイド・クライアントサイド両方で使用
+ * Color-related utilities
+ * Used on both server-side and client-side
  */
 
 import type { Color } from "@/lib/stgy/types";
 
 /**
- * デフォルトの色（この色の場合はオリジナル画像を使用）
+ * Default color (uses original image when this color is set)
  */
 export const DEFAULT_OBJECT_COLOR: Readonly<Color> = {
 	r: 255,
@@ -16,7 +16,7 @@ export const DEFAULT_OBJECT_COLOR: Readonly<Color> = {
 };
 
 /**
- * 色がデフォルトから変更されているかチェック
+ * Check if color differs from default
  */
 export function isColorChanged(color: Color): boolean {
 	return (
@@ -28,8 +28,8 @@ export function isColorChanged(color: Color): boolean {
 }
 
 /**
- * Color型をrgba文字列に変換
- * opacity: 0=不透明, 100=透明
+ * Convert Color type to rgba string
+ * opacity: 0=opaque, 100=transparent
  */
 export function colorToRgba(color: Color): string {
 	const alpha = 1 - color.opacity / 100;
@@ -37,7 +37,7 @@ export function colorToRgba(color: Color): string {
 }
 
 /**
- * Color型をrgb文字列に変換（透過なし）
+ * Convert Color type to rgb string (no transparency)
  */
 export function colorToRgb(color: Color): string {
 	return `rgb(${color.r}, ${color.g}, ${color.b})`;

@@ -1,7 +1,3 @@
-/**
- * 受け止め攻撃（ブロック）アイコン
- */
-
 import { useId } from "react";
 import type { IconProps } from "../types";
 

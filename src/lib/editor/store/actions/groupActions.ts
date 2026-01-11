@@ -1,5 +1,5 @@
 /**
- * グループ操作アクション
+ * Group operation actions
  */
 
 import i18n from "@/lib/i18n";
@@ -7,13 +7,7 @@ import type { GridSettings, ObjectGroup } from "../../types";
 import { generateGroupId, pushHistory } from "../../utils";
 import type { EditorStore } from "../types";
 
-/**
- * グループアクションを作成
- */
 export function createGroupActions(store: EditorStore) {
-	/**
-	 * オブジェクトをグループ化
-	 */
 	const groupObjects = (objectIds: string[]) => {
 		if (objectIds.length < 2) return;
 
@@ -36,23 +30,17 @@ export function createGroupActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * 選択オブジェクトをグループ化
-	 */
 	const groupSelected = () => {
 		const state = store.state;
 		if (state.selectedIds.length < 2) return;
 		groupObjects(state.selectedIds);
 	};
 
-	/**
-	 * グループを解除
-	 */
 	const ungroup = (groupId: string) => {
 		store.setState((state) => {
 			const newGroups = state.groups.filter((g) => g.id !== groupId);
 
-			// フォーカス中のグループが解除された場合、フォーカスをクリア
+			// Clear focus if the focused group was ungrouped
 			const newFocusedGroupId =
 				state.focusedGroupId === groupId ? null : state.focusedGroupId;
 
@@ -68,9 +56,6 @@ export function createGroupActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * グループ名を変更
-	 */
 	const renameGroup = (groupId: string, name: string) => {
 		store.setState((state) => {
 			const normalizedName = name.trim();
@@ -90,9 +75,6 @@ export function createGroupActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * グループの折りたたみ状態を切り替え
-	 */
 	const toggleGroupCollapse = (groupId: string) => {
 		store.setState((state) => {
 			const newGroups = state.groups.map((g) =>
@@ -106,30 +88,23 @@ export function createGroupActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * オブジェクトをグループから除外
-	 */
 	const removeFromGroup = (objectId: string) => {
 		store.setState((state) => {
-			// オブジェクトが属するグループを探す
 			const group = state.groups.find((g) => g.objectIds.includes(objectId));
 			if (!group) return state;
 
-			// グループから除外
 			const newIds = group.objectIds.filter((id) => id !== objectId);
 
 			let newGroups: typeof state.groups;
 			let newFocusedGroupId = state.focusedGroupId;
 
 			if (newIds.length < 2) {
-				// 残りが1つ以下ならグループ自体を削除
+				// Delete group if less than 2 members remain
 				newGroups = state.groups.filter((g) => g.id !== group.id);
-				// フォーカス中のグループが削除された場合、フォーカスをクリア
 				if (state.focusedGroupId === group.id) {
 					newFocusedGroupId = null;
 				}
 			} else {
-				// グループを更新
 				newGroups = state.groups.map((g) =>
 					g.id === group.id ? { ...g, objectIds: newIds } : g,
 				);
@@ -147,9 +122,6 @@ export function createGroupActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * グリッド設定を更新
-	 */
 	const setGridSettings = (settings: Partial<GridSettings>) => {
 		store.setState((state) => ({
 			...state,
@@ -161,25 +133,21 @@ export function createGroupActions(store: EditorStore) {
 		}));
 	};
 
-	/**
-	 * フォーカスグループを設定
-	 */
 	const focusGroup = (groupId: string) => {
 		store.setState((state) => {
-			// グループが存在するか検証
 			const groupExists = state.groups.some((g) => g.id === groupId);
 			if (!groupExists) {
 				return state;
 			}
 
-			// フォーカス設定時、フォーカス外のオブジェクトが選択されていたら選択解除
+			// Deselect objects outside focused group
 			const focusedGroup = state.groups.find((g) => g.id === groupId);
 			const focusedIdSet = new Set(focusedGroup?.objectIds ?? []);
 			const newSelectedIds = focusedGroup
 				? state.selectedIds.filter((id) => focusedIdSet.has(id))
 				: state.selectedIds;
 
-			// グループが折りたたまれていたら展開する
+			// Expand group if collapsed
 			const newGroups = state.groups.map((g) =>
 				g.id === groupId ? { ...g, collapsed: false } : g,
 			);
@@ -193,9 +161,6 @@ export function createGroupActions(store: EditorStore) {
 		});
 	};
 
-	/**
-	 * フォーカスを解除
-	 */
 	const unfocus = () => {
 		store.setState((state) => ({
 			...state,
@@ -203,9 +168,6 @@ export function createGroupActions(store: EditorStore) {
 		}));
 	};
 
-	/**
-	 * オブジェクトが属するグループを取得
-	 */
 	const getGroupForObject = (objectId: string): ObjectGroup | undefined => {
 		return store.state.groups.find((g) => g.objectIds.includes(objectId));
 	};

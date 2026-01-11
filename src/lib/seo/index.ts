@@ -1,8 +1,7 @@
 /**
- * SEO関連のユーティリティ
+ * SEO utilities
  */
 
-/** サイトの基本情報 */
 export const SITE_CONFIG = {
 	name: "STGY Tools",
 	description:
@@ -16,7 +15,6 @@ export const SITE_CONFIG = {
 	},
 } as const;
 
-/** ページごとのSEO情報 */
 export const PAGE_SEO = {
 	home: {
 		title: "STGY Tools - FFXIV Strategy Board Viewer",
@@ -47,7 +45,6 @@ export const PAGE_SEO = {
 	},
 } as const;
 
-/** OGP共通設定 */
 export const OGP_DEFAULTS = {
 	type: "website",
 	siteName: "STGY Tools",
@@ -56,7 +53,6 @@ export const OGP_DEFAULTS = {
 	imageHeight: "384",
 } as const;
 
-/** JSON-LD WebApplication スキーマ */
 export function generateWebApplicationSchema() {
 	return {
 		"@context": "https://schema.org",
@@ -79,7 +75,6 @@ export function generateWebApplicationSchema() {
 	};
 }
 
-/** JSON-LD BreadcrumbList スキーマ */
 export function generateBreadcrumbSchema(
 	items: Array<{ name: string; url: string }>,
 ) {
@@ -95,7 +90,6 @@ export function generateBreadcrumbSchema(
 	};
 }
 
-/** hreflang リンク生成 */
 export function generateHreflangLinks(path: string) {
 	return [
 		{
@@ -116,7 +110,6 @@ export function generateHreflangLinks(path: string) {
 	];
 }
 
-/** canonical URL 生成 */
 export function generateCanonicalLink(path: string, lang?: string | null) {
 	const supportedLangs = SITE_CONFIG.locale.supported;
 	const isValidLang =
@@ -130,7 +123,6 @@ export function generateCanonicalLink(path: string, lang?: string | null) {
 	};
 }
 
-/** 共通メタタグ生成 */
 export function generateCommonMeta(
 	page: keyof typeof PAGE_SEO,
 	lang?: string | null,
@@ -168,16 +160,13 @@ export function generateCommonMeta(
 	};
 }
 
-/** 言語タイプ */
 export type SupportedLang = (typeof SITE_CONFIG.locale.supported)[number];
 
-/** 言語に応じたSEO情報を取得 */
 export function getLocalizedSeo(
 	page: keyof typeof PAGE_SEO,
 	lang?: string | null,
 ) {
 	const seo = PAGE_SEO[page];
-	// サポートされている言語のみ認識、それ以外はデフォルト言語にフォールバック
 	const supportedLangs = SITE_CONFIG.locale.supported;
 	const normalizedLang = supportedLangs.includes(
 		lang as (typeof supportedLangs)[number],
@@ -194,7 +183,6 @@ export function getLocalizedSeo(
 	};
 }
 
-/** デバッグページ用メタタグ（noindex） */
 export function generateDebugPageMeta(title: string) {
 	return {
 		meta: [

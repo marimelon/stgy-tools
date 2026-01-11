@@ -11,7 +11,6 @@ export function IgnoreMarkerIcon({
 	const id = useId();
 	const glowId = `ignoreMarkerGlow-${id}`;
 
-	// 数字を取得
 	const numberMap: Record<number, number> = {
 		[ObjectIds.Ignore1]: 1,
 		[ObjectIds.Ignore2]: 2,
@@ -22,7 +21,6 @@ export function IgnoreMarkerIcon({
 
 	return (
 		<g transform={transform}>
-			{/* 透明な背景（クリック領域） */}
 			<rect x={-22} y={-22} width={44} height={44} fill="transparent" />
 			<defs>
 				<filter id={glowId} x="-50%" y="-50%" width="200%" height="200%">
@@ -34,7 +32,6 @@ export function IgnoreMarkerIcon({
 				</filter>
 			</defs>
 
-			{/* グロー効果 */}
 			<g filter={`url(#${glowId})`} opacity="0.6">
 				<circle
 					cx={0}
@@ -54,7 +51,6 @@ export function IgnoreMarkerIcon({
 				/>
 			</g>
 
-			{/* メインの円 */}
 			<circle
 				cx={0}
 				cy={0}
@@ -64,7 +60,6 @@ export function IgnoreMarkerIcon({
 				strokeWidth="3"
 			/>
 
-			{/* 斜線 */}
 			<line
 				x1={-12}
 				y1={12}
@@ -75,7 +70,6 @@ export function IgnoreMarkerIcon({
 				strokeLinecap="round"
 			/>
 
-			{/* 数字（左上に小さく） */}
 			<text
 				x={-10}
 				y={-10}

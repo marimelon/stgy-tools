@@ -1,7 +1,3 @@
-/**
- * ノックバック攻撃：放射型アイコン
- */
-
 import { useId } from "react";
 import type { IconProps } from "../types";
 

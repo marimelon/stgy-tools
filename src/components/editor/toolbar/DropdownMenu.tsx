@@ -1,8 +1,7 @@
 /**
- * 汎用ドロップダウンメニューコンポーネント
+ * Generic dropdown menu component
  *
- * ツールバーのボタンをクリックすると展開されるメニュー
- * React Portalを使用してbody直下にレンダリングし、親要素のoverflowの影響を受けない
+ * Uses React Portal to render directly under body to avoid parent overflow clipping.
  */
 
 import { ChevronDown } from "lucide-react";
@@ -18,7 +17,6 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 
-/** ドロップダウンメニューのコンテキスト */
 interface DropdownMenuContextValue {
 	closeMenu: () => void;
 }
@@ -28,21 +26,13 @@ const DropdownMenuContext = createContext<DropdownMenuContextValue | null>(
 );
 
 interface DropdownMenuProps {
-	/** トリガーボタンのラベル */
 	label: ReactNode;
-	/** ツールチップ */
 	title?: string;
-	/** メニューの内容 */
 	children: ReactNode;
-	/** 無効状態 */
 	disabled?: boolean;
-	/** 追加のCSSクラス */
 	className?: string;
 }
 
-/**
- * ドロップダウンメニュー
- */
 export function DropdownMenu({
 	label,
 	title,
@@ -56,7 +46,6 @@ export function DropdownMenu({
 	const menuRef = useRef<HTMLDivElement>(null);
 	const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
-	// メニュー位置を計算（画面端を超えないように調整）
 	useLayoutEffect(() => {
 		if (isOpen && buttonRef.current && menuRef.current) {
 			const buttonRect = buttonRef.current.getBoundingClientRect();
@@ -65,12 +54,10 @@ export function DropdownMenu({
 
 			let left = buttonRect.left;
 
-			// 右端を超える場合は左に調整
 			if (left + menuRect.width > viewportWidth - 8) {
 				left = viewportWidth - menuRect.width - 8;
 			}
 
-			// 左端を超えないように
 			if (left < 8) {
 				left = 8;
 			}
@@ -83,14 +70,12 @@ export function DropdownMenu({
 		}
 	}, [isOpen]);
 
-	// 閉じた時にリセット
 	useEffect(() => {
 		if (!isOpen) {
 			setIsPositioned(false);
 		}
 	}, [isOpen]);
 
-	// クリック外で閉じる
 	useEffect(() => {
 		if (!isOpen) return;
 
@@ -112,7 +97,6 @@ export function DropdownMenu({
 		};
 	}, [isOpen]);
 
-	// Escapeキーで閉じる
 	useEffect(() => {
 		if (!isOpen) return;
 
@@ -175,21 +159,13 @@ export function DropdownMenu({
 }
 
 interface DropdownItemProps {
-	/** アイテムのラベル */
 	children: ReactNode;
-	/** クリック時のコールバック */
 	onClick?: () => void;
-	/** 無効状態 */
 	disabled?: boolean;
-	/** ツールチップ */
 	title?: string;
-	/** アイコン（左側） */
 	icon?: ReactNode;
 }
 
-/**
- * ドロップダウンメニューアイテム
- */
 export function DropdownItem({
 	children,
 	onClick,
@@ -219,13 +195,9 @@ export function DropdownItem({
 }
 
 interface DropdownDividerProps {
-	/** ラベル（オプション） */
 	label?: string;
 }
 
-/**
- * ドロップダウンメニューの区切り線
- */
 export function DropdownDivider({ label }: DropdownDividerProps) {
 	if (label) {
 		return (

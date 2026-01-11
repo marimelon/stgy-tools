@@ -152,7 +152,6 @@ describe("ViewerStore", () => {
 			});
 
 			const newStgyCodes = result.current.boards.map((b) => b.stgyCode);
-			// データが保持されていることを確認
 			expect(newStgyCodes).toEqual([
 				originalStgyCodes[1],
 				originalStgyCodes[2],
@@ -186,7 +185,6 @@ describe("ViewerStore", () => {
 				result.current.actions.reorderBoards(0, 2);
 			});
 
-			// activeIdは変更されない
 			expect(result.current.activeId).toBe(originalActiveId);
 		});
 

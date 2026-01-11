@@ -1,7 +1,3 @@
-/**
- * タイプガード関数のテスト
- */
-
 import { describe, expect, it } from "vitest";
 import { ObjectIds } from "@/lib/stgy";
 import {
@@ -32,7 +28,7 @@ describe("type-guards", () => {
 			expect(isFieldObject(ObjectIds.SquareGray)).toBe(true);
 		});
 
-		it("非フィールドオブジェクト", () => {
+		it("non-field object", () => {
 			expect(isFieldObject(ObjectIds.Tank)).toBe(false);
 			expect(isFieldObject(ObjectIds.CircleAoE)).toBe(false);
 		});
@@ -59,37 +55,37 @@ describe("type-guards", () => {
 			expect(isAoEObject(ObjectIds.DonutAoE)).toBe(true);
 		});
 
-		it("非AoEオブジェクト", () => {
+		it("non-AoE object", () => {
 			expect(isAoEObject(ObjectIds.Tank)).toBe(false);
 			expect(isAoEObject(ObjectIds.WaymarkA)).toBe(false);
 		});
 	});
 
 	describe("isRoleIcon", () => {
-		it("基本クラス・ジョブアイコン（18-46）", () => {
+		it("base class/job icons (18-46)", () => {
 			expect(isRoleIcon(18)).toBe(true);
 			expect(isRoleIcon(30)).toBe(true);
 			expect(isRoleIcon(46)).toBe(true);
 		});
 
-		it("ロールアイコン（47-57）", () => {
+		it("role icons (47-57)", () => {
 			expect(isRoleIcon(ObjectIds.Tank)).toBe(true);
 			expect(isRoleIcon(ObjectIds.Healer)).toBe(true);
 			expect(isRoleIcon(ObjectIds.DPS)).toBe(true);
 			expect(isRoleIcon(57)).toBe(true);
 		});
 
-		it("追加ジョブアイコン（101-102）", () => {
+		it("additional job icons (101-102)", () => {
 			expect(isRoleIcon(101)).toBe(true);
 			expect(isRoleIcon(102)).toBe(true);
 		});
 
-		it("追加ロールアイコン（118-123）", () => {
+		it("additional role icons (118-123)", () => {
 			expect(isRoleIcon(118)).toBe(true);
 			expect(isRoleIcon(123)).toBe(true);
 		});
 
-		it("非ロールアイコン", () => {
+		it("non-role icon", () => {
 			expect(isRoleIcon(17)).toBe(false);
 			expect(isRoleIcon(58)).toBe(false);
 			expect(isRoleIcon(100)).toBe(false);
@@ -114,7 +110,7 @@ describe("type-guards", () => {
 			expect(isWaymark(ObjectIds.Waymark4)).toBe(true);
 		});
 
-		it("非ウェイマーク", () => {
+		it("non-waymark", () => {
 			expect(isWaymark(ObjectIds.Tank)).toBe(false);
 			expect(isWaymark(ObjectIds.CircleAoE)).toBe(false);
 		});
@@ -133,7 +129,7 @@ describe("type-guards", () => {
 			expect(isEnemy(ObjectIds.EnemyLarge)).toBe(true);
 		});
 
-		it("非エネミー", () => {
+		it("non-enemy", () => {
 			expect(isEnemy(ObjectIds.Tank)).toBe(false);
 			expect(isEnemy(ObjectIds.WaymarkA)).toBe(false);
 		});
@@ -166,20 +162,18 @@ describe("type-guards", () => {
 			expect(isMarker(ObjectIds.Triangle)).toBe(true);
 		});
 
-		it("非マーカー", () => {
+		it("non-marker", () => {
 			expect(isMarker(ObjectIds.Tank)).toBe(false);
 			expect(isMarker(ObjectIds.WaymarkA)).toBe(false);
 		});
 	});
 
 	describe("isJobIcon", () => {
-		it("ジョブアイコン", () => {
-			// JOB_ICON_IDSに含まれるIDを確認
-			// 具体的なIDは実装に依存
+		it("job icon", () => {
 			expect(typeof isJobIcon(18)).toBe("boolean");
 		});
 
-		it("非ジョブアイコン", () => {
+		it("non-job icon", () => {
 			expect(isJobIcon(ObjectIds.Tank)).toBe(false);
 			expect(isJobIcon(ObjectIds.CircleAoE)).toBe(false);
 		});

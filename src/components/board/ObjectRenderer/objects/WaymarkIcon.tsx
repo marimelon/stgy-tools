@@ -8,7 +8,6 @@ export function WaymarkIcon({
 	objectId: number;
 	transform: string;
 }) {
-	// オリジナル画像が有効な場合は画像を使用
 	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
 	if (originalIcon) return originalIcon;
 

@@ -1,7 +1,3 @@
-/**
- * 1人用エリアアイコン
- */
-
 import { useId } from "react";
 import type { IconProps } from "../types";
 

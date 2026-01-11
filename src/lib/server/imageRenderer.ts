@@ -1,9 +1,8 @@
 /**
- * 画像レンダラー抽象化レイヤー
+ * Image renderer abstraction layer
  *
- * 環境変数 EXTERNAL_IMAGE_RENDERER_URL が設定されている場合は外部サーバーに委譲し、
- * 設定されていない場合はローカルで生成する。
- * 呼び出し側はこの違いを意識する必要がない。
+ * Delegates to external server if EXTERNAL_IMAGE_RENDERER_URL is set,
+ * otherwise generates locally. Callers don't need to handle this difference.
  */
 
 import type { BoardData } from "@/lib/stgy/types";
@@ -12,56 +11,39 @@ import { createDefaultMetadata, embedMetadata } from "./pngMetadata";
 import { renderSvgToPng } from "./resvgWrapper";
 import { renderBoardToSVG } from "./svgRenderer";
 
-/**
- * 画像レンダリングオプション
- */
 export interface ImageRenderOptions {
-	/** ボードデータ（ローカル生成時に使用） */
+	/** Board data (used for local generation) */
 	boardData: BoardData;
-	/** 出力フォーマット */
 	format: "png" | "svg";
-	/** 出力幅（PNGのみ、デフォルト512） */
+	/** Output width (PNG only, default 512) */
 	width?: number;
-	/** ボード名をタイトルバーとして表示するか */
+	/** Whether to show board name as title bar */
 	showTitle?: boolean;
-	/** stgyコード（外部サーバー委譲時およびメタデータ埋め込みに使用） */
+	/** stgy code (used for external delegation and metadata embedding) */
 	stgyCode?: string;
 }
 
-/**
- * 画像レンダリング結果
- */
 export interface ImageRenderResult {
-	/** 画像データ（PNG: Uint8Array, SVG: string） */
+	/** Image data (PNG: Uint8Array, SVG: string) */
 	data: Uint8Array | string;
-	/** Content-Type */
 	contentType: "image/png" | "image/svg+xml";
 }
 
-/** デフォルトの出力幅 */
 const DEFAULT_WIDTH = 512;
 
-/**
- * 外部レンダラーが設定されているかチェック
- */
 export function hasExternalRenderer(): boolean {
 	const env = getGlobalEnv();
 	return Boolean(env?.EXTERNAL_IMAGE_RENDERER_URL);
 }
 
-/**
- * 外部レンダラーのURLを取得
- */
 function getExternalRendererUrl(): string | undefined {
 	const env = getGlobalEnv();
 	return env?.EXTERNAL_IMAGE_RENDERER_URL as string | undefined;
 }
 
 /**
- * 画像をレンダリングする
- *
- * 環境変数に応じて自動的にローカル生成または外部サーバー委譲を選択する。
- * SVGフォーマットの場合は常にローカル生成（軽量なため）。
+ * Automatically selects local generation or external server delegation.
+ * SVG format is always generated locally (lightweight).
  */
 export async function renderImage(
 	options: ImageRenderOptions,
@@ -73,12 +55,12 @@ export async function renderImage(
 		showTitle = false,
 	} = options;
 
-	// SVGは常にローカル生成（CPU負荷が低いため）
+	// SVG always generated locally (low CPU overhead)
 	if (format === "svg") {
 		return renderLocalSvg(boardData, showTitle);
 	}
 
-	// PNG生成: 外部レンダラーが設定されていれば委譲
+	// PNG: delegate to external renderer if configured
 	const externalUrl = getExternalRendererUrl();
 	if (externalUrl && options.stgyCode) {
 		return renderViaExternalServer(
@@ -89,15 +71,11 @@ export async function renderImage(
 		);
 	}
 
-	// ローカルでPNG生成
 	return renderLocalPng(boardData, width, showTitle, {
 		stgyCode: options.stgyCode,
 	});
 }
 
-/**
- * ローカルでSVGを生成
- */
 async function renderLocalSvg(
 	boardData: BoardData,
 	showTitle: boolean,
@@ -109,9 +87,6 @@ async function renderLocalSvg(
 	};
 }
 
-/**
- * ローカルでPNGを生成
- */
 async function renderLocalPng(
 	boardData: BoardData,
 	width: number,
@@ -120,10 +95,8 @@ async function renderLocalPng(
 		stgyCode?: string;
 	},
 ): Promise<ImageRenderResult> {
-	// まずSVGを生成
 	const svg = await renderBoardToSVG(boardData, { showTitle });
 
-	// resvgでPNGに変換
 	let pngBuffer = await renderSvgToPng(svg, {
 		background: "#1a1a1a",
 		fitTo: {
@@ -132,7 +105,7 @@ async function renderLocalPng(
 		},
 	});
 
-	// メタデータ埋め込み（stgyCodeがある場合は常に埋め込む）
+	// Embed metadata when stgyCode is available
 	if (options?.stgyCode) {
 		const metadata = createDefaultMetadata(
 			options.stgyCode,
@@ -147,16 +120,12 @@ async function renderLocalPng(
 	};
 }
 
-/**
- * 外部サーバーでPNGを生成
- */
 async function renderViaExternalServer(
 	baseUrl: string,
 	stgyCode: string,
 	width: number,
 	showTitle: boolean,
 ): Promise<ImageRenderResult> {
-	// クエリパラメータを構築
 	const url = new URL(baseUrl);
 	url.searchParams.set("stgy", stgyCode);
 	url.searchParams.set("format", "png");
@@ -167,7 +136,6 @@ async function renderViaExternalServer(
 		url.searchParams.set("title", "1");
 	}
 
-	// 外部サーバーにリクエスト
 	const response = await fetch(url.toString(), {
 		method: "GET",
 		headers: {
@@ -182,7 +150,6 @@ async function renderViaExternalServer(
 		);
 	}
 
-	// レスポンスをUint8Arrayに変換
 	const arrayBuffer = await response.arrayBuffer();
 	const data = new Uint8Array(arrayBuffer);
 

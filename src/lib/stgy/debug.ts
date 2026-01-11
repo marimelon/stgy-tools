@@ -46,7 +46,7 @@ export interface DecodeDebugInfo {
 	fields: FieldInfo[];
 	header: {
 		version: number;
-		/** StrategyBoard.length (ヘッダー後のコンテンツ長) */
+		/** StrategyBoard.length (content length after header) */
 		contentLength: number;
 		/** SectionContent.length */
 		sectionContentLength: number;

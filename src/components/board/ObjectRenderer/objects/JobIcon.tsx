@@ -8,7 +8,6 @@ export function JobIcon({
 	objectId: number;
 	transform: string;
 }) {
-	// オリジナル画像が有効な場合は画像を使用
 	const originalIcon = renderOriginalIconIfEnabled(objectId, transform);
 	if (originalIcon) return originalIcon;
 
@@ -19,7 +18,6 @@ export function JobIcon({
 
 	return (
 		<g transform={transform}>
-			{/* 背景円 */}
 			<circle
 				cx={0}
 				cy={0}
@@ -28,7 +26,6 @@ export function JobIcon({
 				stroke="#ffffff"
 				strokeWidth="2"
 			/>
-			{/* ジョブ略称 */}
 			<text
 				x={0}
 				y={0}

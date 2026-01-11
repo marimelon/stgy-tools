@@ -247,7 +247,7 @@ describe("encoder", () => {
 		});
 
 		it("should round-trip board name exceeding max length (debug mode)", () => {
-			// debugMode では20文字を超えるボード名も許可される
+			// debugMode allows board names exceeding 20 characters
 			const longName = "A".repeat(30);
 			expect(longName.length).toBe(30);
 
@@ -266,7 +266,7 @@ describe("encoder", () => {
 		});
 
 		it("should round-trip Japanese board name at max length", () => {
-			// 日本語20文字（バイト数では60バイト以上になる）
+			// 20 Japanese characters (60+ bytes in UTF-8)
 			const japaneseName = "あ".repeat(MAX_BOARD_NAME_LENGTH);
 			expect(japaneseName.length).toBe(20);
 
@@ -315,32 +315,27 @@ describe("encoder", () => {
 			const encoded = encodeStgy(testBoard);
 			console.log("Encoded stgy:", encoded);
 
-			// デコードしてCRC32を取得\n\t\t\tdecodeStgy(encoded); // デコード可能なことを確認
+			decodeStgy(encoded);
 			const stgyData = encoded.slice(8, -1);
 			const keyChar = stgyData[0];
 			console.log("Key character:", keyChar);
 
-			// キー値をKEY_TABLEで変換
 			const keyMapped = ALPHABET_TABLE[keyChar];
 			if (!keyMapped) {
 				throw new Error(`Invalid key character: ${keyChar}`);
 			}
 
-			// Base64値に変換
 			const base64Chars =
 				"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 			const keyValue = base64Chars.indexOf(keyMapped);
 			console.log("Key value:", keyValue);
 
-			// stgyからバイナリを取得してCRC32を確認
-			// デコードしたバイナリからCRC32を再計算して確認できるが、
-			// ここでは単純にキー値が0-63の範囲内であることを確認
 			expect(keyValue).toBeGreaterThanOrEqual(0);
 			expect(keyValue).toBeLessThanOrEqual(63);
 		});
 
 		it("should encode with deterministic key from CRC32", () => {
-			// 同じボードデータを複数回エンコードすると、同じCRC32値になるため同じキーが使われるはず
+			// Same board data encoded multiple times produces same CRC32, thus same key
 			const testBoard: BoardData = {
 				version: 2,
 				name: "Deterministic",
@@ -366,10 +361,10 @@ describe("encoder", () => {
 			const encoded1 = encodeStgy(testBoard);
 			const encoded2 = encodeStgy(testBoard);
 
-			// 同じボードデータからは同じstgy文字列が生成されるはず
+			// Same board data should produce identical stgy strings
 			expect(encoded1).toBe(encoded2);
 
-			// キー文字も同じはず
+			// Key characters should also match
 			const keyChar1 = encoded1[8];
 			const keyChar2 = encoded2[8];
 			expect(keyChar1).toBe(keyChar2);
@@ -398,9 +393,9 @@ describe("encoder", () => {
 						rotation: 0,
 						size: 100,
 						color: { r: 255, g: 255, b: 255, opacity: 0 },
-						param1: 3840, // 終点X * 10 = 384 * 10
-						param2: 1920, // 終点Y * 10 = 192 * 10
-						param3: 6, // 線幅
+						param1: 3840, // end X * 10 = 384 * 10
+						param2: 1920, // end Y * 10 = 192 * 10
+						param3: 6, // line width
 					},
 				],
 			};
@@ -438,7 +433,7 @@ describe("encoder", () => {
 						color: { r: 255, g: 255, b: 255, opacity: 0 },
 						param1: 2000,
 						param2: 1500,
-						param3: 8, // カスタム線幅
+						param3: 8, // custom line width
 					},
 				],
 			};

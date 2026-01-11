@@ -1,39 +1,38 @@
 /**
- * パラメータ関連ユーティリティ
- * サーバーサイド・クライアントサイド両方で使用
+ * Parameter-related utilities
+ * Used on both server-side and client-side
  */
 
 import type { Position } from "@/lib/stgy/types";
 import { ObjectIds } from "@/lib/stgy/types";
 
 /**
- * デフォルトのパラメータ値
+ * Default parameter values
  */
 export const DEFAULT_PARAMS = {
-	/** 直線範囲攻撃の縦幅（長さ）デフォルト */
+	/** LineAoE default height (length) */
 	LINE_HEIGHT: 128,
-	/** 直線範囲攻撃の横幅（太さ）デフォルト */
+	/** LineAoE default width (thickness) */
 	LINE_WIDTH: 128,
-	/** Line（絶対座標線）のデフォルト太さ */
+	/** Line (absolute coordinate line) default thickness */
 	LINE_THICKNESS: 6,
-	/** DonutAoE/ConeAoE のデフォルト角度 */
+	/** DonutAoE/ConeAoE default angle */
 	CONE_ANGLE: 90,
-	/** DonutAoE のデフォルト内径範囲 (0-240) */
+	/** DonutAoE default inner radius range (0-240) */
 	DONUT_RANGE: 50,
-	/** DonutAoE の完全円判定角度 */
+	/** DonutAoE full circle threshold angle */
 	FULL_CIRCLE_ANGLE: 360,
 } as const;
 
 /**
- * 直線範囲攻撃のパラメータがデフォルトから変更されているかチェック
- * 縦幅・横幅パラメータを持つのはLineAoEのみ（Lineは異なるパラメータ構成）
+ * Check if LineAoE parameters differ from defaults
+ * Only LineAoE has height/width parameters (Line has different parameter structure)
  */
 export function isLineAoEParamsChanged(
 	objectId: number,
 	param1?: number,
 	param2?: number,
 ): boolean {
-	// LineAoEのみが縦幅・横幅パラメータを持つ
 	if (objectId !== ObjectIds.LineAoE) {
 		return false;
 	}
@@ -45,8 +44,8 @@ export function isLineAoEParamsChanged(
 }
 
 /**
- * Line（絶対座標線）の終点を計算
- * param1, param2 は座標を10倍した整数値（小数第一位まで対応）
+ * Calculate Line (absolute coordinate line) endpoint
+ * param1, param2 are coordinates multiplied by 10 (supports one decimal place)
  */
 export function calculateLineEndpoint(
 	position: Position,
@@ -60,10 +59,10 @@ export function calculateLineEndpoint(
 }
 
 /**
- * DonutAoEの内径を計算
- * @param outerRadius 外径
- * @param donutRange 内径範囲 (0-240)
- * @param minThicknessRatio 最小太さ比率（デフォルト: 1/10）
+ * Calculate DonutAoE inner radius
+ * @param outerRadius Outer radius
+ * @param donutRange Inner radius range (0-240)
+ * @param minThicknessRatio Minimum thickness ratio (default: 1/10)
  */
 export function calculateDonutInnerRadius(
 	outerRadius: number,

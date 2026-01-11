@@ -1,10 +1,10 @@
 /**
- * SVG transform 構築ユーティリティ
- * サーバーサイド・クライアントサイド両方で使用
+ * SVG transform building utilities
+ * Used on both server-side and client-side
  */
 
 /**
- * SVG transform属性を構築
+ * Build SVG transform attribute
  */
 export function buildTransform(
 	x: number,
@@ -27,8 +27,8 @@ export function buildTransform(
 }
 
 /**
- * 位置、回転、スケール、フリップからtransform文字列を構築（シンプル版）
- * 回転とスケールが1の場合も含む完全な変換を返す
+ * Build transform string from position, rotation, scale, and flip (simple version)
+ * Returns full transform including rotation and scale even when scale is 1
  */
 export function buildFullTransform(
 	x: number,

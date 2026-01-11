@@ -1,23 +1,21 @@
 /**
- * エディターストア
+ * Editor store
  *
- * TanStack Storeを使用したエディター状態管理の中核
+ * Core of editor state management using TanStack Store
  */
 
 import { Store } from "@tanstack/store";
 import type { EditorState } from "../types";
 import type { EditorStore } from "./types";
 
-/** シングルトンストアインスタンス */
 let store: EditorStore | null = null;
 
-/** 現在編集中のボードID（null = memory-only mode） */
+/** Currently editing board ID (null = memory-only mode) */
 let currentBoardId: string | null = null;
 
 /**
- * エディターストアを作成
- * @param initialState 初期状態
- * @param boardId ボードID（グローバル履歴ストアとの同期に使用）
+ * Create editor store
+ * @param boardId Board ID (used for global history store synchronization)
  */
 export function createEditorStore(
 	initialState: EditorState,
@@ -28,16 +26,12 @@ export function createEditorStore(
 	return store;
 }
 
-/**
- * 現在のボードIDを取得
- */
 export function getCurrentBoardId(): string | null {
 	return currentBoardId;
 }
 
 /**
- * 現在のエディターストアを取得
- * @throws ストアが初期化されていない場合
+ * @throws If store is not initialized
  */
 export function getEditorStore(): EditorStore {
 	if (!store) {
@@ -49,23 +43,20 @@ export function getEditorStore(): EditorStore {
 }
 
 /**
- * 現在のエディターストアを安全に取得（nullを許容）
- * パネルレイアウト変更時などのタイミング問題を回避するために使用
+ * Safely get store (allows null).
+ * Use to avoid timing issues during panel layout changes.
  */
 export function getEditorStoreSafe(): EditorStore | null {
 	return store;
 }
 
 /**
- * ストアをリセット（Provider unmount時に使用）
+ * Reset store (used on Provider unmount)
  */
 export function resetEditorStore(): void {
 	store = null;
 }
 
-/**
- * ストアが初期化されているかチェック
- */
 export function isEditorStoreInitialized(): boolean {
 	return store !== null;
 }

@@ -1,8 +1,7 @@
 /**
- * パネルレイアウトライブラリのエクスポート
+ * Panel layout library exports
  */
 
-// Hooks
 export {
 	selectors,
 	useConfig,
@@ -14,7 +13,6 @@ export {
 	useRightHiddenPanels,
 	useRightPanels,
 } from "./hooks";
-// Provider
 export {
 	PanelStoreProvider,
 	useIsPanelStoreInitialized,
@@ -26,9 +24,7 @@ export {
 	getPanelStore,
 	getPanelStoreSafe,
 } from "./store/panelStore";
-// Store
 export type { PanelState, PanelStore } from "./store/types";
-// Types
 export type {
 	PanelConfig,
 	PanelId,

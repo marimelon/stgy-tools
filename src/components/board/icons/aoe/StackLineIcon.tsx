@@ -1,7 +1,3 @@
-/**
- * 頭割りダメージ攻撃：直線型アイコン
- */
-
 import { useId } from "react";
 import type { IconProps } from "../types";
 

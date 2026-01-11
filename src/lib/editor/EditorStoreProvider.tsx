@@ -47,7 +47,7 @@ interface EditorStoreProviderProps {
 /**
  * EditorStoreProvider
  *
- * TanStack Storeとその派生状態を管理するProvider
+ * Manages TanStack Store and its derived state
  */
 export function EditorStoreProvider({
 	children,

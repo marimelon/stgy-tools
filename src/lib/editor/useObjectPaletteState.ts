@@ -1,7 +1,7 @@
 /**
- * オブジェクトパレットの開閉状態管理フック
+ * Hook for managing object palette open/close state
  *
- * localStorageを使用してカテゴリの展開状態を永続化
+ * Uses localStorage to persist category expansion state
  */
 
 import { useEffect, useState } from "react";
@@ -9,9 +9,6 @@ import { useEffect, useState } from "react";
 const STORAGE_KEY = "objectPaletteExpandedCategories";
 const DEFAULT_EXPANDED = ["attacks", "jobs"];
 
-/**
- * オブジェクトパレットのカテゴリ展開状態を管理するフック
- */
 export function useObjectPaletteState() {
 	const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
 		() => {
@@ -28,7 +25,6 @@ export function useObjectPaletteState() {
 		},
 	);
 
-	// 状態変更時に自動保存
 	useEffect(() => {
 		localStorage.setItem(STORAGE_KEY, JSON.stringify([...expandedCategories]));
 	}, [expandedCategories]);

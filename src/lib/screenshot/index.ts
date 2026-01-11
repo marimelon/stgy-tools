@@ -1,5 +1,5 @@
 /**
- * スクリーンショット比較機能
+ * Screenshot comparison functionality
  */
 
 export { detectBoardRegion } from "./boardDetector";
