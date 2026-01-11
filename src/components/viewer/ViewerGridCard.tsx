@@ -59,7 +59,7 @@ export function ViewerGridCard({
 			data-testid="viewer-grid-card"
 		>
 			{/* サムネイル */}
-			<div className="aspect-[4/3] bg-muted">
+			<div className="aspect-[4/3] bg-muted pointer-events-none">
 				{board.boardData ? (
 					<BoardViewer boardData={board.boardData} responsive maxWidth={400} />
 				) : (
