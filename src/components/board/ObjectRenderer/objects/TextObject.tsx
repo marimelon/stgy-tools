@@ -17,6 +17,9 @@ export function TextObject({
 			dy="5"
 			fill={colorToRgba(color)}
 			fontSize="14"
+			stroke="#000000"
+			strokeWidth="1"
+			paintOrder="stroke"
 		>
 			{text}
 		</text>

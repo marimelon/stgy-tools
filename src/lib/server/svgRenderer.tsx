@@ -298,6 +298,9 @@ function ObjectRenderer({ object }: { object: BoardObject }) {
 					textAnchor="middle"
 					dominantBaseline="middle"
 					opacity={opacity}
+					stroke="#000000"
+					strokeWidth="1"
+					paintOrder="stroke"
 				>
 					{object.text}
 				</text>
