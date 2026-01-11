@@ -115,6 +115,8 @@
 			"empty": "No objects",
 			"count": "objects"
 		},
+		"copyCode": "Code",
+		"copiedCode": "Copied",
 		"multiBoard": {
 			"tabMode": "Tab View",
 			"gridMode": "Grid View",

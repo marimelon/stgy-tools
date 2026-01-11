@@ -348,6 +348,9 @@ function ViewerContent({
 	// stgyコードコピー
 	const [copiedStgyCode, setCopiedStgyCode] = useState(false);
 
+	// アクティブボードのstgyコードコピー
+	const [copiedBoardCode, setCopiedBoardCode] = useState(false);
+
 	// アクティブボードの情報
 	const boardData = activeBoard?.boardData ?? null;
 	const activeBoardError = activeBoard?.error ?? null;
@@ -441,6 +444,18 @@ function ViewerContent({
 			// クリップボードAPIが利用できない場合は何もしない
 		}
 	}, [stgyInput]);
+
+	// アクティブボードのstgyコードをコピー
+	const handleCopyBoardCode = useCallback(async () => {
+		if (!activeBoard?.stgyCode) return;
+		try {
+			await navigator.clipboard.writeText(activeBoard.stgyCode);
+			setCopiedBoardCode(true);
+			setTimeout(() => setCopiedBoardCode(false), 2000);
+		} catch {
+			// クリップボードAPIが利用できない場合は何もしない
+		}
+	}, [activeBoard?.stgyCode]);
 
 	// 入力変更ハンドラー
 	const handleInputChange = useCallback(
@@ -614,6 +629,23 @@ function ViewerContent({
 								</span>
 							</div>
 							<div className="flex items-center gap-1 sm:gap-2">
+								<button
+									type="button"
+									className="flex items-center gap-1.5 p-1.5 sm:px-3 sm:py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted border border-border hover:border-border rounded-lg transition-all"
+									onClick={handleCopyBoardCode}
+									title={t("boardManager.copyStgyCode")}
+								>
+									{copiedBoardCode ? (
+										<Check className="w-4 h-4" />
+									) : (
+										<Copy className="w-4 h-4" />
+									)}
+									<span className="hidden sm:inline">
+										{copiedBoardCode
+											? t("viewer.copiedCode")
+											: t("viewer.copyCode")}
+									</span>
+								</button>
 								{featureFlags.shortLinksEnabled && (
 									<button
 										type="button"

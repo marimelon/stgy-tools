@@ -115,6 +115,8 @@
 			"empty": "オブジェクトがありません",
 			"count": "オブジェクト"
 		},
+		"copyCode": "コード",
+		"copiedCode": "コピー済み",
 		"multiBoard": {
 			"tabMode": "タブ表示",
 			"gridMode": "グリッド表示",

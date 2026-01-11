@@ -1,4 +1,5 @@
-import { X } from "lucide-react";
+import { Check, Copy, X } from "lucide-react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,22 @@ export function ViewerGridCard({
 	onClose,
 }: ViewerGridCardProps) {
 	const { t } = useTranslation();
+	const [copied, setCopied] = useState(false);
+
+	const handleCopyCode = useCallback(
+		async (e: React.MouseEvent) => {
+			e.stopPropagation();
+			if (!board.stgyCode) return;
+			try {
+				await navigator.clipboard.writeText(board.stgyCode);
+				setCopied(true);
+				setTimeout(() => setCopied(false), 2000);
+			} catch {
+				// クリップボードAPIが利用できない場合は何もしない
+			}
+		},
+		[board.stgyCode],
+	);
 
 	return (
 		// biome-ignore lint/a11y/useSemanticElements: 内部にBoardViewerを含むため、buttonではなくdivを使用
@@ -75,18 +92,36 @@ export function ViewerGridCard({
 				</div>
 			</div>
 
-			{/* 閉じるボタン */}
-			<button
-				type="button"
-				className="absolute top-2 right-2 p-1 bg-background/80 hover:bg-destructive/20 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-				onClick={(e) => {
-					e.stopPropagation();
-					onClose();
-				}}
-				title={t("viewer.multiBoard.closeTab")}
-			>
-				<X className="size-4" />
-			</button>
+			{/* ホバー時のアクションボタン */}
+			<div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+				{/* コピーボタン */}
+				{board.stgyCode && (
+					<button
+						type="button"
+						className="p-1 bg-background/80 hover:bg-primary/20 rounded transition-colors"
+						onClick={handleCopyCode}
+						title={t("boardManager.copyStgyCode")}
+					>
+						{copied ? (
+							<Check className="size-4 text-primary" />
+						) : (
+							<Copy className="size-4" />
+						)}
+					</button>
+				)}
+				{/* 閉じるボタン */}
+				<button
+					type="button"
+					className="p-1 bg-background/80 hover:bg-destructive/20 rounded transition-colors"
+					onClick={(e) => {
+						e.stopPropagation();
+						onClose();
+					}}
+					title={t("viewer.multiBoard.closeTab")}
+				>
+					<X className="size-4" />
+				</button>
+			</div>
 		</div>
 	);
 }

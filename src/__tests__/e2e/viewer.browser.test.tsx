@@ -376,10 +376,11 @@ describe("Viewer E2E", () => {
 			await userEvent.hover(cards[0]);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// 閉じるボタンをクリック
-			const closeButton = cards[0].querySelector("button");
+			// 閉じるボタンをクリック（コピーボタンの次にある）
+			const buttons = cards[0].querySelectorAll("button");
+			const closeButton = buttons[buttons.length - 1]; // 最後のボタンが閉じるボタン
 			expect(closeButton).toBeTruthy();
-			await userEvent.click(closeButton!);
+			await userEvent.click(closeButton);
 
 			expect(closedId).toBe(initialBoards[0].id);
 		});
@@ -405,6 +406,56 @@ describe("Viewer E2E", () => {
 			expect(cards[0].className).toContain("ring-2");
 			// 2番目のカードはring-2クラスを持たない
 			expect(cards[1].className).not.toContain("ring-2");
+		});
+
+		it("コピーボタンをクリックするとstgyCodeがクリップボードにコピーされる", async () => {
+			const initialBoards = createTestBoards();
+			let copiedText: string | null = null;
+
+			// clipboard.writeTextをモック
+			const originalClipboard = navigator.clipboard;
+			Object.defineProperty(navigator, "clipboard", {
+				value: {
+					writeText: async (text: string) => {
+						copiedText = text;
+					},
+				},
+				writable: true,
+				configurable: true,
+			});
+
+			const screen = await render(
+				<ViewerStoreProvider initialBoards={initialBoards}>
+					<ViewerGrid
+						boards={initialBoards}
+						activeId={initialBoards[0].id}
+						onSelectBoard={() => {}}
+						onCloseBoard={() => {}}
+					/>
+				</ViewerStoreProvider>,
+			);
+
+			// カードをホバーしてコピーボタンを表示
+			const cards = screen.container.querySelectorAll(
+				"[data-testid='viewer-grid-card']",
+			);
+			await userEvent.hover(cards[0]);
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			// コピーボタンをクリック（最初のボタンがコピー、2番目が閉じる）
+			const buttons = cards[0].querySelectorAll("button");
+			expect(buttons.length).toBeGreaterThanOrEqual(2);
+			await userEvent.click(buttons[0]);
+
+			// stgyCodeがコピーされている
+			expect(copiedText).toBe(initialBoards[0].stgyCode);
+
+			// クリップボードを復元
+			Object.defineProperty(navigator, "clipboard", {
+				value: originalClipboard,
+				writable: true,
+				configurable: true,
+			});
 		});
 	});
 
