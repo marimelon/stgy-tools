@@ -43,7 +43,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "@resvg/resvg-wasm": "^2.6.2",
     "@tailwindcss/vite": "^4.1.18",
-    "@tanstack/react-db": "^0.1.60",
+    "@tanstack/react-db": "^0.1.62",
     "@tanstack/react-devtools": "^0.7.11",
     "@tanstack/react-router": "^1.144.0",
     "@tanstack/react-router-devtools": "^1.144.0",

@@ -460,10 +460,10 @@ describe("Viewer E2E", () => {
 			await userEvent.hover(cards[0]);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// コピーボタンをクリック（最初のボタンがコピー、2番目が閉じる）
+			// コピーボタンをクリック（ドラッグハンドル、コピー、閉じるの順）
 			const buttons = cards[0].querySelectorAll("button");
-			expect(buttons.length).toBeGreaterThanOrEqual(2);
-			await userEvent.click(buttons[0]);
+			expect(buttons.length).toBeGreaterThanOrEqual(3);
+			await userEvent.click(buttons[1]); // 2番目がコピーボタン
 
 			// stgyCodeがコピーされている
 			expect(copiedText).toBe(initialBoards[0].stgyCode);
@@ -503,9 +503,7 @@ describe("Viewer E2E", () => {
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			// ドラッグハンドルが存在することを確認
-			const handles = cards[0].querySelectorAll(
-				"[class*='cursor-grab']",
-			);
+			const handles = cards[0].querySelectorAll("[class*='cursor-grab']");
 			expect(handles.length).toBeGreaterThan(0);
 		});
 
