@@ -8,7 +8,8 @@
 		"defaultText": "テキスト",
 		"close": "閉じる",
 		"cancel": "キャンセル",
-		"create": "作成"
+		"create": "作成",
+		"delete": "削除"
 	},
 	"contextMenu": {
 		"copy": "コピー",
@@ -542,7 +543,9 @@
 			"defaultFolderName": "新規フォルダ",
 			"rename": "名前変更",
 			"delete": "削除",
-			"deleteConfirm": "フォルダ内のボードはルートに移動されます",
+			"deleteTitle": "「{{name}}」を削除",
+			"deleteConfirmWithBoards": "このフォルダと{{count}}件のボードが削除されます。この操作は取り消せません。",
+			"deleteConfirmEmpty": "このフォルダを削除しますか？",
 			"moveToFolder": "フォルダに移動",
 			"moveToRoot": "ルートに移動",
 			"emptyFolder": "フォルダが空です",

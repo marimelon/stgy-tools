@@ -239,6 +239,14 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		[boards, collection],
 	);
 
+	// Delete board permanently without undo support (for batch operations like folder deletion)
+	const deleteBoardPermanently = useCallback(
+		(id: string) => {
+			collection.delete(id);
+		},
+		[collection],
+	);
+
 	const undoDelete = useCallback(() => {
 		if (!deletedBoard) return;
 
@@ -447,6 +455,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		createBoard,
 		updateBoard,
 		deleteBoard,
+		deleteBoardPermanently,
 		duplicateBoard,
 		getBoard,
 		findBoardByContent,

@@ -26,6 +26,14 @@ export default defineConfig({
 			}),
 			// ブラウザテスト（E2E）
 			mergeConfig(baseConfig, {
+				optimizeDeps: {
+					include: [
+						"@dnd-kit/core",
+						"@dnd-kit/modifiers",
+						"@dnd-kit/sortable",
+						"@dnd-kit/utilities",
+					],
+				},
 				test: {
 					...baseTestConfig,
 					name: "browser",

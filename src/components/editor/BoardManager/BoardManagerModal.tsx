@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { type BoardSortOption, useBoards, useFolders } from "@/lib/boards";
 import { BoardGrid } from "./BoardGrid";
 import { CreateFolderDialog } from "./CreateFolderDialog";
+import { DeleteFolderDialog } from "./DeleteFolderDialog";
 import { FolderSection } from "./FolderSection";
 import { UndoToast } from "./UndoToast";
 
@@ -46,12 +47,18 @@ export const BoardManagerModal = NiceModal.create(
 		const [searchQuery, setSearchQuery] = useState("");
 		const [sortBy, setSortBy] = useState<BoardSortOption>("updatedAt");
 		const [showCreateFolderDialog, setShowCreateFolderDialog] = useState(false);
+		const [folderToDelete, setFolderToDelete] = useState<{
+			id: string;
+			name: string;
+			boardCount: number;
+		} | null>(null);
 
 		const {
 			boards,
 			isLoading: isBoardsLoading,
 			updateBoard,
 			deleteBoard,
+			deleteBoardPermanently,
 			duplicateBoard,
 			moveBoardToFolder,
 			getBoardsByFolder,
@@ -118,14 +125,48 @@ export const BoardManagerModal = NiceModal.create(
 			updateFolder(folderId, { name: newName });
 		};
 
-		const handleDeleteFolder = async (folderId: string) => {
-			// Move all boards in the folder to root
+		const handleDeleteFolder = (folderId: string) => {
+			const folder = folders.find((f) => f.id === folderId);
+			if (!folder) return;
+
 			const boardsInFolder = getBoardsByFolder(folderId);
-			await Promise.all(
-				boardsInFolder.map((board) => moveBoardToFolder(board.id, null)),
-			);
+			setFolderToDelete({
+				id: folderId,
+				name: folder.name,
+				boardCount: boardsInFolder.length,
+			});
+		};
+
+		const handleConfirmDeleteFolder = () => {
+			if (!folderToDelete) return;
+
+			const boardsInFolder = getBoardsByFolder(folderToDelete.id);
+
+			// Delete all boards in the folder permanently (no undo)
+			for (const board of boardsInFolder) {
+				deleteBoardPermanently(board.id);
+			}
+
+			// If current board was in the folder, open another board
+			if (
+				currentBoardId &&
+				boardsInFolder.some((b) => b.id === currentBoardId)
+			) {
+				const remainingBoards = boards.filter(
+					(b) =>
+						b.id !== currentBoardId &&
+						!boardsInFolder.some((fb) => fb.id === b.id),
+				);
+				if (remainingBoards.length > 0) {
+					onOpenBoard(remainingBoards[0].id);
+				} else {
+					onCreateNewBoard();
+				}
+			}
+
 			// Delete the folder
-			deleteFolderFromDB(folderId);
+			deleteFolderFromDB(folderToDelete.id);
+			setFolderToDelete(null);
 		};
 
 		const handleMoveToFolder = (boardId: string, folderId: string | null) => {
@@ -315,6 +356,17 @@ export const BoardManagerModal = NiceModal.create(
 					open={showCreateFolderDialog}
 					onOpenChange={setShowCreateFolderDialog}
 					onCreateFolder={handleCreateFolder}
+				/>
+
+				{/* Delete folder confirmation dialog */}
+				<DeleteFolderDialog
+					open={folderToDelete !== null}
+					onOpenChange={(open) => {
+						if (!open) setFolderToDelete(null);
+					}}
+					folderName={folderToDelete?.name ?? ""}
+					boardCount={folderToDelete?.boardCount ?? 0}
+					onConfirm={handleConfirmDeleteFolder}
 				/>
 			</>
 		);

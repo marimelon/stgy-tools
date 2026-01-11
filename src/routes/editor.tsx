@@ -945,6 +945,11 @@ function EditorWithTabs({
 		}
 	}, [activeTabId, currentBoardId, onSelectBoard]);
 
+	// 注意: 削除されたボードのタブの自動クローズは行わない
+	// useLiveQueryの結果が一時的に変動するため、誤検出でタブが閉じられる問題がある
+	// ボード削除時のタブクローズは、削除操作を行う側（BoardManagerなど）で
+	// 明示的に removeDeletedBoardTab を呼び出して処理する
+
 	// 統一的な「ボードを開く」ハンドラ（タブ切り替え + ボード読み込み）
 	const handleOpenBoard = useCallback(
 		(boardId: string) => {

@@ -8,7 +8,8 @@
 		"defaultText": "Text",
 		"close": "Close",
 		"cancel": "Cancel",
-		"create": "Create"
+		"create": "Create",
+		"delete": "Delete"
 	},
 	"contextMenu": {
 		"copy": "Copy",
@@ -542,7 +543,9 @@
 			"defaultFolderName": "New Folder",
 			"rename": "Rename",
 			"delete": "Delete",
-			"deleteConfirm": "Boards in this folder will be moved to root",
+			"deleteTitle": "Delete \"{{name}}\"",
+			"deleteConfirmWithBoards": "This folder and {{count}} board(s) will be deleted. This action cannot be undone.",
+			"deleteConfirmEmpty": "Delete this folder?",
 			"moveToFolder": "Move to Folder",
 			"moveToRoot": "Move to Root",
 			"emptyFolder": "Folder is empty",
