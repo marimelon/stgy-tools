@@ -1,8 +1,6 @@
 /**
- * サイドバー内のパネルグループ
- *
- * 縦方向にリサイズ可能なパネル分割
- * 折りたたみ機能付き（VSCode風：順番を維持）
+ * Sidebar panel group with vertical resizing and collapse functionality.
+ * VSCode-style: maintains panel order.
  */
 
 import { Fragment, type ReactNode } from "react";
@@ -18,19 +16,12 @@ import { PANEL_CONFIG, RESIZE_HANDLE_STYLES } from "./constants";
 import { PanelHeader } from "./PanelHeader";
 
 interface SidebarGroupProps {
-	/** パネル一覧（ソート済み） */
 	panels: [PanelId, PanelConfig][];
-	/** パネルコンポーネントのマップ */
 	panelComponents: Record<PanelId, ReactNode>;
-	/** パネル固有のアクションボタンのマップ */
 	panelActions?: Partial<Record<PanelId, ReactNode>>;
-	/** localStorage保存用ID */
 	storageId: string;
 }
 
-/**
- * サイドバー内パネルグループ
- */
 export function SidebarGroup({
 	panels,
 	panelComponents,
@@ -39,14 +30,12 @@ export function SidebarGroup({
 }: SidebarGroupProps) {
 	const { togglePanelCollapsed } = usePanelActions();
 
-	// 展開中のパネルを取得
 	const expandedPanels = panels.filter(([, config]) => !config.collapsed);
 	const expandedCount = expandedPanels.length;
 
-	// 展開中パネルのIDをキーに含める（異なるパネル組み合わせで別々のレイアウトを保存）
+	// Include expanded panel IDs in key for separate layout storage per combination
 	const expandedPanelIds = expandedPanels.map(([id]) => id).join("-");
 
-	// レイアウトの保存・復元
 	const { defaultLayout, onLayoutChange } = useDefaultLayout({
 		id: `${storageId}-${expandedPanelIds}`,
 		storage: localStorage,
@@ -56,7 +45,6 @@ export function SidebarGroup({
 		return null;
 	}
 
-	// すべて折りたたまれている場合
 	if (expandedCount === 0) {
 		return (
 			<div className="h-full flex flex-col overflow-hidden">
@@ -74,7 +62,6 @@ export function SidebarGroup({
 		);
 	}
 
-	// 1つだけ展開されている場合（PanelGroup不要）
 	if (expandedCount === 1) {
 		return (
 			<div className="h-full flex flex-col overflow-hidden">
@@ -107,8 +94,6 @@ export function SidebarGroup({
 		);
 	}
 
-	// 複数展開されている場合：PanelGroupを使用
-	// 展開パネルのみをPanelGroupに入れ、折りたたみパネルは固定ヘッダーとして配置
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
 			{renderPanelsWithGroup(
@@ -124,8 +109,8 @@ export function SidebarGroup({
 }
 
 /**
- * パネルをPanelGroupと組み合わせてレンダリング
- * 折りたたみパネルは固定、展開パネルはPanelGroup内でリサイズ可能
+ * Render panels with PanelGroup. Collapsed panels are fixed headers,
+ * expanded panels are resizable within PanelGroup.
  */
 function renderPanelsWithGroup(
 	panels: [PanelId, PanelConfig][],
@@ -137,13 +122,11 @@ function renderPanelsWithGroup(
 ) {
 	const elements: ReactNode[] = [];
 
-	// パネルを連続した展開パネルのグループに分割
 	let i = 0;
 	while (i < panels.length) {
 		const [panelId, config] = panels[i];
 
 		if (config.collapsed) {
-			// 折りたたみパネル：固定ヘッダー
 			elements.push(
 				<div key={panelId} className="flex-shrink-0">
 					<PanelHeader
@@ -156,16 +139,13 @@ function renderPanelsWithGroup(
 			);
 			i++;
 		} else {
-			// 連続する展開パネルを収集
 			const expandedGroup: [PanelId, PanelConfig][] = [];
 			while (i < panels.length && !panels[i][1].collapsed) {
 				expandedGroup.push(panels[i]);
 				i++;
 			}
 
-			// 展開パネルグループをPanelGroupでラップ
 			if (expandedGroup.length === 1) {
-				// 1つだけの場合はPanelGroup不要
 				const [singlePanelId] = expandedGroup[0];
 				elements.push(
 					<div
@@ -184,7 +164,6 @@ function renderPanelsWithGroup(
 					</div>,
 				);
 			} else {
-				// 複数の場合はPanelGroupでリサイズ可能に
 				elements.push(
 					<PanelGroup
 						key={`group-${expandedGroup.map(([id]) => id).join("-")}`}

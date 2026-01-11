@@ -1,7 +1,5 @@
 /**
- * インラインテキストエディタコンポーネント
- *
- * テキストオブジェクトをダブルクリックで直接編集するためのコンポーネント
+ * Inline text editor component for double-click text editing
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -10,23 +8,16 @@ import type { BoardObject } from "@/lib/stgy";
 import { MAX_TEXT_BYTES, truncateToUtf8Bytes } from "@/lib/stgy";
 
 interface InlineTextEditorProps {
-	/** 編集対象のオブジェクト */
 	object: BoardObject;
-	/** 編集終了コールバック */
 	onEndEdit: (save: boolean, text?: string) => void;
 }
-
-/**
- * インラインテキストエディタ
- */
 export function InlineTextEditor({ object, onEndEdit }: InlineTextEditorProps) {
 	const debugMode = useDebugMode();
 	const [text, setText] = useState(object.text ?? "");
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	// 初期フォーカス
 	useEffect(() => {
-		// 次フレームでフォーカス（foreignObjectのレンダリング待ち）
+		// Focus on next frame to wait for foreignObject rendering
 		requestAnimationFrame(() => {
 			inputRef.current?.focus();
 			inputRef.current?.select();
@@ -34,7 +25,7 @@ export function InlineTextEditor({ object, onEndEdit }: InlineTextEditorProps) {
 	}, []);
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
-		// IME入力中は無視
+		// Ignore during IME composition
 		if (e.nativeEvent.isComposing) return;
 
 		if (e.key === "Enter") {
@@ -50,12 +41,11 @@ export function InlineTextEditor({ object, onEndEdit }: InlineTextEditorProps) {
 		onEndEdit(true, text);
 	};
 
-	// 幅を動的に計算（最小120px、テキスト長に応じて拡張）
 	const fontSize = 14 * (object.size / 100);
 	const estimatedWidth = Math.max(120, text.length * fontSize * 0.7 + 40);
 	const height = fontSize + 16;
 
-	// テキストの色（opacity が 0 の場合は完全不透明として扱う）
+	// Treat opacity 0 as fully opaque
 	const textOpacity =
 		object.color.opacity === 0 ? 1 : object.color.opacity / 100;
 	const textColor = `rgba(${object.color.r}, ${object.color.g}, ${object.color.b}, ${textOpacity})`;
@@ -75,7 +65,7 @@ export function InlineTextEditor({ object, onEndEdit }: InlineTextEditorProps) {
 				value={text}
 				onChange={(e) => {
 					let newText = e.target.value;
-					// デバッグモードでない場合は30バイトに制限
+					// Limit to 30 bytes unless in debug mode
 					if (!debugMode) {
 						newText = truncateToUtf8Bytes(newText, MAX_TEXT_BYTES);
 					}

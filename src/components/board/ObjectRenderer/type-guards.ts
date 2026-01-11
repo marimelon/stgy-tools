@@ -1,7 +1,3 @@
-/**
- * オブジェクトID判定関数
- * ObjectIds の範囲は docs/csv-spec.md および src/lib/stgy/types.ts を参照
- */
 import { ObjectIds } from "@/lib/stgy";
 import {
 	AOE_OBJECT_IDS,
@@ -19,13 +15,6 @@ export function isAoEObject(id: number): boolean {
 	return AOE_OBJECT_IDS.includes(id);
 }
 
-/**
- * ロールアイコン判定
- * - 18-46: 基本クラス・ジョブアイコン（Gladiator〜Pictomancer）
- * - 47-57: ロールアイコン（Tank, Healer, DPS等）
- * - 101-102: 追加ジョブアイコン（Viper, Pictomancer）
- * - 118-123: 追加ロールアイコン（MeleeDPS, RangedDPS等）
- */
 export function isRoleIcon(id: number): boolean {
 	return (
 		(id >= 18 && id <= 57) ||

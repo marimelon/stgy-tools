@@ -1,9 +1,8 @@
 /**
- * カスタムサーバーエントリポイント
- * Cloudflare Workers の env を保存してから TanStack Start のハンドラーを呼び出す
+ * Custom server entry point.
+ * Stores Cloudflare Workers env before invoking TanStack Start handler.
  */
 
-// TanStack Start のデフォルトエントリをインポート
 import tanstackEntry from "@tanstack/react-start/server-entry";
 import {
 	type CloudflareEnv,
@@ -21,13 +20,11 @@ export default {
 		env: CloudflareEnv,
 		ctx: ExecutionContext,
 	): Promise<Response> {
-		// env をグローバルに保存
 		setGlobalEnv(env);
 
 		console.log("[server-entry] Cloudflare env available:", !!env);
 		console.log("[server-entry] ASSETS available:", !!env?.ASSETS);
 
-		// TanStack Start のハンドラーを呼び出す
 		// @ts-expect-error TanStack Start with Cloudflare Workers env and ctx
 		return tanstackEntry.fetch(request, env, ctx);
 	},

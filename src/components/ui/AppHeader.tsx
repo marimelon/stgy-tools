@@ -1,14 +1,8 @@
-/**
- * 共通ヘッダーコンポーネント
- * 全ページで統一されたナビゲーションを提供
- */
-
 import { useLocation } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
-/** 言語オプション */
 const LANGUAGE_OPTIONS = [
 	{ value: "ja", label: "日本語" },
 	{ value: "en", label: "English" },
@@ -17,29 +11,17 @@ const LANGUAGE_OPTIONS = [
 export type PageId = "viewer" | "editor" | "image";
 
 interface AppHeaderProps {
-	/** 現在のページ */
 	currentPage: PageId;
-	/** ロゴを表示するか（デフォルト: true） */
 	showLogo?: boolean;
-	/** カスタムタイトル（指定しない場合はデフォルトのロゴ） */
 	title?: string;
-	/** カスタムロゴ要素 */
 	logo?: React.ReactNode;
-	/** 言語セレクターを表示するか（デフォルト: true） */
 	showLanguageSelector?: boolean;
-	/** 追加のクラス名 */
 	className?: string;
 }
 
-/**
- * stgyパラメータを引き継ぐべきページかどうか
- * viewer (/) と image (/image/generate) 間では stgy を引き継ぐ
- */
+/** Paths where stgy parameter should be preserved across navigation */
 const STGY_PRESERVE_PATHS = ["/", "/image/generate"];
 
-/**
- * ナビゲーションリンク
- */
 function NavLink({
 	to,
 	active,
@@ -53,10 +35,8 @@ function NavLink({
 	lang?: string;
 	children: React.ReactNode;
 }) {
-	// stgyを引き継ぐべきパスの場合のみstgyパラメータを付与
 	const shouldPreserveStgy = stgy && STGY_PRESERVE_PATHS.includes(to);
 
-	// URLを構築（配列パラメータを避けるため直接構築）
 	const href = useMemo(() => {
 		const params = new URLSearchParams();
 		if (shouldPreserveStgy && stgy) {
@@ -84,16 +64,12 @@ function NavLink({
 	);
 }
 
-/**
- * 言語セレクター
- */
 function LanguageSelector() {
 	const { i18n, t } = useTranslation();
 
 	const changeLanguage = useCallback(
 		(lang: string) => {
 			i18n.changeLanguage(lang);
-			// URLのlangパラメータも更新（配列パラメータを保持するためwindow.locationを使用）
 			const searchParams = new URLSearchParams(window.location.search);
 			searchParams.set("lang", lang);
 			const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
@@ -118,37 +94,28 @@ function LanguageSelector() {
 	);
 }
 
-/**
- * 現在のURLからstgyパラメータを取得するフック
- * 複数指定されている場合は最初の値を返す
- */
+/** Returns the first stgy parameter from current URL */
 function useCurrentStgy(): string | undefined {
 	const location = useLocation();
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: URL変更時に再評価が必要
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Re-evaluate on URL change
 	return useMemo(() => {
-		// window.location.searchを使用して配列パラメータを正しく処理
 		const searchParams = new URLSearchParams(window.location.search);
 		return searchParams.get("stgy") ?? undefined;
 	}, [location.href]);
 }
 
-/**
- * 現在のURLからlangパラメータを取得するフック
- */
+/** Returns lang parameter from current URL */
 function useCurrentLang(): string | undefined {
 	const location = useLocation();
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: URL変更時に再評価が必要
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Re-evaluate on URL change
 	return useMemo(() => {
 		const searchParams = new URLSearchParams(window.location.search);
 		return searchParams.get("lang") ?? undefined;
 	}, [location.href]);
 }
 
-/**
- * 共通ヘッダー
- */
 export function AppHeader({
 	currentPage,
 	showLogo = true,
@@ -164,7 +131,6 @@ export function AppHeader({
 	return (
 		<header className={cn("app-header p-4", className)}>
 			<div className="flex items-center justify-between max-w-6xl mx-auto">
-				{/* ロゴ・タイトル */}
 				<div className="flex items-center gap-3">
 					{showLogo && logo}
 					<h1 className="app-logo text-xl md:text-2xl">
@@ -172,7 +138,6 @@ export function AppHeader({
 					</h1>
 				</div>
 
-				{/* ナビゲーション */}
 				<nav className="flex items-center gap-3 md:gap-4">
 					<NavLink
 						to="/"
@@ -206,7 +171,7 @@ export function AppHeader({
 }
 
 /**
- * コンパクト版ヘッダー（Editorなど画面領域を最大化したいページ向け）
+ * Compact header for pages that need maximum screen area (e.g., Editor)
  */
 export function CompactAppHeader({
 	currentPage,
@@ -226,13 +191,11 @@ export function CompactAppHeader({
 				className,
 			)}
 		>
-			{/* ロゴ・タイトル */}
 			<div className="flex items-center gap-2">
 				{logo}
 				<h1 className="app-logo text-sm">{title ?? "STGY Tools"}</h1>
 			</div>
 
-			{/* ナビゲーション */}
 			<nav className="flex items-center gap-2 md:gap-3">
 				<NavLink
 					to="/"

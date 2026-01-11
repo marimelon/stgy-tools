@@ -1,6 +1,6 @@
 /**
- * エクスポートモーダルコンポーネント
- * @ebay/nice-modal-react + Radix Dialog ベース
+ * Export modal component
+ * Based on @ebay/nice-modal-react + Radix Dialog
  */
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
@@ -30,19 +30,9 @@ import { recalculateBoardSize, useBoard } from "@/lib/editor";
 import { createShortLinkFn } from "@/lib/server/shortLinks/serverFn";
 import { encodeStgy } from "@/lib/stgy";
 
-/**
- * エクスポートモーダルのProps
- */
 export interface ExportModalProps {
-	/** 短縮リンク機能が有効かどうか */
 	shortLinksEnabled?: boolean;
 }
-
-/**
- * エクスポートモーダル
- *
- * モーダル内でuseBoard()を呼び出し、ボードの変更に反応してエクスポートコードを再生成
- */
 export const ExportModal = NiceModal.create(
 	({ shortLinksEnabled = false }: ExportModalProps) => {
 		const { t } = useTranslation();
@@ -89,7 +79,7 @@ export const ExportModal = NiceModal.create(
 				setCopiedShareLink(true);
 				setTimeout(() => setCopiedShareLink(false), 2000);
 			} catch {
-				// クリップボードAPIが利用できない場合は何もしない
+				// Clipboard API not available
 			}
 		};
 
@@ -107,7 +97,7 @@ export const ExportModal = NiceModal.create(
 					setTimeout(() => setCopiedShortLink(false), 2000);
 				}
 			} catch {
-				// エラー時は何もしない
+				// Ignore errors
 			} finally {
 				setIsGeneratingShortLink(false);
 			}
@@ -170,7 +160,6 @@ export const ExportModal = NiceModal.create(
 
 						<Separator />
 
-						{/* 共有リンクセクション */}
 						<div className="space-y-2">
 							<Label className="flex items-center gap-2">
 								<Share2 className="size-4 text-primary" />

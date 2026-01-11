@@ -1,6 +1,6 @@
 /**
- * 背景レンダラー（共通コンポーネント）
- * サーバーサイド・クライアントサイド両方で使用
+ * Background Renderer (shared component)
+ * Used by both server-side and client-side
  */
 
 import { useCallback, useState } from "react";
@@ -10,15 +10,15 @@ interface BackgroundRendererProps {
 	backgroundId: BackgroundId;
 	width: number;
 	height: number;
-	/** サーバーサイド用: Base64 Data URI */
+	/** For server-side: Base64 Data URI */
 	imageDataUri?: string;
 }
 
 /**
- * 背景レンダラー
- * BackgroundId に対応する画像を表示
- * - クライアント: /assets/backgrounds-hr/{id}.png を優先、なければ /assets/backgrounds/{id}.png にフォールバック
- * - サーバー: imageDataUri (Base64) を使用
+ * Background Renderer
+ * Displays image corresponding to BackgroundId
+ * - Client: Prefers /assets/backgrounds-hr/{id}.png, falls back to /assets/backgrounds/{id}.png
+ * - Server: Uses imageDataUri (Base64)
  */
 export function BackgroundRenderer({
 	backgroundId,
@@ -29,18 +29,18 @@ export function BackgroundRenderer({
 	const [useHr, setUseHr] = useState(true);
 
 	const handleError = useCallback(() => {
-		// HR版が見つからない場合、通常版にフォールバック
+		// Fall back to standard version if HR version not found
 		if (useHr) {
 			setUseHr(false);
 		}
 	}, [useHr]);
 
-	// BackgroundId 1-7 が有効な範囲
+	// BackgroundId 1-7 is the valid range
 	if (backgroundId < 1 || backgroundId > 7) {
 		return null;
 	}
 
-	// サーバーサイドはData URIを使用、クライアントはHR版優先でフォールバック
+	// Server-side uses Data URI, client prefers HR version with fallback
 	const href =
 		imageDataUri ??
 		(useHr

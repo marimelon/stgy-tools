@@ -1,5 +1,5 @@
 /**
- * ツールバー関連コンポーネントのエクスポート
+ * Toolbar-related component exports
  */
 
 export { AlignmentMenu } from "./AlignmentMenu";

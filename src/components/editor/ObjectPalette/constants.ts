@@ -1,13 +1,13 @@
 /**
- * オブジェクトパレットの定数
+ * Object palette constants
  */
 
 import { ObjectIds } from "@/lib/stgy";
 
-/** パレット専用アイコンがあるオブジェクトID一覧 */
+/** List of object IDs that have palette-specific icons */
 export const PALETTE_ICON_OBJECT_IDS: number[] = [
-	ObjectIds.ConeAoE, // 10: 扇範囲攻撃
-	ObjectIds.Line, // 12: ライン
-	ObjectIds.DonutAoE, // 17: 輪形範囲攻撃
-	ObjectIds.Text, // 100: テキスト
+	ObjectIds.ConeAoE, // 10: Cone AoE
+	ObjectIds.Line, // 12: Line
+	ObjectIds.DonutAoE, // 17: Donut AoE
+	ObjectIds.Text, // 100: Text
 ];

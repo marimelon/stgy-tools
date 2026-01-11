@@ -1,9 +1,9 @@
 /**
- * 重複ボード検出モーダルコンポーネント
- * @ebay/nice-modal-react + Radix Dialog ベース
+ * Duplicate board detection modal
+ * Based on @ebay/nice-modal-react + Radix Dialog
  *
- * Viewer や Image Generator から Editor を開く際に、
- * 同じ stgy コードのボードが既に存在する場合に表示
+ * Shown when opening Editor from Viewer or Image Generator
+ * if a board with the same stgy code already exists
  */
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
@@ -19,25 +19,18 @@ import {
 } from "@/components/ui/dialog";
 import type { StoredBoard } from "@/lib/boards/schema";
 
-/**
- * DuplicateBoardModal の Props
- */
 export interface DuplicateBoardModalProps {
-	/** 既存のボード情報 */
 	existingBoard: StoredBoard;
 }
 
-/**
- * モーダルの結果
- */
 export type DuplicateBoardResult = "open-existing" | "create-new" | undefined;
 
 /**
- * 重複ボード検出モーダル
+ * Duplicate board detection modal
  *
- * resolve("open-existing") - 既存ボードを開く
- * resolve("create-new") - 新規作成する
- * resolve(undefined) - キャンセル
+ * resolve("open-existing") - Open existing board
+ * resolve("create-new") - Create new board
+ * resolve(undefined) - Cancel
  */
 export const DuplicateBoardModal = NiceModal.create(
 	({ existingBoard }: DuplicateBoardModalProps) => {
@@ -92,7 +85,6 @@ export const DuplicateBoardModal = NiceModal.create(
 							{t("duplicateBoard.description")}
 						</p>
 
-						{/* 既存ボード情報 */}
 						<div className="rounded-md border bg-muted/50 p-3 space-y-2">
 							<div className="flex items-center gap-2 text-sm">
 								<span className="text-muted-foreground">
@@ -111,9 +103,7 @@ export const DuplicateBoardModal = NiceModal.create(
 							</div>
 						</div>
 
-						{/* 選択肢 */}
 						<div className="space-y-2">
-							{/* 既存ボードを開く */}
 							<button
 								type="button"
 								onClick={handleOpenExisting}
@@ -130,7 +120,6 @@ export const DuplicateBoardModal = NiceModal.create(
 								</div>
 							</button>
 
-							{/* 新規作成 */}
 							<button
 								type="button"
 								onClick={handleCreateNew}

@@ -1,6 +1,6 @@
 /**
  * Board Manager Modal component
- * @ebay/nice-modal-react + Radix Dialog ベース
+ * Based on @ebay/nice-modal-react + Radix Dialog
  */
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";

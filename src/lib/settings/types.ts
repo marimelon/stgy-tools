@@ -1,23 +1,23 @@
 /**
- * アプリケーション設定の型定義
+ * Application settings type definitions
  */
 
 /**
- * アプリケーション設定
+ * Application settings
  */
 export interface AppSettings {
-	/** デバッグモード（全オブジェクトIDを表示） */
+	/** Debug mode (shows all object IDs) */
 	debugMode: boolean;
 }
 
 /**
- * デフォルト設定
+ * Default settings
  */
 export const DEFAULT_SETTINGS: AppSettings = {
 	debugMode: false,
 };
 
 /**
- * ローカルストレージのキー
+ * localStorage key
  */
 export const SETTINGS_STORAGE_KEY = "strategy-board-settings";

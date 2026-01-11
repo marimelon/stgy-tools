@@ -1,8 +1,5 @@
 import { COLORS } from "./constants";
 
-/**
- * 選択インジケーターコンポーネント
- */
 export function SelectionIndicator({
 	x,
 	y,
@@ -24,7 +21,6 @@ export function SelectionIndicator({
 	const boxCenterY = offsetY;
 	const handleSize = 6;
 
-	// 四隅のハンドル位置
 	const corners = [
 		{ x: boxCenterX - width / 2, y: boxCenterY - height / 2 },
 		{ x: boxCenterX + width / 2, y: boxCenterY - height / 2 },
@@ -34,7 +30,6 @@ export function SelectionIndicator({
 
 	return (
 		<g transform={`translate(${x}, ${y}) rotate(${rotation})`}>
-			{/* 選択枠 */}
 			<rect
 				x={boxCenterX - width / 2}
 				y={boxCenterY - height / 2}
@@ -44,7 +39,6 @@ export function SelectionIndicator({
 				stroke={COLORS.SELECTION}
 				strokeWidth="2"
 			/>
-			{/* 四隅のハンドル */}
 			{corners.map((corner) => (
 				<rect
 					key={`${corner.x}-${corner.y}`}

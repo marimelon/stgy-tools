@@ -1,5 +1,5 @@
 /**
- * レイヤーオブジェクトアイテムコンポーネント
+ * Layer object item component
  */
 
 import { Eye, EyeOff, GripVertical, Lock, LockOpen } from "lucide-react";
@@ -19,7 +19,6 @@ interface LayerObjectItemProps {
 	isDragging: boolean;
 	dropTarget: DropTarget | null;
 	draggedGroupId: string | null;
-	/** フォーカスモードでフォーカス外のオブジェクトかどうか */
 	isOutsideFocus?: boolean;
 	onDragStart: (e: DragEvent<HTMLDivElement>, objectId: string) => void;
 	onDragOver: (e: DragEvent<HTMLDivElement>, objectId: string) => void;
@@ -36,9 +35,6 @@ interface LayerObjectItemProps {
 	) => void;
 }
 
-/**
- * レイヤーパネルのオブジェクトアイテム
- */
 export function LayerObjectItem({
 	objectId,
 	object,
@@ -65,9 +61,6 @@ export function LayerObjectItem({
 		defaultValue: `ID: ${object.objectId}`,
 	});
 
-	// ドロップターゲットはindex基準なので、objects配列から自分のインデックスを探す必要あり
-	// ここでは dropTarget が表示上の判定に使われるだけなので、
-	// dropTarget は親から objectId に基づいて渡される前提
 	const isDropBefore =
 		dropTarget !== null &&
 		!(draggedGroupId && isInGroup) &&
@@ -79,7 +72,6 @@ export function LayerObjectItem({
 
 	return (
 		<div ref={itemRef} className="relative">
-			{/* ドロップインジケーター（前） */}
 			{isDropBefore && (
 				<div className="drop-indicator absolute top-0 left-1 right-1 z-10" />
 			)}
@@ -96,12 +88,10 @@ export function LayerObjectItem({
 				onContextMenu={(e) => onContextMenu(e, objectId, isInGroup, groupId)}
 				className={`layer-item select-none ${isInGroup ? "in-group" : ""} ${isLastInGroup ? "last-in-group" : ""} ${isDragging ? "opacity-50" : isOutsideFocus ? "opacity-40" : ""} ${isSelected ? "selected" : ""}`}
 			>
-				{/* ドラッグハンドル */}
 				<span className="cursor-grab active:cursor-grabbing text-muted-foreground">
 					<GripVertical size={14} />
 				</span>
 
-				{/* 表示/非表示トグル */}
 				<button
 					type="button"
 					onClick={(e) => {
@@ -120,7 +110,6 @@ export function LayerObjectItem({
 					{object.flags.visible ? <Eye size={14} /> : <EyeOff size={14} />}
 				</button>
 
-				{/* ロック/ロック解除トグル */}
 				<button
 					type="button"
 					onClick={(e) => {
@@ -139,7 +128,6 @@ export function LayerObjectItem({
 					{object.flags.locked ? <Lock size={14} /> : <LockOpen size={14} />}
 				</button>
 
-				{/* オブジェクト名 */}
 				<span
 					className={`flex-1 text-xs truncate ${object.flags.visible ? "text-foreground" : "text-muted-foreground"}`}
 				>
@@ -150,7 +138,6 @@ export function LayerObjectItem({
 				</span>
 			</div>
 
-			{/* ドロップインジケーター（後） */}
 			{isDropAfter && (
 				<div className="drop-indicator absolute bottom-0 left-1 right-1 z-10" />
 			)}

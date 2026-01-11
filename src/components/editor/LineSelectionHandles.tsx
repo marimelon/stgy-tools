@@ -1,31 +1,19 @@
 /**
- * Line専用の選択ハンドルコンポーネント
- *
- * 始点・終点を直接操作できるハンドルを表示
+ * Line-specific selection handles for direct endpoint manipulation
  */
 
 import { useState } from "react";
 
 interface LineSelectionHandlesProps {
-	/** 始点X座標 */
 	startX: number;
-	/** 始点Y座標 */
 	startY: number;
-	/** 終点X座標 */
 	endX: number;
-	/** 終点Y座標 */
 	endY: number;
-	/** 始点移動開始時のコールバック */
 	onStartPointDragStart?: () => void;
-	/** 始点移動時のコールバック */
 	onStartPointDrag?: (x: number, y: number) => void;
-	/** 始点移動終了時のコールバック */
 	onStartPointDragEnd?: () => void;
-	/** 終点移動開始時のコールバック */
 	onEndPointDragStart?: () => void;
-	/** 終点移動時のコールバック */
 	onEndPointDrag?: (x: number, y: number) => void;
-	/** 終点移動終了時のコールバック */
 	onEndPointDragEnd?: () => void;
 }
 
@@ -47,7 +35,6 @@ export function LineSelectionHandles({
 	const [draggingStart, setDraggingStart] = useState(false);
 	const [draggingEnd, setDraggingEnd] = useState(false);
 
-	// 始点ドラッグ開始
 	const handleStartPointerDown = (e: React.PointerEvent) => {
 		e.stopPropagation();
 		e.preventDefault();
@@ -56,7 +43,6 @@ export function LineSelectionHandles({
 		onStartPointDragStart?.();
 	};
 
-	// 終点ドラッグ開始
 	const handleEndPointerDown = (e: React.PointerEvent) => {
 		e.stopPropagation();
 		e.preventDefault();
@@ -65,7 +51,6 @@ export function LineSelectionHandles({
 		onEndPointDragStart?.();
 	};
 
-	// ポインター移動
 	const handlePointerMove = (e: React.PointerEvent) => {
 		if (!draggingStart && !draggingEnd) return;
 
@@ -87,7 +72,6 @@ export function LineSelectionHandles({
 		}
 	};
 
-	// ドラッグ終了
 	const handlePointerUp = (e: React.PointerEvent) => {
 		if (draggingStart) {
 			setDraggingStart(false);
@@ -102,7 +86,7 @@ export function LineSelectionHandles({
 
 	return (
 		<g>
-			{/* 始点と終点を結ぶ線（視覚的なガイド） */}
+			{/* Visual guide line connecting start and end points */}
 			<line
 				x1={startX}
 				y1={startY}
@@ -114,7 +98,7 @@ export function LineSelectionHandles({
 				pointerEvents="none"
 			/>
 
-			{/* 始点ハンドル（四角） */}
+			{/* Start point handle (square) */}
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction */}
 			<rect
 				x={startX - HANDLE_SIZE / 2}
@@ -131,7 +115,7 @@ export function LineSelectionHandles({
 				onPointerUp={handlePointerUp}
 			/>
 
-			{/* 終点ハンドル（丸） */}
+			{/* End point handle (circle) */}
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction */}
 			<circle
 				cx={endX}

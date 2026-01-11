@@ -1,7 +1,5 @@
 /**
- * パネルヘッダーコンポーネント
- *
- * 折りたたみトグル機能付きの共通パネルヘッダー
+ * Panel header component with collapse toggle functionality
  */
 
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -9,23 +7,15 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { PanelId } from "@/lib/panel";
 
-/** アイコンサイズ */
 const ICON_SIZE = 14;
 
 interface PanelHeaderProps {
-	/** パネルID */
 	panelId: PanelId;
-	/** 折りたたみ状態 */
 	collapsed: boolean;
-	/** 折りたたみトグルコールバック */
 	onToggleCollapse: () => void;
-	/** パネル固有のアクションボタン（オプション） */
 	actions?: ReactNode;
 }
 
-/**
- * パネルヘッダー
- */
 export function PanelHeader({
 	panelId,
 	collapsed,
@@ -33,8 +23,6 @@ export function PanelHeader({
 	actions,
 }: PanelHeaderProps) {
 	const { t } = useTranslation();
-
-	// i18nからパネル名を取得
 	const title = t(`panel.${panelId}`);
 
 	return (

@@ -1,6 +1,6 @@
 /**
- * 画像URL生成ページ
- * stgyコードを入力して画像URLを生成する
+ * Image URL generation page
+ * Enter stgy code to generate image URL
  */
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -24,27 +24,26 @@ import { assignBoardObjectIds } from "@/lib/stgy/id";
 import { parseBoardData } from "@/lib/stgy/parser";
 import type { BoardData } from "@/lib/stgy/types";
 
-/** デバウンス遅延時間 (ms) */
+/** Debounce delay time (ms) */
 const DEBOUNCE_DELAY = 300;
 
-/** コピー成功フィードバック表示時間 (ms) */
+/** Copy success feedback display time (ms) */
 const COPY_FEEDBACK_DURATION = 2000;
 
-/** キャンバスサイズ */
+/** Canvas size */
 const CANVAS_WIDTH = 512;
 const CANVAS_HEIGHT = 384;
 
-/** タイトルバーの高さ */
+/** Title bar height */
 const TITLE_BAR_HEIGHT = 32;
 
-/** 枠線の太さ */
+/** Border width */
 const BORDER_WIDTH = 2;
 
-/** タイトルバーコンポーネント */
+/** Title bar component */
 function TitleBar({ title, width }: { title: string; width: number }) {
 	return (
 		<g>
-			{/* 背景バー */}
 			<rect
 				x={BORDER_WIDTH}
 				y={BORDER_WIDTH}
@@ -52,7 +51,6 @@ function TitleBar({ title, width }: { title: string; width: number }) {
 				height={TITLE_BAR_HEIGHT}
 				fill="#D2D2D2"
 			/>
-			{/* 下線 */}
 			<line
 				x1={BORDER_WIDTH}
 				y1={TITLE_BAR_HEIGHT + BORDER_WIDTH}
@@ -61,7 +59,6 @@ function TitleBar({ title, width }: { title: string; width: number }) {
 				stroke="rgba(128, 128, 128, 0.3)"
 				strokeWidth={1}
 			/>
-			{/* タイトルテキスト */}
 			<text
 				x={BORDER_WIDTH + 12}
 				y={BORDER_WIDTH + TITLE_BAR_HEIGHT / 2}
@@ -78,7 +75,7 @@ function TitleBar({ title, width }: { title: string; width: number }) {
 	);
 }
 
-/** 枠線コンポーネント */
+/** Border frame component */
 function BorderFrame({ width, height }: { width: number; height: number }) {
 	return (
 		<rect
@@ -93,7 +90,7 @@ function BorderFrame({ width, height }: { width: number; height: number }) {
 	);
 }
 
-/** プレビュー用のボードビューワー（タイトルバー対応） */
+/** Board viewer for preview (with title bar support) */
 function BoardPreview({
 	boardData,
 	showTitle,
@@ -107,7 +104,6 @@ function BoardPreview({
 	const contentOffsetY = showTitle ? TITLE_BAR_HEIGHT : 0;
 
 	return (
-		// 相対配置のコンテナで、透明オーバーレイを重ねる
 		<div className="relative inline-block">
 			<svg
 				width={CANVAS_WIDTH}
@@ -117,13 +113,10 @@ function BoardPreview({
 				role="img"
 				aria-label={boardData.name || "Strategy Board"}
 			>
-				{/* 全体背景色 */}
 				<rect width={CANVAS_WIDTH} height={totalHeight} fill="#1a1a1a" />
 
-				{/* タイトルバー */}
 				{showTitle && <TitleBar title={boardData.name} width={CANVAS_WIDTH} />}
 
-				{/* コンテンツ領域 */}
 				<foreignObject
 					x={0}
 					y={contentOffsetY}
@@ -138,11 +131,9 @@ function BoardPreview({
 					</div>
 				</foreignObject>
 
-				{/* 枠線 */}
 				{showTitle && <BorderFrame width={CANVAS_WIDTH} height={totalHeight} />}
 			</svg>
-			{/* 透明オーバーレイ: 内部要素への右クリックを防ぐ */}
-			{/* biome-ignore lint/a11y/noStaticElementInteractions: プレビュー内部要素への右クリック防止用オーバーレイ */}
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: Overlay to prevent right-click on preview internal elements */}
 			<div
 				className="absolute inset-0"
 				onContextMenu={(e) => {
@@ -170,15 +161,12 @@ export const Route = createFileRoute("/image/generate")({
 		const hasCode = Boolean(stgy);
 		const seo = getLocalizedSeo("imageGenerator", lang);
 
-		// 動的OGイメージ: stgyコードがある場合は生成画像を使用
 		const ogImage = hasCode
 			? `${SITE_CONFIG.url}/image?stgy=${encodeURIComponent(stgy as string)}`
 			: `${SITE_CONFIG.url}/favicon.svg`;
 
-		// Twitter Cardタイプ: 画像がある場合はsummary_large_image
 		const twitterCard = hasCode ? "summary_large_image" : "summary";
 
-		// 言語に応じた動的OG説明文
 		const ogDescription = hasCode
 			? seo.lang === "ja"
 				? "FFXIV ストラテジーボードのダイアグラムを表示"
@@ -258,7 +246,7 @@ export const Route = createFileRoute("/image/generate")({
 	},
 });
 
-/** スケールオプション */
+/** Scale options */
 const SCALE_OPTIONS = [
 	{ value: "1", label: "1x", size: "512×384" },
 	{ value: "2", label: "2x", size: "1024×768" },
@@ -292,12 +280,10 @@ function ImageGeneratePage() {
 	const sizeGroupId = useId();
 	const generatedUrlId = useId();
 
-	// 短縮URL状態
 	const [useShortUrl, setUseShortUrl] = useState(false);
 	const [isGeneratingShortUrl, setIsGeneratingShortUrl] = useState(false);
-	const [fullUrl, setFullUrl] = useState(""); // 元のURL
+	const [fullUrl, setFullUrl] = useState("");
 
-	// HTML/Markdownコピー状態
 	const [copiedHtml, setCopiedHtml] = useState(false);
 	const [copiedMarkdown, setCopiedMarkdown] = useState(false);
 
@@ -337,11 +323,9 @@ function ImageGeneratePage() {
 		}
 	}, [generatedUrl, format, boardName]);
 
-	// 短縮URLチェックボックス変更ハンドラー
 	const handleShortUrlChange = useCallback(
 		async (checked: boolean) => {
 			if (!checked) {
-				// チェックOFF: 元のURLに戻す
 				setUseShortUrl(false);
 				if (fullUrl) {
 					setGeneratedUrl(fullUrl);
@@ -349,7 +333,6 @@ function ImageGeneratePage() {
 				return;
 			}
 
-			// チェックON: 短縮URLを生成
 			if (!code.trim() || !boardData) return;
 
 			setIsGeneratingShortUrl(true);
@@ -364,7 +347,6 @@ function ImageGeneratePage() {
 					return;
 				}
 
-				// 短縮IDを使った画像URLを生成
 				const params = new URLSearchParams();
 				params.set("s", result.data.id);
 
@@ -380,7 +362,6 @@ function ImageGeneratePage() {
 
 				const newShortUrl = `${baseUrl}/image?${params.toString()}`;
 
-				// 元のURLを保存してから短縮URLに更新
 				setFullUrl(generatedUrl);
 				setGeneratedUrl(newShortUrl);
 				setUseShortUrl(true);
@@ -401,7 +382,6 @@ function ImageGeneratePage() {
 				return;
 			}
 
-			// stgyコードの解析を試みる
 			let parsedBoardData: BoardData;
 			try {
 				const binary = decodeStgy(codeToUse.trim());
@@ -422,7 +402,6 @@ function ImageGeneratePage() {
 			setError("");
 			const baseUrl = window.location.origin;
 
-			// クエリパラメータを構築
 			const params = new URLSearchParams();
 			params.set("stgy", codeToUse.trim());
 
@@ -440,27 +419,20 @@ function ImageGeneratePage() {
 			setGeneratedUrl(url);
 			setCopied(false);
 			setImageLoadError(false);
-			// 短縮状態をリセット
 			setUseShortUrl(false);
 			setFullUrl("");
 		},
 		[format, scale, showTitle, t],
 	);
 
-	// コード、フォーマット、スケール、タイトル表示が変更されたら自動的にURL生成
-	// generateUrl は format, scale, showTitle に依存しているため、
-	// これらが変わると generateUrl も変わり、useEffect が再実行される
 	useEffect(() => {
-		// デバウンスタイマーをクリア
 		if (debounceTimerRef.current) {
 			clearTimeout(debounceTimerRef.current);
 		}
 
-		// デバウンス後にURL生成とブラウザURL更新
 		debounceTimerRef.current = setTimeout(() => {
 			generateUrl(code);
 
-			// ブラウザのURLを更新（履歴に残さない）
 			const trimmedCode = code.trim();
 			const url = new URL(window.location.href);
 			if (trimmedCode) {
@@ -485,7 +457,6 @@ function ImageGeneratePage() {
 			setCopied(true);
 			setTimeout(() => setCopied(false), COPY_FEEDBACK_DURATION);
 		} catch {
-			// フォールバック: execCommand は非推奨だが、古いブラウザ対応のため残す
 			const textarea = document.createElement("textarea");
 			textarea.value = generatedUrl;
 			document.body.appendChild(textarea);
@@ -501,14 +472,10 @@ function ImageGeneratePage() {
 
 	return (
 		<div className="min-h-screen bg-background flex flex-col">
-			{/* 共通ヘッダー */}
 			<AppHeader currentPage="image" title={t("imageGenerator.pageTitle")} />
 
-			{/* メインコンテンツ */}
 			<div className="flex-1 p-4 md:p-6 lg:p-8 flex flex-col items-center gap-4 md:gap-6">
-				{/* メインカード */}
 				<div className="bg-card rounded-lg lg:rounded-xl p-4 md:p-5 lg:p-6 max-w-[800px] lg:max-w-[1200px] w-full shadow-lg border border-border/50">
-					{/* カードヘッダー */}
 					<div className="mb-4 lg:mb-6">
 						<h2 className="text-foreground text-base lg:text-xl font-bold mb-2 font-display">
 							{t("imageGenerator.title")}
@@ -518,11 +485,8 @@ function ImageGeneratePage() {
 						</p>
 					</div>
 
-					{/* 2カラムレイアウト */}
 					<div className="flex flex-col lg:grid lg:grid-cols-[minmax(300px,1fr)_minmax(400px,1.5fr)] lg:gap-8">
-						{/* 左カラム: 入力フォーム */}
 						<div className="flex flex-col gap-1">
-							{/* stgyコード入力 */}
 							<div className="mb-4">
 								<label
 									htmlFor={stgyCodeId}
@@ -540,7 +504,6 @@ function ImageGeneratePage() {
 								/>
 							</div>
 
-							{/* 出力フォーマット */}
 							<div className="mb-4">
 								<span
 									id={formatGroupId}
@@ -590,7 +553,6 @@ function ImageGeneratePage() {
 								</div>
 							</div>
 
-							{/* 出力サイズ（PNGのみ） */}
 							{format === "png" && (
 								<div className="mb-4">
 									<span
@@ -642,7 +604,6 @@ function ImageGeneratePage() {
 								</div>
 							)}
 
-							{/* ボード名表示チェックボックス */}
 							<div className="mb-4">
 								<label className="flex items-center gap-2.5 text-muted-foreground text-sm cursor-pointer hover:text-foreground transition-colors">
 									<input
@@ -655,7 +616,6 @@ function ImageGeneratePage() {
 								</label>
 							</div>
 
-							{/* エラー表示 */}
 							{error && (
 								<div className="mt-2 p-3 bg-destructive/10 border border-destructive/40 rounded-lg flex items-center gap-2">
 									<span className="text-base">⚠️</span>
@@ -664,11 +624,9 @@ function ImageGeneratePage() {
 							)}
 						</div>
 
-						{/* 右カラム: プレビュー・結果 */}
 						<div className="flex flex-col gap-2 border-t lg:border-t-0 lg:border-l border-border pt-6 mt-4 lg:pt-0 lg:mt-0 lg:pl-8">
 							{generatedUrl ? (
 								<>
-									{/* プレビュー */}
 									<div className="mb-4">
 										<div className="flex items-center justify-between mb-3 border-b border-border">
 											<div className="flex gap-1">
@@ -701,9 +659,7 @@ function ImageGeneratePage() {
 													)}
 												</button>
 											</div>
-											{/* アクションボタン */}
 											<div className="flex items-center gap-2 mb-1">
-												{/* ダウンロードボタン */}
 												<button
 													type="button"
 													className="flex items-center gap-1.5 px-3 py-1.5 text-xs md:text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-lg transition-all"
@@ -712,7 +668,6 @@ function ImageGeneratePage() {
 													<Download className="w-3.5 h-3.5" />
 													{t("imageGenerator.downloadImage")}
 												</button>
-												{/* Editorで編集ボタン */}
 												<button
 													type="button"
 													className="flex items-center gap-1.5 px-3 py-1.5 text-xs md:text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/30 hover:border-accent/50 rounded-lg transition-all"
@@ -757,7 +712,6 @@ function ImageGeneratePage() {
 										</div>
 									</div>
 
-									{/* 生成されたURL */}
 									<div className="mb-4">
 										<div className="flex items-center justify-between mb-2">
 											<label
@@ -821,7 +775,6 @@ function ImageGeneratePage() {
 										)}
 									</div>
 
-									{/* HTMLコード */}
 									<div className="mb-4">
 										<div className="flex items-center justify-between mb-2">
 											<span className="text-muted-foreground text-sm">
@@ -857,7 +810,6 @@ function ImageGeneratePage() {
 										</code>
 									</div>
 
-									{/* Markdownコード */}
 									<div>
 										<div className="flex items-center justify-between mb-2">
 											<span className="text-muted-foreground text-sm">

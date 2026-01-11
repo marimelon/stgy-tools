@@ -1,11 +1,11 @@
 /**
- * タブ順序のブラウザテスト
+ * Tab ordering browser tests
  *
- * Vitest Browser Mode を使用したタブ機能の統合テスト
+ * Integration tests for tab functionality using Vitest Browser Mode
  *
- * テスト対象：
- * - initialBoardIdsによるタブ順序の初期化
- * - タブの表示順序が指定順序と一致すること
+ * Test targets:
+ * - Tab order initialization via initialBoardIds
+ * - Tab display order matches specified order
  */
 
 import "@/lib/i18n";
@@ -17,9 +17,7 @@ import { DEFAULT_GRID_SETTINGS, type StoredBoard } from "@/lib/boards/schema";
 import { TabStoreProvider } from "@/lib/editor/tabs/TabStoreProvider";
 import { DEFAULT_OVERLAY_SETTINGS } from "@/lib/editor/types";
 
-/**
- * 条件が満たされるまで待機するヘルパー関数
- */
+/** Helper function that waits until the condition is satisfied */
 async function waitFor(
 	fn: () => void | Promise<void>,
 	{ timeout = 1000, interval = 50 } = {},
@@ -33,11 +31,11 @@ async function waitFor(
 			await new Promise((resolve) => setTimeout(resolve, interval));
 		}
 	}
-	// 最後にもう一度実行してエラーを投げる
+	// Execute one final time to throw the error
 	await fn();
 }
 
-/** テスト用ボードを作成 */
+/** Create test board */
 function createTestBoard(id: string, name: string): StoredBoard {
 	return {
 		id,
@@ -60,15 +58,15 @@ describe("Tab ordering", () => {
 	});
 
 	describe("initialBoardIds", () => {
-		it("initialBoardIdsの順序でタブが表示される", async () => {
-			// 3つのボードを作成（IDの順序とは異なる順序で表示する）
+		it("tabs are displayed in initialBoardIds order", async () => {
+			// Create 3 boards (to be displayed in different order than ID order)
 			const boards: StoredBoard[] = [
-				createTestBoard("board-a", "ボードA"),
-				createTestBoard("board-b", "ボードB"),
-				createTestBoard("board-c", "ボードC"),
+				createTestBoard("board-a", "Board A"),
+				createTestBoard("board-b", "Board B"),
+				createTestBoard("board-c", "Board C"),
 			];
 
-			// 表示順序: C, A, B（IDのアルファベット順ではない）
+			// Display order: C, A, B (not alphabetical by ID)
 			const initialBoardIds = ["board-c", "board-a", "board-b"];
 
 			const onSelectBoard = vi.fn();
@@ -87,13 +85,13 @@ describe("Tab ordering", () => {
 				</TabStoreProvider>,
 			);
 
-			// タブが表示されるのを待つ
+			// Wait for tabs to appear
 			await waitFor(() => {
 				const tabs = screen.container.querySelectorAll("[data-tab-id]");
 				expect(tabs.length).toBe(3);
 			});
 
-			// タブの順序を確認
+			// Verify tab order
 			const tabElements = screen.container.querySelectorAll("[data-tab-id]");
 			const tabIds = Array.from(tabElements).map((el) =>
 				el.getAttribute("data-tab-id"),
@@ -101,17 +99,17 @@ describe("Tab ordering", () => {
 			expect(tabIds).toEqual(["board-c", "board-a", "board-b"]);
 		});
 
-		it("多数のボードでも順序が維持される", async () => {
-			// 5つのボードを作成
+		it("order is maintained with many boards", async () => {
+			// Create 5 boards
 			const boards: StoredBoard[] = [
-				createTestBoard("id-1", "ボード1"),
-				createTestBoard("id-2", "ボード2"),
-				createTestBoard("id-3", "ボード3"),
-				createTestBoard("id-4", "ボード4"),
-				createTestBoard("id-5", "ボード5"),
+				createTestBoard("id-1", "Board 1"),
+				createTestBoard("id-2", "Board 2"),
+				createTestBoard("id-3", "Board 3"),
+				createTestBoard("id-4", "Board 4"),
+				createTestBoard("id-5", "Board 5"),
 			];
 
-			// 特定の順序で表示: 3, 1, 5, 2, 4
+			// Display in specific order: 3, 1, 5, 2, 4
 			const initialBoardIds = ["id-3", "id-1", "id-5", "id-2", "id-4"];
 
 			const screen = await render(
@@ -139,14 +137,14 @@ describe("Tab ordering", () => {
 			expect(tabIds).toEqual(["id-3", "id-1", "id-5", "id-2", "id-4"]);
 		});
 
-		it("最初のタブがアクティブになる", async () => {
+		it("first tab becomes active", async () => {
 			const boards: StoredBoard[] = [
-				createTestBoard("board-x", "ボードX"),
-				createTestBoard("board-y", "ボードY"),
-				createTestBoard("board-z", "ボードZ"),
+				createTestBoard("board-x", "Board X"),
+				createTestBoard("board-y", "Board Y"),
+				createTestBoard("board-z", "Board Z"),
 			];
 
-			// Y, Z, X の順序で表示
+			// Display in order: Y, Z, X
 			const initialBoardIds = ["board-y", "board-z", "board-x"];
 
 			const screen = await render(
@@ -166,18 +164,18 @@ describe("Tab ordering", () => {
 				expect(tabs.length).toBe(3);
 			});
 
-			// 最初のタブのIDがboard-yであることを確認
+			// Verify first tab ID is board-y
 			const tabElements = screen.container.querySelectorAll("[data-tab-id]");
 			const firstTab = tabElements[0];
 			expect(firstTab?.getAttribute("data-tab-id")).toBe("board-y");
 		});
 	});
 
-	describe("タブクリック", () => {
-		it("タブをクリックするとonSelectBoardが呼ばれる", async () => {
+	describe("Tab click", () => {
+		it("clicking a tab calls onSelectBoard", async () => {
 			const boards: StoredBoard[] = [
-				createTestBoard("board-1", "ボード1"),
-				createTestBoard("board-2", "ボード2"),
+				createTestBoard("board-1", "Board 1"),
+				createTestBoard("board-2", "Board 2"),
 			];
 
 			const initialBoardIds = ["board-1", "board-2"];
@@ -200,32 +198,32 @@ describe("Tab ordering", () => {
 				expect(tabs.length).toBe(2);
 			});
 
-			// 2番目のタブ内のボタンをクリック
+			// Click the button inside the second tab
 			const tabElements = screen.container.querySelectorAll("[data-tab-id]");
 			const secondTab = tabElements[1];
 			expect(secondTab).toBeTruthy();
 
-			// タブ内のボタン要素を取得
+			// Get the button element inside the tab
 			const tabButton = secondTab?.querySelector("button");
 			expect(tabButton).toBeTruthy();
 
 			await userEvent.click(tabButton!);
 
-			// onSelectBoardが呼ばれたことを確認
+			// Verify onSelectBoard was called
 			expect(onSelectBoard).toHaveBeenCalledWith("board-2");
 		});
 	});
 
-	describe("Viewerからのマルチインポートシミュレーション", () => {
-		it("Viewer表示順序と同じ順序でタブが表示される", async () => {
-			// シナリオ: Viewerで3つのボードを選択してEditorに送る
+	describe("Multi-import simulation from Viewer", () => {
+		it("tabs are displayed in the same order as Viewer display order", async () => {
+			// Scenario: Select 3 boards in Viewer and send to Editor
 			const boards: StoredBoard[] = [
 				createTestBoard("board-1", "board1"),
 				createTestBoard("board-2", "board2"),
 				createTestBoard("board-3", "board3"),
 			];
 
-			// Viewerでの表示順序: board1, board2, board3
+			// Viewer display order: board1, board2, board3
 			const viewerDisplayOrder = ["board-1", "board-2", "board-3"];
 
 			const screen = await render(
@@ -250,12 +248,12 @@ describe("Tab ordering", () => {
 				el.getAttribute("data-tab-id"),
 			);
 
-			// Viewerと同じ順序で表示されることを確認
+			// Verify displayed in same order as Viewer
 			expect(tabIds).toEqual(["board-1", "board-2", "board-3"]);
 
-			// タブ名も確認
+			// Also verify tab names
 			const tabNames = Array.from(tabElements).map(
-				(el) => el.textContent?.trim().replace(/×$/, "").trim(), // 閉じるボタンのテキストを除去
+				(el) => el.textContent?.trim().replace(/×$/, "").trim(), // Remove close button text
 			);
 			expect(tabNames[0]).toContain("board1");
 			expect(tabNames[1]).toContain("board2");

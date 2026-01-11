@@ -1,5 +1,5 @@
 /**
- * エディター状態管理の型定義
+ * Editor state management type definitions
  */
 
 import type {
@@ -11,107 +11,95 @@ import type {
 	Position,
 } from "@/lib/stgy";
 
-// ============================================
-// インタラクション関連の型
-// ============================================
-
-/** リサイズハンドルの位置 */
+/** Resize handle position */
 export type ResizeHandle = "nw" | "ne" | "sw" | "se";
 
-/** ハンドルの種類 */
+/** Handle type */
 export type HandleType = ResizeHandle | "rotate";
 
-/** インタラクションモード */
+/** Interaction mode */
 export type InteractionMode = "none" | "drag" | "rotate" | "resize" | "marquee";
 
-/** ドラッグ状態 */
+/** Drag state */
 export interface DragState {
-	/** 現在のモード */
+	/** Current mode */
 	mode: InteractionMode;
-	/** ドラッグ開始時のポインター位置 */
+	/** Pointer position at drag start */
 	startPointer: Position;
-	/** ドラッグ開始時のオブジェクト状態 */
+	/** Object state at drag start */
 	startObjectState: BoardObject;
-	/** 選択中の全オブジェクトの初期位置（グリッドスナップ用） */
+	/** Initial positions of all selected objects (for grid snap) */
 	startPositions: Map<string, Position>;
-	/** 操作中のハンドル */
+	/** Handle being operated */
 	handle?: HandleType;
-	/** 操作対象のオブジェクトID */
+	/** Target object ID */
 	objectId: string;
 }
 
-/** マーキー選択状態 */
+/** Marquee selection state */
 export interface MarqueeState {
-	/** 開始位置 */
+	/** Start position */
 	startPoint: Position;
-	/** 現在位置 */
+	/** Current position */
 	currentPoint: Position;
 }
 
 /**
- * 円形配置モード状態
- * 円形配置実行後の編集モードで使用
+ * Circular arrangement mode state
+ * Used in edit mode after circular arrangement execution
  */
 export interface CircularModeState {
-	/** 円の中心位置 */
+	/** Circle center position */
 	center: Position;
-	/** 円の半径 */
+	/** Circle radius */
 	radius: number;
-	/** 参加オブジェクトのID */
+	/** Participating object IDs */
 	participatingIds: string[];
-	/** 各オブジェクトの角度（id → angle in radians） */
+	/** Each object's angle (id -> angle in radians) */
 	objectAngles: Map<string, number>;
 }
 
-// ============================================
-// コンポーネントProps
-// ============================================
-
-/** EditorBoardコンポーネントのProps */
+/** EditorBoard component Props */
 export interface EditorBoardProps {
-	/** 表示スケール */
+	/** Display scale */
 	scale?: number;
 }
 
-// ============================================
-// グループ・履歴関連の型
-// ============================================
-
 /**
- * オブジェクトグループ
+ * Object group
  */
 export interface ObjectGroup {
-	/** グループID */
+	/** Group ID */
 	id: string;
-	/** グループに含まれるオブジェクトのID */
+	/** Object IDs in the group */
 	objectIds: string[];
-	/** グループ名（オプション） */
+	/** Group name (optional) */
 	name?: string;
-	/** 折りたたみ状態 */
+	/** Collapsed state */
 	collapsed?: boolean;
 }
 
 /**
- * 履歴エントリ
+ * History entry
  */
 export interface HistoryEntry {
-	/** 一意のID */
+	/** Unique ID */
 	id: string;
-	/** ボードデータのスナップショット */
+	/** Board data snapshot */
 	board: BoardData;
-	/** グループ情報のスナップショット */
+	/** Group info snapshot */
 	groups: ObjectGroup[];
-	/** 操作の説明 */
+	/** Operation description */
 	description: string;
 }
 
-/** 編集用オーバーレイグリッドのタイプ */
+/** Editor overlay grid type */
 export type EditorOverlayType = "none" | "concentric" | "square";
 
-/** 利用可能なオーバーレイタイプ */
+/** Available overlay types */
 export const EDITOR_OVERLAY_TYPES = ["none", "concentric", "square"] as const;
 
-/** キャンバス背景色のプリセット */
+/** Canvas background color presets */
 export const CANVAS_COLORS = [
 	{ id: "slate-900", color: "#0f172a", label: "Dark" },
 	{ id: "slate-800", color: "#1e293b", label: "Default" },
@@ -123,7 +111,7 @@ export const CANVAS_COLORS = [
 
 export type CanvasColorId = (typeof CANVAS_COLORS)[number]["id"];
 
-/** オーバーレイ色プリセット */
+/** Overlay color presets */
 export const OVERLAY_COLORS = [
 	{ id: "cyan", color: "100, 200, 255", label: "Cyan" },
 	{ id: "red", color: "255, 100, 100", label: "Red" },
@@ -134,31 +122,31 @@ export const OVERLAY_COLORS = [
 
 export type OverlayColorId = (typeof OVERLAY_COLORS)[number]["id"];
 
-/** 方眼グリッドサイズの選択肢 */
+/** Square grid size options */
 export const OVERLAY_GRID_SIZES = [16, 24, 32, 48, 64] as const;
 export type OverlayGridSize = (typeof OVERLAY_GRID_SIZES)[number];
 
 /**
- * オーバーレイ詳細設定
+ * Overlay detailed settings
  */
 export interface OverlaySettings {
-	/** 同心円の数 (3-10) */
+	/** Number of concentric circles (3-10) */
 	circleCount: number;
-	/** 方眼グリッドサイズ (px) */
+	/** Square grid size (px) */
 	squareGridSize: OverlayGridSize;
-	/** オーバーレイ色ID */
+	/** Overlay color ID */
 	colorId: OverlayColorId;
-	/** 透明度 (20-100) */
+	/** Opacity (20-100) */
 	opacity: number;
-	/** 中心点マーカーを表示 */
+	/** Show center marker */
 	showCenterMarker: boolean;
-	/** ガイドライン（8方向）を表示 */
+	/** Show guide lines (8 directions) */
 	showGuideLines: boolean;
-	/** 外周枠を表示 */
+	/** Show outer border */
 	showBorder: boolean;
 }
 
-/** デフォルトのオーバーレイ設定 */
+/** Default overlay settings */
 export const DEFAULT_OVERLAY_SETTINGS: OverlaySettings = {
 	circleCount: 5,
 	squareGridSize: 32,
@@ -170,39 +158,35 @@ export const DEFAULT_OVERLAY_SETTINGS: OverlaySettings = {
 };
 
 /**
- * グリッド設定
+ * Grid settings
  */
 export interface GridSettings {
-	/** グリッドスナップ有効 */
+	/** Grid snap enabled */
 	enabled: boolean;
-	/** グリッドサイズ (px) */
+	/** Grid size (px) */
 	size: number;
-	/** グリッド線を表示 */
+	/** Show grid lines */
 	showGrid: boolean;
-	/** 編集用オーバーレイグリッドのタイプ */
+	/** Editor overlay grid type */
 	overlayType: EditorOverlayType;
-	/** 背景を表示 */
+	/** Show background */
 	showBackground: boolean;
-	/** キャンバス背景色（背景非表示時） */
+	/** Canvas background color (when background hidden) */
 	canvasColor: CanvasColorId;
-	/** オーバーレイ詳細設定 */
+	/** Overlay detailed settings */
 	overlaySettings: OverlaySettings;
 }
 
-/** 利用可能なグリッドサイズ */
+/** Available grid sizes */
 export const GRID_SIZES = [8, 16, 32] as const;
 export type GridSize = (typeof GRID_SIZES)[number];
 
-/** 履歴の最大保持件数 */
+/** Maximum history entries */
 export const MAX_HISTORY_SIZE = 50;
 
-// ============================================
-// バッチ更新関連の型
-// ============================================
-
 /**
- * バッチ更新ペイロード
- * 複数オブジェクトに適用する更新内容（指定されたプロパティのみ更新）
+ * Batch update payload
+ * Update content to apply to multiple objects (only updates specified properties)
  */
 export interface BatchUpdatePayload {
 	rotation?: number;
@@ -214,7 +198,7 @@ export interface BatchUpdatePayload {
 	param3?: number;
 }
 
-/** 整列タイプ */
+/** Alignment type */
 export type AlignmentType =
 	| "left"
 	| "center"
@@ -227,45 +211,45 @@ export type AlignmentType =
 	| "circular";
 
 /**
- * エラー情報
+ * Error information
  */
 export interface EditorError {
-	/** 翻訳キー */
+	/** Translation key */
 	key: string;
-	/** 翻訳パラメータ */
+	/** Translation parameters */
 	params?: Record<string, string | number>;
 }
 
 /**
- * エディター状態
+ * Editor state
  */
 export interface EditorState {
-	/** 現在のボードデータ */
+	/** Current board data */
 	board: BoardData;
-	/** 選択されているオブジェクトのID (複数選択対応) */
+	/** Selected object IDs (multi-select supported) */
 	selectedIds: string[];
-	/** オブジェクトグループ */
+	/** Object groups */
 	groups: ObjectGroup[];
-	/** グリッド設定 */
+	/** Grid settings */
 	gridSettings: GridSettings;
-	/** 履歴 */
+	/** History */
 	history: HistoryEntry[];
-	/** 履歴の現在位置 */
+	/** Current history position */
 	historyIndex: number;
-	/** 変更があるかどうか */
+	/** Whether there are unsaved changes */
 	isDirty: boolean;
-	/** インライン編集中のテキストオブジェクトのID（null = 編集なし） */
+	/** ID of text object being inline-edited (null = no editing) */
 	editingTextId: string | null;
-	/** 最後のエラー（UIで表示後クリア） */
+	/** Last error (cleared after UI display) */
 	lastError: EditorError | null;
-	/** フォーカス中のグループID（null = フォーカスなし） */
+	/** Focused group ID (null = no focus) */
 	focusedGroupId: string | null;
-	/** 円形配置モード状態（null = モード無効） */
+	/** Circular arrangement mode state (null = mode disabled) */
 	circularMode: CircularModeState | null;
 }
 
 /**
- * エディターアクション
+ * Editor action
  */
 export type EditorAction =
 	| { type: "SET_BOARD"; board: BoardData }
@@ -329,7 +313,7 @@ export type EditorAction =
 	| { type: "MOVE_OBJECT_ON_CIRCLE"; objectId: string; angle: number };
 
 /**
- * ボードメタデータ更新用の部分型
+ * Partial type for board metadata updates
  */
 export interface BoardMetaUpdates {
 	name?: string;

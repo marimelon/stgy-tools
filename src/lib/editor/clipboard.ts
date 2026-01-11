@@ -1,20 +1,20 @@
 /**
- * グローバルクリップボード
- * アプリ内の全エディタータブで共有されるインメモリストア
+ * Global clipboard
+ * In-memory store shared across all editor tabs in the app
  */
 
 import { useSyncExternalStore } from "react";
 import type { BoardObject } from "@/lib/stgy";
 
-/** グローバルクリップボードストア */
+/** Global clipboard store */
 let clipboardStore: BoardObject[] | null = null;
 
-/** サブスクライバーのセット */
+/** Set of subscribers */
 const subscribers = new Set<() => void>();
 
 /**
- * クリップボードの状態変更を購読
- * useSyncExternalStore用
+ * Subscribe to clipboard state changes
+ * For useSyncExternalStore
  */
 export function subscribeToClipboard(callback: () => void): () => void {
 	subscribers.add(callback);
@@ -24,7 +24,7 @@ export function subscribeToClipboard(callback: () => void): () => void {
 }
 
 /**
- * サブスクライバーに通知
+ * Notify subscribers
  */
 function notifySubscribers(): void {
 	for (const callback of subscribers) {
@@ -33,7 +33,7 @@ function notifySubscribers(): void {
 }
 
 /**
- * オブジェクトをクリップボードに保存
+ * Save objects to clipboard
  */
 export function writeToClipboard(objects: BoardObject[]): void {
 	clipboardStore = structuredClone(objects);
@@ -41,8 +41,8 @@ export function writeToClipboard(objects: BoardObject[]): void {
 }
 
 /**
- * クリップボードからオブジェクトを読み取り
- * @returns オブジェクト配列、または空の場合は null
+ * Read objects from clipboard
+ * @returns Object array, or null if empty
  */
 export function readFromClipboard(): BoardObject[] | null {
 	if (!clipboardStore || clipboardStore.length === 0) {
@@ -52,25 +52,25 @@ export function readFromClipboard(): BoardObject[] | null {
 }
 
 /**
- * クリップボードにデータがあるか確認
+ * Check if clipboard has data
  */
 export function hasClipboardData(): boolean {
 	return clipboardStore !== null && clipboardStore.length > 0;
 }
 
 /**
- * クリップボードの状態を取得（useSyncExternalStore用スナップショット）
+ * Get clipboard state (snapshot for useSyncExternalStore)
  */
 export function getClipboardSnapshot(): boolean {
 	return hasClipboardData();
 }
 
 /**
- * グローバルクリップボードの状態を監視するフック
- * タブ間でクリップボードが共有されるため、他タブでコピーされた場合も検知
+ * Hook to monitor global clipboard state
+ * Detects copies from other tabs since clipboard is shared across tabs
  */
 export function useGlobalClipboard(): boolean {
-	// 第3引数はSSR用のスナップショット（サーバー側ではクリップボードは常に空）
+	// Third argument is SSR snapshot (clipboard is always empty on server)
 	return useSyncExternalStore(
 		subscribeToClipboard,
 		getClipboardSnapshot,

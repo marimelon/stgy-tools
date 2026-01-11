@@ -1,33 +1,25 @@
 /**
- * 円形ガイドオーバーレイコンポーネント
+ * Circular guide overlay component
  *
- * 円形配置モード時に円形ガイドを表示
+ * Displays circular guide during circular placement mode
  */
 
 import type { Position } from "@/lib/stgy";
 
-/** ガイドの色 */
 const GUIDE_COLOR = "#8b5cf6";
-/** ガイドのストローク幅 */
 const GUIDE_STROKE_WIDTH = 2;
 
 interface CircularGuideOverlayProps {
-	/** 円の中心 */
 	center: Position;
-	/** 円の半径 */
 	radius: number;
 }
 
-/**
- * 円形ガイドオーバーレイ
- */
 export function CircularGuideOverlay({
 	center,
 	radius,
 }: CircularGuideOverlayProps) {
 	return (
 		<g pointerEvents="none">
-			{/* メインの円 */}
 			<circle
 				cx={center.x}
 				cy={center.y}
@@ -39,7 +31,6 @@ export function CircularGuideOverlay({
 				opacity={0.8}
 			/>
 
-			{/* 中心のクロスヘア */}
 			<line
 				x1={center.x - 8}
 				y1={center.y}

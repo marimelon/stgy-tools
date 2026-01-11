@@ -1,25 +1,25 @@
 /**
- * STGY形式のユーティリティ関数
+ * STGY format utility functions
  */
 
 import { BYTE_ALIGNMENT_2, BYTE_ALIGNMENT_4 } from "./constants";
 
 /**
- * 4バイト境界にパディングした長さを返す
+ * Return length padded to 4-byte boundary
  */
 export function padTo4Bytes(length: number): number {
 	return Math.ceil(length / BYTE_ALIGNMENT_4) * BYTE_ALIGNMENT_4;
 }
 
 /**
- * 2バイト境界にパディングした長さを返す
+ * Return length padded to 2-byte boundary
  */
 export function padTo2Bytes(length: number): number {
 	return Math.ceil(length / BYTE_ALIGNMENT_2) * BYTE_ALIGNMENT_2;
 }
 
 /**
- * 4バイト境界のパディングバイト数を返す
+ * Return number of padding bytes for 4-byte boundary
  */
 export function getPadding4(length: number): number {
 	const remainder = length % BYTE_ALIGNMENT_4;
@@ -27,22 +27,22 @@ export function getPadding4(length: number): number {
 }
 
 /**
- * 2バイト境界のパディングバイト数を返す
+ * Return number of padding bytes for 2-byte boundary
  */
 export function getPadding2(length: number): number {
 	return length % BYTE_ALIGNMENT_2;
 }
 
 /**
- * UTF-8文字列のバイト数を返す
+ * Return byte length of UTF-8 string
  */
 export function getUtf8ByteLength(str: string): number {
 	return new TextEncoder().encode(str).length;
 }
 
 /**
- * UTF-8で指定バイト数以下になるように文字列を切り詰める
- * マルチバイト文字の途中で切れないように、文字単位で処理する
+ * Truncate string to fit within specified UTF-8 byte limit
+ * Processes character by character to avoid breaking multibyte characters
  */
 export function truncateToUtf8Bytes(str: string, maxBytes: number): string {
 	const encoder = new TextEncoder();
@@ -51,7 +51,7 @@ export function truncateToUtf8Bytes(str: string, maxBytes: number): string {
 		return str;
 	}
 
-	// 文字単位で切り詰め（マルチバイト文字の途中で切れないように）
+	// Truncate character by character (to avoid breaking multibyte characters)
 	let result = "";
 	let currentBytes = 0;
 	for (const char of str) {

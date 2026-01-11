@@ -33,7 +33,6 @@ export function ViewerToolbar({
 }: ViewerToolbarProps) {
 	const { t } = useTranslation();
 
-	// 単一ボード時は非表示
 	if (boardCount <= 1) {
 		return null;
 	}
@@ -44,7 +43,6 @@ export function ViewerToolbar({
 				{t("viewer.multiBoard.boardCount", { count: boardCount })}
 			</span>
 			<div className="flex items-center gap-2">
-				{/* 共有リンク生成ボタン */}
 				{shortLinksEnabled && onGenerateShortLink && (
 					<button
 						type="button"
@@ -67,7 +65,6 @@ export function ViewerToolbar({
 						</span>
 					</button>
 				)}
-				{/* エディターで全て開くボタン */}
 				{onEditAllInEditor && (
 					<button
 						type="button"
@@ -81,7 +78,6 @@ export function ViewerToolbar({
 						</span>
 					</button>
 				)}
-				{/* モード切替ボタン */}
 				<div className="flex items-center border border-border rounded-lg overflow-hidden">
 					<button
 						type="button"

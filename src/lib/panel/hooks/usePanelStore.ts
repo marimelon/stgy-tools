@@ -1,5 +1,5 @@
 /**
- * PanelStore フック
+ * PanelStore hooks
  */
 
 import { shallow, useStore } from "@tanstack/react-store";
@@ -8,7 +8,7 @@ import type { PanelState } from "../store/types";
 import type { PanelConfig, PanelId, PanelLayoutConfig } from "../types";
 
 /**
- * セレクタを使用してストアの一部を購読
+ * Subscribe to a portion of the store using a selector
  */
 export function usePanelSelector<T>(selector: (state: PanelState) => T): T {
 	const store = getPanelStore();
@@ -16,7 +16,7 @@ export function usePanelSelector<T>(selector: (state: PanelState) => T): T {
 }
 
 /**
- * 浅い比較でセレクタを使用（配列/オブジェクト向け）
+ * Use selector with shallow comparison (for arrays/objects)
  */
 export function usePanelSelectorShallow<T>(
 	selector: (state: PanelState) => T,
@@ -26,68 +26,64 @@ export function usePanelSelectorShallow<T>(
 }
 
 /**
- * 事前定義セレクタ
+ * Pre-defined selectors
  */
 export const selectors = {
-	/** 全設定 */
+	/** All settings */
 	config: (s: PanelState): PanelLayoutConfig => s,
 
-	/** パネル設定マップ */
+	/** Panel settings map */
 	panels: (s: PanelState): Record<PanelId, PanelConfig> => s.panels,
 
-	/** 特定パネルの設定を取得するセレクタを生成 */
+	/** Generate selector for specific panel settings */
 	panel: (panelId: PanelId) => (s: PanelState) => s.panels[panelId],
 
-	/** 左スロットの表示中パネル */
+	/** Visible panels in left slot */
 	leftPanels: (s: PanelState): [PanelId, PanelConfig][] =>
 		(Object.entries(s.panels) as [PanelId, PanelConfig][])
 			.filter(([_, cfg]) => cfg.slot === "left" && cfg.visible)
 			.sort(([_, a], [__, b]) => a.order - b.order),
 
-	/** 右スロットの表示中パネル */
+	/** Visible panels in right slot */
 	rightPanels: (s: PanelState): [PanelId, PanelConfig][] =>
 		(Object.entries(s.panels) as [PanelId, PanelConfig][])
 			.filter(([_, cfg]) => cfg.slot === "right" && cfg.visible)
 			.sort(([_, a], [__, b]) => a.order - b.order),
 
-	/** 左スロットの非表示パネル */
+	/** Hidden panels in left slot */
 	leftHiddenPanels: (s: PanelState): [PanelId, PanelConfig][] =>
 		(Object.entries(s.panels) as [PanelId, PanelConfig][])
 			.filter(([_, cfg]) => cfg.slot === "left" && !cfg.visible)
 			.sort(([_, a], [__, b]) => a.order - b.order),
 
-	/** 右スロットの非表示パネル */
+	/** Hidden panels in right slot */
 	rightHiddenPanels: (s: PanelState): [PanelId, PanelConfig][] =>
 		(Object.entries(s.panels) as [PanelId, PanelConfig][])
 			.filter(([_, cfg]) => cfg.slot === "right" && !cfg.visible)
 			.sort(([_, a], [__, b]) => a.order - b.order),
 } as const;
 
-// ============================================
-// 便利フック
-// ============================================
-
-/** レイアウト設定全体を取得 */
+/** Get entire layout configuration */
 export function useConfig(): PanelLayoutConfig {
 	return usePanelSelector(selectors.config);
 }
 
-/** 左スロットの表示中パネルを取得 */
+/** Get visible panels in left slot */
 export function useLeftPanels(): [PanelId, PanelConfig][] {
 	return usePanelSelectorShallow(selectors.leftPanels);
 }
 
-/** 右スロットの表示中パネルを取得 */
+/** Get visible panels in right slot */
 export function useRightPanels(): [PanelId, PanelConfig][] {
 	return usePanelSelectorShallow(selectors.rightPanels);
 }
 
-/** 左スロットの非表示パネルを取得 */
+/** Get hidden panels in left slot */
 export function useLeftHiddenPanels(): [PanelId, PanelConfig][] {
 	return usePanelSelectorShallow(selectors.leftHiddenPanels);
 }
 
-/** 右スロットの非表示パネルを取得 */
+/** Get hidden panels in right slot */
 export function useRightHiddenPanels(): [PanelId, PanelConfig][] {
 	return usePanelSelectorShallow(selectors.rightHiddenPanels);
 }

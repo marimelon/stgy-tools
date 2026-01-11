@@ -1,7 +1,7 @@
 /**
- * その他メニューコンポーネント
+ * More menu component
  *
- * 小画面で使用する統合メニュー
+ * Integrated menu for small screens
  */
 
 import {
@@ -29,31 +29,31 @@ import {
 } from "@/lib/editor";
 import { DropdownDivider, DropdownItem, DropdownMenu } from "./DropdownMenu";
 
-/** アイコンサイズ */
+/** Icon size */
 const ICON_SIZE = 16;
 
 interface MoreMenuProps {
-	// レイヤー操作
+	// Layer operations
 	onMoveLayer: (direction: "front" | "forward" | "backward" | "back") => void;
 	hasSingleSelection: boolean;
 
-	// グループ操作
+	// Group operations
 	onGroup: () => void;
 	onUngroup: () => void;
 	canGroup: boolean;
 	hasSelectedGroup: boolean;
 
-	// 整列操作
+	// Alignment operations
 	onAlign: (type: AlignmentType) => void;
 	canAlign: boolean;
 
-	// グリッド設定
+	// Grid settings
 	gridSettings: GridSettings;
 	onGridSettingsChange: (settings: Partial<GridSettings>) => void;
 }
 
 /**
- * その他メニュー（小画面用）
+ * More menu (for small screens)
  */
 export function MoreMenu({
 	onMoveLayer,
@@ -73,7 +73,7 @@ export function MoreMenu({
 			label={<MoreHorizontal size={ICON_SIZE} />}
 			title={t("moreMenu.title")}
 		>
-			{/* レイヤー操作 */}
+			{/* Layer operations */}
 			<DropdownDivider label={t("moreMenu.layer")} />
 			<DropdownItem
 				onClick={() => onMoveLayer("front")}
@@ -104,7 +104,7 @@ export function MoreMenu({
 				{t("toolbar.sendToBack")}
 			</DropdownItem>
 
-			{/* グループ操作 */}
+			{/* Group operations */}
 			<DropdownDivider label={t("moreMenu.group")} />
 			<DropdownItem
 				onClick={onGroup}
@@ -121,7 +121,7 @@ export function MoreMenu({
 				{t("contextMenu.ungroup")}
 			</DropdownItem>
 
-			{/* 整列操作 */}
+			{/* Alignment operations */}
 			<DropdownDivider label={t("moreMenu.alignment")} />
 			<div className="grid grid-cols-3 gap-1 p-2">
 				<button
@@ -200,7 +200,7 @@ export function MoreMenu({
 				</button>
 			</div>
 
-			{/* グリッド設定 */}
+			{/* Grid settings */}
 			<DropdownDivider label={t("moreMenu.grid")} />
 			<div className="p-2">
 				<label className="flex items-center gap-2 cursor-pointer mb-2">

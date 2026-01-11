@@ -1,25 +1,25 @@
 /**
- * ボード関連の共通定数
- * サーバーサイド・クライアントサイド両方で使用
+ * Common constants for board rendering
+ * Used by both server-side and client-side
  */
 
 import { ObjectIds } from "@/lib/stgy/types";
 
-/** キャンバスサイズ */
+/** Canvas size */
 export const CANVAS_WIDTH = 512;
 export const CANVAS_HEIGHT = 384;
 
 /**
- * オブジェクトごとのバウンディングボックスサイズ定義
- * CSVの7,8カラム目（width, height）から取得
- * アイコンを差し替える際はここのサイズを変更してください
+ * Bounding box size definitions per object
+ * Taken from CSV columns 7,8 (width, height)
+ * Update these sizes when replacing icons
  */
 export const OBJECT_BBOX_SIZES: Record<
 	number,
 	{ width: number; height: number }
 > = {
 	// ========================================
-	// フィールド (256x256)
+	// Field (256x256)
 	// ========================================
 	[ObjectIds.CircleWhiteSolid]: { width: 256, height: 256 },
 	[ObjectIds.CircleWhiteTile]: { width: 256, height: 256 },
@@ -33,10 +33,10 @@ export const OBJECT_BBOX_SIZES: Record<
 	[ObjectIds.SquareGray]: { width: 256, height: 256 },
 
 	// ========================================
-	// 攻撃範囲
+	// AoE (Area of Effect)
 	// ========================================
 	[ObjectIds.CircleAoE]: { width: 512, height: 512 },
-	// ConeAoE: 動的計算（角度による）- CSV: 512x512
+	// ConeAoE: dynamically calculated (by angle) - CSV: 512x512
 	[ObjectIds.LineAoE]: { width: 128, height: 128 },
 	[ObjectIds.Line]: { width: 256, height: 6 },
 	[ObjectIds.Gaze]: { width: 128, height: 128 },
@@ -58,7 +58,7 @@ export const OBJECT_BBOX_SIZES: Record<
 	[ObjectIds.Area4P]: { width: 64, height: 64 },
 
 	// ========================================
-	// ジョブアイコン (32x32)
+	// Job Icons (32x32)
 	// ========================================
 	[ObjectIds.Gladiator]: { width: 32, height: 32 },
 	[ObjectIds.Pugilist]: { width: 32, height: 32 },
@@ -93,7 +93,7 @@ export const OBJECT_BBOX_SIZES: Record<
 	[ObjectIds.Pictomancer]: { width: 32, height: 32 },
 
 	// ========================================
-	// ロールアイコン (32x32)
+	// Role Icons (32x32)
 	// ========================================
 	[ObjectIds.Tank]: { width: 32, height: 32 },
 	[ObjectIds.Tank1]: { width: 32, height: 32 },
@@ -114,16 +114,16 @@ export const OBJECT_BBOX_SIZES: Record<
 	[ObjectIds.BarrierHealer]: { width: 32, height: 32 },
 
 	// ========================================
-	// エネミー (64x64)
+	// Enemy (64x64)
 	// ========================================
 	[ObjectIds.EnemySmall]: { width: 64, height: 64 },
 	[ObjectIds.EnemyMedium]: { width: 64, height: 64 },
 	[ObjectIds.EnemyLarge]: { width: 64, height: 64 },
 
 	// ========================================
-	// マーカー (32x32)
+	// Markers (32x32)
 	// ========================================
-	// 攻撃マーカー
+	// Attack Markers
 	[ObjectIds.Attack1]: { width: 32, height: 32 },
 	[ObjectIds.Attack2]: { width: 32, height: 32 },
 	[ObjectIds.Attack3]: { width: 32, height: 32 },
@@ -132,21 +132,21 @@ export const OBJECT_BBOX_SIZES: Record<
 	[ObjectIds.Attack6]: { width: 32, height: 32 },
 	[ObjectIds.Attack7]: { width: 32, height: 32 },
 	[ObjectIds.Attack8]: { width: 32, height: 32 },
-	// 足止めマーカー
+	// Bind Markers
 	[ObjectIds.Bind1]: { width: 32, height: 32 },
 	[ObjectIds.Bind2]: { width: 32, height: 32 },
 	[ObjectIds.Bind3]: { width: 32, height: 32 },
-	// 禁止マーカー
+	// Ignore Markers
 	[ObjectIds.Ignore1]: { width: 32, height: 32 },
 	[ObjectIds.Ignore2]: { width: 32, height: 32 },
-	// 汎用マーカー
+	// Generic Markers
 	[ObjectIds.Square]: { width: 32, height: 32 },
 	[ObjectIds.Circle]: { width: 32, height: 32 },
 	[ObjectIds.Plus]: { width: 32, height: 32 },
 	[ObjectIds.Triangle]: { width: 32, height: 32 },
 
 	// ========================================
-	// ウェイマーク (48x48)
+	// Waymarks (48x48)
 	// ========================================
 	[ObjectIds.WaymarkA]: { width: 48, height: 48 },
 	[ObjectIds.WaymarkB]: { width: 48, height: 48 },
@@ -158,13 +158,13 @@ export const OBJECT_BBOX_SIZES: Record<
 	[ObjectIds.Waymark4]: { width: 48, height: 48 },
 
 	// ========================================
-	// バフ/デバフ (32x32)
+	// Buff/Debuff (32x32)
 	// ========================================
 	[ObjectIds.Buff]: { width: 32, height: 32 },
 	[ObjectIds.Debuff]: { width: 32, height: 32 },
 
 	// ========================================
-	// ロックオンマーカー (48x48)
+	// Lock-on Markers (48x48)
 	// ========================================
 	[ObjectIds.LockOnRed]: { width: 48, height: 48 },
 	[ObjectIds.LockOnBlue]: { width: 48, height: 48 },
@@ -172,7 +172,7 @@ export const OBJECT_BBOX_SIZES: Record<
 	[ObjectIds.LockOnGreen]: { width: 48, height: 48 },
 
 	// ========================================
-	// 図形 (48x48)
+	// Shapes (48x48)
 	// ========================================
 	[ObjectIds.ShapeCircle]: { width: 48, height: 48 },
 	[ObjectIds.ShapeCross]: { width: 48, height: 48 },
@@ -188,11 +188,11 @@ export const OBJECT_BBOX_SIZES: Record<
 	[ObjectIds.CounterClockwise]: { width: 48, height: 48 },
 
 	// ========================================
-	// テキスト / グループ
+	// Text / Group
 	// ========================================
 	[ObjectIds.Text]: { width: 0, height: 0 },
 	[ObjectIds.Group]: { width: 32, height: 32 },
 };
 
-/** デフォルトサイズ */
+/** Default size */
 export const DEFAULT_BBOX_SIZE = { width: 32, height: 32 };

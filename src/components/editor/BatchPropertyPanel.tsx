@@ -1,7 +1,5 @@
 /**
- * バッチプロパティパネルコンポーネント
- *
- * 複数オブジェクト選択時の一括プロパティ編集
+ * Batch property panel for editing multiple selected objects
  */
 
 import { useCallback, useMemo } from "react";
@@ -35,21 +33,12 @@ import {
 	SliderInput,
 } from "./FormInputs";
 
-/**
- * バッチプロパティパネルのProps
- */
 export interface BatchPropertyPanelProps {
-	/** 選択されたオブジェクト配列 */
 	objects: BoardObject[];
-	/** 一括更新時のコールバック */
 	onUpdate: (updates: BatchUpdatePayload) => void;
-	/** 履歴コミット時のコールバック */
 	onCommitHistory: (description: string) => void;
 }
 
-/**
- * Mixed値インジケーター
- */
 function MixedIndicator() {
 	const { t } = useTranslation();
 	return (
@@ -59,9 +48,6 @@ function MixedIndicator() {
 	);
 }
 
-/**
- * バッチプロパティパネル
- */
 export function BatchPropertyPanel({
 	objects,
 	onUpdate,
@@ -70,29 +56,24 @@ export function BatchPropertyPanel({
 	const { t } = useTranslation();
 	const debugMode = useDebugMode();
 
-	// 共通プロパティ値を計算
 	const batchValues = useMemo(
 		() => computeBatchPropertyValues(objects),
 		[objects],
 	);
 
-	// 全オブジェクトが同じobjectIdか判定
 	const sameObjectId = useMemo(() => haveSameObjectId(objects), [objects]);
 	const commonObjectId = sameObjectId ? objects[0].objectId : null;
 
-	// 共通のフリップフラグを取得
 	const flipFlags = useMemo(() => {
 		return getCommonFlipFlags(objects, OBJECT_FLIP_FLAGS, DEFAULT_FLIP_FLAGS);
 	}, [objects]);
 
-	// すべてのオブジェクトが色変更可能かどうか
 	const allColorChangeable = useMemo(() => {
 		return objects.every((obj) =>
 			COLOR_CHANGEABLE_OBJECT_IDS.has(obj.objectId),
 		);
 	}, [objects]);
 
-	// ハンドラー
 	const handleRotationChange = useCallback(
 		(rotation: number) => onUpdate({ rotation }),
 		[onUpdate],
@@ -148,7 +129,6 @@ export function BatchPropertyPanel({
 		[onUpdate, onCommitHistory, t],
 	);
 
-	// カラーピッカー用の表示色を決定
 	const displayColor = useMemo(() => {
 		const r = isMixed(batchValues.color.r) ? 128 : batchValues.color.r;
 		const g = isMixed(batchValues.color.g) ? 128 : batchValues.color.g;
@@ -164,7 +144,6 @@ export function BatchPropertyPanel({
 	return (
 		<div className="h-full overflow-y-auto">
 			<div className="p-4 space-y-1">
-				{/* 選択情報 */}
 				<div className="mb-4">
 					{sameObjectId && commonObjectId && (
 						<span className="text-sm text-muted-foreground">
@@ -173,14 +152,12 @@ export function BatchPropertyPanel({
 					)}
 				</div>
 
-				{/* 変形 */}
-				<PropertySection title={t("batchProperty.transform", "変形")}>
+				<PropertySection title={t("batchProperty.transform", "Transform")}>
 					<div className="space-y-3">
-						{/* 回転 */}
 						<div className="space-y-2">
 							<div className="flex items-center justify-between">
 								<span className="text-xs text-muted-foreground">
-									{t("batchProperty.rotation", "回転")}
+									{t("batchProperty.rotation", "Rotation")}
 								</span>
 								{isMixed(batchValues.rotation) && <MixedIndicator />}
 							</div>
@@ -194,16 +171,15 @@ export function BatchPropertyPanel({
 								onChange={handleRotationChange}
 								onBlur={() =>
 									onCommitHistory(
-										t("batchProperty.rotationChanged", "回転変更"),
+										t("batchProperty.rotationChanged", "Rotation changed"),
 									)
 								}
 							/>
 						</div>
-						{/* サイズ */}
 						<div className="space-y-2">
 							<div className="flex items-center justify-between">
 								<span className="text-xs text-muted-foreground">
-									{t("batchProperty.size", "サイズ")}
+									{t("batchProperty.size", "Size")}
 								</span>
 								{isMixed(batchValues.size) && <MixedIndicator />}
 							</div>
@@ -216,17 +192,15 @@ export function BatchPropertyPanel({
 								unit="%"
 								onChange={handleSizeChange}
 								onBlur={() =>
-									onCommitHistory(t("batchProperty.sizeChanged", "サイズ変更"))
+									onCommitHistory(t("batchProperty.sizeChanged", "Size changed"))
 								}
 							/>
 						</div>
 					</div>
 				</PropertySection>
 
-				{/* 色 */}
-				<PropertySection title={t("batchProperty.color", "色")}>
+				<PropertySection title={t("batchProperty.color", "Color")}>
 					<div className="space-y-3">
-						{/* カラーピッカー（デバッグモード時のみ・すべて色変更可能オブジェクトの場合のみ） */}
 						{debugMode && allColorChangeable && (
 							<div className="flex items-center gap-3">
 								<div className="relative rounded-md overflow-hidden border-2 border-border">
@@ -235,7 +209,7 @@ export function BatchPropertyPanel({
 										value={displayColor}
 										onChange={(e) => handleColorChange(e.target.value)}
 										onBlur={() =>
-											onCommitHistory(t("batchProperty.colorChanged", "色変更"))
+											onCommitHistory(t("batchProperty.colorChanged", "Color changed"))
 										}
 										className="w-10 h-8 cursor-pointer border-0 bg-transparent"
 									/>
@@ -243,7 +217,6 @@ export function BatchPropertyPanel({
 								{isColorMixed && <MixedIndicator />}
 							</div>
 						)}
-						{/* カラーパレット（すべて色変更可能オブジェクトの場合のみ） */}
 						{allColorChangeable && (
 							<ColorPalette
 								currentColor={
@@ -257,15 +230,14 @@ export function BatchPropertyPanel({
 								}
 								onColorSelect={(color) => {
 									onUpdate({ color: { r: color.r, g: color.g, b: color.b } });
-									onCommitHistory(t("batchProperty.colorChanged", "色変更"));
+									onCommitHistory(t("batchProperty.colorChanged", "Color changed"));
 								}}
 							/>
 						)}
-						{/* 透過度 */}
 						<div className="space-y-2">
 							<div className="flex items-center justify-between">
 								<span className="text-xs text-muted-foreground">
-									{t("batchProperty.opacity", "透過度")}
+									{t("batchProperty.opacity", "Opacity")}
 								</span>
 								{isMixed(batchValues.color.opacity) && <MixedIndicator />}
 							</div>
@@ -283,7 +255,7 @@ export function BatchPropertyPanel({
 								onChange={handleOpacityChange}
 								onBlur={() =>
 									onCommitHistory(
-										t("batchProperty.opacityChanged", "透過度変更"),
+										t("batchProperty.opacityChanged", "Opacity changed"),
 									)
 								}
 							/>
@@ -291,13 +263,11 @@ export function BatchPropertyPanel({
 					</div>
 				</PropertySection>
 
-				{/* 状態 */}
-				<PropertySection title={t("batchProperty.state", "状態")}>
+				<PropertySection title={t("batchProperty.state", "State")}>
 					<div className="space-y-2.5">
-						{/* 表示 */}
 						<div className="flex items-center justify-between">
 							<Checkbox
-								label={t("batchProperty.visible", "表示")}
+								label={t("batchProperty.visible", "Visible")}
 								checked={
 									isMixed(batchValues.flags.visible)
 										? true
@@ -307,11 +277,10 @@ export function BatchPropertyPanel({
 							/>
 							{isMixed(batchValues.flags.visible) && <MixedIndicator />}
 						</div>
-						{/* 左右反転 */}
 						{flipFlags.horizontal && (
 							<div className="flex items-center justify-between">
 								<Checkbox
-									label={t("batchProperty.flipHorizontal", "左右反転")}
+									label={t("batchProperty.flipHorizontal", "Flip Horizontal")}
 									checked={
 										isMixed(batchValues.flags.flipHorizontal)
 											? false
@@ -324,11 +293,10 @@ export function BatchPropertyPanel({
 								)}
 							</div>
 						)}
-						{/* 上下反転 */}
 						{flipFlags.vertical && (
 							<div className="flex items-center justify-between">
 								<Checkbox
-									label={t("batchProperty.flipVertical", "上下反転")}
+									label={t("batchProperty.flipVertical", "Flip Vertical")}
 									checked={
 										isMixed(batchValues.flags.flipVertical)
 											? false
@@ -339,10 +307,9 @@ export function BatchPropertyPanel({
 								{isMixed(batchValues.flags.flipVertical) && <MixedIndicator />}
 							</div>
 						)}
-						{/* ロック */}
 						<div className="flex items-center justify-between">
 							<Checkbox
-								label={t("batchProperty.locked", "ロック")}
+								label={t("batchProperty.locked", "Locked")}
 								checked={
 									isMixed(batchValues.flags.locked)
 										? false
@@ -355,7 +322,6 @@ export function BatchPropertyPanel({
 					</div>
 				</PropertySection>
 
-				{/* オブジェクト固有パラメータ（同じobjectIdの場合のみ） */}
 				{sameObjectId && commonObjectId && (
 					<ObjectSpecificParams
 						objectId={commonObjectId}
@@ -369,9 +335,6 @@ export function BatchPropertyPanel({
 	);
 }
 
-/**
- * オブジェクト固有パラメータセクション
- */
 function ObjectSpecificParams({
 	objectId,
 	batchValues,
@@ -387,7 +350,6 @@ function ObjectSpecificParams({
 
 	const editParams = OBJECT_EDIT_PARAMS[objectId] ?? DEFAULT_EDIT_PARAMS;
 
-	// 標準パラメータ（サイズ、回転、透過度）を除外
 	const additionalParams = editParams.filter(
 		(paramId) =>
 			paramId !== EditParamIds.None &&
@@ -401,14 +363,13 @@ function ObjectSpecificParams({
 
 	return (
 		<PropertySection
-			title={t("batchProperty.specificParams", "固有パラメータ")}
+			title={t("batchProperty.specificParams", "Specific Parameters")}
 		>
 			<div className="space-y-3">
 				{additionalParams.map((paramId) => {
 					const paramDef = EDIT_PARAMS[paramId];
 					if (!paramDef) return null;
 
-					// パラメータIDに応じてparam1/param2/param3を決定
 					let paramKey: "param1" | "param2" | "param3";
 					let value = batchValues.param1;
 

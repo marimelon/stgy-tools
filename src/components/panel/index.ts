@@ -1,5 +1,5 @@
 /**
- * パネルコンポーネントのエクスポート
+ * Panel component exports
  */
 
 export { PanelHeader } from "./PanelHeader";

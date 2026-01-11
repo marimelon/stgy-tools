@@ -1,5 +1,5 @@
 /**
- * レイヤーコンテキストメニュー管理フック
+ * Layer context menu management hook
  */
 
 import { useCallback, useState } from "react";
@@ -25,14 +25,10 @@ export interface UseLayerContextMenuReturn {
 	closeMenu: () => void;
 }
 
-/**
- * レイヤーコンテキストメニューを管理するフック
- */
 export function useLayerContextMenu(): UseLayerContextMenuReturn {
 	const [menuState, setMenuState] =
 		useState<LayerContextMenuState>(initialState);
 
-	// オブジェクトのコンテキストメニューを開く
 	const openObjectMenu = useCallback(
 		(
 			e: React.MouseEvent,
@@ -52,7 +48,6 @@ export function useLayerContextMenu(): UseLayerContextMenuReturn {
 		[],
 	);
 
-	// グループのコンテキストメニューを開く
 	const openGroupMenu = useCallback(
 		(e: React.MouseEvent, group: ObjectGroup) => {
 			e.preventDefault();
@@ -67,7 +62,6 @@ export function useLayerContextMenu(): UseLayerContextMenuReturn {
 		[],
 	);
 
-	// メニューを閉じる
 	const closeMenu = useCallback(() => {
 		setMenuState(initialState);
 	}, []);

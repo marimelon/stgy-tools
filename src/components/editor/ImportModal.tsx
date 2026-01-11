@@ -1,6 +1,6 @@
 /**
- * インポートモーダルコンポーネント
- * @ebay/nice-modal-react + ModalBase ベース
+ * Import modal component
+ * Based on @ebay/nice-modal-react + ModalBase
  */
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
@@ -19,9 +19,6 @@ import {
 	parseBoardData,
 } from "@/lib/stgy";
 
-/**
- * インポート結果
- */
 export interface ImportResult {
 	board: BoardData;
 	key: number;
@@ -29,10 +26,10 @@ export interface ImportResult {
 }
 
 /**
- * インポートモーダル
+ * Import modal
  *
- * 成功時は `modal.resolve({ board, key })` で結果を返す
- * キャンセル時は `modal.resolve(undefined)` で閉じる
+ * On success: resolves with { board, key }
+ * On cancel: resolves with undefined
  */
 export const ImportModal = NiceModal.create(() => {
 	const { t } = useTranslation();

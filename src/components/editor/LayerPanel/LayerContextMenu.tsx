@@ -1,5 +1,5 @@
 /**
- * レイヤーパネル用コンテキストメニューコンポーネント
+ * Layer panel context menu component
  */
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -10,24 +10,15 @@ import type { BoardObject } from "@/lib/stgy";
 import type { LayerContextMenuState } from "./types";
 
 interface LayerContextMenuProps {
-	/** メニュー状態 */
 	menuState: LayerContextMenuState;
-	/** メニューを閉じるコールバック */
 	onClose: () => void;
-	/** オブジェクト一覧 */
 	objects: BoardObject[];
-	/** 選択中のID */
 	selectedIds: string[];
-	/** クリップボードにデータがあるか */
 	hasClipboard: boolean;
-	/** グループ化可能か */
 	canGroup: boolean;
-	/** グループ状態ヘルパー */
 	isGroupAllVisible: (group: ObjectGroup) => boolean;
 	isGroupAllLocked: (group: ObjectGroup) => boolean;
-	/** フォーカス中のグループID */
 	focusedGroupId: string | null;
-	/** アクション */
 	actions: {
 		copy: () => void;
 		paste: () => void;
@@ -65,9 +56,6 @@ function isDivider(item: MenuItemOrDivider): item is MenuDivider {
 	return "type" in item && item.type === "divider";
 }
 
-/**
- * レイヤーコンテキストメニュー
- */
 export function LayerContextMenu({
 	menuState,
 	onClose,
@@ -89,7 +77,6 @@ export function LayerContextMenu({
 	const hasSelection = selectedIds.length > 0;
 	const singleSelection = selectedIds.length === 1;
 
-	// メニュー位置を計算
 	useLayoutEffect(() => {
 		if (menuState.isOpen && menuRef.current) {
 			const menuRect = menuRef.current.getBoundingClientRect();
@@ -99,22 +86,18 @@ export function LayerContextMenu({
 			let x = menuState.x;
 			let y = menuState.y;
 
-			// 右端を超える場合は左に調整
 			if (x + menuRect.width > viewportWidth - 8) {
 				x = viewportWidth - menuRect.width - 8;
 			}
 
-			// 下端を超える場合は上に調整
 			if (y + menuRect.height > viewportHeight - 8) {
 				y = viewportHeight - menuRect.height - 8;
 			}
 
-			// 左端を超えないように
 			if (x < 8) {
 				x = 8;
 			}
 
-			// 上端を超えないように
 			if (y < 8) {
 				y = 8;
 			}
@@ -124,14 +107,12 @@ export function LayerContextMenu({
 		}
 	}, [menuState.isOpen, menuState.x, menuState.y]);
 
-	// 閉じた時にリセット
 	useEffect(() => {
 		if (!menuState.isOpen) {
 			setIsPositioned(false);
 		}
 	}, [menuState.isOpen]);
 
-	// クリック外で閉じる
 	useEffect(() => {
 		if (!menuState.isOpen) return;
 
@@ -141,7 +122,6 @@ export function LayerContextMenu({
 			}
 		};
 
-		// 次のフレームでリスナーを追加
 		const rafId = requestAnimationFrame(() => {
 			document.addEventListener("pointerdown", handleClickOutside, true);
 		});
@@ -152,7 +132,6 @@ export function LayerContextMenu({
 		};
 	}, [menuState.isOpen, onClose]);
 
-	// Escapeキーで閉じる
 	useEffect(() => {
 		if (!menuState.isOpen) return;
 
@@ -168,17 +147,14 @@ export function LayerContextMenu({
 		};
 	}, [menuState.isOpen, onClose]);
 
-	// Mac判定
 	const isMac =
 		typeof navigator !== "undefined" &&
 		navigator.platform.toUpperCase().indexOf("MAC") >= 0;
 	const modKey = isMac ? "⌘" : "Ctrl+";
 
-	// メニュー項目を構築
 	const menuItems = useMemo<MenuItemOrDivider[]>(() => {
 		if (!target) return [];
 
-		// オブジェクト用メニュー
 		if (target.type === "object") {
 			const obj = objects.find((o) => o.id === target.objectId);
 			if (!obj) return [];
@@ -232,7 +208,6 @@ export function LayerContextMenu({
 				},
 			];
 
-			// グループ内オブジェクトの場合、グループから除外を追加
 			if (target.isInGroup) {
 				items.push({
 					label: t("layerContextMenu.removeFromGroup"),
@@ -301,7 +276,6 @@ export function LayerContextMenu({
 			return items;
 		}
 
-		// グループ用メニュー
 		if (target.type === "group") {
 			const { group } = target;
 			const allVisible = isGroupAllVisible(group);
@@ -325,7 +299,6 @@ export function LayerContextMenu({
 					},
 				},
 				{ type: "divider" },
-				// フォーカス/フォーカス解除
 				{
 					label: isFocused
 						? t("layerContextMenu.exitFocus")
@@ -342,7 +315,6 @@ export function LayerContextMenu({
 				{ type: "divider" },
 			];
 
-			// 表示/非表示トグル（全て表示中なら「非表示」、それ以外なら「表示」）
 			items.push({
 				label: allVisible
 					? t("layerContextMenu.hideAll")
@@ -353,7 +325,6 @@ export function LayerContextMenu({
 				},
 			});
 
-			// ロック/解除トグル（全てロック中なら「解除」、それ以外なら「ロック」）
 			items.push({
 				label: allLocked
 					? t("layerContextMenu.unlockAll")

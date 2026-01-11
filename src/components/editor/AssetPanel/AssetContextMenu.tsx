@@ -1,7 +1,7 @@
 /**
- * アセットコンテキストメニューコンポーネント
+ * Asset context menu component
  *
- * アセットの右クリックメニュー
+ * Right-click menu for assets
  */
 
 import { Copy, MousePointer, Pencil, Share, Trash2 } from "lucide-react";
@@ -16,26 +16,26 @@ interface ContextMenuPosition {
 }
 
 interface AssetContextMenuProps {
-	/** 対象のアセット */
+	/** Target asset */
 	asset: AssetWithRuntimeIds;
-	/** メニューの位置 */
+	/** Menu position */
 	position: ContextMenuPosition;
-	/** 閉じるときのコールバック */
+	/** Callback when closing */
 	onClose: () => void;
-	/** 配置アクション */
+	/** Apply action */
 	onApply: (asset: AssetWithRuntimeIds) => void;
-	/** 名前変更アクション */
+	/** Rename action */
 	onRename: (asset: AssetWithRuntimeIds, newName: string) => void;
-	/** 複製アクション */
+	/** Duplicate action */
 	onDuplicate: (asset: AssetWithRuntimeIds) => void;
-	/** エクスポートアクション */
+	/** Export action */
 	onExport: (asset: AssetWithRuntimeIds) => void;
-	/** 削除アクション */
+	/** Delete action */
 	onDelete: (asset: AssetWithRuntimeIds) => void;
 }
 
 /**
- * アセットコンテキストメニュー
+ * Asset context menu
  */
 export function AssetContextMenu({
 	asset,
@@ -53,7 +53,7 @@ export function AssetContextMenu({
 	const [newName, setNewName] = useState(asset.name);
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	// クリック外で閉じる
+	// Close on outside click
 	useEffect(() => {
 		const handleClickOutside = (e: MouseEvent) => {
 			if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -65,7 +65,7 @@ export function AssetContextMenu({
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, [onClose]);
 
-	// ESCで閉じる
+	// Close on ESC key
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
@@ -82,7 +82,7 @@ export function AssetContextMenu({
 		return () => document.removeEventListener("keydown", handleKeyDown);
 	}, [onClose, isRenaming, asset.name]);
 
-	// リネームモード時にinputにフォーカス
+	// Focus input when in rename mode
 	useEffect(() => {
 		if (isRenaming && inputRef.current) {
 			inputRef.current.focus();
@@ -128,7 +128,7 @@ export function AssetContextMenu({
 		onClose();
 	};
 
-	// メニュー位置の調整（画面外にはみ出さないように）
+	// Adjust menu position (to prevent overflow outside the screen)
 	const adjustedPosition = { ...position };
 	if (menuRef.current) {
 		const rect = menuRef.current.getBoundingClientRect();

@@ -2,17 +2,17 @@ import type { BoardData, BoardObject } from "@/lib/stgy";
 import { BackgroundRenderer } from "./BackgroundRenderer";
 import { ObjectRenderer } from "./ObjectRenderer";
 
-/** ゲーム内キャンバスサイズ */
+/** In-game canvas size */
 export const CANVAS_WIDTH = 512;
 export const CANVAS_HEIGHT = 384;
 
 interface BoardViewerProps {
 	boardData: BoardData;
-	/** 固定スケール（responsiveがfalseの場合に使用） */
+	/** Fixed scale (used when responsive is false) */
 	scale?: number;
-	/** trueの場合、コンテナ幅に合わせて自動スケール */
+	/** If true, auto-scale to fit container width */
 	responsive?: boolean;
-	/** レスポンシブモード時の最大幅（デフォルト: CANVAS_WIDTH） */
+	/** Max width in responsive mode (default: CANVAS_WIDTH) */
 	maxWidth?: number;
 	selectedObjectId?: string | null;
 	onSelectObject?: (
@@ -31,8 +31,7 @@ export function BoardViewer({
 }: BoardViewerProps) {
 	const { backgroundId, objects } = boardData;
 
-	// 表示するオブジェクトのみフィルタ
-	// SVGは後から描画したものが上に表示されるため、逆順で描画
+	// Filter visible objects and reverse for SVG z-order (later elements render on top)
 	const visibleObjects = objects.filter((obj) => obj.flags.visible).reverse();
 
 	const handleSelect = (objectId: string) => {
@@ -44,8 +43,6 @@ export function BoardViewer({
 		onSelectObject?.(null, null);
 	};
 
-	// レスポンシブモード: コンテナ幅に合わせて自動スケール
-	// 固定モード: scale値で固定サイズ
 	const effectiveMaxWidth = maxWidth ?? CANVAS_WIDTH;
 	const svgProps = responsive
 		? {

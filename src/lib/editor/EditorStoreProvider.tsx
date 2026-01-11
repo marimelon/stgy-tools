@@ -1,7 +1,7 @@
 /**
  * EditorStoreProvider
  *
- * TanStack Store ベースのエディター状態管理Provider
+ * TanStack Store based editor state management Provider
  */
 
 import { createContext, type ReactNode, useContext, useMemo } from "react";
@@ -16,8 +16,8 @@ import type { GridSettings, ObjectGroup } from "./types";
 const EditorStoreContext = createContext<EditorStore | null>(null);
 
 /**
- * EditorStoreを取得するフック
- * @throws Provider外で使用した場合
+ * Hook to get EditorStore
+ * @throws When used outside Provider
  */
 export function useEditorStoreContext(): EditorStore {
 	const store = useContext(EditorStoreContext);
@@ -30,17 +30,17 @@ export function useEditorStoreContext(): EditorStore {
 }
 
 /**
- * EditorStoreProviderのProps
+ * EditorStoreProvider Props
  */
 interface EditorStoreProviderProps {
 	children: ReactNode;
-	/** 初期ボードデータ */
+	/** Initial board data */
 	initialBoard: BoardData;
-	/** 初期グループ情報（セッション復元用） */
+	/** Initial group info (for session restoration) */
 	initialGroups?: ObjectGroup[];
-	/** 初期グリッド設定（セッション復元用） */
+	/** Initial grid settings (for session restoration) */
 	initialGridSettings?: GridSettings;
-	/** ボードID（グローバル履歴ストアとの同期に使用、null = memory-only mode） */
+	/** Board ID (for sync with global history store, null = memory-only mode) */
 	boardId: string | null;
 }
 
@@ -56,27 +56,21 @@ export function EditorStoreProvider({
 	initialGridSettings,
 	boardId,
 }: EditorStoreProviderProps) {
-	// Storeを初期化（初回マウント時のみ）
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Store should only be created once on mount
 	const store = useMemo(() => {
-		// グローバル履歴ストアから履歴を復元
+		// Restore history from global history store
 		const storedHistory = getHistory(boardId);
 
 		const initialState = createInitialStateWithOptions({
 			board: initialBoard,
 			groups: initialGroups,
 			gridSettings: initialGridSettings,
-			// 復元された履歴があれば使用
+			// Use restored history if available
 			history: storedHistory?.history,
 			historyIndex: storedHistory?.historyIndex,
 		});
 		return createEditorStore(initialState, boardId);
 	}, []);
-
-	// クリーンアップはStoreのリセットを行わない
-	// シングルトンパターンなので、再マウント時にcreateEditorStoreで上書きされる
-	// アンマウント時にリセットすると、パネルレイアウト変更時などに
-	// コンポーネントがストアにアクセスしようとしてエラーになる可能性がある
 
 	return (
 		<EditorStoreContext.Provider value={store}>

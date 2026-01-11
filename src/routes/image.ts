@@ -1,12 +1,12 @@
 /**
- * stgy コードから PNG 画像を生成して返す API エンドポイント
+ * API endpoint to generate PNG images from stgy code
  *
  * GET /image?stgy=[stgy:a...]
- * GET /image?stgy=[stgy:a...]&format=svg  (SVGで返す場合)
- * GET /image?stgy=[stgy:a...]&width=2048  (幅を指定、デフォルト512、最大2048)
- * GET /image?stgy=[stgy:a...]&scale=4     (スケール指定、1-4倍)
- * GET /image?stgy=[stgy:a...]&title=1     (ボード名を表示)
- * GET /image?s=abc123                      (短縮IDからstgyを解決して生成)
+ * GET /image?stgy=[stgy:a...]&format=svg  (return as SVG)
+ * GET /image?stgy=[stgy:a...]&width=2048  (specify width, default 512, max 2048)
+ * GET /image?stgy=[stgy:a...]&scale=4     (specify scale, 1-4x)
+ * GET /image?stgy=[stgy:a...]&title=1     (show board name)
+ * GET /image?s=abc123                      (resolve short ID to stgy)
  */
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -16,39 +16,31 @@ import { decodeStgy } from "@/lib/stgy/decoder";
 import { assignBoardObjectIds } from "@/lib/stgy/id";
 import { parseBoardData } from "@/lib/stgy/parser";
 
-/** デフォルトの出力幅 */
 const DEFAULT_WIDTH = 512;
-/** 最小出力幅 */
 const MIN_WIDTH = 128;
-/** 最大出力幅（HR素材画像は2倍解像度） */
+/** Max width (HR asset images are 2x resolution) */
 const MAX_WIDTH = 2048;
-/** 最大スケール（HR素材画像は2倍解像度） */
+/** Max scale (HR asset images are 2x resolution) */
 const MAX_SCALE = 4;
 
-/** デフォルトのファイル名 */
 const DEFAULT_FILENAME = "strategy-board";
 
 /**
- * ファイル名として安全な文字列に変換
- * 制御文字やファイルシステムで問題になる文字を除去
+ * Convert to a filename-safe string by removing control characters
+ * and filesystem-problematic characters.
  *
- * Note: Content-Dispositionヘッダー用のため、実際のファイル書き込みはなく
- * ブラウザが最終的にファイル名を検証する。最低限のサニタイズで十分。
+ * Note: For Content-Disposition header only; no actual file writes.
+ * The browser performs final validation. Minimal sanitization suffices.
  */
 function sanitizeFilename(name: string): string {
-	// 空白のみの場合はデフォルト名を使用
 	const trimmed = name.trim();
 	if (!trimmed) return DEFAULT_FILENAME;
 
-	// サニタイズ処理
 	const sanitized = trimmed
-		// biome-ignore lint/suspicious/noControlCharactersInRegex: ファイル名から制御文字を除去するため意図的に使用
+		// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally removing control characters from filename
 		.replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g, "")
-		// Unicode制御文字を除去（RTLマーカーなど）
 		.replace(/[\u200B-\u200D\u2028-\u202E\uFEFF]/g, "")
-		// パストラバーサル対策
 		.replace(/\.{2,}/g, ".")
-		// 連続する空白を1つに
 		.replace(/\s+/g, " ")
 		.trim();
 
@@ -56,15 +48,13 @@ function sanitizeFilename(name: string): string {
 }
 
 /**
- * Content-Dispositionヘッダー値を生成
- * RFC 5987に従いUTF-8エンコードしたファイル名を含める
+ * Generate Content-Disposition header value.
+ * Includes UTF-8 encoded filename per RFC 5987.
  */
 function createContentDisposition(filename: string, extension: string): string {
 	const safeFilename = sanitizeFilename(filename);
 	const fullFilename = `${safeFilename}.${extension}`;
 
-	// ASCII文字のみの場合はシンプルな形式
-	// 非ASCII文字が含まれる場合はUTF-8エンコード形式を追加
 	const hasNonAscii = /[^\x20-\x7e]/.test(fullFilename);
 	const asciiFilename = hasNonAscii
 		? fullFilename.replace(/[^\x20-\x7e]/g, "_")
@@ -89,9 +79,8 @@ export const Route = createFileRoute("/image")({
 				const scaleParam = url.searchParams.get("scale");
 				const titleParam = url.searchParams.get("title");
 
-				// 短縮IDが指定されている場合はstgyコードに解決
+				// Resolve short ID to stgy code if specified
 				if (!code && shortId) {
-					// 機能が無効な場合は503を返す
 					if (!isShortLinksEnabled()) {
 						return new Response(
 							JSON.stringify({
@@ -119,14 +108,12 @@ export const Route = createFileRoute("/image")({
 				}
 
 				if (!code) {
-					// stgyパラメータがない場合は生成ページにリダイレクト
 					return new Response(null, {
 						status: 302,
 						headers: { Location: "/image/generate" },
 					});
 				}
 
-				// 出力幅を計算
 				let outputWidth = DEFAULT_WIDTH;
 				if (scaleParam) {
 					const scale = Math.min(
@@ -144,19 +131,14 @@ export const Route = createFileRoute("/image")({
 					);
 				}
 
-				// ボード名表示オプション（"1", "true", "yes" などで有効）
 				const showTitle =
 					titleParam === "1" || titleParam === "true" || titleParam === "yes";
 
 				try {
-					// 1. stgy コードをデコード
 					const binary = decodeStgy(code);
-
-					// 2. バイナリをパース
 					const parsed = parseBoardData(binary);
 					const boardData = assignBoardObjectIds(parsed);
 
-					// 3. 画像をレンダリング（環境に応じて自動的にローカル/外部を選択）
 					const result = await renderImage({
 						boardData,
 						format: format === "svg" ? "svg" : "png",
@@ -165,13 +147,11 @@ export const Route = createFileRoute("/image")({
 						stgyCode: code,
 					});
 
-					// 4. Content-Dispositionヘッダーを生成
 					const contentDisposition = createContentDisposition(
 						boardData.name,
 						format === "svg" ? "svg" : "png",
 					);
 
-					// 5. レスポンスを返す
 					return new Response(result.data as BodyInit, {
 						headers: {
 							"Content-Type": result.contentType,

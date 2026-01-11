@@ -1,8 +1,8 @@
 /**
- * オブジェクトパレットコンポーネント
+ * Object palette component
  *
- * カテゴリ別にオブジェクトを表示し、クリックでボードに追加
- * カスタムテーマ対応のリッチなデザイン
+ * Display objects by category, click to add to board
+ * Rich design with custom theme support
  */
 
 import { Bug, ChevronRight } from "lucide-react";
@@ -30,7 +30,7 @@ export function ObjectPalette() {
 			<div className="p-2">
 				{Object.entries(OBJECT_CATEGORIES).map(([key, ids]) => (
 					<div key={key} className="mb-1">
-						{/* カテゴリヘッダー */}
+						{/* Category header */}
 						<button
 							type="button"
 							onClick={() => toggleCategory(key)}
@@ -43,7 +43,7 @@ export function ObjectPalette() {
 							/>
 						</button>
 
-						{/* カテゴリ内オブジェクト */}
+						{/* Objects in category */}
 						{expandedCategories.has(key) && (
 							<div className="palette-grid mt-1.5 px-1 animate-slideIn">
 								{ids.map((objectId) => (
@@ -58,7 +58,7 @@ export function ObjectPalette() {
 					</div>
 				))}
 
-				{/* デバッグモード時のみ非表示オブジェクトを表示 */}
+				{/* Show hidden objects only in debug mode */}
 				{debugMode && (
 					<div className="mb-1">
 						<button

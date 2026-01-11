@@ -1,7 +1,7 @@
 /**
- * 履歴パネルコンポーネント
+ * History panel component
  *
- * 操作履歴を一覧表示し、任意の時点に移動可能
+ * Displays operation history as a list and allows navigation to any point
  */
 
 import { Trash2 } from "lucide-react";
@@ -11,7 +11,7 @@ import { useEditorActions, useHistory } from "@/lib/editor";
 import { HistoryItem } from "./HistoryItem";
 
 /**
- * 履歴パネル
+ * History panel
  */
 export function HistoryPanel() {
 	const { t } = useTranslation();
@@ -19,7 +19,7 @@ export function HistoryPanel() {
 	const { jumpToHistory } = useEditorActions();
 	const listRef = useRef<HTMLDivElement>(null);
 
-	// キーボードナビゲーション（新しい履歴が上なので、↑で新しい方へ、↓で古い方へ）
+	// Keyboard navigation (newer history is at top, so arrow up goes to newer, arrow down goes to older)
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
 			if (e.key === "ArrowUp" && historyIndex < history.length - 1) {
@@ -40,7 +40,7 @@ export function HistoryPanel() {
 			className="flex flex-col h-full"
 			style={{ background: "var(--color-bg-base)" }}
 		>
-			{/* 履歴リスト */}
+			{/* History list */}
 			<div
 				ref={listRef}
 				className="flex-1 overflow-y-auto"
@@ -78,7 +78,7 @@ export function HistoryPanel() {
 }
 
 /**
- * 履歴パネルのアクションボタン（ヘッダー用）
+ * Action button for history panel header
  */
 export function HistoryPanelActions() {
 	const { t } = useTranslation();

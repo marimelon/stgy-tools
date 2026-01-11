@@ -1,5 +1,5 @@
 /**
- * パネルレイアウトアクション
+ * Panel layout actions
  */
 
 import type { PanelConfig, PanelId, PanelSlot } from "../../types";
@@ -7,15 +7,15 @@ import { DEFAULT_PANEL_LAYOUT } from "../../types";
 import type { PanelStore } from "../types";
 
 /**
- * レイアウトアクションを作成
+ * Create layout actions
  */
 export function createLayoutActions(store: PanelStore) {
 	/**
-	 * パネルの配置スロットを変更
+	 * Change panel slot
 	 */
 	const updatePanelSlot = (panelId: PanelId, slot: PanelSlot) => {
 		store.setState((state) => {
-			// 同じスロットにある既存パネルの最大orderを取得
+			// Get max order of existing panels in the same slot
 			const existingPanelsInSlot = Object.entries(state.panels).filter(
 				([id, cfg]) => id !== panelId && cfg.slot === slot,
 			);
@@ -39,7 +39,7 @@ export function createLayoutActions(store: PanelStore) {
 	};
 
 	/**
-	 * パネルの表示/非表示を切り替え
+	 * Toggle panel visibility
 	 */
 	const togglePanelVisibility = (panelId: PanelId) => {
 		store.setState((state) => ({
@@ -55,7 +55,7 @@ export function createLayoutActions(store: PanelStore) {
 	};
 
 	/**
-	 * パネルの折りたたみ状態を切り替え
+	 * Toggle panel collapsed state
 	 */
 	const togglePanelCollapsed = (panelId: PanelId) => {
 		store.setState((state) => ({
@@ -71,30 +71,30 @@ export function createLayoutActions(store: PanelStore) {
 	};
 
 	/**
-	 * パネルの順序を変更（同じスロット内で上下移動）
+	 * Reorder panel (move up/down within same slot)
 	 */
 	const reorderPanel = (panelId: PanelId, direction: "up" | "down") => {
 		store.setState((state) => {
 			const panel = state.panels[panelId];
 
-			// 同じスロット内の表示中パネルを取得してソート
+			// Get and sort visible panels in the same slot
 			const sameslotPanels = (
 				Object.entries(state.panels) as [PanelId, PanelConfig][]
 			)
 				.filter(([_, cfg]) => cfg.slot === panel.slot && cfg.visible)
 				.sort(([_, a], [__, b]) => a.order - b.order);
 
-			// 現在のインデックスを取得
+			// Get current index
 			const currentIndex = sameslotPanels.findIndex(
 				([id, _]) => id === panelId,
 			);
 			if (currentIndex === -1) return state;
 
-			// 移動先インデックスを計算
+			// Calculate target index
 			const targetIndex =
 				direction === "up" ? currentIndex - 1 : currentIndex + 1;
 
-			// 境界チェック
+			// Boundary check
 			if (targetIndex < 0 || targetIndex >= sameslotPanels.length) return state;
 
 			const [currentId] = sameslotPanels[currentIndex];
@@ -118,7 +118,7 @@ export function createLayoutActions(store: PanelStore) {
 	};
 
 	/**
-	 * デフォルトにリセット
+	 * Reset to default
 	 */
 	const resetToDefault = () => {
 		store.setState(() => DEFAULT_PANEL_LAYOUT);

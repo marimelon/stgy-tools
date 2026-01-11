@@ -1,43 +1,29 @@
 /**
- * インタラクティブな選択ハンドル
+ * Interactive selection handles
  *
- * リサイズと回転のためのドラッグ可能なハンドルを提供
+ * Provides draggable handles for resize and rotation
  */
 
 import type React from "react";
 import type { HandleType, ResizeHandle } from "@/lib/editor";
 
 interface SelectionHandlesProps {
-	/** オブジェクト位置X */
 	x: number;
-	/** オブジェクト位置Y */
 	y: number;
-	/** バウンディングボックス幅 */
 	width: number;
-	/** バウンディングボックス高さ */
 	height: number;
-	/** オブジェクトの回転角度 */
 	rotation: number;
-	/** オフセットX (バウンディングボックス中心からのオフセット) */
+	/** Offset from bounding box center */
 	offsetX?: number;
-	/** オフセットY */
 	offsetY?: number;
-	/** リサイズ開始時のコールバック */
 	onResizeStart?: (handle: ResizeHandle, e: React.PointerEvent) => void;
-	/** 回転開始時のコールバック */
 	onRotateStart?: (e: React.PointerEvent) => void;
 }
 
-/** 選択色 */
 const SELECTION_COLOR = "#00bfff";
-/** ハンドルサイズ */
 const HANDLE_SIZE = 8;
-/** 回転ハンドルの距離 */
 const ROTATE_HANDLE_DISTANCE = 20;
 
-/**
- * インタラクティブ選択ハンドルコンポーネント
- */
 export function SelectionHandles({
 	x,
 	y,
@@ -52,7 +38,6 @@ export function SelectionHandles({
 	const halfWidth = width / 2;
 	const halfHeight = height / 2;
 
-	// 四隅のハンドル位置
 	const corners: { handle: ResizeHandle; cx: number; cy: number }[] = [
 		{ handle: "nw", cx: offsetX - halfWidth, cy: offsetY - halfHeight },
 		{ handle: "ne", cx: offsetX + halfWidth, cy: offsetY - halfHeight },
@@ -60,7 +45,6 @@ export function SelectionHandles({
 		{ handle: "se", cx: offsetX + halfWidth, cy: offsetY + halfHeight },
 	];
 
-	// 回転ハンドルの位置 (上部中央から外側)
 	const rotateHandleY = offsetY - halfHeight - ROTATE_HANDLE_DISTANCE;
 
 	const handlePointerDown = (handleType: HandleType, e: React.PointerEvent) => {
@@ -77,7 +61,6 @@ export function SelectionHandles({
 			transform={`translate(${x}, ${y}) rotate(${rotation})`}
 			style={{ pointerEvents: "all" }}
 		>
-			{/* 選択枠 */}
 			<rect
 				x={offsetX - halfWidth}
 				y={offsetY - halfHeight}
@@ -89,7 +72,6 @@ export function SelectionHandles({
 				style={{ pointerEvents: "none" }}
 			/>
 
-			{/* 回転ハンドルへの接続線 */}
 			<line
 				x1={offsetX}
 				y1={offsetY - halfHeight}
@@ -100,7 +82,6 @@ export function SelectionHandles({
 				style={{ pointerEvents: "none" }}
 			/>
 
-			{/* 回転ハンドル (円形) */}
 			{/* biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction */}
 			<circle
 				cx={offsetX}
@@ -114,7 +95,6 @@ export function SelectionHandles({
 				onPointerDown={(e) => handlePointerDown("rotate", e)}
 			/>
 
-			{/* 四隅のリサイズハンドル */}
 			{corners.map(({ handle, cx, cy }) => (
 				// biome-ignore lint/a11y/noStaticElementInteractions: SVG handle element requires onClick for drag interaction
 				<rect
@@ -135,11 +115,8 @@ export function SelectionHandles({
 	);
 }
 
-/**
- * リサイズハンドルに応じたカーソルを取得
- */
+/** Returns cursor style adjusted for rotation angle */
 function getResizeCursor(handle: ResizeHandle, rotation: number): string {
-	// 回転角度を考慮してカーソルを調整
 	const baseAngles: Record<ResizeHandle, number> = {
 		nw: -45,
 		ne: 45,
@@ -149,7 +126,6 @@ function getResizeCursor(handle: ResizeHandle, rotation: number): string {
 
 	const adjustedAngle = (baseAngles[handle] + rotation + 360) % 360;
 
-	// 角度に応じたカーソル
 	if (adjustedAngle >= 337.5 || adjustedAngle < 22.5) return "n-resize";
 	if (adjustedAngle >= 22.5 && adjustedAngle < 67.5) return "ne-resize";
 	if (adjustedAngle >= 67.5 && adjustedAngle < 112.5) return "e-resize";

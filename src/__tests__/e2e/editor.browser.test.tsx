@@ -1,12 +1,10 @@
 /**
- * Editor E2Eテスト
+ * Editor E2E tests using Vitest Browser Mode.
  *
- * Vitest Browser Mode を使用したエディターの統合テスト
- *
- * テスト対象：
- * - エディターボードの初期化とレンダリング
- * - オブジェクトの追加・選択
- * - Undo/Redo機能
+ * Test targets:
+ * - Editor board initialization and rendering
+ * - Adding and selecting objects
+ * - Undo/Redo functionality
  */
 
 import "@/lib/i18n";
@@ -28,7 +26,7 @@ import { resetEditorStore } from "@/lib/editor/store/editorStore";
 import { globalHistoryStore } from "@/lib/editor/store/globalHistoryStore";
 import { ObjectIds } from "@/lib/stgy";
 
-/** デフォルトのグリッド設定 */
+/** Default grid settings */
 const DEFAULT_GRID_SETTINGS: GridSettings = {
 	enabled: false,
 	size: 16,
@@ -39,7 +37,7 @@ const DEFAULT_GRID_SETTINGS: GridSettings = {
 	overlaySettings: DEFAULT_OVERLAY_SETTINGS,
 };
 
-/** テスト用EditorBoardラッパー */
+/** Test wrapper for EditorBoard */
 function TestEditorBoard() {
 	return (
 		<EditorStoreProvider
@@ -53,7 +51,7 @@ function TestEditorBoard() {
 	);
 }
 
-/** オブジェクト追加とレンダリング確認用のテストコンポーネント */
+/** Test component for adding objects and verifying rendering */
 function EditorWithObject({ objectId }: { objectId: number }) {
 	const board = createEmptyBoard("Test Board");
 	const obj = createDefaultObject(objectId);
@@ -74,34 +72,34 @@ function EditorWithObject({ objectId }: { objectId: number }) {
 describe("Editor E2E", () => {
 	beforeEach(() => {
 		localStorage.clear();
-		// シングルトンストアをリセットして各テストを独立させる
+		// Reset singleton store to isolate each test
 		resetEditorStore();
-		// グローバル履歴ストアをクリア
+		// Clear global history store
 		globalHistoryStore.setState({ histories: new Map() });
 	});
 
-	describe("エディターボードのレンダリング", () => {
-		it("空のボードが正しくレンダリングされる", async () => {
+	describe("Editor board rendering", () => {
+		it("renders an empty board correctly", async () => {
 			const screen = await render(<TestEditorBoard />);
 
-			// SVG要素が存在することを確認
+			// Verify SVG element exists
 			const svg = screen.container.querySelector("svg");
 			expect(svg).toBeTruthy();
 
-			// aria-labelが正しく設定されていることを確認
+			// Verify aria-label is set correctly
 			await expect
 				.element(screen.getByRole("application"))
 				.toHaveAttribute("aria-label", "Strategy Board Editor");
 		});
 
-		it("SVGのviewBoxが正しく設定されている", async () => {
+		it("sets SVG viewBox correctly", async () => {
 			const screen = await render(<TestEditorBoard />);
 
 			const svg = screen.container.querySelector("svg");
 			expect(svg?.getAttribute("viewBox")).toBe("0 0 512 384");
 		});
 
-		it("scale=2でサイズが2倍になる", async () => {
+		it("doubles size when scale=2", async () => {
 			const screen = await render(
 				<EditorStoreProvider
 					initialBoard={createEmptyBoard("Test Board")}
@@ -119,45 +117,45 @@ describe("Editor E2E", () => {
 		});
 	});
 
-	describe("オブジェクトのレンダリング", () => {
-		it("CircleAoEオブジェクトがレンダリングされる", async () => {
+	describe("Object rendering", () => {
+		it("renders CircleAoE object", async () => {
 			const screen = await render(
 				<EditorWithObject objectId={ObjectIds.CircleAoE} />,
 			);
 
-			// オブジェクトはg要素でラップされてレンダリングされる
+			// Objects are rendered wrapped in g elements
 			const objectGroups = screen.container.querySelectorAll("svg > g");
 			expect(objectGroups.length).toBeGreaterThan(0);
 
-			// CircleAoEは circle または image（オリジナル画像モード）としてレンダリングされる
+			// CircleAoE renders as circle or image (original image mode)
 			const circles = screen.container.querySelectorAll("circle");
 			const images = screen.container.querySelectorAll("image");
 			expect(circles.length + images.length).toBeGreaterThan(0);
 		});
 
-		it("LineAoEオブジェクトがレンダリングされる", async () => {
+		it("renders LineAoE object", async () => {
 			const screen = await render(
 				<EditorWithObject objectId={ObjectIds.LineAoE} />,
 			);
 
-			// LineAoEは rect としてレンダリングされる
+			// LineAoE renders as rect
 			const objectGroups = screen.container.querySelectorAll("svg > g");
 			expect(objectGroups.length).toBeGreaterThan(0);
 		});
 
-		it("Lineオブジェクトがレンダリングされる", async () => {
+		it("renders Line object", async () => {
 			const screen = await render(
 				<EditorWithObject objectId={ObjectIds.Line} />,
 			);
 
-			// line要素が存在することを確認
+			// Verify line element exists
 			const lines = screen.container.querySelectorAll("line");
 			expect(lines.length).toBeGreaterThan(0);
 		});
 	});
 
-	describe("オブジェクトの選択", () => {
-		it("オブジェクトをクリックすると選択状態になる", async () => {
+	describe("Object selection", () => {
+		it("selects object when clicked", async () => {
 			const board = createEmptyBoard("Test Board");
 			const obj = createDefaultObject(ObjectIds.CircleAoE, { x: 100, y: 100 });
 			board.objects.push(obj);
@@ -181,20 +179,20 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// 初期状態：選択なし
+			// Initial state: no selection
 			expect(selectedIds).toHaveLength(0);
 
-			// オブジェクトをクリック（g要素内の最初のオブジェクト）
+			// Click on the object (first object in g element)
 			const objectGroup = screen.container.querySelector("svg > g");
 			expect(objectGroup).toBeTruthy();
 			await userEvent.click(objectGroup!);
 
-			// 選択状態を確認（再レンダリング後）
+			// Verify selection state (after re-render)
 			expect(selectedIds).toHaveLength(1);
 			expect(selectedIds[0]).toBe(obj.id);
 		});
 
-		it("deselectAllアクションで選択が解除される", async () => {
+		it("deselects all with deselectAll action", async () => {
 			const board = createEmptyBoard("Test Board");
 			const obj = createDefaultObject(ObjectIds.CircleAoE, { x: 100, y: 100 });
 			board.objects.push(obj);
@@ -212,7 +210,7 @@ describe("Editor E2E", () => {
 				selectedIds = ids;
 				actionsRef.deselectAll = deselectAll;
 
-				// 初回のみオブジェクトを選択
+				// Select object only on first render
 				useEffect(() => {
 					if (!initialized) {
 						selectObject(obj.id);
@@ -234,21 +232,21 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// 選択状態を確認（useEffectが実行されるのを待つ）
+			// Verify selection state (wait for useEffect to run)
 			await new Promise((resolve) => setTimeout(resolve, 50));
 			expect(selectedIds).toHaveLength(1);
 
-			// deselectAllを呼び出し
+			// Call deselectAll
 			actionsRef.deselectAll?.();
 
-			// 選択解除を確認
+			// Verify deselection
 			await new Promise((resolve) => setTimeout(resolve, 50));
 			expect(selectedIds).toHaveLength(0);
 		});
 	});
 
-	describe("選択ハンドルの表示", () => {
-		it("単一オブジェクト選択時に選択ハンドルが表示される", async () => {
+	describe("Selection handles display", () => {
+		it("shows selection handles when single object is selected", async () => {
 			const board = createEmptyBoard("Test Board");
 			const obj = createDefaultObject(ObjectIds.CircleAoE, { x: 200, y: 200 });
 			board.objects.push(obj);
@@ -264,13 +262,13 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// オブジェクトをクリックして選択
+			// Click to select object
 			const objectGroup = screen.container.querySelector("svg > g");
 			expect(objectGroup).toBeTruthy();
 			await userEvent.click(objectGroup!);
 
-			// 選択ハンドル（回転ハンドル=circle r=4、リサイズハンドル=rect width=8）が表示されるのを待つ
-			// ポーリングで確認
+			// Wait for selection handles (rotation handle=circle r=4, resize handles=rect width=8)
+			// Poll for handles
 			let rotateHandle: Element | undefined;
 			let resizeHandles: Element[] = [];
 
@@ -296,8 +294,8 @@ describe("Editor E2E", () => {
 		});
 	});
 
-	describe("オブジェクトの追加と削除", () => {
-		it("addObjectByIdでオブジェクトを追加できる", async () => {
+	describe("Adding and removing objects", () => {
+		it("adds object with addObjectById", async () => {
 			const board = createEmptyBoard("Test Board");
 
 			let objectCount = 0;
@@ -326,18 +324,18 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// 初期状態：オブジェクトなし
+			// Initial state: no objects
 			expect(objectCount).toBe(0);
 
-			// CircleAoEを追加
+			// Add CircleAoE
 			actionsRef.addObjectById?.(ObjectIds.CircleAoE);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// オブジェクトが1つ追加されたことを確認
+			// Verify one object was added
 			expect(objectCount).toBe(1);
 		});
 
-		it("deleteSelectedで選択オブジェクトを削除できる", async () => {
+		it("deletes selected objects with deleteSelected", async () => {
 			const board = createEmptyBoard("Test Board");
 			const obj = createDefaultObject(ObjectIds.CircleAoE, { x: 100, y: 100 });
 			board.objects.push(obj);
@@ -373,23 +371,23 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// 初期状態：オブジェクト1つ
+			// Initial state: 1 object
 			expect(objectCount).toBe(1);
 
-			// オブジェクトを選択して削除
+			// Select and delete object
 			actionsRef.selectObject?.(obj.id);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			actionsRef.deleteSelected?.();
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// オブジェクトが削除されたことを確認
+			// Verify object was deleted
 			expect(objectCount).toBe(0);
 		});
 	});
 
-	describe("Undo/Redo機能", () => {
-		it("オブジェクト追加後にUndoで元に戻せる", async () => {
+	describe("Undo/Redo functionality", () => {
+		it("undoes object addition with Undo", async () => {
 			const board = createEmptyBoard("Test Board");
 
 			let objectCount = 0;
@@ -426,24 +424,24 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// 初期状態：オブジェクトなし
+			// Initial state: no objects
 			expect(objectCount).toBe(0);
 
-			// オブジェクトを追加して履歴をコミット
+			// Add object and commit to history
 			actionsRef.addObjectById?.(ObjectIds.CircleAoE);
 			actionsRef.commitHistory?.("Add object");
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			expect(objectCount).toBe(1);
 
-			// Undoで元に戻す
+			// Undo to revert
 			actionsRef.undo?.();
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			expect(objectCount).toBe(0);
 		});
 
-		it("Undo後にRedoでやり直せる", async () => {
+		it("redoes with Redo after Undo", async () => {
 			const board = createEmptyBoard("Test Board");
 
 			let objectCount = 0;
@@ -483,20 +481,20 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// オブジェクトを追加して履歴をコミット
+			// Add object and commit to history
 			actionsRef.addObjectById?.(ObjectIds.CircleAoE);
 			actionsRef.commitHistory?.("Add object");
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			expect(objectCount).toBe(1);
 
-			// Undoで元に戻す
+			// Undo to revert
 			actionsRef.undo?.();
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			expect(objectCount).toBe(0);
 
-			// Redoでやり直す
+			// Redo to restore
 			actionsRef.redo?.();
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -504,8 +502,8 @@ describe("Editor E2E", () => {
 		});
 	});
 
-	describe("複数選択", () => {
-		it("Shift+クリックで複数オブジェクトを選択できる", async () => {
+	describe("Multi-selection", () => {
+		it("selects multiple objects with Shift+click", async () => {
 			const board = createEmptyBoard("Test Board");
 			const obj1 = createDefaultObject(ObjectIds.CircleAoE, { x: 100, y: 100 });
 			const obj2 = createDefaultObject(ObjectIds.CircleAoE, { x: 300, y: 100 });
@@ -530,7 +528,7 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// 1つ目のオブジェクトをクリック
+			// Click the first object
 			const objectGroups = screen.container.querySelectorAll("svg > g");
 			expect(objectGroups.length).toBe(2);
 
@@ -539,14 +537,14 @@ describe("Editor E2E", () => {
 
 			expect(selectedIds).toHaveLength(1);
 
-			// Shift+クリックで2つ目を追加選択
+			// Shift+click to add second object to selection
 			await userEvent.click(objectGroups[1], { modifiers: ["Shift"] });
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			expect(selectedIds).toHaveLength(2);
 		});
 
-		it("selectAllで全オブジェクトを選択できる", async () => {
+		it("selects all objects with selectAll", async () => {
 			const board = createEmptyBoard("Test Board");
 			const obj1 = createDefaultObject(ObjectIds.CircleAoE, { x: 100, y: 100 });
 			const obj2 = createDefaultObject(ObjectIds.CircleAoE, { x: 300, y: 100 });
@@ -579,20 +577,20 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// 初期状態：選択なし
+			// Initial state: no selection
 			expect(selectedIds).toHaveLength(0);
 
-			// 全選択
+			// Select all
 			actionsRef.selectAll?.();
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// 3つすべて選択されていることを確認
+			// Verify all 3 are selected
 			expect(selectedIds).toHaveLength(3);
 		});
 	});
 
-	describe("オブジェクトの移動", () => {
-		it("moveObjectsでオブジェクトの位置を変更できる", async () => {
+	describe("Moving objects", () => {
+		it("changes object position with moveObjects", async () => {
 			const board = createEmptyBoard("Test Board");
 			const obj = createDefaultObject(ObjectIds.CircleAoE, { x: 100, y: 100 });
 			board.objects.push(obj);
@@ -630,22 +628,22 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// 初期位置を確認
+			// Verify initial position
 			expect(objectPosition.x).toBe(100);
 			expect(objectPosition.y).toBe(100);
 
-			// オブジェクトを移動
+			// Move object
 			actionsRef.moveObjects?.([obj.id], 50, 30);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// 移動後の位置を確認
+			// Verify position after move
 			expect(objectPosition.x).toBe(150);
 			expect(objectPosition.y).toBe(130);
 		});
 	});
 
-	describe("オブジェクトの複製", () => {
-		it("duplicateSelectedで選択オブジェクトを複製できる", async () => {
+	describe("Duplicating objects", () => {
+		it("duplicates selected object with duplicateSelected", async () => {
 			const board = createEmptyBoard("Test Board");
 			const obj = createDefaultObject(ObjectIds.CircleAoE, { x: 100, y: 100 });
 			board.objects.push(obj);
@@ -681,23 +679,23 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// 初期状態：オブジェクト1つ
+			// Initial state: 1 object
 			expect(objectCount).toBe(1);
 
-			// オブジェクトを選択して複製
+			// Select and duplicate object
 			actionsRef.selectObject?.(obj.id);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			actionsRef.duplicateSelected?.();
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// オブジェクトが2つになったことを確認
+			// Verify there are now 2 objects
 			expect(objectCount).toBe(2);
 		});
 	});
 
-	describe("コピー＆ペースト", () => {
-		it("copySelectedとpasteでオブジェクトをコピー＆ペーストできる", async () => {
+	describe("Copy and paste", () => {
+		it("copies and pastes objects with copySelected and paste", async () => {
 			const board = createEmptyBoard("Test Board");
 			const obj = createDefaultObject(ObjectIds.CircleAoE, { x: 100, y: 100 });
 			board.objects.push(obj);
@@ -736,21 +734,21 @@ describe("Editor E2E", () => {
 				</EditorStoreProvider>,
 			);
 
-			// 初期状態：オブジェクト1つ
+			// Initial state: 1 object
 			expect(objectCount).toBe(1);
 
-			// オブジェクトを選択してコピー
+			// Select and copy object
 			actionsRef.selectObject?.(obj.id);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			actionsRef.copySelected?.();
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// ペースト
+			// Paste
 			actionsRef.paste?.();
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// オブジェクトが2つになったことを確認
+			// Verify there are now 2 objects
 			expect(objectCount).toBe(2);
 		});
 	});

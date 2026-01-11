@@ -32,7 +32,6 @@ export function ObjectRenderer({
 	} = object;
 	const scale = size / 100;
 
-	// 変換を適用
 	const transform = buildTransform(
 		position.x,
 		position.y,
@@ -42,7 +41,6 @@ export function ObjectRenderer({
 		flags.flipVertical,
 	);
 
-	// バウンディングボックスのサイズを取得
 	const bbox = getObjectBoundingBox(
 		objectId,
 		param1,
@@ -52,13 +50,11 @@ export function ObjectRenderer({
 		position,
 	);
 
-	// クリックハンドラ
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		onSelect?.(object.id);
 	};
 
-	// オブジェクトタイプに応じてレンダリング（ストラテジーパターン）
 	const strategy = getStrategy(objectId);
 	const content = strategy.render({
 		object,
@@ -66,10 +62,9 @@ export function ObjectRenderer({
 		scale,
 	});
 
-	// Lineは絶対座標で描画するため回転を適用しない
+	// Line uses absolute coordinates, so skip rotation
 	const effectiveRotation = objectId === ObjectIds.Line ? 0 : rotation;
 
-	// 選択インジケーター
 	const selectionIndicator = selected && (
 		<SelectionIndicator
 			x={position.x}
@@ -82,7 +77,7 @@ export function ObjectRenderer({
 		/>
 	);
 
-	// 透過度をSVGのopacityに変換 (color.opacity: 0=不透明, 100=透明)
+	// Convert opacity (0=opaque, 100=transparent) to SVG opacity
 	const svgOpacity = 1 - color.opacity / 100;
 
 	return (

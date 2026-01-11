@@ -1,5 +1,5 @@
 /**
- * エディターページ
+ * Editor page
  */
 
 import NiceModal from "@ebay/nice-modal-react";
@@ -60,7 +60,7 @@ import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
 import { SettingsStoreProvider } from "@/lib/settings";
 import type { BoardObject } from "@/lib/stgy";
 
-/** キャンバスの基本サイズ */
+/** Base canvas size */
 const CANVAS_WIDTH = 512;
 const CANVAS_HEIGHT = 384;
 
@@ -321,7 +321,7 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 	);
 }
 
-/** EditorContentのProps */
+/** EditorContent props */
 interface EditorContentProps {
 	currentBoardId: string | null;
 	shortLinksEnabled: boolean;
@@ -342,7 +342,7 @@ interface EditorContentProps {
 }
 
 /**
- * エディターコンテンツ（キーボードショートカット有効化）
+ * Editor content with keyboard shortcuts enabled
  */
 function EditorContent({
 	currentBoardId,
@@ -352,7 +352,6 @@ function EditorContent({
 	onCreateBoardFromImport,
 	children,
 }: EditorContentProps) {
-	// キーボードショートカットを有効化
 	useKeyboardShortcuts();
 
 	// Get editor state
@@ -360,7 +359,6 @@ function EditorContent({
 	const focusedGroup = useFocusedGroup();
 	const { unfocus } = useEditorActions();
 
-	// TanStack Store Effect を使用した自動保存
 	const { lastSavedAt } = useAutoSave({
 		currentBoardId,
 		onSave: onSaveBoard,
@@ -369,7 +367,6 @@ function EditorContent({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [scale, setScale] = useState(1);
 
-	// コンテナサイズに応じてスケールを計算
 	const calculateScale = useCallback(() => {
 		const container = containerRef.current;
 		if (!container) return;
@@ -378,7 +375,6 @@ function EditorContent({
 		const availableWidth = container.clientWidth - padding;
 		const availableHeight = container.clientHeight - padding;
 
-		// アスペクト比を維持しながら収まる最大スケールを計算
 		const scaleX = availableWidth / CANVAS_WIDTH;
 		const scaleY = availableHeight / CANVAS_HEIGHT;
 		const newScale = Math.max(0.5, Math.min(3, Math.min(scaleX, scaleY)));
@@ -386,7 +382,6 @@ function EditorContent({
 		setScale(newScale);
 	}, []);
 
-	// ResizeObserverでコンテナサイズの変更を監視
 	useEffect(() => {
 		const container = containerRef.current;
 		if (!container) return;
@@ -404,7 +399,6 @@ function EditorContent({
 		};
 	}, [calculateScale]);
 
-	// ロゴアイコン
 	const logoIcon = (
 		<img
 			src="/favicon.svg"
@@ -417,7 +411,6 @@ function EditorContent({
 
 	return (
 		<div className="h-screen flex flex-col bg-background">
-			{/* 共通ヘッダー */}
 			<CompactAppHeader
 				currentPage="editor"
 				title="STGY Tools Editor"
@@ -425,7 +418,6 @@ function EditorContent({
 				showLanguageSelector
 			/>
 
-			{/* ツールバー */}
 			<EditorToolbar
 				lastSavedAt={lastSavedAt}
 				onOpenBoardManager={onOpenBoardManager}
@@ -433,7 +425,6 @@ function EditorContent({
 				shortLinksEnabled={shortLinksEnabled}
 			/>
 
-			{/* メインエリア */}
 			<div className="flex-1 overflow-hidden h-full">
 				<ResizableLayout
 					panelComponents={{
@@ -449,13 +440,11 @@ function EditorContent({
 						historyPanel: <HistoryPanelActions />,
 					}}
 				>
-					{/* 中央: キャンバスとタブバー */}
 					<div className="h-full flex flex-col">
 						<div
 							ref={containerRef}
 							className="canvas-container flex-1 flex items-center justify-center overflow-auto p-4 relative"
 						>
-							{/* フォーカスモードインジケーター */}
 							{isFocusMode && focusedGroup && (
 								<FocusModeIndicator
 									groupName={
@@ -467,19 +456,17 @@ function EditorContent({
 							)}
 							<EditorBoard scale={scale} />
 						</div>
-						{/* タブバー（childrenとして渡される） */}
 						{children}
 					</div>
 				</ResizableLayout>
 			</div>
 
-			{/* エラートースト */}
 			<ErrorToast />
 		</div>
 	);
 }
 
-/** EditorWithTabsのProps */
+/** EditorWithTabs props */
 interface EditorWithTabsProps
 	extends Omit<EditorContentProps, "onOpenBoardManager"> {
 	boards: StoredBoard[];
@@ -489,7 +476,7 @@ interface EditorWithTabsProps
 }
 
 /**
- * タブバー付きエディターラッパー
+ * Editor wrapper with tab bar
  */
 function EditorWithTabs({
 	boards,
@@ -503,26 +490,25 @@ function EditorWithTabs({
 	const activeTabId = useActiveTabId();
 	const { addTab, setInitialTab, replaceAllTabs } = useTabActions();
 
-	// 初回マウントかどうかを追跡（リロード後の初期化とユーザーアクションを区別）
+	// Track initial mount to distinguish reload initialization from user actions
 	const isInitialMountRef = useRef(true);
 
-	// タブストアとcurrentBoardIdを同期
+	// Sync tab store with currentBoardId
 	useEffect(() => {
 		if (!currentBoardId) return;
 
 		const isInitialMount = isInitialMountRef.current;
 		isInitialMountRef.current = false;
 
-		// 初期化: タブがない場合は現在のボードをタブとして追加
+		// Initialize: add current board as tab if no tabs exist
 		if (openTabs.length === 0) {
 			const existingBoardIds = new Set(boards.map((b) => b.id));
-			// localStorageから復元されなかった場合、現在のボードを初期タブとして設定
 			if (existingBoardIds.has(currentBoardId)) {
 				setInitialTab(currentBoardId);
 			}
 		} else if (!openTabs.includes(currentBoardId)) {
-			// 初回マウント時（リロード後）で、有効なactiveTabIdがある場合は、そちらに切り替える
-			// それ以外（Viewerからのインポート等）は、currentBoardIdをタブに追加
+			// On initial mount with valid activeTabId, switch to that tab;
+			// otherwise (e.g., import from Viewer), add currentBoardId as tab
 			if (isInitialMount && activeTabId && openTabs.includes(activeTabId)) {
 				onSelectBoard(activeTabId);
 			} else {
@@ -539,44 +525,37 @@ function EditorWithTabs({
 		onSelectBoard,
 	]);
 
-	// タブ切り替え時にボードを選択
 	useEffect(() => {
 		if (activeTabId && activeTabId !== currentBoardId) {
 			onSelectBoard(activeTabId);
 		}
 	}, [activeTabId, currentBoardId, onSelectBoard]);
 
-	// 注意: 削除されたボードのタブの自動クローズは行わない
-	// useLiveQueryの結果が一時的に変動するため、誤検出でタブが閉じられる問題がある
-	// ボード削除時のタブクローズは、削除操作を行う側（BoardManagerなど）で
-	// 明示的に removeDeletedBoardTab を呼び出して処理する
+	// Note: Auto-closing tabs for deleted boards is disabled because useLiveQuery
+	// results can temporarily fluctuate, causing false positives that close tabs.
+	// Tab closure on board deletion should be handled explicitly by the deletion
+	// operation (e.g., BoardManager) via removeDeletedBoardTab.
 
-	// 統一的な「ボードを開く」ハンドラ（タブ切り替え + ボード読み込み）
+	// Unified handler for opening boards (tab switch + board load)
 	const handleOpenBoard = useCallback(
 		(boardId: string) => {
-			// タブを追加または切り替え（既存タブの場合はアクティブに切り替わる）
 			addTab(boardId);
-			// ボードを開く
 			onSelectBoard(boardId);
 		},
 		[addTab, onSelectBoard],
 	);
 
-	// 複数ボードをタブで開く（既存タブを置き換え）
+	// Open multiple boards in tabs (replaces existing tabs)
 	const handleOpenBoards = useCallback(
 		(boardIds: string[]) => {
 			if (boardIds.length === 0) return;
 
-			// すべてのタブを置き換え（最初のボードがアクティブになる）
 			replaceAllTabs(boardIds);
-
-			// 最初のボードを開く
 			onSelectBoard(boardIds[0]);
 		},
 		[replaceAllTabs, onSelectBoard],
 	);
 
-	// ボードマネージャーを開く（タブ追加を含むhandleOpenBoardを使用）
 	const handleOpenBoardManager = useCallback(() => {
 		NiceModal.show(BoardManagerModal, {
 			currentBoardId,
@@ -586,7 +565,7 @@ function EditorWithTabs({
 		});
 	}, [currentBoardId, handleOpenBoard, handleOpenBoards, onCreateNewBoard]);
 
-	// 未保存状態のボードIDセット（今後実装）
+	// Set of unsaved board IDs (to be implemented)
 	const unsavedBoardIds = useMemo(() => new Set<string>(), []);
 
 	return (
@@ -595,7 +574,6 @@ function EditorWithTabs({
 			currentBoardId={currentBoardId}
 			onOpenBoardManager={handleOpenBoardManager}
 		>
-			{/* タブバー */}
 			<BoardTabs
 				boards={boards}
 				unsavedBoardIds={unsavedBoardIds}

@@ -1,7 +1,7 @@
 /**
- * フォーム入力コンポーネント
+ * Form input components
  *
- * shadcn/ui ベースのプロパティパネル用入力部品
+ * Property panel input components based on shadcn/ui
  */
 
 import type { ReactNode } from "react";
@@ -10,9 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 
-/**
- * プロパティセクション
- */
 export function PropertySection({
 	title,
 	children,
@@ -37,29 +34,16 @@ export function PropertySection({
 	);
 }
 
-/**
- * 数値入力コンポーネントのProps
- */
 export interface NumberInputProps {
-	/** ラベル */
 	label: string;
-	/** 現在の値 */
 	value: number;
-	/** 最小値 */
 	min: number;
-	/** 最大値 */
 	max: number;
-	/** ステップ */
 	step: number;
-	/** 値変更時のコールバック */
 	onChange: (value: number) => void;
-	/** フォーカスが外れた時のコールバック */
 	onBlur?: () => void;
 }
 
-/**
- * 数値入力
- */
 export function NumberInput({
 	label,
 	value,
@@ -86,31 +70,17 @@ export function NumberInput({
 	);
 }
 
-/**
- * スライダー入力コンポーネントのProps
- */
 export interface SliderInputProps {
-	/** ラベル */
 	label: string;
-	/** 現在の値 */
 	value: number;
-	/** 最小値 */
 	min: number;
-	/** 最大値 */
 	max: number;
-	/** ステップ */
 	step: number;
-	/** 単位（例: "°", "%"） */
 	unit?: string;
-	/** 値変更時のコールバック */
 	onChange: (value: number) => void;
-	/** フォーカスが外れた時のコールバック */
 	onBlur?: () => void;
 }
 
-/**
- * スライダー入力
- */
 export function SliderInput({
 	label,
 	value,
@@ -121,10 +91,8 @@ export function SliderInput({
 	onChange,
 	onBlur,
 }: SliderInputProps) {
-	// 入力値をmin/max範囲にクランプ
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const inputValue = e.target.value;
-		// 空文字や入力中の "-" を許容
 		if (inputValue === "" || inputValue === "-") {
 			return;
 		}
@@ -135,7 +103,6 @@ export function SliderInput({
 		}
 	};
 
-	// フォーカスが外れたときに値を正規化
 	const handleInputBlur = () => {
 		onBlur?.();
 	};
@@ -175,21 +142,12 @@ export function SliderInput({
 	);
 }
 
-/**
- * チェックボックスコンポーネントのProps
- */
 export interface CheckboxProps {
-	/** ラベル */
 	label: string;
-	/** チェック状態 */
 	checked: boolean;
-	/** 状態変更時のコールバック */
 	onChange: (checked: boolean) => void;
 }
 
-/**
- * チェックボックス
- */
 export function Checkbox({ label, checked, onChange }: CheckboxProps) {
 	const id = `checkbox-${label.replace(/\s/g, "-")}`;
 

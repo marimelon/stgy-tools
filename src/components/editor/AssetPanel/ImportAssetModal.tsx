@@ -1,8 +1,8 @@
 /**
- * アセットインポートモーダルコンポーネント
- * @ebay/nice-modal-react + ModalBase ベース
+ * Import asset modal component
+ * Based on @ebay/nice-modal-react + ModalBase
  *
- * stgyコードからアセットをインポートするためのモーダル
+ * Modal for importing assets from stgy code
  */
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
@@ -35,7 +35,7 @@ interface ParseError {
 type ParseState = ParseResult | ParseError | null;
 
 /**
- * アセットインポートモーダル
+ * Import asset modal
  */
 export const ImportAssetModal = NiceModal.create(() => {
 	const { t } = useTranslation();
@@ -123,7 +123,7 @@ export const ImportAssetModal = NiceModal.create(() => {
 			}
 		>
 			<div className="space-y-4">
-				{/* アセット名入力 */}
+				{/* Asset name input */}
 				<div>
 					<Label
 						htmlFor={nameInputId}
@@ -150,7 +150,7 @@ export const ImportAssetModal = NiceModal.create(() => {
 					)}
 				</div>
 
-				{/* stgyコード入力 */}
+				{/* stgy code input */}
 				<div>
 					<Label
 						htmlFor={stgyInputId}
@@ -172,7 +172,7 @@ export const ImportAssetModal = NiceModal.create(() => {
 					)}
 				</div>
 
-				{/* プレビュー */}
+				{/* Preview */}
 				<div>
 					<Label className="text-sm font-medium mb-2 block">
 						{t("assetPanel.importModal.preview")}

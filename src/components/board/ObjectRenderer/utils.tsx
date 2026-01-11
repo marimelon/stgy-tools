@@ -12,23 +12,18 @@ import {
 	getIconPath,
 } from "./constants";
 
-// Re-export from @/lib/board for backwards compatibility
 export { buildTransform, colorToRgba, isColorChanged, isLineAoEParamsChanged };
 
 /**
- * オリジナル画像（PNG）を使用するかチェック
- * デフォルトでオリジナル画像を使用
- * localStorage.setItem('useFallbackSvg', 'true') で代替SVGに切り替え可能
+ * Check if original PNG icons should be used.
+ * Default is true. Set localStorage.setItem('useFallbackSvg', 'true') to use SVG fallback.
  */
 export function useOriginalIcons(): boolean {
 	if (typeof window === "undefined") return true;
 	return localStorage.getItem("useFallbackSvg") !== "true";
 }
 
-/**
- * カスタムアイコン画像をレンダリング
- * OBJECT_BBOX_SIZESのサイズを使用してバウンディングボックス内に収める
- */
+/** Render custom icon image using OBJECT_BBOX_SIZES for proper sizing */
 export function CustomIconImage({
 	objectId,
 	transform,
@@ -54,8 +49,8 @@ export function CustomIconImage({
 }
 
 /**
- * オリジナル画像が利用可能な場合は画像を返し、そうでなければnullを返す
- * 色やパラメータがデフォルトから変更されている場合はSVGでレンダリングするためnullを返す
+ * Return original image if available, null otherwise.
+ * Returns null if color or parameters are changed from defaults (use SVG rendering).
  */
 export function renderOriginalIconIfEnabled(
 	objectId: number,
@@ -66,15 +61,12 @@ export function renderOriginalIconIfEnabled(
 ): React.ReactNode | null {
 	if (!useOriginalIcons()) return null;
 	if (!CUSTOM_ICON_IDS.has(objectId)) return null;
-	// 色変更可能なオブジェクト（LineAoE, Line, Text）のみ色変更をチェック
-	// それ以外のオブジェクトは色が設定されていてもオリジナル画像を使用
 	if (
 		COLOR_CHANGEABLE_OBJECT_IDS.has(objectId) &&
 		color &&
 		isColorChanged(color)
 	)
 		return null;
-	// 直線範囲攻撃のパラメータが変更されている場合はSVGでレンダリング
 	if (isLineAoEParamsChanged(objectId, param1, param2)) return null;
 	return <CustomIconImage objectId={objectId} transform={transform} />;
 }

@@ -1,16 +1,16 @@
 /**
- * Modal E2Eテスト
+ * Modal E2E tests
  *
- * Vitest Browser Mode を使用したモーダルの統合テスト
+ * Integration tests for modals using Vitest Browser Mode
  *
- * テスト対象：
- * - ImportModal: stgyコードのインポート
- * - SettingsModal: 設定とタブ切り替え
- * - BoardManagerModal: ボード管理
+ * Test targets:
+ * - ImportModal: stgy code import
+ * - SettingsModal: Settings and tab switching
+ * - BoardManagerModal: Board management
  *
- * Note: ExportModal はサーバー関数をインポートしているため、
- * ブラウザテストでは直接テストできない。
- * サーバー関数のモックが必要な場合は別のテスト方式を検討する。
+ * Note: ExportModal imports server functions, so it cannot be directly tested
+ * in browser tests. Consider alternative test approaches if server function
+ * mocking is needed.
  */
 
 import NiceModal from "@ebay/nice-modal-react";

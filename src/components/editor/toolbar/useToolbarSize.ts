@@ -1,25 +1,25 @@
 /**
- * ツールバーサイズ検出フック
+ * Toolbar size detection hook
  *
- * コンテナのサイズに基づいてレイアウトモードを決定
+ * Determines layout mode based on container size
  */
 
 import { type RefObject, useCallback, useEffect, useState } from "react";
 
-/** ツールバーのレイアウトモード */
+/** Toolbar layout mode */
 export type ToolbarSize = "large" | "medium" | "small";
 
-/** ブレークポイント定義 */
+/** Breakpoint definitions */
 const BREAKPOINTS = {
 	large: 1200,
 	medium: 800,
 } as const;
 
 /**
- * コンテナサイズに基づいてツールバーのレイアウトモードを決定するフック
+ * Hook to determine toolbar layout mode based on container size
  *
- * @param containerRef - 監視対象のコンテナ要素のref
- * @returns 現在のツールバーサイズモード
+ * @param containerRef - ref to the container element to observe
+ * @returns Current toolbar size mode
  */
 export function useToolbarSize(
 	containerRef: RefObject<HTMLElement | null>,
@@ -40,10 +40,10 @@ export function useToolbarSize(
 		const container = containerRef.current;
 		if (!container) return;
 
-		// 初期サイズを設定
+		// Set initial size
 		updateSize(container.offsetWidth);
 
-		// ResizeObserverでサイズ変更を監視
+		// Monitor size changes with ResizeObserver
 		const resizeObserver = new ResizeObserver((entries) => {
 			for (const entry of entries) {
 				const width = entry.contentRect.width;

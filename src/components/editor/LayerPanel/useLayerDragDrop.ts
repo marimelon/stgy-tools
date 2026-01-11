@@ -1,5 +1,5 @@
 /**
- * レイヤーパネルのドラッグ&ドロップフック
+ * Layer panel drag and drop hook
  */
 
 import { type DragEvent, useCallback, useState } from "react";
@@ -32,9 +32,6 @@ export interface UseLayerDragDropReturn {
 	handleDragLeave: (e: DragEvent<HTMLDivElement>) => void;
 }
 
-/**
- * レイヤーのドラッグ&ドロップを管理するフック
- */
 export function useLayerDragDrop({
 	objects,
 	groups,
@@ -48,7 +45,6 @@ export function useLayerDragDrop({
 	const [draggedGroupId, setDraggedGroupId] = useState<string | null>(null);
 	const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
 
-	// ドラッグ状態をリセット
 	const resetDragState = useCallback(() => {
 		setDraggedObjectId(null);
 		setDraggedFromGroup(null);
@@ -56,7 +52,6 @@ export function useLayerDragDrop({
 		setDropTarget(null);
 	}, []);
 
-	// オブジェクトのドラッグ開始
 	const handleDragStart = useCallback(
 		(e: DragEvent<HTMLDivElement>, objectId: string) => {
 			const group = getGroupForObject(objectId);
@@ -70,7 +65,6 @@ export function useLayerDragDrop({
 		[getGroupForObject],
 	);
 
-	// グループヘッダーのドラッグ開始
 	const handleGroupDragStart = useCallback(
 		(e: DragEvent<HTMLDivElement>, groupId: string) => {
 			setDraggedObjectId(null);
@@ -82,7 +76,6 @@ export function useLayerDragDrop({
 		[],
 	);
 
-	// ドラッグオーバー（ドロップ位置の計算）
 	const handleDragOver = useCallback(
 		(e: DragEvent<HTMLDivElement>, targetObjectId: string) => {
 			e.preventDefault();
@@ -91,31 +84,24 @@ export function useLayerDragDrop({
 			const targetIndex = objects.findIndex((o) => o.id === targetObjectId);
 			if (targetIndex === -1) return;
 
-			// グループをドラッグ中の場合
 			if (draggedGroupId) {
-				// 自分のグループ内オブジェクトの上はスキップ
 				const draggingGroup = groups.find((g) => g.id === draggedGroupId);
 				if (draggingGroup?.objectIds.includes(targetObjectId)) {
 					setDropTarget(null);
 					return;
 				}
 
-				// 他のグループの判定
 				const targetGroup = getGroupForObject(targetObjectId);
 				if (targetGroup) {
-					// 他のグループのヘッダー上（firstObject）ならドロップ許可
 					const firstInTargetGroup = targetGroup.objectIds.find((id) =>
 						objects.some((o) => o.id === id),
 					);
 					if (targetObjectId !== firstInTargetGroup) {
-						// グループ内の非先頭要素上→不可
 						setDropTarget(null);
 						return;
 					}
-					// 先頭要素上（グループヘッダー上）→許可して続行
 				}
 
-				// 上半分か下半分かを判定
 				const rect = e.currentTarget.getBoundingClientRect();
 				const midY = rect.top + rect.height / 2;
 				const position = e.clientY < midY ? "before" : "after";
@@ -124,18 +110,14 @@ export function useLayerDragDrop({
 				return;
 			}
 
-			// オブジェクトをドラッグ中の場合
-			// 同じグループ内でのドラッグの場合のみ許可
-			// または、グループ外へのドラッグ（グループから除外）
+			// Allow drag within same group or outside groups
 			const targetGroup = getGroupForObject(targetObjectId);
 
-			// ターゲットがグループ内で、ドラッグ元と異なるグループの場合は不可
 			if (targetGroup && targetGroup.id !== draggedFromGroup) {
 				setDropTarget(null);
 				return;
 			}
 
-			// 自分自身の上はスキップ
 			if (draggedObjectId === targetObjectId) {
 				setDropTarget(null);
 				return;
@@ -143,12 +125,11 @@ export function useLayerDragDrop({
 
 			const draggedIndex = objects.findIndex((o) => o.id === draggedObjectId);
 
-			// 上半分か下半分かを判定
 			const rect = e.currentTarget.getBoundingClientRect();
 			const midY = rect.top + rect.height / 2;
 			const position = e.clientY < midY ? "before" : "after";
 
-			// 実際に移動が発生しない位置（隣接位置）はスキップ
+			// Skip adjacent positions where no actual movement occurs
 			const potentialToIndex =
 				position === "before" ? targetIndex : targetIndex + 1;
 			if (
@@ -171,42 +152,35 @@ export function useLayerDragDrop({
 		],
 	);
 
-	// ドラッグ終了（リセット）
 	const handleDragEnd = useCallback(() => {
 		resetDragState();
 	}, [resetDragState]);
 
-	// ドロップ処理
 	const handleDrop = useCallback(
 		(e: DragEvent<HTMLDivElement>) => {
 			e.preventDefault();
 
 			if (dropTarget === null) return;
 
-			// toIndex を計算
-			// position が "before" なら targetIndex、"after" なら targetIndex + 1
 			const toIndex =
 				dropTarget.position === "before"
 					? dropTarget.index
 					: dropTarget.index + 1;
 
-			// グループをドロップした場合
 			if (draggedGroupId) {
 				reorderGroup(draggedGroupId, toIndex);
 				resetDragState();
 				return;
 			}
 
-			// オブジェクトをドロップした場合
 			if (draggedObjectId === null) return;
 
-			// ドロップ先のグループを確認
 			const targetObject = objects[dropTarget.index];
 			const targetGroup = targetObject
 				? getGroupForObject(targetObject.id)
 				: undefined;
 
-			// グループ外へドロップした場合、グループから除外
+			// Remove from group when dropping outside
 			if (draggedFromGroup && !targetGroup) {
 				removeFromGroup(draggedObjectId);
 			}
@@ -228,9 +202,7 @@ export function useLayerDragDrop({
 		],
 	);
 
-	// ドラッグリーブ時のリセット
 	const handleDragLeave = useCallback((e: DragEvent<HTMLDivElement>) => {
-		// リスト外に出た場合のみリセット
 		const relatedTarget = e.relatedTarget as HTMLElement | null;
 		if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
 			setDropTarget(null);

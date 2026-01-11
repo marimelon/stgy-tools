@@ -1,36 +1,28 @@
 /**
- * バッチ編集ユーティリティ関数
+ * Batch editing utility functions
  *
- * 複数オブジェクト選択時の共通値計算とMixed値判定
+ * Common value calculation and Mixed value detection for multi-object selection
  */
 
 import type { BoardObject } from "@/lib/stgy";
 
-// ============================================
-// Mixed値のシンボルと型
-// ============================================
-
 /**
- * Mixed値を表すシンボル
- * 複数オブジェクトで値が異なる場合に使用
+ * Symbol representing mixed values
+ * Used when values differ across multiple objects
  */
 export const MIXED_VALUE = Symbol("mixed");
 export type MixedValue = typeof MIXED_VALUE;
 
 /**
- * Mixed値かどうかを判定
+ * Check if a value is mixed
  */
 export function isMixed<T>(value: T | MixedValue): value is MixedValue {
 	return value === MIXED_VALUE;
 }
 
-// ============================================
-// バッチプロパティ値の型
-// ============================================
-
 /**
- * バッチプロパティ値
- * 各プロパティは共通値またはMixed
+ * Batch property values
+ * Each property is either a common value or Mixed
  */
 export interface BatchPropertyValues {
 	rotation: number | MixedValue;
@@ -52,13 +44,9 @@ export interface BatchPropertyValues {
 	param3: number | undefined | MixedValue;
 }
 
-// ============================================
-// ユーティリティ関数
-// ============================================
-
 /**
- * オブジェクト配列から共通値を計算
- * 全オブジェクトで同じ値ならその値を返し、異なる場合はMIXED_VALUEを返す
+ * Compute common value from object array
+ * Returns the value if all objects have the same value, otherwise returns MIXED_VALUE
  */
 function computeCommonValue<T>(
 	objects: BoardObject[],
@@ -75,7 +63,7 @@ function computeCommonValue<T>(
 }
 
 /**
- * 選択オブジェクトからバッチプロパティ値を計算
+ * Compute batch property values from selected objects
  */
 export function computeBatchPropertyValues(
 	objects: BoardObject[],
@@ -105,7 +93,7 @@ export function computeBatchPropertyValues(
 }
 
 /**
- * 全オブジェクトが同じobjectIdを持つかどうかを判定
+ * Check if all objects have the same objectId
  */
 export function haveSameObjectId(objects: BoardObject[]): boolean {
 	if (objects.length === 0) return false;
@@ -114,7 +102,7 @@ export function haveSameObjectId(objects: BoardObject[]): boolean {
 }
 
 /**
- * 共通のフリップフラグを取得（全オブジェクトで共通してサポートされているもの）
+ * Get common flip flags (those supported by all objects)
  */
 export function getCommonFlipFlags(
 	objects: BoardObject[],
@@ -123,7 +111,7 @@ export function getCommonFlipFlags(
 ): { horizontal: boolean; vertical: boolean } {
 	if (objects.length === 0) return { horizontal: false, vertical: false };
 
-	// 全オブジェクトでサポートされているフラグのみを返す
+	// Return only flags supported by all objects
 	let horizontal = true;
 	let vertical = true;
 

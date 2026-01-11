@@ -1,7 +1,7 @@
 /**
- * プロパティパネルコンポーネント
+ * Property panel component
  *
- * 選択状態に応じてボード設定またはオブジェクトプロパティを表示
+ * Displays board settings or object properties based on selection state
  */
 
 import { useCallback } from "react";
@@ -16,14 +16,6 @@ import { BatchPropertyPanel } from "./BatchPropertyPanel";
 import { BoardPropertyPanel } from "./BoardPropertyPanel";
 import { CircularPropertyPanel } from "./CircularPropertyPanel";
 import { ObjectPropertyPanel } from "./ObjectPropertyPanel";
-
-/**
- * プロパティパネル
- *
- * オブジェクト未選択時はボード設定を表示し、
- * 単一オブジェクト選択時はオブジェクトプロパティを表示し、
- * 複数オブジェクト選択時はバッチ編集パネルを表示
- */
 export function PropertyPanel() {
 	const selectedIds = useSelectedIds();
 	const selectedObjects = useSelectedObjects();
@@ -38,15 +30,12 @@ export function PropertyPanel() {
 		updateCircularRadius,
 	} = useEditorActions();
 
-	// 単一選択判定
 	const selectedObject =
 		selectedObjects.length === 1 ? selectedObjects[0] : null;
 	const selectedId = selectedIds.length === 1 ? selectedIds[0] : null;
 
-	// 複数選択判定
 	const isMultipleSelection = selectedObjects.length > 1;
 
-	// オブジェクト更新ハンドラ（単一選択用）
 	const handleUpdateObject = useCallback(
 		(updates: Parameters<typeof updateObject>[1]) => {
 			if (selectedId !== null) {
@@ -56,7 +45,6 @@ export function PropertyPanel() {
 		[selectedId, updateObject],
 	);
 
-	// 円形配置モード時は円形プロパティパネルを表示
 	if (isCircularMode && circularMode) {
 		return (
 			<CircularPropertyPanel
@@ -70,7 +58,6 @@ export function PropertyPanel() {
 		);
 	}
 
-	// 複数選択時はバッチ編集パネルを表示
 	if (isMultipleSelection) {
 		return (
 			<BatchPropertyPanel
@@ -81,7 +68,6 @@ export function PropertyPanel() {
 		);
 	}
 
-	// 単一選択時はオブジェクトプロパティパネルを表示
 	if (selectedObject && selectedId !== null) {
 		return (
 			<ObjectPropertyPanel
@@ -92,7 +78,6 @@ export function PropertyPanel() {
 		);
 	}
 
-	// 未選択時はボード情報を表示
 	return (
 		<BoardPropertyPanel
 			onUpdateMeta={updateBoardMeta}

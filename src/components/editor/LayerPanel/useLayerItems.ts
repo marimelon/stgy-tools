@@ -1,8 +1,8 @@
 /**
- * レイヤーアイテム計算フック
+ * Layer item computation hook
  *
- * グループを考慮したレイヤーアイテムのリスト構築と
- * 可視性ヘルパー関数を提供
+ * Builds layer item list with group awareness and
+ * provides visibility helper functions.
  */
 
 import { useCallback, useMemo } from "react";
@@ -16,26 +16,17 @@ export interface UseLayerItemsParams {
 }
 
 export interface UseLayerItemsReturn {
-	/** グループを考慮したレイヤーアイテムのリスト */
 	layerItems: LayerItem[];
-	/** グループ内の全オブジェクトが表示中かどうか */
 	isGroupAllVisible: (group: ObjectGroup) => boolean;
-	/** グループ内の全オブジェクトが非表示かどうか */
 	isGroupAllHidden: (group: ObjectGroup) => boolean;
-	/** グループ内の全オブジェクトがロック中かどうか */
 	isGroupAllLocked: (group: ObjectGroup) => boolean;
-	/** グループ内の全オブジェクトがロック解除かどうか */
 	isGroupAllUnlocked: (group: ObjectGroup) => boolean;
 }
 
-/**
- * レイヤーアイテム計算フック
- */
 export function useLayerItems({
 	objects,
 	getGroupForObject,
 }: UseLayerItemsParams): UseLayerItemsReturn {
-	// レイヤーアイテムのリストを構築（グループを考慮）
 	const layerItems = useMemo<LayerItem[]>(() => {
 		const items: LayerItem[] = [];
 		const processedIds = new Set<string>();
@@ -46,7 +37,7 @@ export function useLayerItems({
 			const group = getGroupForObject(obj.id);
 
 			if (group) {
-				// グループの最初のオブジェクト（配列順で最初に出現するオブジェクト）でグループヘッダーを追加
+				// Add group header at the first object in array order
 				const firstGroupObjectId = group.objectIds.find((id) =>
 					objects.some((o) => o.id === id),
 				);
@@ -58,9 +49,7 @@ export function useLayerItems({
 						groupId: group.id,
 					});
 
-					// グループ内のオブジェクトを追加（折りたたまれていなければ）
 					if (!group.collapsed) {
-						// オブジェクト配列の順序に従ってグループ内オブジェクトを追加
 						const groupObjectsInOrder = objects.filter((o) =>
 							group.objectIds.includes(o.id),
 						);
@@ -77,14 +66,12 @@ export function useLayerItems({
 							processedIds.add(groupObj.id);
 						}
 					} else {
-						// 折りたたまれている場合はIDだけ記録
 						for (const id of group.objectIds) {
 							processedIds.add(id);
 						}
 					}
 				}
 			} else {
-				// グループに属していないオブジェクト
 				items.push({
 					type: "object",
 					objectId: obj.id,
@@ -96,7 +83,6 @@ export function useLayerItems({
 		return items;
 	}, [objects, getGroupForObject]);
 
-	// グループ内のオブジェクトが全て表示中かどうかを取得
 	const isGroupAllVisible = useCallback(
 		(group: ObjectGroup) => {
 			return group.objectIds.every((id) => {
@@ -107,7 +93,6 @@ export function useLayerItems({
 		[objects],
 	);
 
-	// グループ内のオブジェクトが全て非表示かどうかを取得
 	const isGroupAllHidden = useCallback(
 		(group: ObjectGroup) => {
 			return group.objectIds.every((id) => {
@@ -118,7 +103,6 @@ export function useLayerItems({
 		[objects],
 	);
 
-	// グループ内のオブジェクトが全てロック中かどうかを取得
 	const isGroupAllLocked = useCallback(
 		(group: ObjectGroup) => {
 			return group.objectIds.every((id) => {
@@ -129,7 +113,6 @@ export function useLayerItems({
 		[objects],
 	);
 
-	// グループ内のオブジェクトが全てロック解除かどうかを取得
 	const isGroupAllUnlocked = useCallback(
 		(group: ObjectGroup) => {
 			return group.objectIds.every((id) => {

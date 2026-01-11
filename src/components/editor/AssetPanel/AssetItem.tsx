@@ -1,7 +1,7 @@
 /**
- * アセットアイテムコンポーネント
+ * Asset item component
  *
- * アセットのプレビュー表示とインタラクション
+ * Preview display and interaction for assets
  */
 
 import type { MouseEvent } from "react";
@@ -13,16 +13,16 @@ import {
 } from "@/lib/assets";
 
 interface AssetItemProps {
-	/** アセットデータ */
+	/** Asset data */
 	asset: AssetWithRuntimeIds;
-	/** ダブルクリック時のコールバック */
+	/** Callback on double click */
 	onApply: (asset: AssetWithRuntimeIds) => void;
-	/** 右クリック時のコールバック */
+	/** Callback on right click */
 	onContextMenu: (e: MouseEvent, asset: AssetWithRuntimeIds) => void;
 }
 
 /**
- * アセットアイテムコンポーネント
+ * Asset item component
  */
 export function AssetItem({ asset, onApply, onContextMenu }: AssetItemProps) {
 	const { t } = useTranslation();
@@ -46,7 +46,7 @@ export function AssetItem({ asset, onApply, onContextMenu }: AssetItemProps) {
 			className="w-full bg-card hover:bg-accent/50 border border-border rounded-md p-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
 			title={t("assetPanel.contextMenu.apply")}
 		>
-			{/* プレビュー */}
+			{/* Preview */}
 			<div
 				className="w-full aspect-square bg-muted rounded overflow-hidden mb-2"
 				style={{ background: "var(--color-bg-deep)" }}
@@ -59,19 +59,19 @@ export function AssetItem({ asset, onApply, onContextMenu }: AssetItemProps) {
 					role="img"
 					aria-label={asset.name}
 				>
-					{/* SVGは後から描画したものが上に表示されるため、逆順で描画 */}
+					{/* SVG renders later elements on top, so render in reverse order */}
 					{[...asset.objects].reverse().map((obj) => (
 						<ObjectRenderer key={obj.id} object={obj} selected={false} />
 					))}
 				</svg>
 			</div>
 
-			{/* アセット名 */}
+			{/* Asset name */}
 			<div className="text-xs font-medium truncate" title={asset.name}>
 				{asset.name}
 			</div>
 
-			{/* オブジェクト数 */}
+			{/* Object count */}
 			<div className="text-xs text-muted-foreground">
 				{t("assetPanel.objectCount", { count: asset.objects.length })}
 			</div>

@@ -1,5 +1,5 @@
 /**
- * 履歴アイテムコンポーネント
+ * History item component
  */
 
 import { Circle, CircleDot, History } from "lucide-react";
@@ -15,7 +15,7 @@ interface HistoryItemProps {
 }
 
 /**
- * 履歴パネルの各エントリ
+ * Each entry in the history panel
  */
 export function HistoryItem({
 	entry,
@@ -24,7 +24,7 @@ export function HistoryItem({
 	isRedoable,
 	onClick,
 }: HistoryItemProps) {
-	// アイコンの選択
+	// Icon selection
 	const Icon = isInitial ? History : isCurrent ? CircleDot : Circle;
 	const iconColor = isCurrent
 		? "text-primary"
@@ -47,10 +47,10 @@ export function HistoryItem({
 			onClick={onClick}
 			title={entry.description}
 		>
-			{/* アイコン */}
+			{/* Icon */}
 			<Icon size={14} className={iconColor} />
 
-			{/* 説明テキスト */}
+			{/* Description text */}
 			<span className="flex-1 truncate">{entry.description}</span>
 		</button>
 	);

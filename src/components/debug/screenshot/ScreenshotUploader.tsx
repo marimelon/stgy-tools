@@ -1,5 +1,5 @@
 /**
- * スクリーンショットアップロードコンポーネント
+ * Screenshot uploader component
  */
 
 import { ImagePlus, Upload } from "lucide-react";

@@ -25,7 +25,6 @@ export function BoardExpandModal({
 	const { t } = useTranslation();
 	const descriptionId = useId();
 
-	// ビューポートの85%に収まるスケールを計算
 	const scale = useMemo(() => {
 		if (typeof window === "undefined") return 1;
 		const maxWidth = window.innerWidth * 0.85 - 48;

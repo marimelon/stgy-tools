@@ -1,7 +1,5 @@
 /**
- * オブジェクトプロパティパネルコンポーネント
- *
- * shadcn/ui ベースの選択オブジェクトプロパティ編集
+ * Object property panel component (shadcn/ui based)
  */
 
 import { useTranslation } from "react-i18next";
@@ -31,7 +29,6 @@ import {
 	SliderInput,
 } from "./FormInputs";
 
-/** EditParamIds を i18n キーにマッピング */
 const EDIT_PARAM_I18N_KEYS: Record<number, string> = {
 	[EditParamIds.Size]: "editParam.size",
 	[EditParamIds.Rotation]: "editParam.angle",
@@ -47,21 +44,11 @@ const EDIT_PARAM_I18N_KEYS: Record<number, string> = {
 	[EditParamIds.SizeSmall]: "editParam.size",
 };
 
-/**
- * オブジェクトプロパティパネルのProps
- */
 export interface ObjectPropertyPanelProps {
-	/** 選択されたオブジェクト */
 	object: BoardObject;
-	/** オブジェクト更新時のコールバック */
 	onUpdate: (updates: Partial<BoardObject>) => void;
-	/** 履歴コミット時のコールバック */
 	onCommitHistory: (description: string) => void;
 }
-
-/**
- * オブジェクトプロパティパネル
- */
 export function ObjectPropertyPanel({
 	object,
 	onUpdate,
@@ -89,32 +76,27 @@ export function ObjectPropertyPanel({
 	const isLineObject = object.objectId === ObjectIds.Line;
 	const isColorChangeable = COLOR_CHANGEABLE_OBJECT_IDS.has(object.objectId);
 
-	// Lineの角度変更時に中央を軸として回転
+	// Rotate Line around center when angle changes
 	const handleLineRotationChange = (newRotation: number) => {
 		const startX = object.position.x;
 		const startY = object.position.y;
 		const endX = (object.param1 ?? startX * 10 + 2560) / 10;
 		const endY = (object.param2 ?? startY * 10) / 10;
 
-		// 線分の中央点を計算
 		const centerX = (startX + endX) / 2;
 		const centerY = (startY + endY) / 2;
 
-		// 中央から端点までの長さ（線分の長さの半分）
 		const dx = endX - startX;
 		const dy = endY - startY;
 		const halfLength = Math.sqrt(dx * dx + dy * dy) / 2;
 
-		// 新しい角度で中央から始点・終点を計算
 		const radians = (newRotation * Math.PI) / 180;
 		const offsetX = halfLength * Math.cos(radians);
 		const offsetY = halfLength * Math.sin(radians);
 
-		// 新しい始点（中央から逆方向）
 		const newStartX = centerX - offsetX;
 		const newStartY = centerY - offsetY;
 
-		// 新しい終点（中央から正方向）
 		const newEndX = centerX + offsetX;
 		const newEndY = centerY + offsetY;
 
@@ -126,15 +108,13 @@ export function ObjectPropertyPanel({
 		});
 	};
 
-	// 反転可能フラグを取得
 	const flipFlags = OBJECT_FLIP_FLAGS[object.objectId] ?? DEFAULT_FLIP_FLAGS;
 	const canFlipHorizontal = flipFlags.horizontal;
 	const canFlipVertical = flipFlags.vertical;
 
-	// 編集可能パラメータを取得
 	const editParams = OBJECT_EDIT_PARAMS[object.objectId] ?? DEFAULT_EDIT_PARAMS;
 
-	// 追加パラメータ（サイズ、回転、透過度以外）をフィルタリング
+	// Filter out standard params (size, rotation, opacity)
 	const additionalParams = editParams.filter(
 		(paramId) =>
 			paramId !== EditParamIds.None &&
@@ -147,7 +127,6 @@ export function ObjectPropertyPanel({
 	return (
 		<div className="h-full overflow-y-auto">
 			<div className="p-4 space-y-1">
-				{/* オブジェクト情報 */}
 				<div className="mb-4">
 					<div className="text-xs font-medium mb-1.5 uppercase tracking-wide text-muted-foreground font-display">
 						{t("propertyPanel.object")}
@@ -160,7 +139,6 @@ export function ObjectPropertyPanel({
 					</div>
 				</div>
 
-				{/* 位置 */}
 				<PropertySection title={t("propertyPanel.position")}>
 					<div className="grid grid-cols-2 gap-3">
 						<NumberInput
@@ -188,7 +166,6 @@ export function ObjectPropertyPanel({
 					</div>
 				</PropertySection>
 
-				{/* 変形 */}
 				<PropertySection title={t("propertyPanel.transform")}>
 					<div className="space-y-3">
 						<SliderInput
@@ -207,7 +184,6 @@ export function ObjectPropertyPanel({
 						/>
 						{!isLineObject &&
 							(() => {
-								// オブジェクトタイプに応じたサイズパラメータを取得
 								const editParams =
 									OBJECT_EDIT_PARAMS[object.objectId] ?? DEFAULT_EDIT_PARAMS;
 								const sizeParamId = editParams.includes(EditParamIds.SizeSmall)
@@ -232,10 +208,9 @@ export function ObjectPropertyPanel({
 					</div>
 				</PropertySection>
 
-				{/* 色 */}
 				<PropertySection title={t("propertyPanel.color")}>
 					<div className="space-y-3">
-						{/* カラーピッカー（デバッグモード時のみ・色変更可能オブジェクトのみ） */}
+						{/* Color picker (debug mode only, color-changeable objects only) */}
 						{debugMode && isColorChangeable && (
 							<div className="flex items-center gap-3">
 								<div className="relative rounded-md overflow-hidden border-2 border-border">
@@ -261,7 +236,6 @@ export function ObjectPropertyPanel({
 								</span>
 							</div>
 						)}
-						{/* カラーパレット（色変更可能オブジェクトのみ） */}
 						{isColorChangeable && (
 							<ColorPalette
 								currentColor={object.color}
@@ -286,7 +260,6 @@ export function ObjectPropertyPanel({
 					</div>
 				</PropertySection>
 
-				{/* フラグ */}
 				<PropertySection title={t("propertyPanel.state")}>
 					<div className="space-y-2.5">
 						<Checkbox
@@ -336,7 +309,6 @@ export function ObjectPropertyPanel({
 					</div>
 				</PropertySection>
 
-				{/* テキスト (テキストオブジェクトのみ) */}
 				{isTextObject && (
 					<PropertySection title={t("propertyPanel.text")}>
 						<Input
@@ -344,21 +316,20 @@ export function ObjectPropertyPanel({
 							value={object.text ?? ""}
 							onChange={(e) => {
 								let newText = e.target.value;
-								// デバッグモードでない場合は30バイトに制限
+								// Limit to 30 bytes unless in debug mode
 								if (!debugMode) {
 									newText = truncateToUtf8Bytes(newText, MAX_TEXT_BYTES);
 								}
 								handleChange({ text: newText });
 							}}
 							onBlur={(e) => {
-								// 空文字の場合はデフォルトテキストに戻す
+								// Reset to default text if empty
 								if (e.target.value.trim() === "") {
 									handleChange({ text: t("common.defaultText") });
 								}
 								onCommitHistory(t("propertyPanel.textChanged"));
 							}}
 						/>
-						{/* バイト数表示（デバッグモード時のみ） */}
 						{debugMode && (
 							<div className="text-xs text-muted-foreground mt-1">
 								{getUtf8ByteLength(object.text ?? "")} / {MAX_TEXT_BYTES} bytes
@@ -367,7 +338,6 @@ export function ObjectPropertyPanel({
 					</PropertySection>
 				)}
 
-				{/* 固有パラメータ（動的生成） */}
 				{additionalParams.length > 0 && (
 					<PropertySection title={t("propertyPanel.specificParams")}>
 						<div className="space-y-3">
@@ -375,7 +345,6 @@ export function ObjectPropertyPanel({
 								const paramDef = EDIT_PARAMS[paramId];
 								if (!paramDef) return null;
 
-								// 各パラメータIDに対応するオブジェクトプロパティを決定
 								let value: number;
 								let onChange: (v: number) => void;
 
@@ -395,7 +364,6 @@ export function ObjectPropertyPanel({
 									value = object.param2 ?? paramDef.defaultValue;
 									onChange = (v) => handleChange({ param2: v });
 								} else if (paramId === EditParamIds.LineWidth) {
-									// Lineの場合はparam3（線の太さ）、それ以外はparam1
 									if (isLineObject) {
 										value = object.param3 ?? paramDef.defaultValue;
 										onChange = (v) => handleChange({ param3: v });
@@ -413,7 +381,6 @@ export function ObjectPropertyPanel({
 									return null;
 								}
 
-								// 単位を決定
 								const unit =
 									paramId === EditParamIds.ConeAngle
 										? "°"
@@ -421,7 +388,6 @@ export function ObjectPropertyPanel({
 											? "%"
 											: "";
 
-								// i18nキーを取得
 								const labelKey = EDIT_PARAM_I18N_KEYS[paramId];
 								const label = labelKey ? t(labelKey) : paramDef.name;
 

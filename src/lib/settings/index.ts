@@ -1,5 +1,5 @@
 /**
- * アプリケーション設定モジュール
+ * Application settings module
  */
 
 // Hooks
@@ -17,7 +17,7 @@ export {
 	useSettingsStoreContext,
 } from "./SettingsStoreProvider";
 export type { SettingsActions, SettingsState, SettingsStore } from "./store";
-// Store utilities (Provider外でも使用可能)
+// Store utilities (usable outside Provider)
 export { getDebugMode, setDebugMode } from "./store";
 // Types
 export type { AppSettings } from "./types";

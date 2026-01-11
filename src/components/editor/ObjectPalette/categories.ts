@@ -1,44 +1,44 @@
 /**
- * オブジェクトカテゴリ定義
+ * Object category definitions
  */
 
 import { ObjectIds } from "@/lib/stgy";
 
-/** 非表示オブジェクト（CSVでFalse） - デバッグモード時のみ表示 */
+/** Hidden objects (False in CSV) - only shown in debug mode */
 export const HIDDEN_OBJECT_IDS: number[] = [
-	// フィールド（非表示）
-	ObjectIds.CircleWhiteSolid, // 1: 円形白無地フィールド
-	ObjectIds.CircleWhiteTile, // 2: 円形白タイルフィールド
-	ObjectIds.CircleGraySolid, // 3: 円形グレー無地フィールド
-	ObjectIds.SquareWhiteSolid, // 5: 四角形白無地フィールド
-	ObjectIds.SquareWhiteTile, // 6: 四角形白タイルフィールド
-	ObjectIds.SquareGraySolid, // 7: 四角形グレー無地フィールド
-	// ロール（非表示）
+	// Fields (hidden)
+	ObjectIds.CircleWhiteSolid, // 1: Circle white solid field
+	ObjectIds.CircleWhiteTile, // 2: Circle white tile field
+	ObjectIds.CircleGraySolid, // 3: Circle gray solid field
+	ObjectIds.SquareWhiteSolid, // 5: Square white solid field
+	ObjectIds.SquareWhiteTile, // 6: Square white tile field
+	ObjectIds.SquareGraySolid, // 7: Square gray solid field
+	// Roles (hidden)
 	58, // DPS5
 	59, // DPS6
-	// エネミー（非表示）
-	61, // エネミー小2
-	63, // エネミー中2
-	// 図形（非表示）
-	104, // 図形：矢印右回り
-	// グループ
-	ObjectIds.Group, // 105: グループ
+	// Enemies (hidden)
+	61, // Enemy small 2
+	63, // Enemy medium 2
+	// Shapes (hidden)
+	104, // Shape: arrow clockwise
+	// Group
+	ObjectIds.Group, // 105: Group
 ];
 
-/** オブジェクトカテゴリ（CSVの表示順序に準拠）
- * TofuObjectCategory.ja.csv カラム1でソート:
- * 1. クラス/ジョブ (カテゴリ2, カラム1: 1)
- * 2. 攻撃範囲 (カテゴリ6, カラム1: 2)
- * 3. アイコン/マーカー (カテゴリ3, カラム1: 3)
- * 4. 図形/記号 (カテゴリ4, カラム1: 4)
- * 5. フィールド (カテゴリ1, カラム1: 5)
+/** Object categories (following CSV display order)
+ * Sorted by TofuObjectCategory.ja.csv column 1:
+ * 1. Class/Job (Category 2, column 1: 1)
+ * 2. Attack range (Category 6, column 1: 2)
+ * 3. Icon/Marker (Category 3, column 1: 3)
+ * 4. Shape/Symbol (Category 4, column 1: 4)
+ * 5. Field (Category 1, column 1: 5)
  *
- * 各カテゴリ内はTofuObject.ja.csv カラム4でソート
+ * Within each category, sorted by TofuObject.ja.csv column 4
  */
 export const OBJECT_CATEGORIES: Record<string, number[]> = {
-	// カテゴリ2: クラス/ジョブ (カラム1: 1) - カラム3（ソート順）でソート
+	// Category 2: Class/Job (column 1: 1) - sorted by column 3 (sort order)
 	jobs: [
-		// ロールアイコン (ソート順 1-17)
+		// Role icons (sort order 1-17)
 		ObjectIds.Tank, // 1
 		ObjectIds.Tank1, // 2
 		ObjectIds.Tank2, // 3
@@ -56,35 +56,35 @@ export const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.RangedDPS, // 15
 		ObjectIds.PhysicalRangedDPS, // 16
 		ObjectIds.MagicalRangedDPS, // 17
-		// タンクジョブ (ソート順 20-23)
+		// Tank jobs (sort order 20-23)
 		ObjectIds.Paladin, // 20
 		ObjectIds.Warrior, // 21
 		ObjectIds.DarkKnight, // 22
 		ObjectIds.Gunbreaker, // 23
-		// ヒーラージョブ (ソート順 30-33)
+		// Healer jobs (sort order 30-33)
 		ObjectIds.WhiteMage, // 30
 		ObjectIds.Scholar, // 31
 		ObjectIds.Astrologian, // 32
 		ObjectIds.Sage, // 33
-		// 近接DPSジョブ (ソート順 40-45)
+		// Melee DPS jobs (sort order 40-45)
 		ObjectIds.Monk, // 40
 		ObjectIds.Dragoon, // 41
 		ObjectIds.Ninja, // 42
 		ObjectIds.Samurai, // 43
 		ObjectIds.Reaper, // 44
 		ObjectIds.Viper, // 45
-		// 遠隔物理DPSジョブ (ソート順 50-52)
+		// Physical ranged DPS jobs (sort order 50-52)
 		ObjectIds.Bard, // 50
 		ObjectIds.Machinist, // 51
 		ObjectIds.Dancer, // 52
-		// 遠隔魔法DPSジョブ (ソート順 60-63)
+		// Magical ranged DPS jobs (sort order 60-63)
 		ObjectIds.BlackMage, // 60
 		ObjectIds.Summoner, // 61
 		ObjectIds.RedMage, // 62
 		ObjectIds.Pictomancer, // 63
-		// 青魔道士 (ソート順 70)
+		// Blue Mage (sort order 70)
 		ObjectIds.BlueMage, // 70
-		// 基本クラス (ソート順 200-208)
+		// Base classes (sort order 200-208)
 		ObjectIds.Gladiator, // 200
 		ObjectIds.Marauder, // 201
 		ObjectIds.Conjurer, // 202
@@ -95,7 +95,7 @@ export const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.Thaumaturge, // 207
 		ObjectIds.Arcanist, // 208
 	],
-	// カテゴリ6: 攻撃範囲 (カラム1: 2) - カラム4でソート
+	// Category 6: Attack range (column 1: 2) - sorted by column 4
 	attacks: [
 		ObjectIds.CircleAoE, // 101
 		ObjectIds.ConeAoE, // 102
@@ -118,16 +118,16 @@ export const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.Area3P, // 120
 		ObjectIds.Area4P, // 121
 	],
-	// カテゴリ3: アイコン/マーカー (カラム1: 3)
+	// Category 3: Icon/Marker (column 1: 3)
 	markers: [
-		// エネミー
+		// Enemies
 		ObjectIds.EnemySmall,
 		ObjectIds.EnemyMedium,
 		ObjectIds.EnemyLarge,
-		// バフ/デバフ
+		// Buff/Debuff
 		ObjectIds.Buff,
 		ObjectIds.Debuff,
-		// 攻撃マーカー
+		// Attack markers
 		ObjectIds.Attack1,
 		ObjectIds.Attack2,
 		ObjectIds.Attack3,
@@ -136,18 +136,18 @@ export const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.Attack6,
 		ObjectIds.Attack7,
 		ObjectIds.Attack8,
-		// 足止め/禁止
+		// Bind/Ignore
 		ObjectIds.Bind1,
 		ObjectIds.Bind2,
 		ObjectIds.Bind3,
 		ObjectIds.Ignore1,
 		ObjectIds.Ignore2,
-		// 汎用マーカー
+		// Generic markers
 		ObjectIds.Square,
 		ObjectIds.Circle,
 		ObjectIds.Plus,
 		ObjectIds.Triangle,
-		// フィールドマーカー
+		// Field markers
 		ObjectIds.WaymarkA,
 		ObjectIds.WaymarkB,
 		ObjectIds.WaymarkC,
@@ -156,13 +156,13 @@ export const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.Waymark2,
 		ObjectIds.Waymark3,
 		ObjectIds.Waymark4,
-		// ロックオンマーカー
+		// Lock-on markers
 		ObjectIds.LockOnRed,
 		ObjectIds.LockOnBlue,
 		ObjectIds.LockOnPurple,
 		ObjectIds.LockOnGreen,
 	],
-	// カテゴリ4: 図形/記号 (カラム1: 4)
+	// Category 4: Shape/Symbol (column 1: 4)
 	shapes: [
 		ObjectIds.Text,
 		ObjectIds.ShapeCircle,
@@ -179,10 +179,10 @@ export const OBJECT_CATEGORIES: Record<string, number[]> = {
 		ObjectIds.CounterClockwise,
 		ObjectIds.Line,
 	],
-	// カテゴリ1: フィールド (カラム1: 5)
+	// Category 1: Field (column 1: 5)
 	fields: [
-		// 注意: CircleWhiteSolid, CircleWhiteTile, CircleGraySolid,
-		// SquareWhiteSolid, SquareWhiteTile, SquareGraySolid は未使用 (CSV: False)
+		// Note: CircleWhiteSolid, CircleWhiteTile, CircleGraySolid,
+		// SquareWhiteSolid, SquareWhiteTile, SquareGraySolid are unused (CSV: False)
 		ObjectIds.CircleCheck,
 		ObjectIds.SquareCheck,
 		ObjectIds.CircleGray,

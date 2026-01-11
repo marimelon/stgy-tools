@@ -12,12 +12,12 @@ export const Route = createFileRoute("/debug")({
 	head: () => seo,
 });
 
-/** 全オブジェクトIDのリスト */
+/** List of all object IDs */
 const ALL_OBJECT_IDS = Object.keys(ObjectNames)
 	.map(Number)
 	.sort((a, b) => a - b);
 
-/** デフォルトのオブジェクトを生成（デバッグ用、IDなし） */
+/** Create a default object (for debugging, without ID) */
 function createDefaultObject(objectId: number): BoardObjectWithoutId {
 	return {
 		objectId,
@@ -31,9 +31,7 @@ function createDefaultObject(objectId: number): BoardObjectWithoutId {
 		rotation: 0,
 		size: 100,
 		color: { r: 255, g: 100, b: 0, opacity: 0 },
-		// 扇範囲攻撃のデフォルト角度
 		param1: objectId === ObjectIds.ConeAoE ? 90 : undefined,
-		// ドーナツ範囲攻撃のデフォルト内径
 		param2: objectId === ObjectIds.DonutAoE ? 50 : undefined,
 	};
 }
@@ -59,7 +57,7 @@ function DebugPage() {
 
 function ObjectPreview({ objectId }: { objectId: number }) {
 	const object = createDefaultObject(objectId);
-	const name = ObjectNames[objectId] ?? "不明";
+	const name = ObjectNames[objectId] ?? "Unknown";
 
 	return (
 		<div className="bg-card border border-border rounded-lg p-2 flex flex-col items-center">

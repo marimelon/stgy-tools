@@ -1,14 +1,14 @@
 /**
- * stgy バイナリパーサー
+ * stgy binary parser
  *
- * デコードされたバイナリデータをBoardData構造にパースする
+ * Parses decoded binary data into BoardData structure
  *
- * バイナリフォーマット (xivdev仕様準拠):
- * - StrategyBoard ヘッダー (16バイト):
- *   - 0x00-0x03: tag (u32) - バージョン
- *   - 0x04-0x07: length (u32) - ヘッダー後のコンテンツ長
- *   - 0x08-0x0F: padding (8バイト)
- * - Sections (0x10以降):
+ * Binary format (xivdev spec compliant):
+ * - StrategyBoard header (16 bytes):
+ *   - 0x00-0x03: tag (u32) - version
+ *   - 0x04-0x07: length (u32) - content length after header
+ *   - 0x08-0x0F: padding (8 bytes)
+ * - Sections (from 0x10):
  *   - SectionType (u16): 0x00 = Content, 0x03 = Background
  *   - Content section: length (u16) + TypeContainers
  *   - Background section: TypedArray<u16>
@@ -26,25 +26,25 @@ import type {
 // Re-export for backward compatibility
 export { BinaryReader } from "./parser/BinaryReader";
 
-/** セクションタイプ */
+/** Section type */
 const SectionType = {
 	CONTENT: 0x00,
 	BACKGROUND: 0x03,
 } as const;
 
 /**
- * ボードデータをパース
- * 戻り値のオブジェクトにはIDが含まれない。assignObjectIdsでIDを付与する。
+ * Parse board data
+ * Returned objects do not include IDs. Use assignObjectIds to add IDs.
  */
 export function parseBoardData(data: Uint8Array): ParsedBoardData {
 	const reader = new BinaryReader(data);
 
-	// StrategyBoard ヘッダー (16バイト)
+	// StrategyBoard header (16 bytes)
 	const version = reader.readUint32(); // tag/version
-	reader.readUint32(); // length (コンテンツ長、検証用に使用可能)
+	reader.readUint32(); // length (content length, can be used for validation)
 	reader.skip(8); // padding
 
-	// フィールドリストをパース
+	// Parse field list
 	const context = createParseContext();
 	let insideContentSection = false;
 	let countingEmptyFields = false;
@@ -52,17 +52,17 @@ export function parseBoardData(data: Uint8Array): ParsedBoardData {
 	while (reader.remaining >= 2) {
 		const sectionTypeOrFieldId = reader.readUint16();
 
-		// Content section (0x00) の開始判定
-		// 注: SectionType.CONTENT (0x00) と FieldId 0 (Empty) は同じ値のため、
-		// Content section内に入っていない場合のみSectionTypeとして処理する
+		// Content section (0x00) start detection
+		// Note: SectionType.CONTENT (0x00) and FieldId 0 (Empty) have the same value,
+		// so only treat as SectionType when not inside Content section
 		if (sectionTypeOrFieldId === SectionType.CONTENT && !insideContentSection) {
-			reader.readUint16(); // SectionContent.length (検証用に使用可能)
+			reader.readUint16(); // SectionContent.length (can be used for validation)
 			insideContentSection = true;
 			countingEmptyFields = true;
 			continue;
 		}
 
-		// FieldId 0 (Empty) の処理
+		// FieldId 0 (Empty) handling
 		if (sectionTypeOrFieldId === 0) {
 			if (countingEmptyFields) {
 				context.emptyFieldCount++;
@@ -70,13 +70,13 @@ export function parseBoardData(data: Uint8Array): ParsedBoardData {
 			continue;
 		}
 
-		// 非空フィールドに達したら空フィールドのカウント終了
+		// Stop counting empty fields once non-empty field is reached
 		countingEmptyFields = false;
 
-		// 注: SectionType.BACKGROUND (0x03) と FieldId 3 (TEXT_TERMINATOR) は同じ値
-		// parseField3 が length=1 の場合に終端マーカー(Background section)として処理する
+		// Note: SectionType.BACKGROUND (0x03) and FieldId 3 (TEXT_TERMINATOR) have the same value
+		// parseField3 handles length=1 case as terminator marker (Background section)
 
-		// フィールドとして処理
+		// Process as field
 		const parser = fieldParsers[sectionTypeOrFieldId];
 		if (parser) {
 			parser(reader, context);
@@ -87,7 +87,7 @@ export function parseBoardData(data: Uint8Array): ParsedBoardData {
 		}
 	}
 
-	// オブジェクトを組み立て
+	// Assemble objects
 	const objects = assembleObjects(context);
 
 	return {
@@ -102,7 +102,7 @@ export function parseBoardData(data: Uint8Array): ParsedBoardData {
 }
 
 /**
- * ParseContextからBoardObjectWithoutId[]を組み立て
+ * Assemble BoardObjectWithoutId[] from ParseContext
  */
 function assembleObjects(context: ParseContext): BoardObjectWithoutId[] {
 	const objects: BoardObjectWithoutId[] = [];

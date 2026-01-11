@@ -47,11 +47,9 @@ import {
 } from "../utils";
 
 /**
- * 扇形
- * 起点は常に12時方向（上）、そこから時計回りに範囲角度分だけ広がる
- * 回転0度、角度90度の場合 → 12時〜3時（0時〜3時）
- * 頂点がオブジェクト座標に配置される
- * 10.png（円形グラデーション画像）を扇形にクリップして表示
+ * Cone shape for ConeAoE.
+ * Origin at 12 o'clock (top), expands clockwise by the angle.
+ * Clips circular gradient image (10.png) to cone shape.
  */
 function ConeShape({
 	transform,
@@ -68,17 +66,12 @@ function ConeShape({
 }) {
 	const clipId = useId();
 
-	// SVGの座標系: 0度=右、90度=下、-90度=上
-	// 起点: 12時方向（-90度、上）
-	// 終点: 起点から時計回りに範囲角度分
-	const startRad = -Math.PI / 2; // 12時方向（上）
-	const endRad = startRad + (angle * Math.PI) / 180; // 時計回りに範囲角度分
+	const startRad = -Math.PI / 2;
+	const endRad = startRad + (angle * Math.PI) / 180;
 
-	// オフセットを適用した頂点位置
 	const cx = offsetX;
 	const cy = offsetY;
 
-	// SVGの座標系に合わせて計算（Y軸は下が正）
 	const x1 = cx + Math.cos(startRad) * radius;
 	const y1 = cy + Math.sin(startRad) * radius;
 	const x2 = cx + Math.cos(endRad) * radius;
@@ -86,7 +79,6 @@ function ConeShape({
 
 	const largeArc = angle > 180 ? 1 : 0;
 
-	// 時計回り（sweep=1）で描画
 	const d = `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
 
 	return (
@@ -96,7 +88,6 @@ function ConeShape({
 					<path d={d} />
 				</clipPath>
 			</defs>
-			{/* 円形グラデーション画像を扇形にクリップ */}
 			<image
 				href={getIconPath(10)}
 				x={cx - radius}
@@ -127,7 +118,6 @@ export function AoEObject({
 	const id = useId();
 	const isOriginalIconMode = useOriginalIcons();
 
-	// DonutAoE以外はオリジナル画像を使用（DonutAoEはmask処理のため後で処理）
 	if (objectId !== ObjectIds.DonutAoE) {
 		const originalIcon = renderOriginalIconIfEnabled(
 			objectId,
@@ -161,7 +151,6 @@ export function AoEObject({
 
 		case ObjectIds.ConeAoE: {
 			const angle = param1 ?? 90;
-			// バウンディングボックスの中心がオブジェクト座標に来るようにオフセット計算
 			const cone = getConeBoundingBox(angle, SIZES.CONE_RADIUS);
 			const offsetX = -(cone.minX + cone.width / 2);
 			const offsetY = -(cone.minY + cone.height / 2);
@@ -177,8 +166,6 @@ export function AoEObject({
 		}
 
 		case ObjectIds.LineAoE: {
-			// LineAoE: param1 = 縦幅（長さ）、param2 = 横幅（太さ）
-			// 中央基準（中心が原点）
 			const length = param1 ?? DEFAULT_PARAMS.LINE_HEIGHT;
 			const thickness = param2 ?? DEFAULT_PARAMS.LINE_WIDTH;
 			return (
@@ -209,30 +196,21 @@ export function AoEObject({
 			return <Area4PIcon transform={transform} />;
 
 		case ObjectIds.DonutAoE: {
-			const coneAngle = param1 ?? 360; // 範囲角度（10-360度）
-			const donutRange = param2 ?? 50; // 0-240: 0=穴なし, 240=最大
+			const coneAngle = param1 ?? 360;
+			const donutRange = param2 ?? 50;
 			const maskId = `donut-mask-${id}`;
 
-			// Line param3=8 と同じ太さを最小として残す
-			// donutRange=240のとき、残る太さが Line strokeWidth=8 と同じになるように
 			const LINE_THICKNESS = 8;
 
-			// オリジナル画像モードの場合は画像にmaskを適用
 			const iconSize = OBJECT_BBOX_SIZES[objectId];
 			if (isOriginalIconMode && iconSize) {
-				// 画像サイズ基準で内径を計算
 				const imageOuterRadius = iconSize.width / 2;
-				// 残る太さを外径の比率で計算
-				// Line strokeWidth=8, DonutAoE size=50 のとき同じ太さになるように
-				// 画像内の円が外枠より小さいことを考慮して比率で計算
-				const MIN_THICKNESS_RATIO = 1 / 10; // 調整値
+				const MIN_THICKNESS_RATIO = 1 / 10;
 				const imageMinThickness = imageOuterRadius * MIN_THICKNESS_RATIO;
 				const imageMaxInnerRadius = imageOuterRadius - imageMinThickness;
 				const imageInnerRadius = imageMaxInnerRadius * (donutRange / 240);
 
-				// 360度以上の場合は完全な円ドーナツ
 				if (coneAngle >= 360) {
-					// クリック検知用のドーナツパス（外側時計回り、内側反時計回り）
 					const donutPath = [
 						`M ${imageOuterRadius} 0`,
 						`A ${imageOuterRadius} ${imageOuterRadius} 0 1 1 ${-imageOuterRadius} 0`,
@@ -267,14 +245,11 @@ export function AoEObject({
 								mask={`url(#${maskId})`}
 								pointerEvents="none"
 							/>
-							{/* クリック検知用の透明なドーナツパス */}
 							<path d={donutPath} fill="transparent" fillRule="evenodd" />
 						</g>
 					);
 				}
 
-				// 360度未満の場合は扇形ドーナツをmaskで適用
-				// バウンディングボックスの中心がオブジェクト座標に来るようにオフセット計算
 				const bbox =
 					imageInnerRadius <= 0
 						? getConeBoundingBox(coneAngle, imageOuterRadius)
@@ -334,19 +309,15 @@ export function AoEObject({
 							mask={`url(#${maskId})`}
 							pointerEvents="none"
 						/>
-						{/* クリック検知用の透明なパス（maskは視覚的なクリップのみでヒットテストに影響しないため） */}
 						<path d={maskPath} fill="transparent" />
 					</g>
 				);
 			}
 
-			// SVGモードの場合
 			const outerRadius = baseSize / 2;
-			// size=100のとき、残る太さが8pxになるように
 			const maxInnerRadius = outerRadius - LINE_THICKNESS;
 			const innerRadius = maxInnerRadius * (donutRange / 240);
 
-			// 360度以上の場合は既存のmask方式（完全な円ドーナツ）
 			if (coneAngle >= 360) {
 				return (
 					<g transform={transform}>
@@ -369,8 +340,6 @@ export function AoEObject({
 				);
 			}
 
-			// 360度未満の場合は扇形ドーナツをパスで描画
-			// バウンディングボックスの中心がオブジェクト座標に来るようにオフセット計算
 			const bbox =
 				innerRadius <= 0
 					? getConeBoundingBox(coneAngle, outerRadius)
@@ -378,17 +347,14 @@ export function AoEObject({
 			const offsetX = -(bbox.minX + bbox.width / 2);
 			const offsetY = -(bbox.minY + bbox.height / 2);
 
-			// 起点: 12時方向（-90度）から時計回りに角度分
-			const startRad = -Math.PI / 2; // 12時方向（上）
+			const startRad = -Math.PI / 2;
 			const endRad = startRad + (coneAngle * Math.PI) / 180;
 
-			// 外弧の開始点と終了点（オフセット適用）
 			const outerX1 = offsetX + Math.cos(startRad) * outerRadius;
 			const outerY1 = offsetY + Math.sin(startRad) * outerRadius;
 			const outerX2 = offsetX + Math.cos(endRad) * outerRadius;
 			const outerY2 = offsetY + Math.sin(endRad) * outerRadius;
 
-			// 内弧の開始点と終了点（オフセット適用）
 			const innerX1 = offsetX + Math.cos(startRad) * innerRadius;
 			const innerY1 = offsetY + Math.sin(startRad) * innerRadius;
 			const innerX2 = offsetX + Math.cos(endRad) * innerRadius;
@@ -396,20 +362,19 @@ export function AoEObject({
 
 			const largeArc = coneAngle > 180 ? 1 : 0;
 
-			// 内径が0の場合は扇形（内穴なし）
 			const d =
 				innerRadius <= 0
 					? [
-							`M ${offsetX} ${offsetY}`, // 中心（オフセット適用）
-							`L ${outerX1} ${outerY1}`, // 外弧開始点へ直線
-							`A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`, // 外弧（時計回り）
+							`M ${offsetX} ${offsetY}`,
+							`L ${outerX1} ${outerY1}`,
+							`A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`,
 							"Z",
 						].join(" ")
 					: [
-							`M ${outerX1} ${outerY1}`, // 外弧開始点
-							`A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`, // 外弧（時計回り）
-							`L ${innerX2} ${innerY2}`, // 内弧終了点へ直線
-							`A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerX1} ${innerY1}`, // 内弧（反時計回り）
+							`M ${outerX1} ${outerY1}`,
+							`A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${outerX2} ${outerY2}`,
+							`L ${innerX2} ${innerY2}`,
+							`A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${innerX1} ${innerY1}`,
 							"Z",
 						].join(" ");
 

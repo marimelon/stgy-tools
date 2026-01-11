@@ -1,10 +1,10 @@
 /**
- * ボード用ジオメトリ計算関数
- * クライアント・サーバー両方で使用される純粋な計算関数
+ * Geometry calculation functions for board rendering
+ * Pure calculation functions used by both client and server
  */
 
 /**
- * バウンディングボックスの型
+ * Bounding box type
  */
 export type BoundingBoxResult = {
 	minX: number;
@@ -14,20 +14,20 @@ export type BoundingBoxResult = {
 };
 
 /**
- * 扇形の外接矩形を計算（中心を原点とした相対座標）
- * 起点は12時方向（-90度）、そこから時計回りに範囲角度分広がる
+ * Calculate bounding rectangle of a cone (relative coordinates with center at origin)
+ * Starting point is 12 o'clock direction (-90 degrees), expanding clockwise by the angle
  */
 export function getConeBoundingBox(
 	angle: number,
 	radius: number,
 ): BoundingBoxResult {
-	// 起点: 12時方向（-90度）
-	// 終点: 起点から時計回りに範囲角度分
-	const startAngle = -90; // 12時方向（度）
-	const endAngle = -90 + angle; // 時計回りに範囲角度分
+	// Start: 12 o'clock direction (-90 degrees)
+	// End: clockwise from start by angle amount
+	const startAngle = -90; // 12 o'clock direction (degrees)
+	const endAngle = -90 + angle; // clockwise by angle amount
 
-	// 頂点を収集: 中心(0,0)、開始点、終了点
-	// SVGの座標系: x=cos(θ)*r, y=sin(θ)*r（Y軸は下が正）
+	// Collect vertices: center(0,0), start point, end point
+	// SVG coordinate system: x=cos(θ)*r, y=sin(θ)*r (Y-axis positive downward)
 	const points: { x: number; y: number }[] = [
 		{ x: 0, y: 0 },
 		{
@@ -40,7 +40,7 @@ export function getConeBoundingBox(
 		},
 	];
 
-	// 基準角度（0, 90, 180, -90度など）が扇形の範囲内にあれば追加
+	// Add cardinal angles (0, 90, 180, -90 degrees, etc.) if within cone range
 	const cardinalAngles = [-90, 0, 90, 180, 270];
 	for (const deg of cardinalAngles) {
 		if (deg > startAngle && deg < endAngle) {
@@ -62,9 +62,9 @@ export function getConeBoundingBox(
 }
 
 /**
- * 扇形ドーナツの外接矩形を計算（中心を原点とした相対座標）
- * 起点は12時方向（-90度）、そこから時計回りに範囲角度分広がる
- * 扇形と異なり中心(0,0)を含まず、外弧と内弧の点のみを考慮
+ * Calculate bounding rectangle of a donut cone (relative coordinates with center at origin)
+ * Starting point is 12 o'clock direction (-90 degrees), expanding clockwise by the angle
+ * Unlike cone, does not include center(0,0), only considers outer and inner arc points
  */
 export function getDonutConeBoundingBox(
 	angle: number,
@@ -76,7 +76,7 @@ export function getDonutConeBoundingBox(
 
 	const points: { x: number; y: number }[] = [];
 
-	// 外弧の開始点と終了点
+	// Outer arc start and end points
 	points.push({
 		x: Math.cos((startAngle * Math.PI) / 180) * outerRadius,
 		y: Math.sin((startAngle * Math.PI) / 180) * outerRadius,
@@ -86,7 +86,7 @@ export function getDonutConeBoundingBox(
 		y: Math.sin((endAngle * Math.PI) / 180) * outerRadius,
 	});
 
-	// 内弧の開始点と終了点
+	// Inner arc start and end points
 	points.push({
 		x: Math.cos((startAngle * Math.PI) / 180) * innerRadius,
 		y: Math.sin((startAngle * Math.PI) / 180) * innerRadius,
@@ -96,7 +96,7 @@ export function getDonutConeBoundingBox(
 		y: Math.sin((endAngle * Math.PI) / 180) * innerRadius,
 	});
 
-	// 基準角度が範囲内にあれば外弧と内弧の両方に追加
+	// Add to both outer and inner arcs if cardinal angles are within range
 	const cardinalAngles = [-90, 0, 90, 180, 270];
 	for (const deg of cardinalAngles) {
 		if (deg > startAngle && deg < endAngle) {

@@ -1,6 +1,5 @@
 /**
- * 著作権表示フッター
- * デフォルトでコンパクト表示、展開可能
+ * Copyright footer with expandable details.
  */
 
 import { Github } from "lucide-react";
@@ -82,7 +81,7 @@ export function Footer({ className = "" }: { className?: string }) {
 }
 
 /**
- * コンパクト版フッター（エディター用）
+ * Compact footer for editor pages.
  */
 export function CompactFooter({ className = "" }: { className?: string }) {
 	return (

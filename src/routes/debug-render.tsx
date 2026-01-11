@@ -1,6 +1,6 @@
 /**
- * クライアント vs サーバー レンダリング比較デバッグページ
- * 両者の差異を視覚的に確認できる
+ * Client vs Server rendering comparison debug page
+ * Visually compare rendering differences between the two
  */
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -36,14 +36,14 @@ export const Route = createFileRoute("/debug-render")({
 	head: () => seo,
 });
 
-/** ビューモード */
+/** View mode */
 type ViewMode = "side-by-side" | "overlay" | "diff";
 
-/** デフォルトのサンプルコード */
+/** Default sample codes */
 const SAMPLE_CODES = {
-	"基本 (ウェイマーク)":
+	"Basic (Waymarks)":
 		"[stgy:a0OcAwAYAfwgAFYAFBAAZYTLdYTLdYTLdYTLdYTLdYTLdYTLd]",
-	AoE攻撃: "[stgy:a0ScAwAYAfwJAAAHAGQAAMgA+g==]",
+	"AoE Attack": "[stgy:a0ScAwAYAfwJAAAHAGQAAMgA+g==]",
 };
 
 function RenderDebugPage() {
@@ -57,7 +57,6 @@ function RenderDebugPage() {
 	const [showServer, setShowServer] = useState(true);
 	const inputCodeId = useId();
 
-	// stgyコードをパース
 	const parseResult = (() => {
 		if (!inputCode.trim()) return null;
 		try {
@@ -66,12 +65,11 @@ function RenderDebugPage() {
 			const boardData = assignBoardObjectIds(parsed);
 			return { boardData, error: null };
 		} catch (e) {
-			const message = e instanceof Error ? e.message : "不明なエラー";
+			const message = e instanceof Error ? e.message : "Unknown error";
 			return { boardData: null, error: message };
 		}
 	})();
 
-	// サーバーからSVGを取得
 	const fetchServerSvg = useCallback(async (code: string) => {
 		if (!code.trim()) {
 			setServerSvg(null);
@@ -84,7 +82,6 @@ function RenderDebugPage() {
 
 		try {
 			const encodedCode = encodeURIComponent(code.trim());
-			// キャッシュバスティング用のタイムスタンプを追加
 			const timestamp = Date.now();
 			const response = await fetch(
 				`/image?stgy=${encodedCode}&format=svg&_t=${timestamp}`,
@@ -100,7 +97,7 @@ function RenderDebugPage() {
 			const svgText = await response.text();
 			setServerSvg(svgText);
 		} catch (e) {
-			const message = e instanceof Error ? e.message : "不明なエラー";
+			const message = e instanceof Error ? e.message : "Unknown error";
 			setServerError(message);
 			setServerSvg(null);
 		} finally {
@@ -108,20 +105,17 @@ function RenderDebugPage() {
 		}
 	}, []);
 
-	// コードが変わったらサーバーSVGを再取得
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			fetchServerSvg(inputCode);
-		}, 500); // デバウンス
+		}, 500);
 		return () => clearTimeout(timer);
 	}, [inputCode, fetchServerSvg]);
 
-	// サンプルコードを適用
 	const applySampleCode = (code: string) => {
 		setInputCode(code);
 	};
 
-	// SVGをダウンロード
 	const downloadSvg = (svg: string, filename: string) => {
 		const blob = new Blob([svg], { type: "image/svg+xml" });
 		const url = URL.createObjectURL(blob);
@@ -136,14 +130,13 @@ function RenderDebugPage() {
 		<div className="min-h-screen bg-background text-foreground">
 			<DebugHeader
 				title="Render Comparison Debug"
-				description="クライアント側とサーバー側のレンダリング差異を確認"
+				description="Compare client-side and server-side rendering differences"
 			/>
 
 			<main className="p-4 space-y-4 max-w-7xl mx-auto">
-				{/* 入力エリア */}
 				<section className="bg-card border border-border rounded-lg p-4">
 					<div className="flex items-center justify-between mb-2">
-						<Label htmlFor="input-code">stgyコードを入力:</Label>
+						<Label htmlFor="input-code">Enter stgy code:</Label>
 						<div className="flex gap-2">
 							{Object.entries(SAMPLE_CODES).map(([name, code]) => (
 								<Button
@@ -166,12 +159,10 @@ function RenderDebugPage() {
 					/>
 				</section>
 
-				{/* コントロールパネル */}
 				<section className="bg-card border border-border rounded-lg p-4">
 					<div className="flex flex-wrap items-center gap-4">
-						{/* ビューモード切り替え */}
 						<div className="flex items-center gap-2">
-							<span className="text-sm text-muted-foreground">表示モード:</span>
+							<span className="text-sm text-muted-foreground">View mode:</span>
 							<div className="flex gap-1">
 								<Button
 									variant={viewMode === "side-by-side" ? "default" : "outline"}
@@ -179,7 +170,7 @@ function RenderDebugPage() {
 									onClick={() => setViewMode("side-by-side")}
 								>
 									<SplitSquareHorizontal className="size-4 mr-1" />
-									横並び
+									Side by Side
 								</Button>
 								<Button
 									variant={viewMode === "overlay" ? "default" : "outline"}
@@ -187,19 +178,18 @@ function RenderDebugPage() {
 									onClick={() => setViewMode("overlay")}
 								>
 									<Layers className="size-4 mr-1" />
-									重ね合わせ
+									Overlay
 								</Button>
 								<Button
 									variant={viewMode === "diff" ? "default" : "outline"}
 									size="sm"
 									onClick={() => setViewMode("diff")}
 								>
-									差分
+									Diff
 								</Button>
 							</div>
 						</div>
 
-						{/* 表示切り替え */}
 						<div className="flex items-center gap-2">
 							<Button
 								variant={showClient ? "default" : "outline"}
@@ -227,11 +217,10 @@ function RenderDebugPage() {
 							</Button>
 						</div>
 
-						{/* オーバーレイ透過度 */}
 						{viewMode === "overlay" && (
 							<div className="flex items-center gap-2 flex-1 max-w-xs">
 								<span className="text-sm text-muted-foreground whitespace-nowrap">
-									透過度:
+									Opacity:
 								</span>
 								<Slider
 									value={[overlayOpacity]}
@@ -249,32 +238,29 @@ function RenderDebugPage() {
 					</div>
 				</section>
 
-				{/* エラー表示 */}
 				{parseResult?.error && (
 					<div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
 						<AlertCircle className="size-5" />
-						<p>クライアント側エラー: {parseResult.error}</p>
+						<p>Client error: {parseResult.error}</p>
 					</div>
 				)}
 				{serverError && (
 					<div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
 						<AlertCircle className="size-5" />
-						<p>サーバー側エラー: {serverError}</p>
+						<p>Server error: {serverError}</p>
 					</div>
 				)}
 
-				{/* レンダリング比較 */}
 				{(parseResult?.boardData || serverSvg) && (
 					<section className="bg-card border border-border rounded-lg p-4">
-						<h2 className="text-lg font-semibold mb-4">レンダリング結果</h2>
+						<h2 className="text-lg font-semibold mb-4">Rendering Result</h2>
 
 						{viewMode === "side-by-side" && (
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								{/* クライアント側 */}
 								{showClient && (
 									<RenderPanel
 										title="Client (React)"
-										subtitle="BoardViewer コンポーネント"
+										subtitle="BoardViewer component"
 										loading={false}
 									>
 										{parseResult?.boardData ? (
@@ -283,12 +269,11 @@ function RenderDebugPage() {
 												scale={1}
 											/>
 										) : (
-											<EmptyState message="有効なstgyコードを入力してください" />
+											<EmptyState message="Enter a valid stgy code" />
 										)}
 									</RenderPanel>
 								)}
 
-								{/* サーバー側 */}
 								{showServer && (
 									<RenderPanel
 										title="Server (SVG)"
@@ -303,15 +288,13 @@ function RenderDebugPage() {
 										{serverSvg ? (
 											<div
 												className="flex justify-center"
-												// biome-ignore lint/security/noDangerouslySetInnerHtml: サーバーから取得したSVGを表示
+												// biome-ignore lint/security/noDangerouslySetInnerHtml: Display SVG fetched from server
 												dangerouslySetInnerHTML={{ __html: serverSvg }}
 											/>
 										) : (
 											<EmptyState
 												message={
-													isLoading
-														? "読み込み中..."
-														: "有効なstgyコードを入力してください"
+													isLoading ? "Loading..." : "Enter a valid stgy code"
 												}
 											/>
 										)}
@@ -322,12 +305,11 @@ function RenderDebugPage() {
 
 						{viewMode === "overlay" && (
 							<RenderPanel
-								title="オーバーレイ比較"
+								title="Overlay Comparison"
 								subtitle={`Client: ${100 - overlayOpacity}% / Server: ${overlayOpacity}%`}
 								loading={isLoading}
 							>
 								<div className="relative" style={{ width: 512, height: 384 }}>
-									{/* クライアント側（下レイヤー） */}
 									{showClient && parseResult?.boardData && (
 										<div
 											className="absolute inset-0"
@@ -339,12 +321,11 @@ function RenderDebugPage() {
 											/>
 										</div>
 									)}
-									{/* サーバー側（上レイヤー） */}
 									{showServer && serverSvg && (
 										<div
 											className="absolute inset-0 flex justify-center"
 											style={{ opacity: overlayOpacity / 100 }}
-											// biome-ignore lint/security/noDangerouslySetInnerHtml: サーバーから取得したSVGを表示
+											// biome-ignore lint/security/noDangerouslySetInnerHtml: Display SVG fetched from server
 											dangerouslySetInnerHTML={{ __html: serverSvg }}
 										/>
 									)}
@@ -361,11 +342,10 @@ function RenderDebugPage() {
 					</section>
 				)}
 
-				{/* オブジェクト一覧 */}
 				{parseResult?.boardData && (
 					<section className="bg-card border border-border rounded-lg p-4">
 						<h2 className="text-lg font-semibold mb-4">
-							オブジェクト一覧 ({parseResult.boardData.objects.length}個)
+							Object List ({parseResult.boardData.objects.length} items)
 						</h2>
 						<div className="overflow-x-auto">
 							<ObjectTable objects={parseResult.boardData.objects} />
@@ -373,10 +353,9 @@ function RenderDebugPage() {
 					</section>
 				)}
 
-				{/* SVGソース比較 */}
 				{serverSvg && (
 					<section className="bg-card border border-border rounded-lg p-4">
-						<h2 className="text-lg font-semibold mb-4">サーバーSVGソース</h2>
+						<h2 className="text-lg font-semibold mb-4">Server SVG Source</h2>
 						<pre className="text-xs font-mono bg-muted p-3 rounded overflow-x-auto max-h-64 overflow-y-auto whitespace-pre">
 							{serverSvg}
 						</pre>
@@ -387,7 +366,7 @@ function RenderDebugPage() {
 	);
 }
 
-/** レンダリングパネル */
+/** Rendering panel */
 function RenderPanel({
 	title,
 	subtitle,
@@ -424,7 +403,7 @@ function RenderPanel({
 	);
 }
 
-/** 空の状態表示 */
+/** Empty state display */
 function EmptyState({ message }: { message: string }) {
 	return (
 		<div className="flex items-center justify-center w-[512px] h-[384px] bg-card border border-dashed border-border rounded">
@@ -433,7 +412,7 @@ function EmptyState({ message }: { message: string }) {
 	);
 }
 
-/** 差分ビュー */
+/** Diff view */
 function DiffView({
 	boardData,
 	serverSvg,
@@ -441,26 +420,24 @@ function DiffView({
 	boardData: BoardData;
 	serverSvg: string;
 }) {
-	// 差分モード: クライアントを緑、サーバーを赤で重ねる
 	return (
 		<div className="space-y-4">
 			<p className="text-sm text-muted-foreground">
-				差分ハイライト:{" "}
-				<span className="text-green-500">緑=クライアントのみ</span>,{" "}
-				<span className="text-red-500">赤=サーバーのみ</span>, 一致部分は通常色
+				Diff highlight:{" "}
+				<span className="text-green-500">Green=Client only</span>,{" "}
+				<span className="text-red-500">Red=Server only</span>, Matching parts
+				shown in normal color
 			</p>
 			<div className="relative" style={{ width: 512, height: 384 }}>
-				{/* サーバー側（赤フィルター） */}
 				<div
 					className="absolute inset-0 flex justify-center"
 					style={{
 						mixBlendMode: "multiply",
 						filter: "hue-rotate(0deg) saturate(200%)",
 					}}
-					// biome-ignore lint/security/noDangerouslySetInnerHtml: サーバーから取得したSVGを表示
+					// biome-ignore lint/security/noDangerouslySetInnerHtml: Display SVG fetched from server
 					dangerouslySetInnerHTML={{ __html: serverSvg }}
 				/>
-				{/* クライアント側（緑フィルター） */}
 				<div
 					className="absolute inset-0"
 					style={{
@@ -473,14 +450,14 @@ function DiffView({
 				</div>
 			</div>
 			<p className="text-xs text-muted-foreground">
-				※
-				差分表示はブレンドモードを使用した近似表示です。完全に一致している場合は色の変化がありません。
+				Note: Diff display uses blend modes for approximation. No color change
+				when perfectly matched.
 			</p>
 		</div>
 	);
 }
 
-/** オブジェクトテーブル */
+/** Object table */
 function ObjectTable({ objects }: { objects: BoardObject[] }) {
 	return (
 		<table className="w-full text-sm">
@@ -488,13 +465,13 @@ function ObjectTable({ objects }: { objects: BoardObject[] }) {
 				<tr className="border-b border-border text-left">
 					<th className="px-2 py-1">#</th>
 					<th className="px-2 py-1">ObjectId</th>
-					<th className="px-2 py-1">名前</th>
-					<th className="px-2 py-1">位置</th>
-					<th className="px-2 py-1">回転</th>
-					<th className="px-2 py-1">サイズ</th>
-					<th className="px-2 py-1">色</th>
-					<th className="px-2 py-1">フラグ</th>
-					<th className="px-2 py-1">パラメータ</th>
+					<th className="px-2 py-1">Name</th>
+					<th className="px-2 py-1">Position</th>
+					<th className="px-2 py-1">Rotation</th>
+					<th className="px-2 py-1">Size</th>
+					<th className="px-2 py-1">Color</th>
+					<th className="px-2 py-1">Flags</th>
+					<th className="px-2 py-1">Parameters</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -505,7 +482,9 @@ function ObjectTable({ objects }: { objects: BoardObject[] }) {
 					>
 						<td className="px-2 py-1 font-mono text-muted-foreground">{idx}</td>
 						<td className="px-2 py-1 font-mono">{obj.objectId}</td>
-						<td className="px-2 py-1">{ObjectNames[obj.objectId] ?? "不明"}</td>
+						<td className="px-2 py-1">
+							{ObjectNames[obj.objectId] ?? "Unknown"}
+						</td>
 						<td className="px-2 py-1 font-mono text-xs">
 							({obj.position.x.toFixed(1)}, {obj.position.y.toFixed(1)})
 						</td>
@@ -528,22 +507,22 @@ function ObjectTable({ objects }: { objects: BoardObject[] }) {
 							<div className="flex flex-wrap gap-1">
 								{!obj.flags.visible && (
 									<Badge variant="outline" className="text-xs">
-										非表示
+										Hidden
 									</Badge>
 								)}
 								{obj.flags.flipHorizontal && (
 									<Badge variant="outline" className="text-xs">
-										左右反転
+										Flip H
 									</Badge>
 								)}
 								{obj.flags.flipVertical && (
 									<Badge variant="outline" className="text-xs">
-										上下反転
+										Flip V
 									</Badge>
 								)}
 								{obj.flags.locked && (
 									<Badge variant="outline" className="text-xs">
-										ロック
+										Locked
 									</Badge>
 								)}
 							</div>

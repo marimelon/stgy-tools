@@ -1,17 +1,17 @@
 /**
- * SettingsStore シングルトンインスタンス管理
+ * SettingsStore singleton instance management
  */
 
 import { Store } from "@tanstack/store";
 import { DEFAULT_SETTINGS, SETTINGS_STORAGE_KEY } from "../types";
 import type { SettingsState, SettingsStore } from "./types";
 
-/** シングルトンインスタンス */
+/** Singleton instance */
 let store: SettingsStore | null = null;
 
 /**
- * SettingsStoreを作成
- * 既存のストアがある場合は上書き
+ * Create SettingsStore
+ * Overwrites existing store if present
  */
 export function createSettingsStore(
 	initialState: SettingsState,
@@ -21,8 +21,8 @@ export function createSettingsStore(
 }
 
 /**
- * SettingsStoreを取得
- * ストアが未初期化の場合はエラー
+ * Get SettingsStore
+ * Throws if store is not initialized
  */
 export function getSettingsStore(): SettingsStore {
 	if (!store) {
@@ -34,19 +34,15 @@ export function getSettingsStore(): SettingsStore {
 }
 
 /**
- * SettingsStoreを安全に取得（null許容）
- * タイミング問題が発生する可能性がある場所で使用
+ * Safely get SettingsStore (nullable)
+ * Use in places where timing issues may occur
  */
 export function getSettingsStoreSafe(): SettingsStore | null {
 	return store;
 }
 
-// ============================================
-// Provider外でも使用可能なヘルパー関数
-// ============================================
-
 /**
- * localStorageから設定を読み込む
+ * Load settings from localStorage
  */
 export function loadSettingsFromStorage(): SettingsState {
 	if (typeof window === "undefined") return DEFAULT_SETTINGS;
@@ -58,14 +54,14 @@ export function loadSettingsFromStorage(): SettingsState {
 			return { ...DEFAULT_SETTINGS, ...parsed };
 		}
 	} catch {
-		// パースエラーの場合はデフォルトを返す
+		// Return defaults on parse error
 	}
 	return DEFAULT_SETTINGS;
 }
 
 /**
- * デバッグモードの状態を取得（Provider外でも使用可能）
- * ストアが初期化されている場合はストアから、そうでない場合はlocalStorageから取得
+ * Get debug mode state (usable outside Provider)
+ * Returns from store if initialized, otherwise from localStorage
  */
 export function getDebugMode(): boolean {
 	if (store) {
@@ -75,8 +71,8 @@ export function getDebugMode(): boolean {
 }
 
 /**
- * デバッグモードの状態を設定（Provider外でも使用可能）
- * ストアが初期化されている場合はストアを更新、そうでない場合はlocalStorageを直接更新
+ * Set debug mode state (usable outside Provider)
+ * Updates store if initialized, otherwise updates localStorage directly
  */
 export function setDebugMode(enabled: boolean): void {
 	if (store) {

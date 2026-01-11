@@ -23,11 +23,8 @@ const jsonLdScript = JSON.stringify(generateWebApplicationSchema());
 
 export const Route = createRootRoute({
 	loader: async () => {
-		// サーバー関数を呼び出してAccept-Languageから言語を判定
-		// URLパラメータはサーバー関数内でリクエストURLから取得
 		const lang = await resolveLanguageServer();
 
-		// i18nの言語を同期（SSR時）
 		if (i18n.language !== lang) {
 			i18n.changeLanguage(lang);
 		}
@@ -126,18 +123,13 @@ const initialStyle = {
 function RootDocument() {
 	const { i18n } = useTranslation();
 
-	// loaderで決定した言語を取得
 	const loaderData = Route.useLoaderData() as { lang?: SupportedLang };
-
-	// i18nの現在の言語（"ja-JP" → "ja"）
 	const currentI18nLang = i18n.language.split("-")[0];
-
-	// html lang属性: loaderで決定した言語 > i18nの言語 > デフォルト
 	const lang: SupportedLang =
 		loaderData?.lang ??
 		(isSupportedLang(currentI18nLang) ? currentI18nLang : "en");
 
-	// ハイドレーション後にトランジションを有効化（FOUC対策）
+	// Enable transitions after hydration (FOUC prevention)
 	useEffect(() => {
 		document.documentElement.classList.add("hydrated");
 	}, []);

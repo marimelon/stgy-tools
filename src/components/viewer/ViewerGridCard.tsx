@@ -47,14 +47,14 @@ export function ViewerGridCard({
 				setCopied(true);
 				setTimeout(() => setCopied(false), 2000);
 			} catch {
-				// クリップボードAPIが利用できない場合は何もしない
+				// Silently fail if clipboard API is unavailable
 			}
 		},
 		[board.stgyCode],
 	);
 
 	return (
-		// biome-ignore lint/a11y/useSemanticElements: 内部にBoardViewerを含むため、buttonではなくdivを使用
+		// biome-ignore lint/a11y/useSemanticElements: Uses div instead of button because it contains BoardViewer
 		<div
 			ref={setNodeRef}
 			style={style}
@@ -74,7 +74,6 @@ export function ViewerGridCard({
 			role="button"
 			tabIndex={0}
 		>
-			{/* サムネイル */}
 			<div className="aspect-[4/3] bg-muted pointer-events-none">
 				{board.boardData ? (
 					<BoardViewer boardData={board.boardData} responsive maxWidth={400} />
@@ -87,7 +86,6 @@ export function ViewerGridCard({
 				)}
 			</div>
 
-			{/* ボード名 */}
 			<div className="p-2 bg-card border-t border-border">
 				<div className="flex items-center justify-between gap-2">
 					<span
@@ -108,7 +106,6 @@ export function ViewerGridCard({
 				</div>
 			</div>
 
-			{/* ドラッグハンドル（左上） */}
 			<button
 				type="button"
 				ref={setActivatorNodeRef}
@@ -120,9 +117,7 @@ export function ViewerGridCard({
 				<GripVertical className="size-4 text-muted-foreground" />
 			</button>
 
-			{/* ホバー時のアクションボタン（右上） */}
 			<div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-				{/* コピーボタン */}
 				{board.stgyCode && (
 					<button
 						type="button"
@@ -137,7 +132,6 @@ export function ViewerGridCard({
 						)}
 					</button>
 				)}
-				{/* 閉じるボタン */}
 				<button
 					type="button"
 					className="p-1 bg-background/80 hover:bg-destructive/20 rounded transition-colors"

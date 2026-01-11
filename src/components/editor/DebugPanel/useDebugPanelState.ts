@@ -1,10 +1,10 @@
 /**
- * デバッグパネル状態管理フック
+ * Debug panel state management hook
  *
- * BoardDataをJSON形式で表示・編集するための状態管理
- * - 自動同期（500msデバウンス）
- * - 外部変更検出
- * - バリデーションエラー表示
+ * State management for displaying and editing BoardData in JSON format
+ * - Auto sync (500ms debounce)
+ * - External change detection
+ * - Validation error display
  */
 
 import { useEffect, useRef, useState } from "react";
@@ -14,58 +14,58 @@ import type { BoardData } from "@/lib/stgy";
 import { assignBoardObjectIds } from "@/lib/stgy";
 import { safeParseBoardData } from "@/lib/stgy/schema";
 
-/** 同期ステータス */
+/** Sync status */
 export type SyncStatus = "synced" | "pending" | "error";
 
-/** デバッグパネル状態 */
+/** Debug panel state */
 export interface DebugPanelState {
-	/** JSON文字列 */
+	/** JSON string */
 	jsonString: string;
-	/** JSON文字列を更新 */
+	/** Update JSON string */
 	setJsonString: (value: string) => void;
-	/** 同期ステータス */
+	/** Sync status */
 	syncStatus: SyncStatus;
-	/** バリデーションエラー */
+	/** Validation errors */
 	validationErrors: string[] | null;
 }
 
-/** デバウンス時間（ミリ秒） */
+/** Debounce time (milliseconds) */
 const DEBOUNCE_MS = 500;
 
 /**
- * デバッグパネル状態管理フック
+ * Debug panel state management hook
  */
 export function useDebugPanelState(): DebugPanelState {
 	const board = useBoard();
 	const { updateBoardFromDebug } = useEditorActions();
 
-	// ローカルJSON文字列状態
+	// Local JSON string state
 	const [jsonString, setJsonStringInternal] = useState(() =>
 		JSON.stringify(board, null, 2),
 	);
 
-	// 同期ステータス
+	// Sync status
 	const [syncStatus, setSyncStatus] = useState<SyncStatus>("synced");
 
-	// バリデーションエラー
+	// Validation errors
 	const [validationErrors, setValidationErrors] = useState<string[] | null>(
 		null,
 	);
 
-	// 外部変更追跡用ref
+	// Ref for tracking external changes
 	const lastExternalBoardRef = useRef<BoardData>(board);
 
-	// ローカル編集フラグ（外部変更と区別するため）
+	// Local edit flag (to distinguish from external changes)
 	const isLocalEditRef = useRef(false);
 
-	// デバウンスタイマーref
+	// Debounce timer ref
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	// デバウンス同期
+	// Debounced sync
 	useEffect(() => {
 		if (syncStatus !== "pending") return;
 
-		// 既存のタイマーをクリア
+		// Clear existing timer
 		if (debounceTimerRef.current) {
 			clearTimeout(debounceTimerRef.current);
 		}
@@ -93,22 +93,22 @@ export function useDebugPanelState(): DebugPanelState {
 		};
 	}, [jsonString, syncStatus, updateBoardFromDebug]);
 
-	// 外部変更検出
+	// External change detection
 	useEffect(() => {
-		// ローカル編集による変更は無視
+		// Ignore changes caused by local edits
 		if (isLocalEditRef.current) {
 			isLocalEditRef.current = false;
 			return;
 		}
 
-		// 外部変更があった場合、JSON文字列を更新
+		// If there are external changes, update the JSON string
 		setJsonStringInternal(JSON.stringify(board, null, 2));
 		lastExternalBoardRef.current = board;
 		setSyncStatus("synced");
 		setValidationErrors(null);
 	}, [board]);
 
-	// JSON文字列変更ハンドラー
+	// JSON string change handler
 	const setJsonString = (value: string) => {
 		setJsonStringInternal(value);
 		setSyncStatus("pending");

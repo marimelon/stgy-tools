@@ -1,5 +1,5 @@
 /**
- * SettingsStore フック
+ * SettingsStore hooks
  */
 
 import { useStore } from "@tanstack/react-store";
@@ -8,7 +8,7 @@ import type { SettingsState } from "../store/types";
 import type { AppSettings } from "../types";
 
 /**
- * セレクタを使用してストアの一部を購読
+ * Subscribe to a portion of the store using a selector
  */
 export function useSettingsSelector<T>(
 	selector: (state: SettingsState) => T,
@@ -18,26 +18,22 @@ export function useSettingsSelector<T>(
 }
 
 /**
- * 事前定義セレクタ
+ * Pre-defined selectors
  */
 export const selectors = {
-	/** 全設定 */
+	/** All settings */
 	settings: (s: SettingsState): AppSettings => s,
 
-	/** デバッグモード */
+	/** Debug mode */
 	debugMode: (s: SettingsState): boolean => s.debugMode,
 } as const;
 
-// ============================================
-// 便利フック
-// ============================================
-
-/** 全設定を取得 */
+/** Get all settings */
 export function useAppSettings(): AppSettings {
 	return useSettingsSelector(selectors.settings);
 }
 
-/** デバッグモードを取得 */
+/** Get debug mode */
 export function useDebugMode(): boolean {
 	return useSettingsSelector(selectors.debugMode);
 }

@@ -1,10 +1,10 @@
 /**
- * エディターツールバーコンポーネント
+ * Editor toolbar component
  *
- * レスポンシブ対応：画面サイズに応じてレイアウトを変更
- * - large (≥1200px): 全ボタン表示
- * - medium (800-1199px): アイコン化、一部ドロップダウン
- * - small (<800px): 主要機能のみ、その他はドロップダウン
+ * Responsive: adapts layout based on screen size
+ * - large (>=1200px): all buttons visible
+ * - medium (800-1199px): icons only, some dropdowns
+ * - small (<800px): main functions only, rest in dropdown
  */
 
 import NiceModal from "@ebay/nice-modal-react";
@@ -64,24 +64,14 @@ import {
 	useToolbarSize,
 } from "./toolbar";
 
-/** アイコンサイズ */
 const ICON_SIZE = 16;
 
-/** EditorToolbarのProps */
 export interface EditorToolbarProps {
-	/** 最終保存時刻 */
 	lastSavedAt?: Date | null;
-	/** Board Manager を開くコールバック */
 	onOpenBoardManager?: () => void;
-	/** インポート時に新しいボードを作成するコールバック */
 	onCreateBoardFromImport?: (name: string, stgyCode: string) => void;
-	/** 短縮リンク機能が有効かどうか */
 	shortLinksEnabled?: boolean;
 }
-
-/**
- * 相対時間をフォーマット
- */
 function formatRelativeTime(date: Date, t: TFunction): string {
 	const now = new Date();
 	const diffMs = now.getTime() - date.getTime();
@@ -96,9 +86,6 @@ function formatRelativeTime(date: Date, t: TFunction): string {
 	return date.toLocaleDateString();
 }
 
-/**
- * エディターツールバー
- */
 export function EditorToolbar({
 	lastSavedAt,
 	onOpenBoardManager,
@@ -109,20 +96,17 @@ export function EditorToolbar({
 	const toolbarRef = useRef<HTMLDivElement>(null);
 	const toolbarSize = useToolbarSize(toolbarRef);
 
-	// State
 	const selectedIds = useSelectedIds();
 	const hasClipboard = useGlobalClipboard();
 	const gridSettings = useGridSettings();
 	const isDirty = useIsDirty();
 
-	// Derived state
 	const canUndo = useCanUndo();
 	const canRedo = useCanRedo();
 	const canGroup = useCanGroup();
 	const canAlign = useCanAlign();
 	const selectedGroup = useSelectedGroup();
 
-	// Actions
 	const {
 		undo,
 		redo,
@@ -141,7 +125,6 @@ export function EditorToolbar({
 	const hasSelection = selectedIds.length > 0;
 	const hasSingleSelection = selectedIds.length === 1;
 
-	// インポートモーダルを開く
 	const openImportModal = async () => {
 		const result = (await NiceModal.show(ImportModal)) as
 			| ImportResult
@@ -155,7 +138,6 @@ export function EditorToolbar({
 		}
 	};
 
-	// エクスポートモーダルを開く
 	const openExportModal = () => {
 		NiceModal.show(ExportModal, { shortLinksEnabled });
 	};
@@ -165,7 +147,7 @@ export function EditorToolbar({
 			ref={toolbarRef}
 			className="app-toolbar flex items-center gap-2 flex-shrink-0 flex-nowrap overflow-x-auto"
 		>
-			{/* ファイル操作 */}
+			{/* File operations */}
 			<div className="flex items-center gap-1 flex-shrink-0">
 				{onOpenBoardManager && (
 					<ToolbarButton
@@ -185,7 +167,7 @@ export function EditorToolbar({
 
 			<Divider />
 
-			{/* 履歴操作 */}
+			{/* History operations */}
 			<div className="flex items-center gap-1 flex-shrink-0">
 				<ToolbarButton
 					onClick={undo}
@@ -205,7 +187,7 @@ export function EditorToolbar({
 
 			<Divider />
 
-			{/* 編集操作 */}
+			{/* Edit operations */}
 			<div className="flex items-center gap-1 flex-shrink-0">
 				<ToolbarButton
 					onClick={copySelected}
@@ -237,12 +219,12 @@ export function EditorToolbar({
 				</ToolbarButton>
 			</div>
 
-			{/* 小画面以外: レイヤー操作、グループ操作、整列、グリッド設定を表示 */}
+			{/* Non-small screens: show layer, group, alignment, and grid settings */}
 			{toolbarSize !== "small" && (
 				<>
 					<Divider />
 
-					{/* レイヤー操作 */}
+					{/* Layer operations */}
 					<div className="flex items-center gap-1 flex-shrink-0">
 						<ToolbarButton
 							onClick={() => moveSelectedLayer("front")}
@@ -276,7 +258,7 @@ export function EditorToolbar({
 
 					<Divider />
 
-					{/* グループ操作 */}
+					{/* Group operations */}
 					<div className="flex items-center gap-1 flex-shrink-0">
 						<ToolbarButton
 							onClick={groupSelected}
@@ -296,7 +278,7 @@ export function EditorToolbar({
 
 					<Divider />
 
-					{/* 整列操作 - largeでは全ボタン、mediumではドロップダウン */}
+					{/* Alignment: full buttons on large, dropdown on medium */}
 					{toolbarSize === "large" ? (
 						<div className="flex items-center gap-1 flex-shrink-0">
 							<ToolbarButton
@@ -371,7 +353,7 @@ export function EditorToolbar({
 
 					<Divider />
 
-					{/* グリッド設定 - largeでは展開表示、mediumではドロップダウン */}
+					{/* Grid settings: expanded on large, dropdown on medium */}
 					{toolbarSize === "large" ? (
 						<div className="flex items-center gap-2 flex-shrink-0">
 							<ToolbarButton
@@ -432,14 +414,13 @@ export function EditorToolbar({
 
 					<Divider />
 
-					{/* パネルレイアウト設定 */}
 					<div className="flex-shrink-0">
 						<PanelSettingsDropdown />
 					</div>
 				</>
 			)}
 
-			{/* 小画面: その他メニュー */}
+			{/* Small screen: more menu */}
 			{toolbarSize === "small" && (
 				<>
 					<Divider />
@@ -460,14 +441,12 @@ export function EditorToolbar({
 
 					<Divider />
 
-					{/* パネルレイアウト設定 */}
 					<div className="flex-shrink-0">
 						<PanelSettingsDropdown />
 					</div>
 				</>
 			)}
 
-			{/* 設定 */}
 			<div className="flex-shrink-0">
 				<ToolbarButton
 					onClick={() => NiceModal.show(SettingsModal)}
@@ -477,7 +456,7 @@ export function EditorToolbar({
 				</ToolbarButton>
 			</div>
 
-			{/* 保存状態表示 */}
+			{/* Save status */}
 			<div className="ml-auto text-right text-xs flex-shrink-0 whitespace-nowrap flex items-center gap-2 text-muted-foreground font-mono">
 				{isDirty && (
 					<span

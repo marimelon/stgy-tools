@@ -1,14 +1,14 @@
 /**
- * SVG座標変換ユーティリティ
+ * SVG coordinate transformation utilities
  */
 
 import type { Position } from "@/lib/stgy";
 
 /**
- * スクリーン座標をSVG座標に変換
- * @param e ポインターイベント
- * @param svgElement SVG要素
- * @returns SVG座標系での位置
+ * Convert screen coordinates to SVG coordinates
+ * @param e Pointer event
+ * @param svgElement SVG element
+ * @returns Position in SVG coordinate system
  */
 export function screenToSVG(
 	e: { clientX: number; clientY: number },
@@ -17,19 +17,16 @@ export function screenToSVG(
 	const rect = svgElement.getBoundingClientRect();
 	const viewBox = svgElement.viewBox.baseVal;
 
-	// SVGの表示サイズ
 	const displayWidth = rect.width;
 	const displayHeight = rect.height;
 
-	// viewBoxのサイズ (デフォルトは表示サイズと同じ)
+	// viewBox size (defaults to display size)
 	const viewBoxWidth = viewBox.width || displayWidth;
 	const viewBoxHeight = viewBox.height || displayHeight;
 
-	// スケール
 	const scaleX = viewBoxWidth / displayWidth;
 	const scaleY = viewBoxHeight / displayHeight;
 
-	// SVG座標に変換
 	const x = (e.clientX - rect.left) * scaleX + (viewBox.x || 0);
 	const y = (e.clientY - rect.top) * scaleY + (viewBox.y || 0);
 
@@ -37,28 +34,28 @@ export function screenToSVG(
 }
 
 /**
- * 2点間の角度を計算 (度数法)
- * @param center 中心点
- * @param point 対象点
- * @returns 角度 (-180 to 180)
+ * Calculate angle between two points (in degrees)
+ * @param center Center point
+ * @param point Target point
+ * @returns Angle (-180 to 180)
  */
 export function calculateRotation(center: Position, point: Position): number {
 	const dx = point.x - center.x;
 	const dy = point.y - center.y;
 	const radians = Math.atan2(dy, dx);
-	// ラジアンを度に変換し、SVGの座標系に合わせて調整 (上が0度)
+	// Convert radians to degrees and adjust for SVG coordinate system (up is 0 degrees)
 	let degrees = (radians * 180) / Math.PI + 90;
-	// -180 to 180 に正規化
+	// Normalize to -180 to 180
 	if (degrees > 180) degrees -= 360;
 	if (degrees < -180) degrees += 360;
 	return Math.round(degrees);
 }
 
 /**
- * 位置をキャンバス範囲内にクランプ
- * @param pos 位置
- * @param canvas キャンバスサイズ
- * @returns クランプされた位置
+ * Clamp position within canvas bounds
+ * @param pos Position
+ * @param canvas Canvas size
+ * @returns Clamped position
  */
 export function clampToCanvas(
 	pos: Position,
@@ -71,10 +68,10 @@ export function clampToCanvas(
 }
 
 /**
- * 位置をグリッドにスナップ
- * @param pos 位置
- * @param gridSize グリッドサイズ
- * @returns スナップされた位置
+ * Snap position to grid
+ * @param pos Position
+ * @param gridSize Grid size
+ * @returns Snapped position
  */
 export function snapToGrid(pos: Position, gridSize: number): Position {
 	return {
@@ -84,7 +81,7 @@ export function snapToGrid(pos: Position, gridSize: number): Position {
 }
 
 /**
- * 2点間の距離を計算
+ * Calculate distance between two points
  */
 export function distance(p1: Position, p2: Position): number {
 	const dx = p2.x - p1.x;

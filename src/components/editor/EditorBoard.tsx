@@ -1,7 +1,7 @@
 /**
- * エディターボードコンポーネント
+ * Editor board component
  *
- * BoardViewerを拡張し、ドラッグ/回転/リサイズのインタラクションを追加
+ * Extends BoardViewer with drag/rotate/resize interactions
  */
 
 import { useCallback, useRef, useState } from "react";
@@ -44,17 +44,11 @@ import { InlineTextEditor } from "./InlineTextEditor";
 import { LineSelectionHandles } from "./LineSelectionHandles";
 import { SelectionHandles } from "./SelectionHandles";
 
-/** キャンバスサイズ */
 const CANVAS_WIDTH = 512;
 const CANVAS_HEIGHT = 384;
-
-/**
- * エディターボードコンポーネント
- */
 export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 	const { t } = useTranslation();
 
-	// State
 	const board = useBoard();
 	const selectedIds = useSelectedIds();
 	const gridSettings = useGridSettings();
@@ -63,7 +57,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 	const focusedGroupId = useFocusedGroupId();
 	const groups = useGroups();
 
-	// Derived state
 	const canGroup = useCanGroup();
 	const selectedGroup = useSelectedGroup();
 	const focusedGroup = useFocusedGroup();
@@ -71,10 +64,8 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 	const circularMode = useCircularMode();
 	const isCircularMode = useIsCircularMode();
 
-	// ID→オブジェクトのルックアップ用Set
 	const selectedIdsSet = new Set(selectedIds);
 
-	// Actions
 	const {
 		selectObject,
 		selectObjects,
@@ -103,7 +94,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
 	const { backgroundId, objects } = board;
 
-	// オブジェクトが属するグループを取得するヘルパー関数
 	const getGroupForObject = useCallback(
 		(objectId: string): ObjectGroup | undefined => {
 			return groups.find((g) => g.objectIds.includes(objectId));
@@ -113,7 +103,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 
 	const svgRef = useRef<SVGSVGElement>(null);
 
-	// コンテキストメニュー状態
 	const [contextMenu, setContextMenu] = useState<ContextMenuState>({
 		isOpen: false,
 		x: 0,
@@ -125,7 +114,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		setContextMenu((prev) => ({ ...prev, isOpen: false }));
 	}, []);
 
-	// オブジェクトダブルクリック（テキスト編集開始）
 	const handleObjectDoubleClick = useCallback(
 		(objectId: string, e: React.MouseEvent) => {
 			e.stopPropagation();
@@ -137,7 +125,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		[objects, startTextEdit],
 	);
 
-	// 背景での右クリック
 	const handleBackgroundContextMenu = useCallback((e: React.MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -149,13 +136,12 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		});
 	}, []);
 
-	// オブジェクト上での右クリック
 	const handleObjectContextMenu = useCallback(
 		(objectId: string, e: React.MouseEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
 
-			// 未選択のオブジェクトを右クリックした場合は選択する
+			// Select the object if not already selected
 			if (!selectedIdsSet.has(objectId)) {
 				selectObject(objectId);
 			}
@@ -170,7 +156,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		[selectedIdsSet, selectObject],
 	);
 
-	// インタラクションフック
 	const {
 		marqueeState,
 		handleBackgroundClick,
@@ -203,10 +188,10 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		deselectAll,
 	});
 
-	// 長押しフック（タッチデバイス用コンテキストメニュー）
+	// Long press hook for touch device context menu
 	const handleLongPress = useCallback(
 		(clientX: number, clientY: number, objectId: string | null) => {
-			// 未選択のオブジェクトを長押しした場合は選択する
+			// Select the object if not already selected
 			if (objectId !== null && !selectedIdsSet.has(objectId)) {
 				selectObject(objectId);
 			}
@@ -225,7 +210,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		onLongPress: handleLongPress,
 	});
 
-	// 長押し対応のポインターダウン（背景）
 	const handleBackgroundPointerDown = useCallback(
 		(e: React.PointerEvent) => {
 			startLongPress(e, null);
@@ -234,7 +218,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		[startLongPress, originalBackgroundPointerDown],
 	);
 
-	// 長押し対応のポインターダウン（オブジェクト）
 	const handleObjectPointerDown = useCallback(
 		(objectId: string, e: React.PointerEvent) => {
 			startLongPress(e, objectId);
@@ -243,7 +226,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		[startLongPress, originalObjectPointerDown],
 	);
 
-	// 長押し対応のポインター移動
 	const handlePointerMove = useCallback(
 		(e: React.PointerEvent) => {
 			moveLongPress(e);
@@ -252,7 +234,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		[moveLongPress, originalPointerMove],
 	);
 
-	// 長押し対応のポインターアップ
 	const handlePointerUp = useCallback(
 		(e: React.PointerEvent) => {
 			cancelLongPress();
@@ -261,16 +242,13 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 		[cancelLongPress, originalPointerUp],
 	);
 
-	// 可視オブジェクトのみ取得
 	const visibleObjects = objects.filter((obj) => obj.flags.visible);
 
-	// 選択オブジェクトの取得
 	const selectedObject =
 		selectedIds.length === 1
 			? objects.find((o) => o.id === selectedIds[0])
 			: null;
 
-	// マーキー矩形の計算
 	const marqueeRect = marqueeState
 		? {
 				x: Math.min(marqueeState.startPoint.x, marqueeState.currentPoint.x),
@@ -284,7 +262,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 			}
 		: null;
 
-	// キャンバス背景色を取得
 	const canvasColorValue =
 		CANVAS_COLORS.find((c) => c.id === gridSettings.canvasColor)?.color ??
 		"#1e293b";
@@ -308,7 +285,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 				role="application"
 				aria-label="Strategy Board Editor"
 			>
-				{/* 背景（showBackgroundがtrueの場合のみ表示） */}
 				{gridSettings.showBackground && (
 					<BackgroundRenderer
 						backgroundId={backgroundId}
@@ -317,7 +293,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 					/>
 				)}
 
-				{/* 編集用グリッドオーバーレイ（同心円/方眼） */}
 				<EditorGridOverlay
 					type={gridSettings.overlayType}
 					width={CANVAS_WIDTH}
@@ -325,7 +300,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 					settings={gridSettings.overlaySettings}
 				/>
 
-				{/* スナップ用グリッド線 */}
 				{gridSettings.enabled && gridSettings.showGrid && (
 					<GridOverlay
 						width={CANVAS_WIDTH}
@@ -334,9 +308,8 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 					/>
 				)}
 
-				{/* オブジェクト (逆順で描画してレイヤー順を正しくする) */}
+				{/* Objects rendered in reverse order for correct layer ordering */}
 				{[...visibleObjects].reverse().map((obj) => {
-					// フォーカスモードでフォーカス外のオブジェクトは薄く表示
 					const isOutsideFocus =
 						isFocusMode && !focusedGroup?.objectIds.includes(obj.id);
 					const opacity =
@@ -362,7 +335,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 					);
 				})}
 
-				{/* 選択インジケーター (複数選択時のみ) */}
+				{/* Selection indicator for multiple selection */}
 				{selectedIds.length > 1 &&
 					selectedIds.map((objectId) => {
 						const obj = objects.find((o) => o.id === objectId);
@@ -377,7 +350,7 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 						);
 						const objScale = obj.size / 100;
 
-						// Lineオブジェクトは中点を基準にbboxを表示
+						// Line objects display bbox centered on midpoint
 						if (obj.objectId === ObjectIds.Line) {
 							const endpoint = calculateLineEndpoint(
 								obj.position,
@@ -418,7 +391,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 						);
 					})}
 
-				{/* インラインテキストエディタ */}
 				{editingTextId !== null &&
 					(() => {
 						const editingObject = objects.find((o) => o.id === editingTextId);
@@ -430,14 +402,13 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 						) : null;
 					})()}
 
-				{/* 選択ハンドル (単一選択時のみ、テキスト編集中は非表示) */}
+				{/* Selection handles (single selection only, hidden during text edit) */}
 				{selectedObject &&
 					selectedIds.length === 1 &&
 					editingTextId === null &&
 					(() => {
 						const selectedId = selectedIds[0];
 
-						// Lineの場合は専用ハンドルを表示
 						if (selectedObject.objectId === ObjectIds.Line) {
 							const startX = selectedObject.position.x;
 							const startY = selectedObject.position.y;
@@ -477,7 +448,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 							);
 						}
 
-						// 通常オブジェクトのハンドル
 						const bbox = getObjectBoundingBox(
 							selectedObject.objectId,
 							selectedObject.param1,
@@ -502,7 +472,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 						);
 					})()}
 
-				{/* 円形配置モードガイド */}
 				{isCircularMode && circularMode && (
 					<>
 						<CircularGuideOverlay
@@ -524,7 +493,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 					</>
 				)}
 
-				{/* マーキー選択矩形 */}
 				{marqueeRect && (
 					<rect
 						x={marqueeRect.x}
@@ -540,7 +508,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 				)}
 			</svg>
 
-			{/* 円形配置モードインジケーター */}
 			{isCircularMode && circularMode && (
 				<CircularModeIndicator
 					objectCount={circularMode.participatingIds.length}
@@ -548,7 +515,6 @@ export function EditorBoard({ scale = 1 }: EditorBoardProps) {
 				/>
 			)}
 
-			{/* コンテキストメニュー */}
 			<ContextMenu
 				menuState={contextMenu}
 				onClose={closeContextMenu}

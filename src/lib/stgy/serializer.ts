@@ -1,14 +1,14 @@
 /**
- * stgy バイナリシリアライザー
+ * stgy binary serializer
  *
- * BoardDataをバイナリデータにシリアライズする (parser.tsの逆処理)
+ * Serializes BoardData to binary data (reverse of parser.ts)
  *
- * バイナリフォーマット (xivdev仕様準拠):
- * - StrategyBoard ヘッダー (16バイト):
- *   - 0x00-0x03: tag (u32) - バージョン
- *   - 0x04-0x07: length (u32) - ヘッダー後のコンテンツ長
- *   - 0x08-0x0F: padding (8バイト)
- * - Sections (0x10以降):
+ * Binary format (xivdev spec compliant):
+ * - StrategyBoard header (16 bytes):
+ *   - 0x00-0x03: tag (u32) - version
+ *   - 0x04-0x07: length (u32) - content length after header
+ *   - 0x08-0x0F: padding (8 bytes)
+ * - Sections (from 0x10):
  *   - Content section: SectionType(0x00) + length + TypeContainers
  *   - Background section: SectionType(0x03) + TypedArray<u16>
  */
@@ -21,14 +21,14 @@ import {
 } from "./constants";
 import type { BoardData, ObjectFlags } from "./types";
 
-/** セクションタイプ */
+/** Section type */
 const SectionType = {
 	CONTENT: 0x00,
 	BACKGROUND: 0x03,
 } as const;
 
 /**
- * バイナリライター
+ * Binary writer
  */
 class BinaryWriter {
 	private buffer: number[] = [];
@@ -74,7 +74,7 @@ class BinaryWriter {
 	}
 
 	/**
-	 * 4バイト境界にパディング
+	 * Pad to 4-byte boundary
 	 */
 	padTo4Bytes(): void {
 		const remainder = this.buffer.length % 4;
@@ -87,7 +87,7 @@ class BinaryWriter {
 	}
 
 	/**
-	 * 2バイト境界にパディング
+	 * Pad to 2-byte boundary
 	 */
 	padTo2Bytes(): void {
 		if (this.buffer.length % 2 !== 0) {
@@ -101,7 +101,7 @@ class BinaryWriter {
 }
 
 /**
- * フラグをuint16にシリアライズ
+ * Serialize flags to uint16
  */
 function serializeFlags(flags: ObjectFlags): number {
 	let value = 0;
@@ -113,60 +113,60 @@ function serializeFlags(flags: ObjectFlags): number {
 }
 
 /**
- * フィールドコンテンツをシリアライズ（SectionContent内のTypeContainers）
+ * Serialize field content (TypeContainers in SectionContent)
  */
 function serializeFields(board: BoardData, writer: BinaryWriter): void {
 	const objects = board.objects;
 	const objectCount = objects.length;
 
-	// 空フィールド (ラウンドトリップ用)
+	// Empty fields (for round-trip)
 	const emptyFieldCount = board._emptyFieldCount ?? 0;
 	for (let i = 0; i < emptyFieldCount; i++) {
 		writer.writeUint16(0); // FieldId 0 (Empty)
 	}
 
-	// Field 1: ボード名
+	// Field 1: Board name
 	if (board.name.length > 0) {
 		const encoder = new TextEncoder();
 		const nameBytes = encoder.encode(board.name);
 		const nameLength = nameBytes.length;
-		// 元のフォーマットは少なくとも1バイトのnullを含むようにパディング
+		// Original format pads to include at least 1 null byte
 		const paddedLength = Math.ceil((nameLength + 1) / 4) * 4;
 
 		writer.writeUint16(FieldIds.BOARD_NAME); // fieldId
-		writer.writeUint16(paddedLength); // stringLength (パディング込みの長さを書く)
+		writer.writeUint16(paddedLength); // stringLength (write padded length)
 		writer.writeBytes(nameBytes);
-		// 4バイト境界にパディング（必ずnull終端を含む）
+		// Pad to 4-byte boundary (always including null terminator)
 		for (let i = nameLength; i < paddedLength; i++) {
 			writer.writeUint8(0);
 		}
 	}
 
-	// Field 2: オブジェクトID (各オブジェクトごとに1レコード)
-	// テキストオブジェクト(objectId=100)の場合、Field 3 (text) を直後に書く
+	// Field 2: Object ID (one record per object)
+	// For text objects (objectId=100), write Field 3 (text) immediately after
 	for (const obj of objects) {
 		writer.writeUint16(FieldIds.OBJECT_ID); // fieldId
 		writer.writeUint16(obj.objectId);
 
-		// テキストオブジェクトの場合、テキストを直後に書く
+		// For text objects, write text immediately after
 		if (obj.objectId === TEXT_OBJECT_ID && obj.text) {
 			const encoder = new TextEncoder();
 			const textBytes = encoder.encode(obj.text);
 			const textLength = textBytes.length;
-			// 元のフォーマットは少なくとも1バイトのnullを含むようにパディング
+			// Original format pads to include at least 1 null byte
 			const paddedLength = Math.ceil((textLength + 1) / 4) * 4;
 
 			writer.writeUint16(FieldIds.TEXT_TERMINATOR); // fieldId
-			writer.writeUint16(paddedLength); // length (パディング込みの長さを書く)
+			writer.writeUint16(paddedLength); // length (write padded length)
 			writer.writeBytes(textBytes);
-			// 4バイト境界にパディング（必ずnull終端を含む）
+			// Pad to 4-byte boundary (always including null terminator)
 			for (let i = textLength; i < paddedLength; i++) {
 				writer.writeUint8(0);
 			}
 		}
 	}
 
-	// Field 4: フラグ配列
+	// Field 4: Flag array
 	if (objectCount > 0) {
 		writer.writeUint16(FieldIds.FLAGS); // fieldId
 		writer.writeUint16(1); // type = 1
@@ -176,19 +176,19 @@ function serializeFields(board: BoardData, writer: BinaryWriter): void {
 		}
 	}
 
-	// Field 5: 座標配列
+	// Field 5: Position array
 	if (objectCount > 0) {
 		writer.writeUint16(FieldIds.POSITIONS); // fieldId
 		writer.writeUint16(3); // type = 3
 		writer.writeUint16(objectCount); // count
 		for (const obj of objects) {
-			// ピクセル → 1/10ピクセル
+			// Pixel -> 1/10 pixel
 			writer.writeUint16(Math.round(obj.position.x * COORDINATE_SCALE));
 			writer.writeUint16(Math.round(obj.position.y * COORDINATE_SCALE));
 		}
 	}
 
-	// Field 6: 回転角度配列
+	// Field 6: Rotation angle array
 	if (objectCount > 0) {
 		writer.writeUint16(FieldIds.ROTATIONS); // fieldId
 		writer.writeUint16(1); // type = 1
@@ -198,7 +198,7 @@ function serializeFields(board: BoardData, writer: BinaryWriter): void {
 		}
 	}
 
-	// Field 7: サイズ配列
+	// Field 7: Size array
 	if (objectCount > 0) {
 		writer.writeUint16(FieldIds.SIZES); // fieldId
 		writer.writeUint16(0); // type = 0
@@ -206,13 +206,13 @@ function serializeFields(board: BoardData, writer: BinaryWriter): void {
 		for (const obj of objects) {
 			writer.writeUint8(obj.size);
 		}
-		// 2バイト境界にアライン (保存されたパディングバイトがあれば使用)
+		// Align to 2-byte boundary (use saved padding byte if available)
 		if (objectCount % 2 === 1) {
 			writer.writeUint8(board._sizePaddingByte ?? 0);
 		}
 	}
 
-	// Field 8: 色・透過度配列
+	// Field 8: Color/opacity array
 	if (objectCount > 0) {
 		writer.writeUint16(FieldIds.COLORS); // fieldId
 		writer.writeUint16(2); // type = 2
@@ -225,7 +225,7 @@ function serializeFields(board: BoardData, writer: BinaryWriter): void {
 		}
 	}
 
-	// Field 10: param1配列 (値があるオブジェクトがある場合)
+	// Field 10: param1 array (if any objects have values)
 	const hasParam1 = objects.some((obj) => obj.param1 !== undefined);
 	if (hasParam1 && objectCount > 0) {
 		writer.writeUint16(FieldIds.PARAM_1); // fieldId
@@ -236,7 +236,7 @@ function serializeFields(board: BoardData, writer: BinaryWriter): void {
 		}
 	}
 
-	// Field 11: param2配列 (値があるオブジェクトがある場合)
+	// Field 11: param2 array (if any objects have values)
 	const hasParam2 = objects.some((obj) => obj.param2 !== undefined);
 	if (hasParam2 && objectCount > 0) {
 		writer.writeUint16(FieldIds.PARAM_2); // fieldId
@@ -247,7 +247,7 @@ function serializeFields(board: BoardData, writer: BinaryWriter): void {
 		}
 	}
 
-	// Field 12: param3配列 (値があるオブジェクトがある場合)
+	// Field 12: param3 array (if any objects have values)
 	const hasParam3 = objects.some((obj) => obj.param3 !== undefined);
 	if (hasParam3 && objectCount > 0) {
 		writer.writeUint16(FieldIds.PARAM_3); // fieldId
@@ -260,32 +260,32 @@ function serializeFields(board: BoardData, writer: BinaryWriter): void {
 }
 
 /**
- * BoardDataをバイナリにシリアライズ
+ * Serialize BoardData to binary
  */
 export function serializeBoardData(board: BoardData): Uint8Array {
-	// 1. まずフィールドコンテンツをシリアライズして長さを計算
+	// 1. First serialize field content to calculate length
 	const contentWriter = new BinaryWriter();
 	serializeFields(board, contentWriter);
 	const contentData = contentWriter.toUint8Array();
 
-	// Content section の長さ (TypeContainersの長さのみ、SectionType/lengthを除く)
+	// Content section length (only TypeContainers length, excluding SectionType/length)
 	const sectionContentLength = contentData.length;
 
-	// Background section: SectionType(2) + DataType(2) + count(2) + backgroundId(2) = 8バイト
+	// Background section: SectionType(2) + DataType(2) + count(2) + backgroundId(2) = 8 bytes
 	const backgroundSectionLength = 8;
 
-	// 総コンテンツ長 = Content section (SectionType + length + content) + Background section
+	// Total content length = Content section (SectionType + length + content) + Background section
 	// Content section: 2 + 2 + sectionContentLength
 	// Background section: 8
 	const totalContentLength =
 		2 + 2 + sectionContentLength + backgroundSectionLength;
 
-	// 2. 最終的なバイナリを書き込み
+	// 2. Write final binary
 	const writer = new BinaryWriter();
 
-	// StrategyBoard ヘッダー (16バイト)
+	// StrategyBoard header (16 bytes)
 	writer.writeUint32(board.version); // tag/version
-	writer.writeUint32(totalContentLength); // length (ヘッダー後のコンテンツ長)
+	writer.writeUint32(totalContentLength); // length (content length after header)
 	writer.writeUint32(0); // padding
 	writer.writeUint32(0); // padding
 
@@ -295,7 +295,7 @@ export function serializeBoardData(board: BoardData): Uint8Array {
 	writer.writeBytes(contentData); // TypeContainers
 
 	// Background section
-	// 注: SectionType.BACKGROUND (0x03) と FieldId 3 (TEXT_TERMINATOR) は同じ値
+	// Note: SectionType.BACKGROUND (0x03) and FieldId 3 (TEXT_TERMINATOR) have the same value
 	writer.writeUint16(SectionType.BACKGROUND); // SectionType = 0x03
 	writer.writeUint16(1); // DataType = 1 (WORD)
 	writer.writeUint16(1); // count = 1

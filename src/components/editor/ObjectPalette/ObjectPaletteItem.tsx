@@ -1,5 +1,5 @@
 /**
- * パレットアイテムコンポーネント
+ * Palette item component
  */
 
 import { type CSSProperties, useEffect, useRef, useState } from "react";
@@ -26,14 +26,14 @@ export function ObjectPaletteItem({
 	const tooltipRef = useRef<HTMLDivElement>(null);
 	const [tooltipStyle, setTooltipStyle] = useState<CSSProperties>({});
 
-	// オブジェクトサイズに基づいてviewBoxサイズを計算
+	// Calculate viewBox size based on object size
 	const viewBoxSize = getViewBoxSize(objectId);
 	const objectPos = viewBoxSize / 2;
 
 	const object = createDefaultObject(objectId, { x: objectPos, y: objectPos });
 	const name = t(`object.${objectId}`, { defaultValue: `ID: ${objectId}` });
 
-	// パレット専用アイコンがあるかどうか
+	// Whether there is a palette-specific icon
 	const hasPaletteIcon = PALETTE_ICON_OBJECT_IDS.includes(objectId);
 
 	const handleDragStart = (e: React.DragEvent) => {
@@ -41,21 +41,21 @@ export function ObjectPaletteItem({
 		e.dataTransfer.effectAllowed = "copy";
 	};
 
-	// ツールチップ位置の計算
+	// Calculate tooltip position
 	useEffect(() => {
 		if (isHovered && buttonRef.current && tooltipRef.current) {
 			const buttonRect = buttonRef.current.getBoundingClientRect();
 			const tooltipRect = tooltipRef.current.getBoundingClientRect();
 			const viewportWidth = window.innerWidth;
 
-			// ツールチップの中央位置
+			// Center position of tooltip
 			let left = buttonRect.left + buttonRect.width / 2 - tooltipRect.width / 2;
 
-			// 左端からはみ出す場合
+			// If overflow from left edge
 			if (left < 8) {
 				left = 8;
 			}
-			// 右端からはみ出す場合
+			// If overflow from right edge
 			if (left + tooltipRect.width > viewportWidth - 8) {
 				left = viewportWidth - tooltipRect.width - 8;
 			}
@@ -116,7 +116,7 @@ export function ObjectPaletteItem({
 					</svg>
 				)}
 			</button>
-			{/* カスタムツールチップ */}
+			{/* Custom tooltip */}
 			{isHovered && (
 				<div
 					ref={tooltipRef}

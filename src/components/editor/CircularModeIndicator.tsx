@@ -1,22 +1,16 @@
 /**
- * 円形配置モードインジケーター
+ * Circular placement mode indicator
  *
- * 円形配置モード中にキャンバス上部に表示されるインジケーター
+ * Displays at the top of canvas during circular placement mode
  */
 
 import { Circle, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface CircularModeIndicatorProps {
-	/** オブジェクト数 */
 	objectCount: number;
-	/** 解除ボタンクリック時のコールバック */
 	onExit: () => void;
 }
-
-/**
- * 円形配置モードインジケーター
- */
 export function CircularModeIndicator({
 	objectCount,
 	onExit,

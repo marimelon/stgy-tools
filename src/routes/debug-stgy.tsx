@@ -1,5 +1,5 @@
 /**
- * stgy エンコーダー/デコーダー デバッグページ
+ * stgy encoder/decoder debug page
  */
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -60,8 +60,6 @@ function StgyDebugPage() {
 	const reEncodedCode = ((): string | null => {
 		if (!boardData) return null;
 		try {
-			// ラウンドトリップテストでは元のサイズを保持（recalculateBoardSizeを呼ばない）
-			// キーはCRC32から決定的に計算される
 			return encodeStgy(boardData);
 		} catch (e) {
 			console.error("Encode error:", e);
@@ -83,14 +81,13 @@ function StgyDebugPage() {
 		<div className="min-h-screen bg-background text-foreground">
 			<DebugHeader
 				title="stgy Encoder/Decoder Debug"
-				description="stgyコードの解析・比較・ラウンドトリップテスト"
+				description="stgy code analysis, comparison, and round-trip testing"
 			/>
 
 			<main className="p-4 space-y-4 max-w-6xl mx-auto">
-				{/* 入力エリア */}
 				<section className="bg-card border border-border rounded-lg p-4">
 					<Label htmlFor={inputCodeId} className="mb-2 block">
-						stgyコードを入力:
+						Enter stgy code:
 					</Label>
 					<Textarea
 						id={inputCodeId}
@@ -101,7 +98,6 @@ function StgyDebugPage() {
 					/>
 				</section>
 
-				{/* タブ切り替え */}
 				<div className="flex gap-2">
 					<Button
 						variant={activeTab === "decode" ? "default" : "outline"}
@@ -121,7 +117,6 @@ function StgyDebugPage() {
 
 				{activeTab === "decode" && debugInfo && (
 					<div className="space-y-4">
-						{/* 基本情報 */}
 						<Section title="Basic Info">
 							<InfoRow
 								label="Key"
@@ -154,7 +149,6 @@ function StgyDebugPage() {
 							/>
 						</Section>
 
-						{/* ヘッダー */}
 						<Section title="Header">
 							<InfoRow
 								label="Version"
@@ -170,7 +164,6 @@ function StgyDebugPage() {
 							/>
 						</Section>
 
-						{/* フィールド一覧 */}
 						<Section title="Fields">
 							<div className="space-y-2 max-h-96 overflow-y-auto">
 								{debugInfo.fields.map((field) => (
@@ -182,7 +175,6 @@ function StgyDebugPage() {
 							</div>
 						</Section>
 
-						{/* パースされたデータ */}
 						{boardData && (
 							<Section title="Parsed BoardData">
 								<pre className="text-xs font-mono bg-muted p-3 rounded overflow-x-auto max-h-64 overflow-y-auto">
@@ -191,7 +183,6 @@ function StgyDebugPage() {
 							</Section>
 						)}
 
-						{/* ラウンドトリップ結果 */}
 						<Section title="Round-trip Test">
 							{roundTripResult ? (
 								<div className="space-y-2">
@@ -252,14 +243,12 @@ function StgyDebugPage() {
 							)}
 						</Section>
 
-						{/* バイナリダンプ */}
 						<Section title="Binary Hex Dump (Decompressed)">
 							<pre className="text-xs font-mono bg-muted p-3 rounded overflow-x-auto max-h-64 overflow-y-auto whitespace-pre">
 								{hexDump(debugInfo.decompressedData)}
 							</pre>
 						</Section>
 
-						{/* Base64ペイロード */}
 						<Section title="Base64 Payload (after decryption)">
 							<Textarea
 								readOnly
@@ -274,7 +263,7 @@ function StgyDebugPage() {
 					<div className="space-y-4">
 						<Section title="Compare with another code">
 							<Label htmlFor={compareCodeId} className="mb-2 block">
-								比較対象のstgyコード:
+								stgy code to compare:
 							</Label>
 							<Textarea
 								id={compareCodeId}

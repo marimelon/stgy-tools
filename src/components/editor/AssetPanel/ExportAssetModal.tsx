@@ -1,8 +1,8 @@
 /**
- * アセットエクスポートモーダルコンポーネント
- * @ebay/nice-modal-react + ModalBase ベース
+ * Export asset modal component
+ * Based on @ebay/nice-modal-react + ModalBase
  *
- * アセットをstgyコードとしてエクスポートするためのモーダル
+ * Modal for exporting assets as stgy code
  */
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
@@ -16,12 +16,12 @@ import { ModalBase } from "@/lib/modal";
 import { encodeStgy } from "@/lib/stgy";
 
 export interface ExportAssetModalProps {
-	/** エクスポート対象のアセット */
+	/** Asset to export */
 	asset: AssetWithRuntimeIds;
 }
 
 /**
- * アセットエクスポートモーダル
+ * Export asset modal
  */
 export const ExportAssetModal = NiceModal.create(
 	({ asset }: ExportAssetModalProps) => {
@@ -29,7 +29,7 @@ export const ExportAssetModal = NiceModal.create(
 		const modal = useModal();
 		const [copied, setCopied] = useState(false);
 
-		// アセットをstgyコードにエンコード（キー固定で一貫性を確保）
+		// Encode asset to stgy code (using fixed key for consistency)
 		const stgyCode = useMemo(() => {
 			const boardData = assetToBoardData(asset);
 			return encodeStgy(boardData);
@@ -70,7 +70,7 @@ export const ExportAssetModal = NiceModal.create(
 				}
 			>
 				<div className="space-y-4">
-					{/* アセット名 */}
+					{/* Asset name */}
 					<div>
 						<Label className="text-sm font-medium mb-1 block">
 							{t("assetPanel.saveModal.name")}
@@ -78,7 +78,7 @@ export const ExportAssetModal = NiceModal.create(
 						<p className="text-sm text-foreground">{asset.name}</p>
 					</div>
 
-					{/* stgyコード */}
+					{/* stgy code */}
 					<div>
 						<Label className="text-sm font-medium mb-2 block">
 							{t("assetPanel.exportModal.stgyCode")}

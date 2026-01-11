@@ -1,6 +1,6 @@
 /**
  * Dialog for board decode failures
- * @ebay/nice-modal-react + Radix Dialog ベース
+ * Based on @ebay/nice-modal-react + Radix Dialog
  */
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
@@ -21,16 +21,16 @@ export interface DecodeErrorDialogProps {
 }
 
 /**
- * モーダルの結果
+ * Modal result
  */
 export type DecodeErrorResult = "delete" | "open-another" | undefined;
 
 /**
  * DecodeErrorDialog
  *
- * resolve("delete") - 削除して続行
- * resolve("open-another") - 別のボードを開く
- * resolve(undefined) - キャンセル
+ * resolve("delete") - delete and continue
+ * resolve("open-another") - open another board
+ * resolve(undefined) - cancel
  */
 export const DecodeErrorDialog = NiceModal.create(
 	({ boardName }: DecodeErrorDialogProps) => {

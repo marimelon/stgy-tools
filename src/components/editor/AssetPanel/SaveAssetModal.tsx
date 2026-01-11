@@ -1,8 +1,8 @@
 /**
- * アセット保存モーダルコンポーネント
- * @ebay/nice-modal-react + ModalBase ベース
+ * Save asset modal component
+ * Based on @ebay/nice-modal-react + ModalBase
  *
- * 選択されたオブジェクトをアセットとして保存するためのモーダル
+ * Modal for saving selected objects as an asset
  */
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
@@ -21,7 +21,7 @@ import { useObjects, useSelectedIds } from "@/lib/editor";
 import { ModalBase } from "@/lib/modal";
 
 /**
- * アセット保存モーダル
+ * Save asset modal
  */
 export const SaveAssetModal = NiceModal.create(() => {
 	const { t } = useTranslation();
@@ -68,7 +68,7 @@ export const SaveAssetModal = NiceModal.create(() => {
 			}
 		>
 			<div className="space-y-4">
-				{/* プレビュー */}
+				{/* Preview */}
 				<div>
 					<Label className="text-sm font-medium mb-2 block">
 						{t("assetPanel.saveModal.preview")}
@@ -95,7 +95,7 @@ export const SaveAssetModal = NiceModal.create(() => {
 					</p>
 				</div>
 
-				{/* アセット名入力 */}
+				{/* Asset name input */}
 				<div>
 					<Label
 						htmlFor={nameInputId}

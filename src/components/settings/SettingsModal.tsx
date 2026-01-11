@@ -1,8 +1,3 @@
-/**
- * 設定モーダルコンポーネント
- * @ebay/nice-modal-react + Radix Dialog ベース
- */
-
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
 import { Bug, Keyboard, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
@@ -22,9 +17,6 @@ import { ShortcutsList } from "./ShortcutsList";
 
 type TabId = "general" | "shortcuts";
 
-/**
- * 設定モーダル
- */
 export const SettingsModal = NiceModal.create(() => {
 	const { t } = useTranslation();
 	const modal = useModal();
@@ -54,7 +46,6 @@ export const SettingsModal = NiceModal.create(() => {
 					</DialogTitle>
 				</DialogHeader>
 
-				{/* タブボタン */}
 				<div className="flex gap-1 p-1 bg-muted rounded-lg">
 					<button
 						type="button"
@@ -82,10 +73,8 @@ export const SettingsModal = NiceModal.create(() => {
 					</button>
 				</div>
 
-				{/* 一般設定タブ */}
 				{activeTab === "general" && (
 					<div className="space-y-4 mt-2">
-						{/* デバッグモード */}
 						<div className="flex items-center justify-between">
 							<div className="space-y-0.5">
 								<Label className="text-sm font-medium flex items-center gap-2">
@@ -106,7 +95,6 @@ export const SettingsModal = NiceModal.create(() => {
 					</div>
 				)}
 
-				{/* ショートカットタブ */}
 				{activeTab === "shortcuts" && (
 					<div className="mt-2">
 						<ShortcutsList />

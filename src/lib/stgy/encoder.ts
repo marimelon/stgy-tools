@@ -1,8 +1,8 @@
 /**
- * stgy フォーマットエンコーダー
+ * stgy format encoder
  *
- * BoardDataを[stgy:a<key_char><encoded_payload>]形式の文字列にエンコードする
- * (decoder.tsの逆処理)
+ * Encodes BoardData to [stgy:a<key_char><encoded_payload>] format string
+ * (reverse of decoder.ts)
  */
 
 import pako from "pako";
@@ -15,7 +15,7 @@ import { base64CharToValue, KEY_TABLE } from "./tables";
 import type { BoardData } from "./types";
 
 /**
- * KEY_TABLEの逆変換テーブル (Base64値 → キー文字)
+ * Reverse lookup table for KEY_TABLE (Base64 value -> key character)
  */
 const REVERSE_KEY_TABLE: Record<number, string> = Object.fromEntries(
 	Object.entries(KEY_TABLE).map(([keyChar, base64Char]) => [
@@ -25,32 +25,32 @@ const REVERSE_KEY_TABLE: Record<number, string> = Object.fromEntries(
 );
 
 /**
- * BoardDataをstgy文字列にエンコード
- * @param board ボードデータ
- * @returns [stgy:a...] 形式の文字列
+ * Encode BoardData to stgy string
+ * @param board Board data
+ * @returns String in [stgy:a...] format
  */
 export function encodeStgy(board: BoardData): string {
-	// 1. BoardDataをバイナリにシリアライズ
+	// 1. Serialize BoardData to binary
 	const binaryData = serializeBoardData(board);
 
-	// 2. zlib圧縮
+	// 2. zlib compression
 	const compressedData = pako.deflate(binaryData);
 
-	// 3. 解凍後データ長 (2バイト, Little Endian)
+	// 3. Decompressed data length (2 bytes, Little Endian)
 	const decompressedLength = binaryData.length;
 	const lengthBytes = new Uint8Array(2);
 	lengthBytes[0] = decompressedLength & 0xff;
 	lengthBytes[1] = (decompressedLength >> 8) & 0xff;
 
-	// 4. CRC32計算用データ (length + compressed)
+	// 4. Data for CRC32 calculation (length + compressed)
 	const dataForCRC = new Uint8Array(2 + compressedData.length);
 	dataForCRC.set(lengthBytes, 0);
 	dataForCRC.set(compressedData, 2);
 
-	// 5. CRC32計算
+	// 5. CRC32 calculation
 	const crc32 = calculateCRC32(dataForCRC);
 
-	// 6. 最終バイナリ構築: CRC32(4) + length(2) + compressed
+	// 6. Build final binary: CRC32(4) + length(2) + compressed
 	const finalBinary = new Uint8Array(4 + 2 + compressedData.length);
 	// CRC32 (Little Endian)
 	finalBinary[0] = crc32 & 0xff;
@@ -60,30 +60,30 @@ export function encodeStgy(board: BoardData): string {
 	// length + compressed
 	finalBinary.set(dataForCRC, 4);
 
-	// 7. Base64エンコード
+	// 7. Base64 encode
 	const base64String = encodeBase64(finalBinary);
 
-	// 8. キー値の決定 (CRC32の最下位バイトの下位6bit)
-	// 例: CRC32 = 0x062e241d → 最下位バイト = 0x1d (29) → key = 29 & 0x3F = 29
+	// 8. Determine key value (lower 6 bits of CRC32's lowest byte)
+	// e.g.: CRC32 = 0x062e241d -> lowest byte = 0x1d (29) -> key = 29 & 0x3F = 29
 	const key = crc32 & 0x3f;
 
-	// 9. キー文字を取得
+	// 9. Get key character
 	const keyChar = REVERSE_KEY_TABLE[key];
 	if (keyChar === undefined) {
 		throw new Error(`Invalid key value: ${key}`);
 	}
 
-	// 10. 置換暗号適用
+	// 10. Apply substitution cipher
 	const encryptedPayload = encryptCipher(base64String, key);
 
-	// 11. 最終文字列構築
+	// 11. Build final string
 	return `${STGY_PREFIX}${keyChar}${encryptedPayload}${STGY_SUFFIX}`;
 }
 
 /**
- * stgy文字列からキー値を抽出
- * @param stgyString [stgy:a<key_char>...] 形式の文字列
- * @returns キー値 (0-63)
+ * Extract key value from stgy string
+ * @param stgyString String in [stgy:a<key_char>...] format
+ * @returns Key value (0-63)
  */
 export function extractKeyFromStgy(stgyString: string): number {
 	if (!stgyString.startsWith(STGY_PREFIX)) {

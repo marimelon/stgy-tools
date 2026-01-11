@@ -1,8 +1,8 @@
 /**
- * レイヤーパネルコンポーネント
+ * Layer panel component
  *
- * オブジェクトのレイヤー順を表示・編集（グループ対応）
- * ドラッグ&ドロップでレイヤー順序を変更可能
+ * Displays and edits object layer order with group support.
+ * Drag and drop to reorder layers.
  */
 
 import { useCallback, useMemo, useState } from "react";
@@ -25,27 +25,20 @@ import { useLayerContextMenu } from "./useLayerContextMenu";
 import { useLayerDragDrop } from "./useLayerDragDrop";
 import { useLayerItems } from "./useLayerItems";
 
-/**
- * レイヤーパネル
- */
 export function LayerPanel() {
 	const { t } = useTranslation();
 
-	// State（オブジェクト移動で再レンダリングしないようuseObjectsを使用）
 	const objects = useObjects();
 	const selectedIds = useSelectedIds();
 	const groups = useGroups();
 	const hasClipboard = useGlobalClipboard();
 
-	// Derived state
 	const canGroup = useCanGroup();
 	const focusedGroupId = useFocusedGroupId();
 	const isFocusMode = useIsFocusMode();
 
-	// ID→オブジェクトのルックアップ用Set
 	const selectedIdsSet = new Set(selectedIds);
 
-	// Actions
 	const {
 		selectObject,
 		updateObject,
@@ -68,7 +61,6 @@ export function LayerPanel() {
 		unfocus,
 	} = useEditorActions();
 
-	// オブジェクトが属するグループを取得するヘルパー関数
 	const getGroupForObject = useCallback(
 		(objectId: string): ObjectGroup | undefined => {
 			return groups.find((g) => g.objectIds.includes(objectId));
@@ -76,14 +68,11 @@ export function LayerPanel() {
 		[groups],
 	);
 
-	// コンテキストメニュー
 	const { menuState, openObjectMenu, openGroupMenu, closeMenu } =
 		useLayerContextMenu();
 
-	// グループ名編集のための状態（コンテキストメニューから発火）
 	const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
 
-	// レイヤーアイテムと可視性・ロック状態ヘルパー
 	const {
 		layerItems,
 		isGroupAllVisible,
@@ -95,7 +84,6 @@ export function LayerPanel() {
 		getGroupForObject,
 	});
 
-	// ドラッグ&ドロップ
 	const {
 		draggedObjectId,
 		draggedGroupId,
@@ -115,7 +103,6 @@ export function LayerPanel() {
 		removeFromGroup,
 	});
 
-	// オブジェクトの表示/非表示トグル
 	const handleToggleVisibility = useCallback(
 		(objectId: string) => {
 			const obj = objects.find((o) => o.id === objectId);
@@ -128,7 +115,6 @@ export function LayerPanel() {
 		[objects, updateObject, commitHistory, t],
 	);
 
-	// グループの表示/非表示トグル
 	const handleToggleGroupVisibility = useCallback(
 		(group: ObjectGroup) => {
 			const groupObjects = objects.filter((o) =>
@@ -145,7 +131,6 @@ export function LayerPanel() {
 		[objects, updateObjectsBatch, commitHistory, t],
 	);
 
-	// オブジェクトのロック/ロック解除トグル
 	const handleToggleLock = useCallback(
 		(objectId: string) => {
 			const obj = objects.find((o) => o.id === objectId);
@@ -158,7 +143,6 @@ export function LayerPanel() {
 		[objects, updateObject, commitHistory, t],
 	);
 
-	// グループのロック/ロック解除トグル
 	const handleToggleGroupLock = useCallback(
 		(group: ObjectGroup) => {
 			const groupObjects = objects.filter((o) =>
@@ -175,17 +159,14 @@ export function LayerPanel() {
 		[objects, updateObjectsBatch, commitHistory, t],
 	);
 
-	// オブジェクト選択
 	const handleSelectObject = useCallback(
 		(objectId: string, e: React.MouseEvent) => {
-			// Shift, Command (Mac), Ctrl (Windows) で追加選択
 			const additive = e.shiftKey || e.metaKey || e.ctrlKey;
 			selectObject(objectId, additive);
 		},
 		[selectObject],
 	);
 
-	// グループ選択
 	const handleSelectGroup = useCallback(
 		(groupId: string, e: React.MouseEvent) => {
 			e.stopPropagation();
@@ -194,7 +175,6 @@ export function LayerPanel() {
 		[selectGroup],
 	);
 
-	// グループ解除
 	const handleUngroupClick = useCallback(
 		(groupId: string, e: React.MouseEvent) => {
 			e.stopPropagation();
@@ -203,7 +183,6 @@ export function LayerPanel() {
 		[ungroup],
 	);
 
-	// グループ名変更
 	const handleRenameGroup = useCallback(
 		(groupId: string, name: string) => {
 			renameGroup(groupId, name);
@@ -211,7 +190,6 @@ export function LayerPanel() {
 		[renameGroup],
 	);
 
-	// 折りたたみトグル
 	const handleToggleCollapse = useCallback(
 		(groupId: string, e: React.MouseEvent) => {
 			e.stopPropagation();
@@ -220,17 +198,14 @@ export function LayerPanel() {
 		[toggleGroupCollapse],
 	);
 
-	// コンテキストメニューから編集モード開始
 	const handleStartRenameGroup = useCallback((groupId: string) => {
 		setEditingGroupId(groupId);
 	}, []);
 
-	// 編集モード開始後のクリア
 	const handleEditingStarted = useCallback(() => {
 		setEditingGroupId(null);
 	}, []);
 
-	// コンテキストメニューのアクション
 	const contextMenuActions = useMemo(
 		() => ({
 			copy: () => {
@@ -365,7 +340,6 @@ export function LayerPanel() {
 								const obj = objects.find((o) => o.id === objectId);
 								if (!obj) return null;
 
-								// フォーカスモードで、このオブジェクトがフォーカス中のグループに属していない場合
 								const focusedGroupObj = focusedGroupId
 									? groups.find((g) => g.id === focusedGroupId)
 									: null;
@@ -403,7 +377,6 @@ export function LayerPanel() {
 				)}
 			</div>
 
-			{/* レイヤー数表示 */}
 			<div className="px-3 py-2 text-xs flex justify-between flex-shrink-0 border-t border-border text-muted-foreground font-mono">
 				<span>
 					<span className="text-primary">{objects.length}</span>{" "}
@@ -417,7 +390,6 @@ export function LayerPanel() {
 				)}
 			</div>
 
-			{/* コンテキストメニュー */}
 			<LayerContextMenu
 				menuState={menuState}
 				onClose={closeMenu}

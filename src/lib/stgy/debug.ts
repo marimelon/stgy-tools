@@ -1,7 +1,7 @@
 /**
- * stgy デバッグユーティリティ
+ * stgy debug utilities
  *
- * バイナリデータのフィールド解析や比較機能を提供
+ * Provides field analysis and comparison features for binary data
  */
 
 import pako from "pako";
@@ -19,7 +19,7 @@ import { base64CharToValue, KEY_TABLE } from "./tables";
 import { padTo4Bytes } from "./utils";
 
 /**
- * フィールド情報
+ * Field information
  */
 export interface FieldInfo {
 	offset: number;
@@ -31,7 +31,7 @@ export interface FieldInfo {
 }
 
 /**
- * デコード詳細情報
+ * Decode debug information
  */
 export interface DecodeDebugInfo {
 	key: number;
@@ -54,7 +54,7 @@ export interface DecodeDebugInfo {
 }
 
 /**
- * 比較結果
+ * Comparison result
  */
 export interface CompareResult {
 	match: boolean;
@@ -69,7 +69,7 @@ export interface CompareResult {
 }
 
 /**
- * フィールドIDからフィールド名を取得
+ * Get field name from field ID
  */
 function getFieldName(fieldId: number): string {
 	const names: Record<number, string> = {
@@ -89,7 +89,7 @@ function getFieldName(fieldId: number): string {
 }
 
 /**
- * フラグをパース
+ * Parse flags
  */
 function parseFlags(value: number): Record<string, boolean> {
 	return {
@@ -101,11 +101,11 @@ function parseFlags(value: number): Record<string, boolean> {
 }
 
 /**
- * フィールドを解析
+ * Parse fields
  */
 function parseFields(data: Uint8Array): FieldInfo[] {
 	const fields: FieldInfo[] = [];
-	// ヘッダー(16) + セクションヘッダー(4) = 20バイトスキップ
+	// Skip header(16) + section header(4) = 20 bytes
 	let offset = 20;
 
 	while (offset + 4 <= data.length) {
@@ -118,7 +118,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 
 		switch (fieldId) {
 			case 1: {
-				// ボード名
+				// Board name
 				const stringLength = data[offset + 2] | (data[offset + 3] << 8);
 				const paddedLength = padTo4Bytes(stringLength);
 				rawData = data.slice(offset, offset + 4 + paddedLength);
@@ -132,7 +132,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 			}
 
 			case 2: {
-				// オブジェクトID
+				// Object ID
 				const objectId = data[offset + 2] | (data[offset + 3] << 8);
 				rawData = data.slice(offset, offset + 4);
 				parsedValue = objectId;
@@ -142,10 +142,10 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 			}
 
 			case 3: {
-				// テキスト/終端マーカー
+				// Text/terminator marker
 				const length = data[offset + 2] | (data[offset + 3] << 8);
 				if (length > 8) {
-					// テキスト
+					// Text
 					const paddedLength = padTo4Bytes(length);
 					rawData = data.slice(offset, offset + 4 + paddedLength);
 					const textBytes = data.slice(offset + 4, offset + 4 + length);
@@ -155,7 +155,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 					description = `Text: "${parsedValue}" (length=${length}, padded=${paddedLength})`;
 					offset += 4 + paddedLength;
 				} else {
-					// 終端マーカー
+					// Terminator marker
 					rawData = data.slice(offset, offset + 8);
 					const value1 = data[offset + 4] | (data[offset + 5] << 8);
 					const backgroundId = data[offset + 6] | (data[offset + 7] << 8);
@@ -167,7 +167,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 			}
 
 			case 4: {
-				// フラグ配列
+				// Flag array
 				const type = data[offset + 2] | (data[offset + 3] << 8);
 				const count = data[offset + 4] | (data[offset + 5] << 8);
 				rawData = data.slice(offset, offset + 6 + count * 2);
@@ -184,7 +184,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 			}
 
 			case 5: {
-				// 座標配列
+				// Position array
 				const type = data[offset + 2] | (data[offset + 3] << 8);
 				const count = data[offset + 4] | (data[offset + 5] << 8);
 				rawData = data.slice(offset, offset + 6 + count * 4);
@@ -206,7 +206,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 			}
 
 			case 6: {
-				// 回転角度配列
+				// Rotation angle array
 				const type = data[offset + 2] | (data[offset + 3] << 8);
 				const count = data[offset + 4] | (data[offset + 5] << 8);
 				rawData = data.slice(offset, offset + 6 + count * 2);
@@ -223,10 +223,10 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 			}
 
 			case 7: {
-				// サイズ配列
+				// Size array
 				const type = data[offset + 2] | (data[offset + 3] << 8);
 				const count = data[offset + 4] | (data[offset + 5] << 8);
-				const dataLength = count + (count % 2); // 2バイト境界
+				const dataLength = count + (count % 2); // 2-byte boundary
 				rawData = data.slice(offset, offset + 6 + dataLength);
 				const sizes = [];
 				for (let i = 0; i < count; i++) {
@@ -239,7 +239,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 			}
 
 			case 8: {
-				// 色配列
+				// Color array
 				const type = data[offset + 2] | (data[offset + 3] << 8);
 				const count = data[offset + 4] | (data[offset + 5] << 8);
 				rawData = data.slice(offset, offset + 6 + count * 4);
@@ -261,7 +261,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 			case 10:
 			case 11:
 			case 12: {
-				// パラメータ配列
+				// Parameter array
 				const type = data[offset + 2] | (data[offset + 3] << 8);
 				const count = data[offset + 4] | (data[offset + 5] << 8);
 				rawData = data.slice(offset, offset + 6 + count * 2);
@@ -278,7 +278,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 			}
 
 			default: {
-				// 未知のフィールド
+				// Unknown field
 				rawData = data.slice(offset, offset + 4);
 				parsedValue = null;
 				description = `Unknown field ID: ${fieldId}`;
@@ -301,7 +301,7 @@ function parseFields(data: Uint8Array): FieldInfo[] {
 }
 
 /**
- * stgy文字列をデバッグ情報付きでデコード
+ * Decode stgy string with debug information
  */
 export function decodeStgyDebug(stgyString: string): DecodeDebugInfo {
 	if (!stgyString.startsWith(STGY_PREFIX)) {
@@ -316,7 +316,7 @@ export function decodeStgyDebug(stgyString: string): DecodeDebugInfo {
 		throw new Error("Invalid stgy string: too short");
 	}
 
-	// キー抽出
+	// Key extraction
 	const keyChar = payload[0];
 	const keyMapped = KEY_TABLE[keyChar];
 	if (keyMapped === undefined) {
@@ -324,14 +324,14 @@ export function decodeStgyDebug(stgyString: string): DecodeDebugInfo {
 	}
 	const key = base64CharToValue(keyMapped);
 
-	// 復号
+	// Decrypt
 	const encodedPayload = payload.slice(1);
 	const base64Payload = decryptCipher(encodedPayload, key);
 
-	// Base64デコード
+	// Base64 decode
 	const prefixedBinary = decodeBase64(base64Payload);
 
-	// バイナリ解析
+	// Binary analysis
 	const crc32Stored =
 		(prefixedBinary[0] |
 			(prefixedBinary[1] << 8) |
@@ -342,13 +342,13 @@ export function decodeStgyDebug(stgyString: string): DecodeDebugInfo {
 	const compressedData = prefixedBinary.slice(COMPRESSED_DATA_OFFSET);
 	const crc32Calculated = calculateCRC32(prefixedBinary.slice(4));
 
-	// 解凍
+	// Decompress
 	const decompressedData = pako.inflate(compressedData);
 
-	// ヘッダー解析 (xivdev仕様準拠)
+	// Header analysis (xivdev spec compliant)
 	// - 0x00-0x03: version (u32)
-	// - 0x04-0x07: StrategyBoard.length (u32) - ヘッダー後のコンテンツ長
-	// - 0x08-0x0F: padding (8バイト)
+	// - 0x04-0x07: StrategyBoard.length (u32) - content length after header
+	// - 0x08-0x0F: padding (8 bytes)
 	// - 0x10-0x11: SectionType (u16)
 	// - 0x12-0x13: SectionContent.length (u16)
 	const header = {
@@ -365,7 +365,7 @@ export function decodeStgyDebug(stgyString: string): DecodeDebugInfo {
 		sectionContentLength: decompressedData[18] | (decompressedData[19] << 8),
 	};
 
-	// フィールド解析
+	// Field analysis
 	const fields = parseFields(decompressedData);
 
 	return {
@@ -384,7 +384,7 @@ export function decodeStgyDebug(stgyString: string): DecodeDebugInfo {
 }
 
 /**
- * 2つのstgyコードを比較
+ * Compare two stgy codes
  */
 export function compareStgy(
 	original: string,
@@ -426,7 +426,7 @@ export function compareStgy(
 			}
 		}
 	} catch {
-		// 比較失敗
+		// Comparison failed
 	}
 
 	return {
@@ -439,7 +439,7 @@ export function compareStgy(
 }
 
 /**
- * バイナリデータを16進ダンプ形式の文字列に変換
+ * Convert binary data to hex dump format string
  */
 export function hexDump(data: Uint8Array, bytesPerLine = 16): string {
 	const lines: string[] = [];

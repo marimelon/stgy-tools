@@ -1,5 +1,5 @@
 /**
- * 比較表示コンポーネント
+ * Comparison view component
  */
 
 import type { RefObject } from "react";
@@ -73,7 +73,7 @@ export function ComparisonView({
 	}
 }
 
-/** Side-by-Side表示 */
+/** Side-by-side view */
 function SideBySideView({
 	screenshotDataUrl,
 	boardData,
@@ -122,7 +122,7 @@ function SideBySideView({
 	);
 }
 
-/** Overlay表示 */
+/** Overlay view */
 function OverlayView({
 	screenshotDataUrl,
 	boardData,
@@ -140,7 +140,6 @@ function OverlayView({
 				className="relative border border-border"
 				style={{ width: TARGET_BOARD_WIDTH, height: TARGET_BOARD_HEIGHT }}
 			>
-				{/* 下レイヤー: Screenshot */}
 				{screenshotDataUrl && (
 					<div
 						className="absolute inset-0"
@@ -154,7 +153,6 @@ function OverlayView({
 						/>
 					</div>
 				)}
-				{/* 上レイヤー: Rendered */}
 				{boardData && (
 					<div
 						ref={renderedContainerRef}
@@ -169,7 +167,7 @@ function OverlayView({
 	);
 }
 
-/** Diff表示 */
+/** Diff view */
 function DiffView({
 	screenshotDataUrl,
 	boardData,
@@ -230,7 +228,7 @@ function DiffView({
 	);
 }
 
-/** Swipe表示 */
+/** Swipe view */
 function SwipeView({
 	screenshotDataUrl,
 	boardData,
@@ -276,7 +274,6 @@ function SwipeView({
 				onMouseUp={handleMouseUp}
 				onMouseLeave={handleMouseUp}
 			>
-				{/* 左側: Screenshot */}
 				{screenshotDataUrl && (
 					<div
 						className="absolute inset-0 overflow-hidden"
@@ -292,7 +289,6 @@ function SwipeView({
 					</div>
 				)}
 
-				{/* 右側: Rendered */}
 				{boardData && (
 					<div
 						className="absolute top-0 bottom-0 overflow-hidden"
@@ -323,7 +319,7 @@ function SwipeView({
 	);
 }
 
-/** 空のプレースホルダー */
+/** Empty placeholder */
 function EmptyPlaceholder({ message }: { message: string }) {
 	return (
 		<div

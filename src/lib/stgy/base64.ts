@@ -1,23 +1,23 @@
 /**
- * URL-safe Base64エンコード/デコードユーティリティ
- * パディングなし
+ * URL-safe Base64 encode/decode utilities
+ * No padding
  */
 
 /**
- * Base64エンコード（URL-safe Base64で出力）
- * + → -, / → _ に変換し、パディングを除去
- * @param data バイト配列
- * @returns URL-safe Base64文字列
+ * Base64 encode (output as URL-safe Base64)
+ * Converts + to -, / to _ and removes padding
+ * @param data Byte array
+ * @returns URL-safe Base64 string
  */
 export function encodeBase64(data: Uint8Array): string {
-	// バイナリを文字列に変換
+	// Convert binary to string
 	let binaryString = "";
 	for (let i = 0; i < data.length; i++) {
 		binaryString += String.fromCharCode(data[i]);
 	}
-	// 標準Base64エンコード
+	// Standard Base64 encode
 	const standardBase64 = btoa(binaryString);
-	// URL-safe Base64に変換し、パディングを除去
+	// Convert to URL-safe Base64 and remove padding
 	return standardBase64
 		.replace(/\+/g, "-")
 		.replace(/\//g, "_")
@@ -25,20 +25,20 @@ export function encodeBase64(data: Uint8Array): string {
 }
 
 /**
- * Base64デコード（URL-safe Base64対応）
- * - → +, _ → / に変換し、パディングを復元
- * @param base64 URL-safe Base64文字列
- * @returns バイト配列
+ * Base64 decode (supports URL-safe Base64)
+ * Converts - to +, _ to / and restores padding
+ * @param base64 URL-safe Base64 string
+ * @returns Byte array
  */
 export function decodeBase64(base64: string): Uint8Array {
-	// URL-safe Base64を標準Base64に変換
+	// Convert URL-safe Base64 to standard Base64
 	const standardBase64 = base64.replace(/-/g, "+").replace(/_/g, "/");
-	// パディングを復元
+	// Restore padding
 	const padded =
 		standardBase64 + "=".repeat((4 - (standardBase64.length % 4)) % 4);
-	// Base64デコード
+	// Base64 decode
 	const binaryString = atob(padded);
-	// バイト配列に変換
+	// Convert to byte array
 	const bytes = new Uint8Array(binaryString.length);
 	for (let i = 0; i < binaryString.length; i++) {
 		bytes[i] = binaryString.charCodeAt(i);

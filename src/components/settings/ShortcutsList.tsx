@@ -1,21 +1,13 @@
-/**
- * キーボードショートカット一覧コンポーネント
- */
-
 import { useTranslation } from "react-i18next";
 import { KEYBOARD_SHORTCUTS } from "@/lib/editor/useKeyboardShortcuts";
 
-/**
- * OSに応じた修飾キーの表示名を取得
- */
+/** Returns OS-appropriate modifier key display name */
 function getModifierKey(): string {
 	if (typeof window === "undefined") return "Ctrl";
 	return navigator.platform.toLowerCase().includes("mac") ? "⌘" : "Ctrl";
 }
 
-/**
- * キーの表示をフォーマット
- */
+/** Formats key display with OS-appropriate modifier symbols */
 function formatKey(key: string): string {
 	const modifier = getModifierKey();
 	return key
@@ -24,9 +16,6 @@ function formatKey(key: string): string {
 		.replace("Delete", "Del");
 }
 
-/**
- * キーボードショートカット一覧
- */
 export function ShortcutsList() {
 	const { t } = useTranslation();
 	const modifier = getModifierKey();

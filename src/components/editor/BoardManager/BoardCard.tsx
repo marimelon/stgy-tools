@@ -75,7 +75,7 @@ export function BoardCard({
 
 	const handleSaveEdit = () => {
 		let trimmed = editName.trim();
-		// 確定時に文字数制限を適用
+		// Apply character limit on confirm
 		if (!debugMode && trimmed.length > MAX_BOARD_NAME_LENGTH) {
 			trimmed = trimmed.slice(0, MAX_BOARD_NAME_LENGTH);
 		}
@@ -154,7 +154,7 @@ export function BoardCard({
 						value={editName}
 						onChange={(e) => setEditName(e.target.value)}
 						onCompositionEnd={(e) => {
-							// IME確定時に文字数制限を適用
+							// Apply character limit on IME composition end
 							if (!debugMode) {
 								const value = e.currentTarget.value;
 								if (value.length > MAX_BOARD_NAME_LENGTH) {

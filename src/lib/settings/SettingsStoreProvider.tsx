@@ -18,7 +18,7 @@ import type { SettingsStore } from "./store/types";
 import { type AppSettings, SETTINGS_STORAGE_KEY } from "./types";
 
 /**
- * localStorageに設定を保存
+ * Save settings to localStorage
  */
 function saveSettings(settings: AppSettings): void {
 	if (typeof window === "undefined") return;
@@ -26,12 +26,12 @@ function saveSettings(settings: AppSettings): void {
 	try {
 		localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
 	} catch {
-		// ストレージエラーは無視
+		// Ignore storage errors
 	}
 }
 
 /**
- * 旧デバッグモード設定からのマイグレーション
+ * Migrate from legacy debug mode setting
  */
 function migrateFromOldDebugMode(): void {
 	if (typeof window === "undefined") return;
@@ -40,13 +40,13 @@ function migrateFromOldDebugMode(): void {
 	const oldValue = localStorage.getItem(OLD_DEBUG_KEY);
 
 	if (oldValue !== null) {
-		// 旧設定が存在する場合、新しい設定にマイグレーション
+		// Migrate legacy setting to new format
 		const currentSettings = loadSettingsFromStorage();
 		if (oldValue === "true") {
 			currentSettings.debugMode = true;
 			saveSettings(currentSettings);
 		}
-		// 旧キーを削除
+		// Remove legacy key
 		localStorage.removeItem(OLD_DEBUG_KEY);
 	}
 }
@@ -55,7 +55,7 @@ function migrateFromOldDebugMode(): void {
 const SettingsStoreContext = createContext<SettingsStore | null>(null);
 
 /**
- * SettingsStoreContext フック
+ * Hook to access SettingsStoreContext
  */
 export function useSettingsStoreContext(): SettingsStore {
 	const store = useContext(SettingsStoreContext);
@@ -78,23 +78,18 @@ interface SettingsStoreProviderProps {
 export function SettingsStoreProvider({
 	children,
 }: SettingsStoreProviderProps) {
-	// ストアを一度だけ作成
 	const store = useMemo(() => {
 		const initialState = loadSettingsFromStorage();
 		return createSettingsStore(initialState);
 	}, []);
 
-	// 初回マウント時にマイグレーション処理
 	useEffect(() => {
 		migrateFromOldDebugMode();
 	}, []);
 
-	// ストア変更時にlocalStorageに保存
 	useEffect(() => {
-		// 初期状態を保存
 		saveSettings(store.state);
 
-		// 変更を購読して保存
 		const unsubscribe = store.subscribe(() => {
 			saveSettings(store.state);
 		});
@@ -102,7 +97,7 @@ export function SettingsStoreProvider({
 		return unsubscribe;
 	}, [store]);
 
-	// 他のタブからの変更をリッスン（storageイベントは同じタブでは発火しない）
+	// Listen for changes from other tabs (storage event doesn't fire in same tab)
 	useEffect(() => {
 		const handleStorageChange = (event: StorageEvent) => {
 			if (event.key !== SETTINGS_STORAGE_KEY || !event.newValue) return;
@@ -111,7 +106,7 @@ export function SettingsStoreProvider({
 				const newSettings = JSON.parse(event.newValue) as AppSettings;
 				store.setState(() => newSettings);
 			} catch {
-				// パースエラーは無視
+				// Ignore parse errors
 			}
 		};
 
@@ -130,7 +125,7 @@ export function SettingsStoreProvider({
 }
 
 /**
- * ストアが初期化されているか確認
+ * Check if the store is initialized
  */
 export function useIsSettingsStoreInitialized(): boolean {
 	return getSettingsStoreSafe() !== null;

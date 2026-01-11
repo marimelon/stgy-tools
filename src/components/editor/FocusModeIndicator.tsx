@@ -1,22 +1,16 @@
 /**
- * フォーカスモードインジケーター
+ * Focus mode indicator
  *
- * フォーカスモード中にキャンバス上部に表示されるインジケーター
+ * Displays at the top of canvas during focus mode
  */
 
 import { Focus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface FocusModeIndicatorProps {
-	/** グループ名 */
 	groupName: string;
-	/** 解除ボタンクリック時のコールバック */
 	onExit: () => void;
 }
-
-/**
- * フォーカスモードインジケーター
- */
 export function FocusModeIndicator({
 	groupName,
 	onExit,

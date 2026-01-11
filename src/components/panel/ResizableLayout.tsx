@@ -1,8 +1,7 @@
 /**
- * リサイズ可能なレイアウトコンポーネント
- *
- * 左サイドバー / 中央キャンバス / 右サイドバーの3分割レイアウト
- * React 19.2の<Activity>を使用して、非表示パネルの状態を保持
+ * Resizable layout component.
+ * 3-column layout: left sidebar / center canvas / right sidebar.
+ * Uses React 19.2 <Activity> to preserve hidden panel state.
  */
 
 import type { ReactNode } from "react";
@@ -28,17 +27,11 @@ import {
 import { SidebarGroup } from "./SidebarGroup";
 
 interface ResizableLayoutProps {
-	/** パネルコンポーネントのマップ */
 	panelComponents: Record<PanelId, ReactNode>;
-	/** パネル固有のアクションボタンのマップ */
 	panelActions?: Partial<Record<PanelId, ReactNode>>;
-	/** 中央コンテンツ（キャンバス） */
 	children: ReactNode;
 }
 
-/**
- * リサイズ可能なレイアウト
- */
 export function ResizableLayout({
 	panelComponents,
 	panelActions,
@@ -52,10 +45,8 @@ export function ResizableLayout({
 	const hasLeftSidebar = leftPanels.length > 0;
 	const hasRightSidebar = rightPanels.length > 0;
 
-	// 非表示パネル（左右合わせて）
 	const hiddenPanels = [...leftHiddenPanels, ...rightHiddenPanels];
 
-	// レイアウトの保存・復元
 	const { defaultLayout, onLayoutChange } = useDefaultLayout({
 		id: "editor-main-layout",
 		storage: localStorage,
@@ -69,7 +60,6 @@ export function ResizableLayout({
 				defaultLayout={defaultLayout}
 				onLayoutChange={onLayoutChange}
 			>
-				{/* 左サイドバー */}
 				{hasLeftSidebar && (
 					<>
 						{/* biome-ignore lint/correctness/useUniqueElementIds: Panel IDs must be static for layout persistence */}
@@ -90,13 +80,11 @@ export function ResizableLayout({
 					</>
 				)}
 
-				{/* 中央（キャンバス） */}
 				{/* biome-ignore lint/correctness/useUniqueElementIds: Panel IDs must be static for layout persistence */}
 				<Panel minSize={CENTER_PANEL_CONFIG.MIN_SIZE} id="center">
 					{children}
 				</Panel>
 
-				{/* 右サイドバー */}
 				{hasRightSidebar && (
 					<>
 						<PanelResizeHandle className={RESIZE_HANDLE_STYLES.HORIZONTAL} />
@@ -118,7 +106,7 @@ export function ResizableLayout({
 				)}
 			</PanelGroup>
 
-			{/* 非表示パネル: Activityで状態を保持しつつ非表示 */}
+			{/* Hidden panels: Activity preserves state while hidden */}
 			{hiddenPanels.map(([panelId]) => (
 				<Activity key={panelId} mode="hidden">
 					{panelComponents[panelId]}

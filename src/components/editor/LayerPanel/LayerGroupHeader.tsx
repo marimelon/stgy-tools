@@ -1,5 +1,5 @@
 /**
- * レイヤーグループヘッダーコンポーネント
+ * Layer group header component
  */
 
 import {
@@ -30,11 +30,9 @@ interface LayerGroupHeaderProps {
 	isAllLocked: boolean;
 	isAllUnlocked: boolean;
 	dropTarget: DropTarget | null;
-	/** 外部から編集モードを開始するためのフラグ（コンテキストメニュー用） */
+	/** Flag to trigger edit mode from context menu */
 	shouldStartEditing?: boolean;
-	/** このグループがフォーカス中かどうか */
 	isFocused?: boolean;
-	/** フォーカスモードで他のグループがフォーカスされている場合 */
 	isOutsideFocus?: boolean;
 	onDragStart: (e: DragEvent<HTMLDivElement>, groupId: string) => void;
 	onDragOver: (e: DragEvent<HTMLDivElement>, objectId: string) => void;
@@ -47,17 +45,11 @@ interface LayerGroupHeaderProps {
 	onUngroup: (groupId: string, e: React.MouseEvent) => void;
 	onRename: (groupId: string, name: string) => void;
 	onContextMenu: (e: React.MouseEvent, group: ObjectGroup) => void;
-	/** 編集モード開始後のクリアコールバック */
 	onEditingStarted?: () => void;
-	/** フォーカスボタンクリック時のコールバック */
 	onFocus?: (groupId: string) => void;
-	/** フォーカス解除ボタンクリック時のコールバック */
 	onUnfocus?: () => void;
 }
 
-/**
- * レイヤーパネルのグループヘッダー
- */
 export function LayerGroupHeader({
 	group,
 	objects,
@@ -98,13 +90,11 @@ export function LayerGroupHeader({
 	const isDropBeforeGroup =
 		dropTarget?.index === firstIndex && dropTarget?.position === "before";
 
-	// 編集状態管理
 	const [isEditing, setIsEditing] = useState(false);
 	const [editName, setEditName] = useState("");
 	const inputRef = useRef<HTMLInputElement>(null);
 	const itemRef = useAutoScrollOnSelect(isAllSelected);
 
-	// 編集開始時にフォーカス
 	useEffect(() => {
 		if (isEditing && inputRef.current) {
 			inputRef.current.focus();
@@ -112,7 +102,7 @@ export function LayerGroupHeader({
 		}
 	}, [isEditing]);
 
-	// group.id が変わったら編集をリセット（Undo/Redo対応）
+	// Reset editing state on group.id change (for undo/redo)
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Intentionally only trigger on group.id change
 	useEffect(() => {
 		if (isEditing) {
@@ -120,7 +110,6 @@ export function LayerGroupHeader({
 		}
 	}, [group.id]);
 
-	// 外部から編集モードを開始（コンテキストメニュー用）
 	useEffect(() => {
 		if (shouldStartEditing) {
 			setEditName(group.name || "");
@@ -129,14 +118,12 @@ export function LayerGroupHeader({
 		}
 	}, [shouldStartEditing, group.name, onEditingStarted]);
 
-	// 編集開始
 	const handleStartEdit = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		setEditName(group.name || "");
 		setIsEditing(true);
 	};
 
-	// 保存
 	const handleSaveEdit = () => {
 		const trimmed = editName.trim();
 		if (trimmed !== (group.name || "")) {
@@ -145,13 +132,11 @@ export function LayerGroupHeader({
 		setIsEditing(false);
 	};
 
-	// キャンセル
 	const handleCancelEdit = () => {
 		setEditName(group.name || "");
 		setIsEditing(false);
 	};
 
-	// キー入力
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		if (e.key === "Enter") {
 			handleSaveEdit();
@@ -160,7 +145,6 @@ export function LayerGroupHeader({
 		}
 	};
 
-	// 表示名取得
 	const getDisplayName = () => {
 		if (group.name) {
 			return group.name;
@@ -170,7 +154,6 @@ export function LayerGroupHeader({
 
 	return (
 		<div ref={itemRef} className="relative">
-			{/* ドロップインジケーター（グループの前） */}
 			{isDropBeforeGroup && (
 				<div className="drop-indicator absolute top-0 left-1 right-1 z-10" />
 			)}
@@ -187,12 +170,10 @@ export function LayerGroupHeader({
 				onContextMenu={(e) => onContextMenu(e, group)}
 				className={`layer-item select-none ${isDragging ? "opacity-50" : isOutsideFocus ? "opacity-40" : ""} ${isFocused ? "focused" : isAllSelected ? "group-selected" : ""}`}
 			>
-				{/* ドラッグハンドル */}
 				<span className="cursor-grab active:cursor-grabbing text-muted-foreground">
 					<GripVertical size={14} />
 				</span>
 
-				{/* 折りたたみトグル */}
 				<button
 					type="button"
 					onClick={(e) => onToggleCollapse(group.id, e)}
@@ -205,10 +186,8 @@ export function LayerGroupHeader({
 					)}
 				</button>
 
-				{/* グループアイコン */}
 				<span className="text-purple-400 text-xs">⊞</span>
 
-				{/* グループ名（編集可能） */}
 				{isEditing ? (
 					<input
 						ref={inputRef}
@@ -235,10 +214,8 @@ export function LayerGroupHeader({
 					</span>
 				)}
 
-				{/* 編集中は他のボタンを非表示 */}
 				{!isEditing && (
 					<>
-						{/* グループ表示/非表示トグル */}
 						<button
 							type="button"
 							onClick={(e) => {
@@ -257,7 +234,6 @@ export function LayerGroupHeader({
 							{isAllVisible ? <Eye size={14} /> : <EyeOff size={14} />}
 						</button>
 
-						{/* グループロック/ロック解除トグル */}
 						<button
 							type="button"
 							onClick={(e) => {
@@ -280,7 +256,6 @@ export function LayerGroupHeader({
 							{isAllLocked ? <Lock size={14} /> : <LockOpen size={14} />}
 						</button>
 
-						{/* フォーカスボタン */}
 						<button
 							type="button"
 							onClick={(e) => {
@@ -305,7 +280,6 @@ export function LayerGroupHeader({
 							<Focus size={14} />
 						</button>
 
-						{/* グループ解除ボタン */}
 						<button
 							type="button"
 							onClick={(e) => onUngroup(group.id, e)}

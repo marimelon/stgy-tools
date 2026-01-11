@@ -1,22 +1,22 @@
 /**
- * 色変換ユーティリティ
+ * Color conversion utilities
  */
 
 /**
- * RGB値をHex文字列に変換
- * @param r - 赤 (0-255)
- * @param g - 緑 (0-255)
- * @param b - 青 (0-255)
- * @returns Hex文字列 (例: "#ff0000")
+ * Convert RGB values to Hex string
+ * @param r - Red (0-255)
+ * @param g - Green (0-255)
+ * @param b - Blue (0-255)
+ * @returns Hex string (e.g., "#ff0000")
  */
 export function rgbToHex(r: number, g: number, b: number): string {
 	return `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
 }
 
 /**
- * Hex文字列をRGB値に変換
- * @param hex - Hex文字列 (例: "#ff0000" または "ff0000")
- * @returns RGB値オブジェクト
+ * Convert Hex string to RGB values
+ * @param hex - Hex string (e.g., "#ff0000" or "ff0000")
+ * @returns RGB value object
  */
 export function hexToRgb(hex: string): { r: number; g: number; b: number } {
 	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -30,100 +30,100 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } {
 }
 
 /**
- * プリセットカラーパレット（56色: 7行 × 8列）
+ * Preset color palette (56 colors: 7 rows x 8 columns)
  *
- * 列の色系統:
- * - 列1: グレースケール（白→ダークグレー）
- * - 列2: 赤系（ピンク→モーヴ）
- * - 列3: オレンジ系（ピーチ→ベージュ）
- * - 列4: 黄色系（レモン→カーキ）
- * - 列5: 緑系（ミント→エメラルド）
- * - 列6: シアン系（アクア→ターコイズ）
- * - 列7: 青系（スカイブルー→ラベンダー）
- * - 列8: ピンク/紫系（マゼンタ→オーキッド）
+ * Column color families:
+ * - Column 1: Grayscale (white to dark gray)
+ * - Column 2: Red family (pink to mauve)
+ * - Column 3: Orange family (peach to beige)
+ * - Column 4: Yellow family (lemon to khaki)
+ * - Column 5: Green family (mint to emerald)
+ * - Column 6: Cyan family (aqua to turquoise)
+ * - Column 7: Blue family (sky blue to lavender)
+ * - Column 8: Pink/purple family (magenta to orchid)
  */
 export const COLOR_PALETTE: { r: number; g: number; b: number }[][] = [
-	// 行1: パステルカラー
+	// Row 1: Pastel colors
 	[
-		{ r: 255, g: 255, b: 255 }, // 白
-		{ r: 255, g: 189, b: 191 }, // 薄いピンク
-		{ r: 255, g: 224, b: 200 }, // 薄いオレンジ
-		{ r: 255, g: 248, b: 176 }, // 薄い黄
-		{ r: 233, g: 255, b: 226 }, // 薄い緑
-		{ r: 232, g: 255, b: 254 }, // 薄いシアン
-		{ r: 156, g: 208, b: 244 }, // 薄い青
-		{ r: 255, g: 220, b: 255 }, // 薄いマゼンタ
+		{ r: 255, g: 255, b: 255 }, // White
+		{ r: 255, g: 189, b: 191 }, // Light pink
+		{ r: 255, g: 224, b: 200 }, // Light orange
+		{ r: 255, g: 248, b: 176 }, // Light yellow
+		{ r: 233, g: 255, b: 226 }, // Light green
+		{ r: 232, g: 255, b: 254 }, // Light cyan
+		{ r: 156, g: 208, b: 244 }, // Light blue
+		{ r: 255, g: 220, b: 255 }, // Light magenta
 	],
-	// 行2: 原色/基本色
+	// Row 2: Primary/basic colors
 	[
-		{ r: 248, g: 248, b: 248 }, // 薄いグレー
-		{ r: 255, g: 0, b: 0 }, // 赤
-		{ r: 255, g: 128, b: 0 }, // オレンジ
-		{ r: 255, g: 255, b: 0 }, // 黄
-		{ r: 0, g: 255, b: 0 }, // 緑
-		{ r: 0, g: 255, b: 255 }, // シアン
-		{ r: 0, g: 0, b: 255 }, // 青
-		{ r: 255, g: 0, b: 255 }, // マゼンタ
+		{ r: 248, g: 248, b: 248 }, // Light gray
+		{ r: 255, g: 0, b: 0 }, // Red
+		{ r: 255, g: 128, b: 0 }, // Orange
+		{ r: 255, g: 255, b: 0 }, // Yellow
+		{ r: 0, g: 255, b: 0 }, // Green
+		{ r: 0, g: 255, b: 255 }, // Cyan
+		{ r: 0, g: 0, b: 255 }, // Blue
+		{ r: 255, g: 0, b: 255 }, // Magenta
 	],
-	// 行3
+	// Row 3
 	[
-		{ r: 224, g: 224, b: 224 }, // ライトグレー
-		{ r: 255, g: 76, b: 76 }, // 明るい赤
-		{ r: 255, g: 166, b: 102 }, // 明るいオレンジ
-		{ r: 255, g: 255, b: 178 }, // クリーム黄
-		{ r: 128, g: 255, b: 0 }, // ライムグリーン
-		{ r: 188, g: 255, b: 240 }, // ミントグリーン
-		{ r: 0, g: 128, b: 255 }, // スカイブルー
-		{ r: 226, g: 96, b: 144 }, // ローズピンク
+		{ r: 224, g: 224, b: 224 }, // Light gray
+		{ r: 255, g: 76, b: 76 }, // Bright red
+		{ r: 255, g: 166, b: 102 }, // Bright orange
+		{ r: 255, g: 255, b: 178 }, // Cream yellow
+		{ r: 128, g: 255, b: 0 }, // Lime green
+		{ r: 188, g: 255, b: 240 }, // Mint green
+		{ r: 0, g: 128, b: 255 }, // Sky blue
+		{ r: 226, g: 96, b: 144 }, // Rose pink
 	],
-	// 行4
+	// Row 4
 	[
-		{ r: 216, g: 216, b: 216 }, // グレー
-		{ r: 255, g: 127, b: 127 }, // コーラルピンク
-		{ r: 255, g: 206, b: 172 }, // ピーチ
-		{ r: 255, g: 222, b: 115 }, // ゴールデンイエロー
-		{ r: 128, g: 248, b: 96 }, // ブライトグリーン
-		{ r: 102, g: 230, b: 255 }, // アクアブルー
-		{ r: 148, g: 192, b: 255 }, // ライトブルー
-		{ r: 255, g: 140, b: 198 }, // ホットピンク
+		{ r: 216, g: 216, b: 216 }, // Gray
+		{ r: 255, g: 127, b: 127 }, // Coral pink
+		{ r: 255, g: 206, b: 172 }, // Peach
+		{ r: 255, g: 222, b: 115 }, // Golden yellow
+		{ r: 128, g: 248, b: 96 }, // Bright green
+		{ r: 102, g: 230, b: 255 }, // Aqua blue
+		{ r: 148, g: 192, b: 255 }, // Light blue
+		{ r: 255, g: 140, b: 198 }, // Hot pink
 	],
-	// 行5
+	// Row 5
 	[
-		{ r: 204, g: 204, b: 204 }, // グレー
-		{ r: 255, g: 192, b: 192 }, // ベビーピンク
-		{ r: 255, g: 104, b: 0 }, // ビビッドオレンジ
-		{ r: 240, g: 200, b: 108 }, // ハニーイエロー
-		{ r: 212, g: 255, b: 127 }, // イエローグリーン
-		{ r: 172, g: 220, b: 230 }, // パウダーブルー
-		{ r: 128, g: 128, b: 255 }, // パープルブルー
-		{ r: 255, g: 184, b: 224 }, // ライトピンク
+		{ r: 204, g: 204, b: 204 }, // Gray
+		{ r: 255, g: 192, b: 192 }, // Baby pink
+		{ r: 255, g: 104, b: 0 }, // Vivid orange
+		{ r: 240, g: 200, b: 108 }, // Honey yellow
+		{ r: 212, g: 255, b: 127 }, // Yellow green
+		{ r: 172, g: 220, b: 230 }, // Powder blue
+		{ r: 128, g: 128, b: 255 }, // Purple blue
+		{ r: 255, g: 184, b: 224 }, // Light pink
 	],
-	// 行6
+	// Row 6
 	[
-		{ r: 191, g: 191, b: 191 }, // ミディアムグレー
-		{ r: 216, g: 192, b: 192 }, // ダスティローズ
-		{ r: 216, g: 104, b: 108 }, // ダークコーラル
-		{ r: 204, g: 204, b: 102 }, // オリーブイエロー
-		{ r: 172, g: 216, b: 72 }, // アップルグリーン
-		{ r: 176, g: 232, b: 232 }, // ペールシアン
-		{ r: 179, g: 140, b: 255 }, // ラベンダー
-		{ r: 224, g: 168, b: 188 }, // ダスティピンク
+		{ r: 191, g: 191, b: 191 }, // Medium gray
+		{ r: 216, g: 192, b: 192 }, // Dusty rose
+		{ r: 216, g: 104, b: 108 }, // Dark coral
+		{ r: 204, g: 204, b: 102 }, // Olive yellow
+		{ r: 172, g: 216, b: 72 }, // Apple green
+		{ r: 176, g: 232, b: 232 }, // Pale cyan
+		{ r: 179, g: 140, b: 255 }, // Lavender
+		{ r: 224, g: 168, b: 188 }, // Dusty pink
 	],
-	// 行7
+	// Row 7
 	[
-		{ r: 166, g: 166, b: 166 }, // ダークグレー
-		{ r: 198, g: 162, b: 162 }, // モーヴ
-		{ r: 216, g: 190, b: 172 }, // ベージュ
-		{ r: 200, g: 192, b: 160 }, // カーキ
-		{ r: 58, g: 232, b: 180 }, // エメラルドグリーン
-		{ r: 60, g: 232, b: 232 }, // ターコイズ
-		{ r: 224, g: 192, b: 248 }, // ライトラベンダー
-		{ r: 224, g: 136, b: 244 }, // オーキッド
+		{ r: 166, g: 166, b: 166 }, // Dark gray
+		{ r: 198, g: 162, b: 162 }, // Mauve
+		{ r: 216, g: 190, b: 172 }, // Beige
+		{ r: 200, g: 192, b: 160 }, // Khaki
+		{ r: 58, g: 232, b: 180 }, // Emerald green
+		{ r: 60, g: 232, b: 232 }, // Turquoise
+		{ r: 224, g: 192, b: 248 }, // Light lavender
+		{ r: 224, g: 136, b: 244 }, // Orchid
 	],
 ];
 
-/** パレットの行数 */
+/** Number of palette rows */
 export const COLOR_PALETTE_ROWS = 7;
 
-/** パレットの列数 */
+/** Number of palette columns */
 export const COLOR_PALETTE_COLS = 8;

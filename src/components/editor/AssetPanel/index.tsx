@@ -1,7 +1,7 @@
 /**
- * アセットパネルコンポーネント
+ * Asset panel component
  *
- * 保存したアセットの一覧表示と管理
+ * Display and manage saved assets
  */
 
 import NiceModal from "@ebay/nice-modal-react";
@@ -32,7 +32,7 @@ interface ContextMenuState {
 }
 
 /**
- * アセットパネルコンポーネント
+ * Asset panel component
  */
 export function AssetPanel() {
 	const { t } = useTranslation();
@@ -52,7 +52,7 @@ export function AssetPanel() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
-	// カスタムイベントでモーダルを開く（ヘッダーアクションボタン用）
+	// Open modal via custom event (for header action buttons)
 	useEffect(() => {
 		const handleOpenSaveModal = () => NiceModal.show(SaveAssetModal);
 		const handleOpenImportModal = () => NiceModal.show(ImportAssetModal);
@@ -71,7 +71,7 @@ export function AssetPanel() {
 		: assets;
 
 	const handleApplyAsset = (asset: AssetWithRuntimeIds) => {
-		// バリデーション（コールバック実行時に最新のboardを取得）
+		// Validation (get the latest board when callback is executed)
 		const board = getEditorStore().state.board;
 		const validation = canAddObjects(board, asset.objects);
 		if (!validation.canAdd) {
@@ -89,8 +89,8 @@ export function AssetPanel() {
 			targetPosition,
 		);
 
-		// オブジェクトを追加（addObjectは先頭に追加するため逆順で追加）
-		// 追加されたオブジェクトのIDを収集
+		// Add objects (addObject adds to the front, so add in reverse order)
+		// Collect IDs of added objects
 		const newIds: string[] = [];
 		for (let i = offsetObjects.length - 1; i >= 0; i--) {
 			addObject(offsetObjects[i]);
@@ -134,7 +134,7 @@ export function AssetPanel() {
 			className="flex flex-col h-full"
 			style={{ background: "var(--color-bg-base)" }}
 		>
-			{/* 検索バー */}
+			{/* Search bar */}
 			<div className="px-2 py-2 border-b border-border">
 				<div className="relative">
 					<Search
@@ -151,7 +151,7 @@ export function AssetPanel() {
 				</div>
 			</div>
 
-			{/* アセット一覧 */}
+			{/* Asset list */}
 			<div className="flex-1 overflow-y-auto p-2">
 				{isLoading ? (
 					<div className="flex items-center justify-center h-32 text-muted-foreground">
@@ -173,7 +173,7 @@ export function AssetPanel() {
 				)}
 			</div>
 
-			{/* 削除アンドゥトースト */}
+			{/* Delete undo toast */}
 			{deletedAsset && (
 				<div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-popover border border-border rounded-md shadow-lg px-3 py-2 flex items-center gap-2 text-sm">
 					<span>
@@ -198,7 +198,7 @@ export function AssetPanel() {
 				</div>
 			)}
 
-			{/* コンテキストメニュー */}
+			{/* Context menu */}
 			{contextMenu && (
 				<AssetContextMenu
 					asset={contextMenu.asset}
@@ -216,7 +216,7 @@ export function AssetPanel() {
 }
 
 /**
- * 空状態コンポーネント
+ * Empty state component
  */
 function EmptyState({ hasAssets }: { hasAssets: boolean }) {
 	const { t } = useTranslation();
@@ -239,7 +239,7 @@ function EmptyState({ hasAssets }: { hasAssets: boolean }) {
 }
 
 /**
- * アセットパネルのアクションボタン（ヘッダー用）
+ * Action buttons for asset panel header
  */
 export function AssetPanelActions() {
 	const { t } = useTranslation();

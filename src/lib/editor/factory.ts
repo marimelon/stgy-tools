@@ -1,5 +1,5 @@
 /**
- * ボード・オブジェクト生成ファクトリー
+ * Board/object generation factory
  */
 
 import i18n from "@/lib/i18n";
@@ -14,12 +14,12 @@ import {
 	ObjectIds,
 } from "@/lib/stgy";
 
-/** デフォルトのキャンバスサイズ (描画用、バイナリフォーマットには含まれない) */
+/** Default canvas size (for rendering, not included in binary format) */
 export const DEFAULT_CANVAS_WIDTH = 512;
 export const DEFAULT_CANVAS_HEIGHT = 384;
 
 /**
- * 空のボードを生成
+ * Create an empty board
  */
 export function createEmptyBoard(name = ""): BoardData {
 	return {
@@ -31,11 +31,11 @@ export function createEmptyBoard(name = ""): BoardData {
 }
 
 /**
- * EDIT_PARAMSからオブジェクトのデフォルトサイズを取得
+ * Get default size for an object from EDIT_PARAMS
  */
 function getDefaultSize(objectId: number): number {
 	const editParams = OBJECT_EDIT_PARAMS[objectId] ?? DEFAULT_EDIT_PARAMS;
-	// SizeSmallを使うオブジェクトはそのデフォルト値、それ以外はSizeのデフォルト値
+	// Objects using SizeSmall get that default, others get Size default
 	const sizeParamId = editParams.includes(EditParamIds.SizeSmall)
 		? EditParamIds.SizeSmall
 		: EditParamIds.Size;
@@ -43,9 +43,9 @@ function getDefaultSize(objectId: number): number {
 }
 
 /**
- * デフォルトのオブジェクトを生成
- * @param objectId オブジェクトID
- * @param position 初期位置 (省略時はキャンバス中央)
+ * Create a default object
+ * @param objectId Object ID
+ * @param position Initial position (canvas center if omitted)
  */
 export function createDefaultObject(
 	objectId: number,
@@ -53,13 +53,13 @@ export function createDefaultObject(
 ): BoardObject {
 	const targetPosition: Position = position ?? { x: 256, y: 192 };
 
-	// Lineは始点から右に256pxの線を引くので、中心を指定位置に合わせるため始点を128px左にオフセット
+	// Line draws 256px right from start point, so offset start 128px left to center at target position
 	const defaultPosition: Position =
 		objectId === ObjectIds.Line
 			? { x: targetPosition.x - 128, y: targetPosition.y }
 			: targetPosition;
 
-	// Line と Text は白、その他はオレンジがデフォルト
+	// Line and Text default to white, others to orange
 	const isWhiteDefault =
 		objectId === ObjectIds.Line || objectId === ObjectIds.Text;
 	const defaultColor = isWhiteDefault
@@ -81,7 +81,7 @@ export function createDefaultObject(
 		color: defaultColor,
 	};
 
-	// オブジェクト固有のデフォルトパラメータ（EDIT_PARAMSから自動取得）
+	// Object-specific default parameters (auto-retrieved from EDIT_PARAMS)
 	const editParams = OBJECT_EDIT_PARAMS[objectId] ?? DEFAULT_EDIT_PARAMS;
 	for (const paramId of editParams) {
 		const paramDef = EDIT_PARAMS[paramId];
@@ -89,7 +89,7 @@ export function createDefaultObject(
 
 		switch (paramId) {
 			case EditParamIds.ConeAngle:
-				// DonutAoEの場合は初期値360度（完全な円）
+				// DonutAoE starts at 360 degrees (full circle)
 				obj.param1 =
 					objectId === ObjectIds.DonutAoE ? 360 : paramDef.defaultValue;
 				break;
@@ -106,7 +106,7 @@ export function createDefaultObject(
 		}
 	}
 
-	// Lineオブジェクトの終点座標を設定（param1=終点X*10, param2=終点Y*10）
+	// Set Line object end point coordinates (param1=endX*10, param2=endY*10)
 	if (objectId === ObjectIds.Line) {
 		const endX = defaultPosition.x + 256;
 		const endY = defaultPosition.y;
@@ -114,7 +114,7 @@ export function createDefaultObject(
 		obj.param2 = Math.round(endY * 10);
 	}
 
-	// テキストオブジェクトの特殊処理
+	// Special handling for text objects
 	if (objectId === ObjectIds.Text) {
 		obj.text = i18n.t("common.defaultText");
 	}
@@ -123,9 +123,9 @@ export function createDefaultObject(
 }
 
 /**
- * オブジェクトを複製
- * @param object 複製元オブジェクト
- * @param offset 位置オフセット (省略時は10px右下にずらす)
+ * Duplicate an object
+ * @param object Source object
+ * @param offset Position offset (shifts 10px down-right if omitted)
  */
 export function duplicateObject(
 	object: BoardObject,

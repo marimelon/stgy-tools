@@ -1,14 +1,14 @@
 /**
- * デバッグパネルコンポーネント
+ * Debug panel component
  *
- * BoardDataをJSON形式で直接編集できるデバッグ用パネル
+ * A debug panel that allows direct editing of BoardData in JSON format
  */
 
 import { useTranslation } from "react-i18next";
 import { type SyncStatus, useDebugPanelState } from "./useDebugPanelState";
 
 /**
- * 同期ステータスバッジ
+ * Sync status badge
  */
 function SyncStatusBadge({ status }: { status: SyncStatus }) {
 	const { t } = useTranslation();
@@ -33,7 +33,7 @@ function SyncStatusBadge({ status }: { status: SyncStatus }) {
 }
 
 /**
- * デバッグパネル
+ * Debug panel
  */
 export function DebugPanel() {
 	const { jsonString, setJsonString, syncStatus, validationErrors } =
@@ -44,13 +44,13 @@ export function DebugPanel() {
 			className="flex flex-col h-full"
 			style={{ background: "var(--color-bg-base)" }}
 		>
-			{/* ステータスバー */}
+			{/* Status bar */}
 			<div className="px-3 py-1.5 border-b border-slate-700 flex items-center justify-between text-xs">
 				<span className="text-slate-400">BoardData JSON</span>
 				<SyncStatusBadge status={syncStatus} />
 			</div>
 
-			{/* JSONエディタ */}
+			{/* JSON editor */}
 			<div className="flex-1 overflow-hidden">
 				<textarea
 					value={jsonString}
@@ -62,7 +62,7 @@ export function DebugPanel() {
 				/>
 			</div>
 
-			{/* エラー表示 */}
+			{/* Error display */}
 			{validationErrors && (
 				<div className="p-2 border-t border-slate-700 bg-red-900/30 text-red-400 text-xs max-h-24 overflow-auto">
 					{validationErrors.map((error, i) => (

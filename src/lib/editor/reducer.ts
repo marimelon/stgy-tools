@@ -1,5 +1,5 @@
 /**
- * エディター初期状態の生成
+ * Editor initial state generation
  */
 
 import i18n from "@/lib/i18n";
@@ -13,7 +13,7 @@ import {
 } from "./types";
 import { generateHistoryId } from "./utils";
 
-/** デフォルトのグリッド設定 */
+/** Default grid settings */
 const DEFAULT_GRID_SETTINGS: GridSettings = {
 	enabled: false,
 	size: 16,
@@ -25,27 +25,27 @@ const DEFAULT_GRID_SETTINGS: GridSettings = {
 };
 
 /**
- * 初期状態生成オプション
+ * Initial state generation options
  */
 export interface CreateInitialStateOptions {
 	board: BoardData;
 	groups?: ObjectGroup[];
 	gridSettings?: GridSettings;
-	/** 復元する履歴（グローバル履歴ストアから） */
+	/** History to restore (from global history store) */
 	history?: HistoryEntry[];
-	/** 復元する履歴インデックス（グローバル履歴ストアから） */
+	/** History index to restore (from global history store) */
 	historyIndex?: number;
 }
 
 /**
- * 初期状態を生成
+ * Generate initial state
  */
 export function createInitialState(board: BoardData): EditorState {
 	return createInitialStateWithOptions({ board });
 }
 
 /**
- * オプション付きで初期状態を生成
+ * Generate initial state with options
  */
 export function createInitialStateWithOptions(
 	options: CreateInitialStateOptions,
@@ -56,7 +56,7 @@ export function createInitialStateWithOptions(
 		? { ...gridSettings }
 		: { ...DEFAULT_GRID_SETTINGS };
 
-	// 復元された履歴があればそれを使用、なければ初期履歴を作成
+	// Use restored history if available, otherwise create initial history
 	const initialHistory = history ?? [
 		{
 			id: generateHistoryId(),
@@ -67,7 +67,7 @@ export function createInitialStateWithOptions(
 	];
 	const initialHistoryIndex = historyIndex ?? 0;
 
-	// 履歴から現在のボード状態を復元
+	// Restore current board state from history
 	const currentEntry = initialHistory[initialHistoryIndex];
 	const currentBoard = currentEntry
 		? structuredClone(currentEntry.board)

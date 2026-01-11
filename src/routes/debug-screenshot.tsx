@@ -1,6 +1,6 @@
 /**
- * スクリーンショット比較デバッグページ
- * ゲーム内スクリーンショットとstgyレンダリング結果を比較
+ * Screenshot comparison debug page
+ * Compare in-game screenshots with stgy rendering results
  */
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -61,7 +61,7 @@ export const Route = createFileRoute("/debug-screenshot")({
 	head: () => seo,
 });
 
-/** サンプルファイルパス */
+/** Sample file path */
 const SAMPLE_SCREENSHOT = "/assets/screenshots/1.png";
 const SAMPLE_STGY_CODE =
 	"[stgy:a-eFMQJgHhwm3PyeNb0MaapuluKTcgLk0bRyPO-2b-Gb4eCiP3kAQE9Tirq-tzLyXbmsjShbHzif29GZ9TVpMdTxJGlmEzLHHccbjk2WC]";

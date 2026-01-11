@@ -1,14 +1,12 @@
 /**
- * Vitest グローバルセットアップ
- *
- * jsdom環境でのReactコンポーネントテスト用設定
+ * Vitest global setup for React component testing in jsdom environment.
  */
 
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { afterEach } from "vitest";
 
-// jsdomでPointerCapture APIをモック
+// Mock PointerCapture API for jsdom
 if (typeof Element !== "undefined") {
 	Element.prototype.setPointerCapture =
 		Element.prototype.setPointerCapture || (() => {});
@@ -16,7 +14,6 @@ if (typeof Element !== "undefined") {
 		Element.prototype.releasePointerCapture || (() => {});
 }
 
-// 各テスト後に自動クリーンアップ
 afterEach(() => {
 	cleanup();
 });

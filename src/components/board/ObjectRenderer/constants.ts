@@ -1,21 +1,14 @@
 import { ObjectIds } from "@/lib/stgy";
 
-// ========================================
-// アイコン表示設定
-// ========================================
-
 /**
- * カスタムアイコン対応オブジェクトIDのセット
- * 画像ファイルは /public/assets/icons/{objectId}.png に配置
- * 注: ConeAoE, LineAoE, Line はパラメータ反映のため常にSVGでレンダリング（画像はサイドバーアイコンのみ）
+ * Object IDs that have custom icon images at /public/assets/icons/{objectId}.png
+ * Note: ConeAoE, LineAoE, Line always use SVG rendering for parameter support (images are sidebar icons only)
  */
 export const CUSTOM_ICON_IDS = new Set<number>([
-	// フィールド
 	ObjectIds.CircleCheck,
 	ObjectIds.SquareCheck,
 	ObjectIds.CircleGray,
 	ObjectIds.SquareGray,
-	// 攻撃範囲（ConeAoE, LineAoE, Line は除外 - 常にSVGでレンダリング）
 	ObjectIds.CircleAoE,
 	ObjectIds.Gaze,
 	ObjectIds.Stack,
@@ -34,38 +27,29 @@ export const CUSTOM_ICON_IDS = new Set<number>([
 	ObjectIds.Area2P,
 	ObjectIds.Area3P,
 	ObjectIds.Area4P,
-	// エネミー
 	ObjectIds.EnemySmall,
 	ObjectIds.EnemyMedium,
 	ObjectIds.EnemyLarge,
-	// バフ/デバフ
 	ObjectIds.Buff,
 	ObjectIds.Debuff,
-	// 図形
 	ObjectIds.ShapeCircle,
 	ObjectIds.ShapeCross,
 	ObjectIds.ShapeTriangle,
 	ObjectIds.ShapeSquare,
 	ObjectIds.ShapeArrow,
 	ObjectIds.ShapeRotation,
-	// ロックオン
 	ObjectIds.LockOnRed,
 	ObjectIds.LockOnBlue,
 	ObjectIds.LockOnPurple,
 	ObjectIds.LockOnGreen,
-	// 強調
 	ObjectIds.EmphasisCircle,
 	ObjectIds.EmphasisCross,
 	ObjectIds.EmphasisSquare,
 	ObjectIds.EmphasisTriangle,
-	// 回転
 	ObjectIds.Clockwise,
 	ObjectIds.CounterClockwise,
-	// グループ
 	ObjectIds.Group,
-	// テキスト
 	ObjectIds.Text,
-	// 攻撃マーカー
 	ObjectIds.Attack1,
 	ObjectIds.Attack2,
 	ObjectIds.Attack3,
@@ -74,19 +58,15 @@ export const CUSTOM_ICON_IDS = new Set<number>([
 	ObjectIds.Attack6,
 	ObjectIds.Attack7,
 	ObjectIds.Attack8,
-	// 足止めマーカー
 	ObjectIds.Bind1,
 	ObjectIds.Bind2,
 	ObjectIds.Bind3,
-	// 禁止マーカー
 	ObjectIds.Ignore1,
 	ObjectIds.Ignore2,
-	// 汎用マーカー
 	ObjectIds.Square,
 	ObjectIds.Circle,
 	ObjectIds.Plus,
 	ObjectIds.Triangle,
-	// ウェイマーク
 	ObjectIds.WaymarkA,
 	ObjectIds.WaymarkB,
 	ObjectIds.WaymarkC,
@@ -95,7 +75,6 @@ export const CUSTOM_ICON_IDS = new Set<number>([
 	ObjectIds.Waymark2,
 	ObjectIds.Waymark3,
 	ObjectIds.Waymark4,
-	// ロールアイコン
 	ObjectIds.Tank,
 	ObjectIds.Tank1,
 	ObjectIds.Tank2,
@@ -113,7 +92,6 @@ export const CUSTOM_ICON_IDS = new Set<number>([
 	ObjectIds.MagicalRangedDPS,
 	ObjectIds.PureHealer,
 	ObjectIds.BarrierHealer,
-	// ジョブアイコン（基本クラス）
 	ObjectIds.Gladiator,
 	ObjectIds.Pugilist,
 	ObjectIds.Marauder,
@@ -123,7 +101,6 @@ export const CUSTOM_ICON_IDS = new Set<number>([
 	ObjectIds.Thaumaturge,
 	ObjectIds.Arcanist,
 	ObjectIds.Rogue,
-	// ジョブアイコン（上級ジョブ）
 	ObjectIds.Paladin,
 	ObjectIds.Monk,
 	ObjectIds.Warrior,
@@ -148,14 +125,10 @@ export const CUSTOM_ICON_IDS = new Set<number>([
 	ObjectIds.Pictomancer,
 ]);
 
-// ========================================
-// 定数定義
-// ========================================
-
-/** 扇形攻撃の半径 */
+/** Cone AoE radius */
 export const CONE_RADIUS = 256;
 
-/** オブジェクトサイズ定数（レガシー：徐々にOBJECT_BBOX_SIZESに移行） */
+/** Object size constants (legacy: migrating to OBJECT_BBOX_SIZES) */
 export const SIZES = {
 	ROLE_ICON: 24,
 	WAYMARK: 32,
@@ -163,94 +136,77 @@ export const SIZES = {
 	ENEMY_MEDIUM: 48,
 	ENEMY_LARGE: 64,
 	FIELD: 64,
-	FIELD_LARGE: 256, // SquareGray/CircleGray (4x)
+	FIELD_LARGE: 256,
 	AOE_BASE: 48,
 	CONE_RADIUS: 256,
 	LINE_WIDTH: 16,
 	PLACEHOLDER: 16,
 } as const;
 
-/** 色定数 */
 export const COLORS = {
-	// ストローク
 	STROKE_DEFAULT: "#666",
 	STROKE_AOE: "#ff8800",
 	STROKE_STACK: "#ffff00",
 	STROKE_WHITE: "#fff",
 	STROKE_ENEMY: "#ff0000",
-	// フィル
-	FILL_AOE: "rgba(255, 150, 0, 0.4)", // FF14 AoE color
+	FILL_AOE: "rgba(255, 150, 0, 0.4)",
 	FILL_ENEMY: "#8b0000",
 	FILL_PROXIMITY: "#ffcc00",
 	FILL_PLACEHOLDER: "#666",
-	FILL_FIELD_GRAY: "rgba(80, 80, 80, 0.6)", // 正方形グレー
-	// フィールド縁
+	FILL_FIELD_GRAY: "rgba(80, 80, 80, 0.6)",
 	STROKE_FIELD_GRAY: "#888",
-	// ロール
 	ROLE_TANK: "#3366cc",
 	ROLE_HEALER: "#33cc33",
 	ROLE_DPS: "#cc3333",
 	ROLE_DEFAULT: "#666",
-	// ウェイマーク
 	WAYMARK_RED: "#cc3333",
 	WAYMARK_YELLOW: "#cccc33",
 	WAYMARK_BLUE: "#3366cc",
 	WAYMARK_PURPLE: "#cc33cc",
-	// 選択
 	SELECTION: "#00bfff",
 } as const;
 
-/** テキスト関連定数 */
+/** Text rendering constants */
 export const TEXT = {
-	/** 半角文字の幅（fontSize=14の約0.5倍） */
+	/** Half-width character width (~0.5x fontSize=14) */
 	HALF_WIDTH_CHAR: 7,
-	/** 全角文字の幅（fontSize=14の約1.0倍） */
+	/** Full-width character width (~1.0x fontSize=14) */
 	FULL_WIDTH_CHAR: 14,
-	/** 最小BBox幅 */
+	/** Minimum bounding box width */
 	MIN_BBOX_WIDTH: 40,
-	/** デフォルト高さ */
+	/** Default height */
 	DEFAULT_HEIGHT: 20,
 } as const;
 
 /**
- * 文字が全角かどうかを判定
- * CJK文字、全角記号、全角英数字などを全角として扱う
- * 半角カタカナ (U+FF61-U+FF9F) は半角として扱う
+ * Check if character is full-width.
+ * Treats CJK, full-width symbols, and full-width alphanumerics as full-width.
+ * Half-width katakana (U+FF61-U+FF9F) is treated as half-width.
  */
 export function isFullWidthChar(char: string): boolean {
 	const code = char.codePointAt(0);
 	if (code === undefined) return false;
 
-	// 半角カタカナは半角扱い (U+FF61-U+FF9F)
 	if (code >= 0xff61 && code <= 0xff9f) {
 		return false;
 	}
 
 	return (
-		// CJK統合漢字
 		(code >= 0x4e00 && code <= 0x9fff) ||
-		// ひらがな
 		(code >= 0x3040 && code <= 0x309f) ||
-		// カタカナ
 		(code >= 0x30a0 && code <= 0x30ff) ||
-		// 全角英数字・記号 (半角カタカナは上で除外済み)
 		(code >= 0xff00 && code <= 0xffef) ||
-		// CJK記号・句読点
 		(code >= 0x3000 && code <= 0x303f) ||
-		// CJK統合漢字拡張A
 		(code >= 0x3400 && code <= 0x4dbf) ||
-		// CJK統合漢字拡張B (サロゲートペア)
 		(code >= 0x20000 && code <= 0x2a6df) ||
-		// CJK統合漢字拡張C-F
 		(code >= 0x2a700 && code <= 0x2ebef) ||
-		// CJK互換漢字補助
 		(code >= 0x2f800 && code <= 0x2fa1f)
 	);
 }
 
 /**
- * テキストの表示幅を計算（ピクセル単位）
- * 全角文字と半角文字で異なる幅を使用
+ * Calculate text display width in pixels.
+ * Uses different widths for full-width and half-width characters.
  */
 export function calculateTextWidth(text: string): number {
 	let width = 0;
@@ -262,30 +218,20 @@ export function calculateTextWidth(text: string): number {
 	return width;
 }
 
-// Re-export from @/lib/board for backwards compatibility
 export { DEFAULT_PARAMS } from "@/lib/board";
 
-// ========================================
-// ルックアップテーブル
-// ========================================
-
-/** ロールラベルマップ */
 export const ROLE_LABELS: Record<number, string> = {
-	// タンク
 	47: "T",
 	48: "MT",
 	49: "ST",
-	// ヒーラー
 	50: "H",
 	51: "H1",
 	52: "H2",
-	// DPS
 	53: "D",
 	54: "D1",
 	55: "D2",
 	56: "D3",
 	57: "D4",
-	// その他ロール
 	118: "M",
 	119: "R",
 	120: "PR",
@@ -294,19 +240,15 @@ export const ROLE_LABELS: Record<number, string> = {
 	123: "BH",
 };
 
-/** ロールカラーマップ */
 export const ROLE_COLORS: Record<number, string> = {
-	// タンク (青)
 	47: COLORS.ROLE_TANK,
 	48: COLORS.ROLE_TANK,
 	49: COLORS.ROLE_TANK,
-	// ヒーラー (緑)
 	50: COLORS.ROLE_HEALER,
 	51: COLORS.ROLE_HEALER,
 	52: COLORS.ROLE_HEALER,
 	122: COLORS.ROLE_HEALER,
 	123: COLORS.ROLE_HEALER,
-	// DPS (赤)
 	53: COLORS.ROLE_DPS,
 	54: COLORS.ROLE_DPS,
 	55: COLORS.ROLE_DPS,
@@ -318,7 +260,6 @@ export const ROLE_COLORS: Record<number, string> = {
 	121: COLORS.ROLE_DPS,
 };
 
-/** ウェイマーク情報マップ */
 export const WAYMARK_INFO: Record<number, { label: string; color: string }> = {
 	79: { label: "A", color: COLORS.WAYMARK_RED },
 	80: { label: "B", color: COLORS.WAYMARK_YELLOW },
@@ -330,26 +271,19 @@ export const WAYMARK_INFO: Record<number, { label: string; color: string }> = {
 	86: { label: "4", color: COLORS.WAYMARK_PURPLE },
 };
 
-/** エネミーサイズマップ */
 export const ENEMY_SIZES: Record<number, number> = {
 	60: SIZES.ENEMY_SMALL,
 	62: SIZES.ENEMY_MEDIUM,
 	64: SIZES.ENEMY_LARGE,
 };
 
-// ========================================
-// オブジェクトID分類
-// ========================================
-
-/** 大きいフィールドID（すべてのフィールドオブジェクト） */
+/** All field object IDs */
 export const LARGE_FIELD_IDS: readonly number[] = [
-	// 円形フィールド
 	ObjectIds.CircleWhiteSolid,
 	ObjectIds.CircleWhiteTile,
 	ObjectIds.CircleGraySolid,
 	ObjectIds.CircleCheck,
 	ObjectIds.CircleGray,
-	// 四角形フィールド
 	ObjectIds.SquareWhiteSolid,
 	ObjectIds.SquareWhiteTile,
 	ObjectIds.SquareGraySolid,
@@ -357,7 +291,6 @@ export const LARGE_FIELD_IDS: readonly number[] = [
 	ObjectIds.SquareGray,
 ];
 
-/** 円形フィールドID */
 export const CIRCLE_FIELD_IDS: readonly number[] = [
 	ObjectIds.CircleWhiteSolid,
 	ObjectIds.CircleWhiteTile,
@@ -366,7 +299,6 @@ export const CIRCLE_FIELD_IDS: readonly number[] = [
 	ObjectIds.CircleGray,
 ];
 
-/** 四角形フィールドID */
 export const SQUARE_FIELD_IDS: readonly number[] = [
 	ObjectIds.SquareWhiteSolid,
 	ObjectIds.SquareWhiteTile,
@@ -375,18 +307,15 @@ export const SQUARE_FIELD_IDS: readonly number[] = [
 	ObjectIds.SquareGray,
 ];
 
-/** フィールドオブジェクトID */
 export const FIELD_OBJECT_IDS: readonly number[] = [
 	...CIRCLE_FIELD_IDS,
 	...SQUARE_FIELD_IDS,
 ];
 
-/** AoEオブジェクトID */
 export const AOE_OBJECT_IDS: readonly number[] = [
 	ObjectIds.CircleAoE,
 	ObjectIds.ConeAoE,
 	ObjectIds.LineAoE,
-	// ObjectIds.Line は特殊処理（始点-終点の絶対座標線）
 	ObjectIds.Gaze,
 	ObjectIds.Stack,
 	ObjectIds.StackLine,
@@ -424,14 +353,12 @@ export const AOE_OBJECT_IDS: readonly number[] = [
 	ObjectIds.ShapeRotation,
 ];
 
-/** エネミーオブジェクトID */
 export const ENEMY_OBJECT_IDS: readonly number[] = [
 	ObjectIds.EnemySmall,
 	ObjectIds.EnemyMedium,
 	ObjectIds.EnemyLarge,
 ];
 
-/** 攻撃マーカーID */
 export const ATTACK_MARKER_IDS: readonly number[] = [
 	ObjectIds.Attack1,
 	ObjectIds.Attack2,
@@ -443,20 +370,17 @@ export const ATTACK_MARKER_IDS: readonly number[] = [
 	ObjectIds.Attack8,
 ];
 
-/** 足止めマーカーID */
 export const BIND_MARKER_IDS: readonly number[] = [
 	ObjectIds.Bind1,
 	ObjectIds.Bind2,
 	ObjectIds.Bind3,
 ];
 
-/** 禁止マーカーID */
 export const IGNORE_MARKER_IDS: readonly number[] = [
 	ObjectIds.Ignore1,
 	ObjectIds.Ignore2,
 ];
 
-/** 汎用マーカーID */
 export const GENERIC_MARKER_IDS: readonly number[] = [
 	ObjectIds.Square,
 	ObjectIds.Circle,
@@ -464,7 +388,6 @@ export const GENERIC_MARKER_IDS: readonly number[] = [
 	ObjectIds.Triangle,
 ];
 
-/** マーカーオブジェクトID（全種類） */
 export const MARKER_OBJECT_IDS: readonly number[] = [
 	...ATTACK_MARKER_IDS,
 	...BIND_MARKER_IDS,
@@ -472,9 +395,7 @@ export const MARKER_OBJECT_IDS: readonly number[] = [
 	...GENERIC_MARKER_IDS,
 ];
 
-/** ジョブアイコンID */
 export const JOB_ICON_IDS: readonly number[] = [
-	// 基本クラス
 	ObjectIds.Gladiator,
 	ObjectIds.Pugilist,
 	ObjectIds.Marauder,
@@ -484,7 +405,6 @@ export const JOB_ICON_IDS: readonly number[] = [
 	ObjectIds.Thaumaturge,
 	ObjectIds.Arcanist,
 	ObjectIds.Rogue,
-	// ジョブ
 	ObjectIds.Paladin,
 	ObjectIds.Monk,
 	ObjectIds.Warrior,
@@ -509,9 +429,8 @@ export const JOB_ICON_IDS: readonly number[] = [
 	ObjectIds.Pictomancer,
 ];
 
-/** ジョブ略称マップ */
+/** Job abbreviations (Japanese) */
 export const JOB_ABBREVIATIONS: Record<number, string> = {
-	// 基本クラス
 	[ObjectIds.Gladiator]: "剣",
 	[ObjectIds.Pugilist]: "格",
 	[ObjectIds.Marauder]: "斧",
@@ -521,28 +440,23 @@ export const JOB_ABBREVIATIONS: Record<number, string> = {
 	[ObjectIds.Thaumaturge]: "呪",
 	[ObjectIds.Arcanist]: "巴",
 	[ObjectIds.Rogue]: "双",
-	// タンク
 	[ObjectIds.Paladin]: "ナ",
 	[ObjectIds.Warrior]: "戦",
 	[ObjectIds.DarkKnight]: "暗",
 	[ObjectIds.Gunbreaker]: "ガ",
-	// ヒーラー
 	[ObjectIds.WhiteMage]: "白",
 	[ObjectIds.Scholar]: "学",
 	[ObjectIds.Astrologian]: "占",
 	[ObjectIds.Sage]: "賢",
-	// メレーDPS
 	[ObjectIds.Monk]: "モ",
 	[ObjectIds.Dragoon]: "竜",
 	[ObjectIds.Ninja]: "忍",
 	[ObjectIds.Samurai]: "侍",
 	[ObjectIds.Reaper]: "リ",
 	[ObjectIds.Viper]: "ヴ",
-	// レンジDPS
 	[ObjectIds.Bard]: "詩",
 	[ObjectIds.Machinist]: "機",
 	[ObjectIds.Dancer]: "踊",
-	// キャスターDPS
 	[ObjectIds.BlackMage]: "黒",
 	[ObjectIds.Summoner]: "召",
 	[ObjectIds.RedMage]: "赤",
@@ -550,12 +464,10 @@ export const JOB_ABBREVIATIONS: Record<number, string> = {
 	[ObjectIds.BlueMage]: "青",
 };
 
-/** ジョブロール判定 */
 export const JOB_ROLES: Record<
 	number,
 	"tank" | "healer" | "melee" | "ranged" | "caster"
 > = {
-	// 基本クラス
 	[ObjectIds.Gladiator]: "tank",
 	[ObjectIds.Marauder]: "tank",
 	[ObjectIds.Pugilist]: "melee",
@@ -565,28 +477,23 @@ export const JOB_ROLES: Record<
 	[ObjectIds.Conjurer]: "healer",
 	[ObjectIds.Thaumaturge]: "caster",
 	[ObjectIds.Arcanist]: "caster",
-	// タンク
 	[ObjectIds.Paladin]: "tank",
 	[ObjectIds.Warrior]: "tank",
 	[ObjectIds.DarkKnight]: "tank",
 	[ObjectIds.Gunbreaker]: "tank",
-	// ヒーラー
 	[ObjectIds.WhiteMage]: "healer",
 	[ObjectIds.Scholar]: "healer",
 	[ObjectIds.Astrologian]: "healer",
 	[ObjectIds.Sage]: "healer",
-	// メレーDPS
 	[ObjectIds.Monk]: "melee",
 	[ObjectIds.Dragoon]: "melee",
 	[ObjectIds.Ninja]: "melee",
 	[ObjectIds.Samurai]: "melee",
 	[ObjectIds.Reaper]: "melee",
 	[ObjectIds.Viper]: "melee",
-	// レンジDPS
 	[ObjectIds.Bard]: "ranged",
 	[ObjectIds.Machinist]: "ranged",
 	[ObjectIds.Dancer]: "ranged",
-	// キャスターDPS
 	[ObjectIds.BlackMage]: "caster",
 	[ObjectIds.Summoner]: "caster",
 	[ObjectIds.RedMage]: "caster",
@@ -594,54 +501,38 @@ export const JOB_ROLES: Record<
 	[ObjectIds.BlueMage]: "caster",
 };
 
-/** ジョブロールカラー */
 export const JOB_ROLE_COLORS: Record<string, string> = {
 	tank: COLORS.ROLE_TANK,
 	healer: COLORS.ROLE_HEALER,
 	melee: COLORS.ROLE_DPS,
-	ranged: "#cc6633", // レンジDPSはオレンジ
-	caster: "#cc33cc", // キャスターDPSは紫
+	ranged: "#cc6633",
+	caster: "#cc33cc",
 };
 
-// Re-export from @/lib/board for backwards compatibility
 export { DEFAULT_OBJECT_COLOR } from "@/lib/board";
 
-/**
- * 色変更が有効なオブジェクトID
- * 直線範囲攻撃、ライン、テキストのみ色変更に対応
- */
+/** Object IDs that support color changes (LineAoE, Line, Text only) */
 export const COLOR_CHANGEABLE_OBJECT_IDS = new Set<number>([
 	ObjectIds.LineAoE,
 	ObjectIds.Line,
 	ObjectIds.Text,
 ]);
 
-/**
- * 高解像度(HR)画像が存在するオブジェクトID
- * 画像ファイルは /public/assets/icons-hr/{objectId}.png に配置
- */
+/** Object IDs with high-resolution images at /public/assets/icons-hr/{objectId}.png */
 export const HR_ICON_IDS = new Set<number>([
 	4, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
 	27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
 	46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 60, 62, 64,
-	// 攻撃/足止め/禁止/汎用マーカー
 	65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78,
-	// フィールドマーカー
 	79, 80, 81, 82, 83, 84, 85, 86,
-	// 図形
 	87, 88, 89, 90, 94, 100, 101, 102, 103, 105, 106, 107, 108, 109, 110, 111,
 	112, 113, 114,
-	// 攻撃6-8
 	115, 116, 117,
-	// ロールアイコン
 	118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132,
 	133, 134, 135, 136, 137, 138, 139, 140,
 ]);
 
-/**
- * オブジェクトIDに対応するアイコンパスを取得
- * HR画像が存在すれば /assets/icons-hr/、なければ /assets/icons/ を返す
- */
+/** Get icon path for object ID, using HR version if available */
 export function getIconPath(objectId: number): string {
 	if (HR_ICON_IDS.has(objectId)) {
 		return `/assets/icons-hr/${objectId}.png`;

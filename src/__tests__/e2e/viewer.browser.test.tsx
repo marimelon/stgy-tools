@@ -1,13 +1,11 @@
 /**
- * Viewer E2Eテスト
+ * Viewer E2E tests using Vitest Browser Mode.
  *
- * Vitest Browser Mode を使用したViewerの統合テスト
- *
- * テスト対象：
- * - 複数ボードの読み込み
- * - タブモード（切り替え、閉じる）
- * - グリッドモード（表示、クリックでタブモードへ）
- * - モード切替
+ * Test targets:
+ * - Loading multiple boards
+ * - Tab mode (switching, closing)
+ * - Grid mode (display, click to switch to tab mode)
+ * - Mode switching
  */
 
 import "@/lib/i18n";
@@ -29,12 +27,12 @@ import {
 	ViewerStoreProvider,
 } from "@/lib/viewer";
 
-/** アクションをコンポーネント外部から呼び出すためのref型 */
+/** Ref type for calling actions from outside components */
 type ActionsRef = {
 	current: ReturnType<typeof useViewerActions> | null;
 };
 
-// テスト用のサンプルstgyコード
+// Sample stgy codes for testing
 const SAMPLE_STGY_1 =
 	"[stgy:a0OcAwAYAfwgAFYAFBAAZYTLdYTLdYTLdYTLdYTLdYTLdYTLd]";
 const SAMPLE_STGY_2 =
@@ -42,12 +40,12 @@ const SAMPLE_STGY_2 =
 const SAMPLE_STGY_3 =
 	"[stgy:a0OcAwAYAfwgAFYAFBAAZYTLdYTLdYTLdYTLdYTLdYTLdYTLd]";
 
-/** テスト用ボードを生成 */
+/** Create test boards */
 function createTestBoards(): ViewerBoard[] {
 	return parseMultipleStgyCodes(`${SAMPLE_STGY_1}\n${SAMPLE_STGY_2}`);
 }
 
-/** 状態監視用コンポーネント */
+/** State monitoring component */
 function StateMonitor({
 	onStateChange,
 }: {
@@ -63,7 +61,7 @@ function StateMonitor({
 	const viewMode = useViewerMode();
 	const boardCount = useViewerBoardCount();
 
-	// 状態が変わるたびにコールバック
+	// Call callback on state change
 	onStateChange({ boards, activeId, viewMode, boardCount });
 
 	return null;
@@ -75,7 +73,7 @@ describe("Viewer E2E", () => {
 	});
 
 	describe("ViewerStoreProvider", () => {
-		it("初期ボードが正しく読み込まれる", async () => {
+		it("loads initial boards correctly", async () => {
 			const initialBoards = createTestBoards();
 			let currentState: {
 				boards: ViewerBoard[];
@@ -99,7 +97,7 @@ describe("Viewer E2E", () => {
 			expect(currentState!.boardCount).toBe(2);
 		});
 
-		it("loadBoardsで複数ボードを読み込める", async () => {
+		it("loads multiple boards with loadBoards", async () => {
 			let currentBoardCount = 0;
 			const actionsRef: ActionsRef = { current: null };
 
@@ -119,7 +117,7 @@ describe("Viewer E2E", () => {
 
 			expect(currentBoardCount).toBe(0);
 
-			// 3つのボードを読み込む
+			// Load 3 boards
 			actionsRef.current!.loadBoards(
 				`${SAMPLE_STGY_1}\n${SAMPLE_STGY_2}\n${SAMPLE_STGY_3}`,
 			);
@@ -128,7 +126,7 @@ describe("Viewer E2E", () => {
 			expect(currentBoardCount).toBe(3);
 		});
 
-		it("removeBoardでボードを削除できる", async () => {
+		it("removes a board with removeBoard", async () => {
 			const initialBoards = createTestBoards();
 			let currentBoardCount = 0;
 			const actionsRef: ActionsRef = { current: null };
@@ -149,14 +147,14 @@ describe("Viewer E2E", () => {
 
 			expect(currentBoardCount).toBe(2);
 
-			// 最初のボードを削除
+			// Remove the first board
 			actionsRef.current!.removeBoard(initialBoards[0].id);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			expect(currentBoardCount).toBe(1);
 		});
 
-		it("削除したボードがアクティブだった場合、次のボードがアクティブになる", async () => {
+		it("activates the next board when the active board is removed", async () => {
 			const initialBoards = createTestBoards();
 			let currentActiveId: string | null = null;
 			const actionsRef: ActionsRef = { current: null };
@@ -175,18 +173,18 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// 最初は1番目のボードがアクティブ
+			// Initially the first board is active
 			expect(currentActiveId).toBe(initialBoards[0].id);
 
-			// アクティブなボードを削除
+			// Remove the active board
 			actionsRef.current!.removeBoard(initialBoards[0].id);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// 2番目のボードがアクティブになる
+			// The second board becomes active
 			expect(currentActiveId).toBe(initialBoards[1].id);
 		});
 
-		it("setViewModeでモードを切り替えられる", async () => {
+		it("switches mode with setViewMode", async () => {
 			let currentMode: ViewerMode = "tab";
 			const actionsRef: ActionsRef = { current: null };
 
@@ -214,7 +212,7 @@ describe("Viewer E2E", () => {
 	});
 
 	describe("ViewerTabs", () => {
-		it("ボードが2つ以上あるとき、タブが表示される", async () => {
+		it("displays tabs when there are 2 or more boards", async () => {
 			const initialBoards = createTestBoards();
 
 			const screen = await render(
@@ -228,12 +226,12 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// タブが2つ表示される
+			// 2 tabs are displayed
 			const tabs = screen.container.querySelectorAll("[role='tab']");
 			expect(tabs.length).toBe(2);
 		});
 
-		it("ボードが1つのときはタブが表示されない", async () => {
+		it("hides tabs when there is only 1 board", async () => {
 			const singleBoard = parseMultipleStgyCodes(SAMPLE_STGY_1);
 
 			const screen = await render(
@@ -247,12 +245,12 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// タブが表示されない
+			// No tabs displayed
 			const tabs = screen.container.querySelectorAll("[role='tab']");
 			expect(tabs.length).toBe(0);
 		});
 
-		it("タブをクリックするとonSelectTabが呼ばれる", async () => {
+		it("calls onSelectTab when clicking a tab", async () => {
 			const initialBoards = createTestBoards();
 			let selectedId: string | null = null;
 
@@ -269,14 +267,14 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// 2番目のタブをクリック
+			// Click the second tab
 			const tabs = screen.container.querySelectorAll("[role='tab']");
 			await userEvent.click(tabs[1]);
 
 			expect(selectedId).toBe(initialBoards[1].id);
 		});
 
-		it("閉じるボタンをクリックするとonCloseTabが呼ばれる", async () => {
+		it("calls onCloseTab when clicking the close button", async () => {
 			const initialBoards = createTestBoards();
 			let closedId: string | null = null;
 
@@ -293,7 +291,7 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// 最初のタブの閉じるボタンをクリック
+			// Click the close button on the first tab
 			const closeButtons = screen.container.querySelectorAll(
 				"[role='tab'] button",
 			);
@@ -303,7 +301,7 @@ describe("Viewer E2E", () => {
 			expect(closedId).toBe(initialBoards[0].id);
 		});
 
-		it("タブがドラッグ可能である（cursor-grabスタイル）", async () => {
+		it("makes tabs draggable (cursor-grab style)", async () => {
 			const initialBoards = createTestBoards();
 
 			const screen = await render(
@@ -317,13 +315,13 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// タブにcursor-grabスタイルがあることを確認
+			// Verify tabs have cursor-grab style
 			const tabs = screen.container.querySelectorAll("[role='tab']");
 			expect(tabs.length).toBe(2);
 			expect(tabs[0].className).toContain("cursor-grab");
 		});
 
-		it("onReorderコールバックが渡されている場合、DndContextが機能する", async () => {
+		it("enables DndContext when onReorder callback is provided", async () => {
 			const initialBoards = createTestBoards();
 			let reorderCalled = false;
 
@@ -341,16 +339,16 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// DndContextがレンダリングされていることを確認（タブが表示されている）
+			// Verify DndContext is rendered (tabs are displayed)
 			const tabs = screen.container.querySelectorAll("[role='tab']");
 			expect(tabs.length).toBe(2);
-			// onReorderはドラッグ操作でのみ呼ばれるため、ここでは呼ばれない
+			// onReorder is only called during drag operations, not here
 			expect(reorderCalled).toBe(false);
 		});
 	});
 
 	describe("ViewerGrid", () => {
-		it("全ボードがグリッドカードとして表示される", async () => {
+		it("displays all boards as grid cards", async () => {
 			const initialBoards = createTestBoards();
 
 			const screen = await render(
@@ -363,14 +361,14 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// data-testidでカードを選択（BoardViewer内部のrole="button"を除外）
+			// Select cards by data-testid (exclude role="button" inside BoardViewer)
 			const cards = screen.container.querySelectorAll(
 				"[data-testid='viewer-grid-card']",
 			);
 			expect(cards.length).toBe(2);
 		});
 
-		it("カードをクリックするとonSelectBoardが呼ばれる", async () => {
+		it("calls onSelectBoard when clicking a card", async () => {
 			const initialBoards = createTestBoards();
 			let selectedId: string | null = null;
 
@@ -386,7 +384,7 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// 2番目のカードをクリック
+			// Click the second card
 			const cards = screen.container.querySelectorAll(
 				"[data-testid='viewer-grid-card']",
 			);
@@ -395,7 +393,7 @@ describe("Viewer E2E", () => {
 			expect(selectedId).toBe(initialBoards[1].id);
 		});
 
-		it("閉じるボタンをクリックするとonCloseBoardが呼ばれる", async () => {
+		it("calls onCloseBoard when clicking the close button", async () => {
 			const initialBoards = createTestBoards();
 			let closedId: string | null = null;
 
@@ -411,27 +409,27 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// カードの閉じるボタンをホバーして表示させる
+			// Hover over the card to show the close button
 			const cards = screen.container.querySelectorAll(
 				"[data-testid='viewer-grid-card']",
 			);
 			await userEvent.hover(cards[0]);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// 閉じるボタンをクリック（コピーボタンの次にある）
+			// Click the close button (after the copy button)
 			const buttons = cards[0].querySelectorAll("button");
-			const closeButton = buttons[buttons.length - 1]; // 最後のボタンが閉じるボタン
+			const closeButton = buttons[buttons.length - 1]; // Last button is the close button
 			expect(closeButton).toBeTruthy();
 			await userEvent.click(closeButton);
 
 			expect(closedId).toBe(initialBoards[0].id);
 		});
 
-		it("コピーボタンをクリックするとstgyCodeがクリップボードにコピーされる", async () => {
+		it("copies stgyCode to clipboard when clicking the copy button", async () => {
 			const initialBoards = createTestBoards();
 			let copiedText: string | null = null;
 
-			// clipboard.writeTextをモック
+			// Mock clipboard.writeText
 			const originalClipboard = navigator.clipboard;
 			Object.defineProperty(navigator, "clipboard", {
 				value: {
@@ -453,22 +451,22 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// カードをホバーしてコピーボタンを表示
+			// Hover over the card to show the copy button
 			const cards = screen.container.querySelectorAll(
 				"[data-testid='viewer-grid-card']",
 			);
 			await userEvent.hover(cards[0]);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// コピーボタンをクリック（ドラッグハンドル、コピー、閉じるの順）
+			// Click the copy button (order: drag handle, copy, close)
 			const buttons = cards[0].querySelectorAll("button");
 			expect(buttons.length).toBeGreaterThanOrEqual(3);
-			await userEvent.click(buttons[1]); // 2番目がコピーボタン
+			await userEvent.click(buttons[1]); // Second button is copy
 
-			// stgyCodeがコピーされている
+			// stgyCode is copied
 			expect(copiedText).toBe(initialBoards[0].stgyCode);
 
-			// クリップボードを復元
+			// Restore clipboard
 			Object.defineProperty(navigator, "clipboard", {
 				value: originalClipboard,
 				writable: true,
@@ -476,7 +474,7 @@ describe("Viewer E2E", () => {
 			});
 		});
 
-		it("ホバー時にドラッグハンドルが表示される", async () => {
+		it("shows drag handle on hover", async () => {
 			const initialBoards = createTestBoards();
 
 			const screen = await render(
@@ -494,20 +492,20 @@ describe("Viewer E2E", () => {
 			);
 			expect(cards.length).toBe(2);
 
-			// ホバー前はドラッグハンドルは opacity-0
+			// Before hover, drag handle has opacity-0
 			const dragHandle = cards[0].querySelector("[title]");
 			expect(dragHandle).toBeTruthy();
 
-			// ホバーしてドラッグハンドルを表示
+			// Hover to show drag handle
 			await userEvent.hover(cards[0]);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// ドラッグハンドルが存在することを確認
+			// Verify drag handle exists
 			const handles = cards[0].querySelectorAll("[class*='cursor-grab']");
 			expect(handles.length).toBeGreaterThan(0);
 		});
 
-		it("onReorderコールバックが渡されている場合、DndContextが機能する", async () => {
+		it("enables DndContext when onReorder callback is provided", async () => {
 			const initialBoards = createTestBoards();
 			let reorderCalled = false;
 
@@ -524,18 +522,18 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// DndContextがレンダリングされていることを確認（カードが表示されている）
+			// Verify DndContext is rendered (cards are displayed)
 			const cards = screen.container.querySelectorAll(
 				"[data-testid='viewer-grid-card']",
 			);
 			expect(cards.length).toBe(2);
-			// onReorderはドラッグ操作でのみ呼ばれるため、ここでは呼ばれない
+			// onReorder is only called during drag operations, not here
 			expect(reorderCalled).toBe(false);
 		});
 	});
 
 	describe("ViewerToolbar", () => {
-		it("ボードが2つ以上あるとき、ツールバーが表示される", async () => {
+		it("displays toolbar when there are 2 or more boards", async () => {
 			const screen = await render(
 				<ViewerStoreProvider initialBoards={createTestBoards()}>
 					<ViewerToolbar
@@ -546,12 +544,12 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// ボード数が表示される
+			// Board count is displayed
 			const boardCount = screen.container.textContent;
 			expect(boardCount).toContain("2");
 		});
 
-		it("ボードが1つのときはツールバーが表示されない", async () => {
+		it("hides toolbar when there is only 1 board", async () => {
 			const screen = await render(
 				<ViewerStoreProvider
 					initialBoards={parseMultipleStgyCodes(SAMPLE_STGY_1)}
@@ -564,11 +562,11 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// ツールバーが表示されない（空）
+			// Toolbar is not displayed (empty)
 			expect(screen.container.textContent).toBe("");
 		});
 
-		it("タブモードボタンをクリックするとonViewModeChangeがtabで呼ばれる", async () => {
+		it("calls onViewModeChange with 'tab' when clicking tab mode button", async () => {
 			let newMode: ViewerMode | null = null;
 
 			const screen = await render(
@@ -583,7 +581,7 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// タブモードボタンをクリック
+			// Click the tab mode button
 			const tabButton = screen.container.querySelector(
 				"button[title*='タブ'], button[title*='Tab']",
 			);
@@ -593,7 +591,7 @@ describe("Viewer E2E", () => {
 			expect(newMode).toBe("tab");
 		});
 
-		it("グリッドモードボタンをクリックするとonViewModeChangeがgridで呼ばれる", async () => {
+		it("calls onViewModeChange with 'grid' when clicking grid mode button", async () => {
 			let newMode: ViewerMode | null = null;
 
 			const screen = await render(
@@ -608,7 +606,7 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// グリッドモードボタンをクリック
+			// Click the grid mode button
 			const gridButton = screen.container.querySelector(
 				"button[title*='グリッド'], button[title*='Grid']",
 			);
@@ -618,7 +616,7 @@ describe("Viewer E2E", () => {
 			expect(newMode).toBe("grid");
 		});
 
-		it("アクティブなモードのボタンがハイライトされる", async () => {
+		it("highlights the active mode button", async () => {
 			const screen = await render(
 				<ViewerStoreProvider initialBoards={createTestBoards()}>
 					<ViewerToolbar
@@ -629,13 +627,13 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// タブモードボタンがアクティブ（bg-primary）
+			// Tab mode button is active (bg-primary)
 			const tabButton = screen.container.querySelector(
 				"button[title*='タブ'], button[title*='Tab']",
 			);
 			expect(tabButton?.className).toContain("bg-primary");
 
-			// グリッドモードボタンが非アクティブ
+			// Grid mode button is inactive
 			const gridButton = screen.container.querySelector(
 				"button[title*='グリッド'], button[title*='Grid']",
 			);
@@ -643,8 +641,8 @@ describe("Viewer E2E", () => {
 		});
 	});
 
-	describe("統合テスト: 複数ボードワークフロー", () => {
-		it("グリッドモードでカードをクリックするとタブモードに切り替わりそのボードがアクティブになる", async () => {
+	describe("Integration: Multiple board workflow", () => {
+		it("switches to tab mode and activates the board when clicking a card in grid mode", async () => {
 			const initialBoards = createTestBoards();
 			let currentMode: ViewerMode = "grid";
 			let currentActiveId: string | null = initialBoards[0].id;
@@ -683,23 +681,23 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// 初期状態: グリッドモード、最初のボードがアクティブ
+			// Initial state: grid mode, first board is active
 			expect(currentMode).toBe("grid");
 			expect(currentActiveId).toBe(initialBoards[0].id);
 
-			// 2番目のカードをクリック
+			// Click the second card
 			const cards = screen.container.querySelectorAll(
 				"[data-testid='viewer-grid-card']",
 			);
 			await userEvent.click(cards[1]);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
-			// タブモードに切り替わり、2番目のボードがアクティブ
+			// Switched to tab mode, second board is active
 			expect(currentMode).toBe("tab");
 			expect(currentActiveId).toBe(initialBoards[1].id);
 		});
 
-		it("全てのボードを閉じるとアクティブIDがnullになる", async () => {
+		it("sets activeId to null when all boards are closed", async () => {
 			const initialBoards = createTestBoards();
 			let currentActiveId: string | null = initialBoards[0].id;
 			let currentBoardCount = 2;
@@ -723,13 +721,13 @@ describe("Viewer E2E", () => {
 				</ViewerStoreProvider>,
 			);
 
-			// 1つ目を削除
+			// Remove the first board
 			actionsRef.current!.removeBoard(initialBoards[0].id);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 			expect(currentBoardCount).toBe(1);
 			expect(currentActiveId).toBe(initialBoards[1].id);
 
-			// 2つ目を削除
+			// Remove the second board
 			actionsRef.current!.removeBoard(initialBoards[1].id);
 			await new Promise((resolve) => setTimeout(resolve, 50));
 			expect(currentBoardCount).toBe(0);

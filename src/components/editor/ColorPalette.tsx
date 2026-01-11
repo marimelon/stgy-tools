@@ -1,21 +1,16 @@
 /**
- * カラーパレットコンポーネント
+ * Color palette component
  *
- * 56色のプリセットカラーパレットを表示し、クリックで色を選択
+ * Displays 56 preset colors and allows selection by click
  */
 
 import { COLOR_PALETTE, rgbToHex } from "@/lib/editor";
 
 export interface ColorPaletteProps {
-	/** 現在選択中の色 (RGB) */
 	currentColor?: { r: number; g: number; b: number };
-	/** 色選択時のコールバック */
 	onColorSelect: (color: { r: number; g: number; b: number }) => void;
 }
 
-/**
- * カラーパレット
- */
 export function ColorPalette({
 	currentColor,
 	onColorSelect,
@@ -54,7 +49,7 @@ export function ColorPalette({
 						}}
 						onClick={() => onColorSelect(color)}
 						title={`RGB(${color.r}, ${color.g}, ${color.b})`}
-						aria-label={`色を選択: RGB(${color.r}, ${color.g}, ${color.b})`}
+						aria-label={`Select color: RGB(${color.r}, ${color.g}, ${color.b})`}
 					/>
 				);
 			})}

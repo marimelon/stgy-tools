@@ -1,5 +1,5 @@
 /**
- * 手動調整コンポーネント
+ * Manual adjustment component
  */
 
 import { RotateCcw } from "lucide-react";

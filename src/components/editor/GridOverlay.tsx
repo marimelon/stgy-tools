@@ -1,32 +1,17 @@
 /**
- * SVGオーバーレイコンポーネント
- *
- * グリッド線や選択インジケーターなどのSVGオーバーレイ
+ * SVG overlay components for grid lines and selection indicators
  */
 
 import type { ReactNode } from "react";
 
-/**
- * グリッドオーバーレイのProps
- */
 export interface GridOverlayProps {
-	/** キャンバス幅 */
 	width: number;
-	/** キャンバス高さ */
 	height: number;
-	/** グリッドサイズ */
 	gridSize: number;
 }
-
-/**
- * グリッドオーバーレイコンポーネント
- *
- * キャンバス上にグリッド線を表示
- */
 export function GridOverlay({ width, height, gridSize }: GridOverlayProps) {
 	const lines: ReactNode[] = [];
 
-	// 縦線
 	for (let x = gridSize; x < width; x += gridSize) {
 		lines.push(
 			<line
@@ -41,7 +26,6 @@ export function GridOverlay({ width, height, gridSize }: GridOverlayProps) {
 		);
 	}
 
-	// 横線
 	for (let y = gridSize; y < height; y += gridSize) {
 		lines.push(
 			<line
@@ -59,31 +43,15 @@ export function GridOverlay({ width, height, gridSize }: GridOverlayProps) {
 	return <g pointerEvents="none">{lines}</g>;
 }
 
-/**
- * 選択インジケーターのProps
- */
 export interface SelectionIndicatorProps {
-	/** X座標 */
 	x: number;
-	/** Y座標 */
 	y: number;
-	/** 幅 */
 	width: number;
-	/** 高さ */
 	height: number;
-	/** X方向オフセット */
 	offsetX?: number;
-	/** Y方向オフセット */
 	offsetY?: number;
-	/** 回転角度 */
 	rotation: number;
 }
-
-/**
- * 選択インジケーターコンポーネント
- *
- * 選択されたオブジェクトのバウンディングボックスを表示
- */
 export function SelectionIndicator({
 	x,
 	y,
@@ -97,7 +65,6 @@ export function SelectionIndicator({
 	const boxWidth = width + padding * 2;
 	const boxHeight = height + padding * 2;
 
-	// ボックスの中心位置（offsetを考慮）
 	const boxCenterX = offsetX;
 	const boxCenterY = offsetY;
 

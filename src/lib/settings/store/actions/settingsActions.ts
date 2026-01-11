@@ -1,5 +1,5 @@
 /**
- * 設定アクション
+ * Settings actions
  */
 
 import type { AppSettings } from "../../types";
@@ -7,11 +7,11 @@ import { DEFAULT_SETTINGS } from "../../types";
 import type { SettingsStore } from "../types";
 
 /**
- * 設定アクションを作成
+ * Create settings actions
  */
 export function createSettingsActions(store: SettingsStore) {
 	/**
-	 * 設定を更新
+	 * Update settings
 	 */
 	const updateSettings = (updates: Partial<AppSettings>) => {
 		store.setState((state) => ({
@@ -21,7 +21,7 @@ export function createSettingsActions(store: SettingsStore) {
 	};
 
 	/**
-	 * デバッグモードを設定
+	 * Set debug mode
 	 */
 	const setDebugMode = (enabled: boolean) => {
 		store.setState((state) => ({
@@ -31,7 +31,7 @@ export function createSettingsActions(store: SettingsStore) {
 	};
 
 	/**
-	 * デフォルトにリセット
+	 * Reset to defaults
 	 */
 	const resetSettings = () => {
 		store.setState(() => DEFAULT_SETTINGS);

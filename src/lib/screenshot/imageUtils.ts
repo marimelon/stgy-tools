@@ -1,11 +1,11 @@
 /**
- * Canvas画像操作ユーティリティ
+ * Canvas image manipulation utilities
  */
 
 import { TARGET_BOARD_HEIGHT, TARGET_BOARD_WIDTH } from "./types";
 
 /**
- * FileからImageElementをロード
+ * Load ImageElement from File
  */
 export function loadImageFromFile(file: File): Promise<HTMLImageElement> {
 	return new Promise((resolve, reject) => {
@@ -24,7 +24,7 @@ export function loadImageFromFile(file: File): Promise<HTMLImageElement> {
 }
 
 /**
- * Data URLからImageElementをロード
+ * Load ImageElement from Data URL
  */
 export function loadImageFromDataUrl(
 	dataUrl: string,
@@ -38,7 +38,7 @@ export function loadImageFromDataUrl(
 }
 
 /**
- * ImageElementをCanvasに描画してImageDataを取得
+ * Draw ImageElement on Canvas and get ImageData
  */
 export function getImageDataFromImage(img: HTMLImageElement): ImageData {
 	const canvas = document.createElement("canvas");
@@ -51,7 +51,7 @@ export function getImageDataFromImage(img: HTMLImageElement): ImageData {
 }
 
 /**
- * FileからImageDataを取得
+ * Get ImageData from File
  */
 export async function getImageDataFromFile(file: File): Promise<ImageData> {
 	const img = await loadImageFromFile(file);
@@ -59,7 +59,7 @@ export async function getImageDataFromFile(file: File): Promise<ImageData> {
 }
 
 /**
- * 指定領域を抽出して512x384にリサイズしたCanvasを作成
+ * Extract specified region and create a Canvas resized to 512x384
  */
 export function extractAndResizeRegion(
 	sourceImg: HTMLImageElement,
@@ -71,7 +71,7 @@ export function extractAndResizeRegion(
 	const ctx = canvas.getContext("2d");
 	if (!ctx) throw new Error("Failed to get 2D context");
 
-	// ソース領域からターゲットサイズにリサイズして描画
+	// Resize and draw from source region to target size
 	ctx.drawImage(
 		sourceImg,
 		region.x,
@@ -88,7 +88,7 @@ export function extractAndResizeRegion(
 }
 
 /**
- * 手動調整を適用して領域を抽出
+ * Extract region with manual adjustment applied
  */
 export function extractWithManualAdjustment(
 	sourceImg: HTMLImageElement,
@@ -100,11 +100,11 @@ export function extractWithManualAdjustment(
 	const ctx = canvas.getContext("2d");
 	if (!ctx) throw new Error("Failed to get 2D context");
 
-	// スケールに基づいてソース領域のサイズを計算
+	// Calculate source region size based on scale
 	const sourceWidth = TARGET_BOARD_WIDTH / adjustment.scale;
 	const sourceHeight = TARGET_BOARD_HEIGHT / adjustment.scale;
 
-	// 画像の中心からオフセットを適用
+	// Apply offset from image center
 	const centerX = sourceImg.width / 2 + adjustment.offsetX;
 	const centerY = sourceImg.height / 2 + adjustment.offsetY;
 
@@ -127,7 +127,7 @@ export function extractWithManualAdjustment(
 }
 
 /**
- * CanvasをData URLに変換
+ * Convert Canvas to Data URL
  */
 export function canvasToDataUrl(
 	canvas: HTMLCanvasElement,
@@ -137,7 +137,7 @@ export function canvasToDataUrl(
 }
 
 /**
- * FileをData URLに変換
+ * Convert File to Data URL
  */
 export function fileToDataUrl(file: File): Promise<string> {
 	return new Promise((resolve, reject) => {
@@ -188,24 +188,24 @@ export function rgbToHsl(
 	return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
-/** 画像比較結果 */
+/** Image comparison result */
 export interface ComparisonResult {
-	/** 一致率 (0-100%) */
+	/** Match percentage (0-100%) */
 	matchPercentage: number;
-	/** 差分ピクセル数 */
+	/** Number of differing pixels */
 	diffPixelCount: number;
-	/** 総ピクセル数 */
+	/** Total pixels */
 	totalPixels: number;
-	/** 平均色差分 (0-255) */
+	/** Average color difference (0-255) */
 	averageColorDiff: number;
 }
 
 /**
- * 2つの画像を比較して一致率を計算
- * @param imageData1 - 比較元のImageData
- * @param imageData2 - 比較先のImageData
- * @param tolerance - 色差分の許容値 (0-255、デフォルト: 30)
- * @returns 比較結果
+ * Compare two images and calculate match percentage
+ * @param imageData1 - Source ImageData
+ * @param imageData2 - Target ImageData
+ * @param tolerance - Color difference tolerance (0-255, default: 30)
+ * @returns Comparison result
  */
 export function compareImages(
 	imageData1: ImageData,
@@ -215,7 +215,7 @@ export function compareImages(
 	const { data: data1, width, height } = imageData1;
 	const { data: data2 } = imageData2;
 
-	// サイズが異なる場合はエラー
+	// Error if sizes don't match
 	if (
 		imageData1.width !== imageData2.width ||
 		imageData1.height !== imageData2.height
@@ -236,16 +236,16 @@ export function compareImages(
 		const g2 = data2[i + 1];
 		const b2 = data2[i + 2];
 
-		// 色差分を計算（ユークリッド距離）
+		// Calculate color difference (Euclidean distance)
 		const colorDiff = Math.sqrt(
 			(r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2,
 		);
 
-		// 正規化された差分 (0-255)
+		// Normalized difference (0-255)
 		const normalizedDiff = colorDiff / Math.sqrt(3);
 		totalColorDiff += normalizedDiff;
 
-		// 許容範囲内なら一致とみなす
+		// Consider as matching if within tolerance
 		if (normalizedDiff <= tolerance) {
 			matchingPixels++;
 		}
@@ -280,7 +280,7 @@ export async function svgToImageData(
 	const ctx = canvas.getContext("2d");
 	if (!ctx) throw new Error("Failed to get 2D context");
 
-	// SVGをシリアライズ
+	// Serialize SVG
 	const serializer = new XMLSerializer();
 	const svgString = serializer.serializeToString(svgElement);
 	const svgBlob = new Blob([svgString], {
@@ -288,7 +288,7 @@ export async function svgToImageData(
 	});
 	const url = URL.createObjectURL(svgBlob);
 
-	// SVGを画像として読み込み
+	// Load SVG as image
 	const img = await loadImageFromDataUrl(url);
 	URL.revokeObjectURL(url);
 
@@ -297,7 +297,7 @@ export async function svgToImageData(
 }
 
 /**
- * Data URLからImageDataを取得
+ * Get ImageData from Data URL
  */
 export async function getImageDataFromDataUrl(
 	dataUrl: string,

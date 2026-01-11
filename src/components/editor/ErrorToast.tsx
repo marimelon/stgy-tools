@@ -1,5 +1,5 @@
 /**
- * エディターエラートースト
+ * Editor error toast
  */
 
 import { AlertCircle, X } from "lucide-react";
@@ -8,7 +8,6 @@ import { useTranslation } from "react-i18next";
 import { useEditorActions, useLastError } from "@/lib/editor";
 import type { EditorError } from "@/lib/editor/types";
 
-/** トースト表示時間 (ms) */
 const TOAST_DURATION = 3000;
 
 export function ErrorToast() {

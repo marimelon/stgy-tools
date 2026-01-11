@@ -1,8 +1,7 @@
 /**
- * 編集専用グリッドオーバーレイコンポーネント
+ * Editor-specific grid overlay component
  *
- * 同心円グリッドまたは方眼グリッドを表示
- * ゲーム背景とは独立して、編集作業を支援するためのガイドライン
+ * Displays concentric circle or square grid as editing guides
  */
 
 import {
@@ -12,11 +11,9 @@ import {
 	type OverlaySettings,
 } from "@/lib/editor";
 
-/** キャンバスサイズ */
 const CANVAS_WIDTH = 512;
 const CANVAS_HEIGHT = 384;
 
-/** 設定から色を生成 */
 function getColors(settings: OverlaySettings) {
 	const colorDef = OVERLAY_COLORS.find((c) => c.id === settings.colorId);
 	const rgb = colorDef?.color ?? "100, 200, 255";
@@ -31,13 +28,9 @@ function getColors(settings: OverlaySettings) {
 }
 
 export interface EditorGridOverlayProps {
-	/** オーバーレイタイプ */
 	type: EditorOverlayType;
-	/** キャンバス幅 */
 	width?: number;
-	/** キャンバス高さ */
 	height?: number;
-	/** オーバーレイ設定 */
 	settings?: OverlaySettings;
 }
 
@@ -48,11 +41,7 @@ interface ConcentricGridOverlayProps {
 }
 
 /**
- * 同心円グリッドオーバーレイ
- *
- * - 中心から等間隔の同心円
- * - 8方向のガイドライン
- * - 中心点マーカー
+ * Concentric circle grid overlay
  */
 function ConcentricGridOverlay({
 	width,
@@ -63,10 +52,8 @@ function ConcentricGridOverlay({
 	const centerY = height / 2;
 	const colors = getColors(settings);
 
-	// キャンバスの短辺に基づいて最大半径を決定
 	const maxRadius = Math.min(width, height) / 2 - 10;
 
-	// 同心円（等間隔）
 	const circleCount = settings.circleCount;
 	const radiusStep = maxRadius / circleCount;
 	const radii = Array.from(
@@ -74,12 +61,11 @@ function ConcentricGridOverlay({
 		(_, i) => radiusStep * (i + 1),
 	);
 
-	// 8方向のガイドライン（45度刻み）
+	// 8 directional guidelines at 45-degree intervals
 	const angles = [0, 45, 90, 135, 180, 225, 270, 315];
 
 	return (
 		<g pointerEvents="none">
-			{/* 同心円 */}
 			{radii.map((radius, index) => (
 				<circle
 					key={`circle-${radius}`}
@@ -93,7 +79,6 @@ function ConcentricGridOverlay({
 				/>
 			))}
 
-			{/* 8方向ガイドライン */}
 			{settings.showGuideLines &&
 				angles.map((angle) => {
 					const rad = (angle * Math.PI) / 180;
@@ -115,7 +100,6 @@ function ConcentricGridOverlay({
 					);
 				})}
 
-			{/* 中心点マーカー */}
 			{settings.showCenterMarker && (
 				<>
 					<circle
@@ -147,11 +131,7 @@ interface SquareGridOverlayProps {
 }
 
 /**
- * 方眼グリッドオーバーレイ
- *
- * - 等間隔の格子線
- * - 中心を通る主要ライン
- * - 外周矩形
+ * Square grid overlay
  */
 function SquareGridOverlay({
 	width,
@@ -165,7 +145,6 @@ function SquareGridOverlay({
 
 	const lines: React.ReactNode[] = [];
 
-	// 縦線
 	for (let x = gridSize; x < width; x += gridSize) {
 		const isCenterLine = Math.abs(x - centerX) < 1;
 		lines.push(
@@ -181,7 +160,6 @@ function SquareGridOverlay({
 		);
 	}
 
-	// 横線
 	for (let y = gridSize; y < height; y += gridSize) {
 		const isCenterLine = Math.abs(y - centerY) < 1;
 		lines.push(
@@ -199,10 +177,8 @@ function SquareGridOverlay({
 
 	return (
 		<g pointerEvents="none">
-			{/* グリッド線 */}
 			{lines}
 
-			{/* 外周矩形 */}
 			{settings.showBorder && (
 				<rect
 					x={2}
@@ -215,7 +191,6 @@ function SquareGridOverlay({
 				/>
 			)}
 
-			{/* 中心点マーカー */}
 			{settings.showCenterMarker && (
 				<circle
 					cx={centerX}
@@ -230,11 +205,6 @@ function SquareGridOverlay({
 	);
 }
 
-/**
- * 編集専用グリッドオーバーレイコンポーネント
- *
- * オーバーレイタイプに応じて適切なグリッドを表示
- */
 export function EditorGridOverlay({
 	type,
 	width = CANVAS_WIDTH,

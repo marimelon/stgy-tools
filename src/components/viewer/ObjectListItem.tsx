@@ -1,9 +1,3 @@
-/**
- * オブジェクト一覧アイテムコンポーネント
- *
- * Viewer用のシンプルなオブジェクトリストアイテム
- */
-
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { BoardObject } from "@/lib/stgy";
@@ -16,9 +10,6 @@ interface ObjectListItemProps {
 	onSelect: () => void;
 }
 
-/**
- * オブジェクト一覧の個別アイテム
- */
 export function ObjectListItem({
 	index,
 	object,
@@ -27,7 +18,6 @@ export function ObjectListItem({
 }: ObjectListItemProps) {
 	const { t } = useTranslation();
 
-	// オブジェクト名を取得（i18n → フォールバック）
 	const objectName =
 		t(`object.${object.objectId}`, { defaultValue: "" }) ||
 		ObjectNames[object.objectId] ||
@@ -35,7 +25,6 @@ export function ObjectListItem({
 
 	const isVisible = object.flags.visible;
 
-	// ツールチップ用のフルテキスト
 	const fullText = object.text ? `${objectName} "${object.text}"` : objectName;
 
 	return (
@@ -50,19 +39,16 @@ export function ObjectListItem({
 				${!isVisible ? "opacity-50" : ""}
 			`}
 		>
-			{/* インデックス番号 */}
 			<span className="text-xs font-mono text-muted-foreground w-6 flex-shrink-0">
 				#{index}
 			</span>
 
-			{/* 表示状態アイコン */}
 			<span
 				className={`flex-shrink-0 ${isVisible ? "text-muted-foreground" : "text-muted-foreground/50"}`}
 			>
 				{isVisible ? <Eye size={14} /> : <EyeOff size={14} />}
 			</span>
 
-			{/* オブジェクト名 */}
 			<span className="flex-1 truncate">
 				{objectName}
 				{object.text && (

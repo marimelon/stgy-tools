@@ -1,10 +1,10 @@
 /**
- * ボード領域自動検出アルゴリズム
+ * Board region auto-detection algorithm
  *
- * FFXIVのストラテジーボードは以下の特徴を持つ:
- * - グレー背景 (~#505050、HSL: 彩度0%、明度31%)
- * - 固定アスペクト比 (512:384 = 4:3)
- * - 明確な矩形境界
+ * FFXIV strategy board characteristics:
+ * - Gray background (~#505050, HSL: 0% saturation, 31% lightness)
+ * - Fixed aspect ratio (512:384 = 4:3)
+ * - Clear rectangular boundary
  */
 
 import { rgbToHsl } from "./imageUtils";
@@ -23,7 +23,7 @@ interface Rect {
 }
 
 /**
- * グレーピクセルかどうかを判定
+ * Check if a pixel is gray
  */
 function isGrayBoardPixel(
 	r: number,
@@ -40,7 +40,7 @@ function isGrayBoardPixel(
 }
 
 /**
- * 水平方向のランを検出（連続するグレーピクセルの区間）
+ * Detect horizontal runs (consecutive gray pixel segments)
  */
 function findHorizontalRuns(
 	imageData: ImageData,
@@ -65,13 +65,13 @@ function findHorizontalRuns(
 				runStart = x;
 			} else if (!isGray && inRun) {
 				inRun = false;
-				// 最小幅以上のランのみ記録
+				// Only record runs above minimum width
 				if (x - runStart > 50) {
 					runs.push({ y, xStart: runStart, xEnd: x - 1 });
 				}
 			}
 		}
-		// 行末まで続いている場合
+		// Handle runs extending to end of row
 		if (inRun && width - runStart > 50) {
 			runs.push({ y, xStart: runStart, xEnd: width - 1 });
 		}
@@ -81,7 +81,7 @@ function findHorizontalRuns(
 }
 
 /**
- * ランからバウンディングボックスを計算
+ * Calculate bounding box from runs
  */
 function findBoundingBoxFromRuns(
 	runs: Array<{ y: number; xStart: number; xEnd: number }>,
@@ -109,7 +109,7 @@ function findBoundingBoxFromRuns(
 }
 
 /**
- * 矩形領域内のグレーピクセル密度を計算
+ * Calculate gray pixel density within a rectangular region
  */
 function calculateGrayDensity(
 	imageData: ImageData,
@@ -137,7 +137,7 @@ function calculateGrayDensity(
 }
 
 /**
- * エッジをリファイン（境界を精密化）
+ * Refine edges (fine-tune boundaries)
  */
 function refineEdges(
 	imageData: ImageData,
@@ -146,13 +146,13 @@ function refineEdges(
 ): Rect {
 	const { width, data } = imageData;
 
-	// 各辺について、グレーピクセルが始まる位置を探す
+	// Find where gray pixels start on each edge
 	let top = rect.y;
 	let bottom = rect.y + rect.height - 1;
 	let left = rect.x;
 	let right = rect.x + rect.width - 1;
 
-	// 上辺を調整
+	// Adjust top edge
 	for (let y = rect.y; y < rect.y + rect.height / 4; y++) {
 		let grayCount = 0;
 		for (let x = rect.x; x < rect.x + rect.width; x++) {
@@ -167,7 +167,7 @@ function refineEdges(
 		}
 	}
 
-	// 下辺を調整
+	// Adjust bottom edge
 	for (
 		let y = rect.y + rect.height - 1;
 		y > rect.y + (rect.height * 3) / 4;
@@ -186,7 +186,7 @@ function refineEdges(
 		}
 	}
 
-	// 左辺を調整
+	// Adjust left edge
 	for (let x = rect.x; x < rect.x + rect.width / 4; x++) {
 		let grayCount = 0;
 		for (let y = top; y <= bottom; y++) {
@@ -201,7 +201,7 @@ function refineEdges(
 		}
 	}
 
-	// 右辺を調整
+	// Adjust right edge
 	for (
 		let x = rect.x + rect.width - 1;
 		x > rect.x + (rect.width * 3) / 4;
@@ -229,18 +229,18 @@ function refineEdges(
 }
 
 /**
- * アスペクト比に基づいて矩形を調整
+ * Adjust rectangle based on aspect ratio
  */
 function adjustToAspectRatio(rect: Rect, targetRatio: number): Rect {
 	const currentRatio = rect.width / rect.height;
 
 	if (Math.abs(currentRatio - targetRatio) < 0.05) {
-		// 十分近い場合はそのまま
+		// Close enough, keep as is
 		return rect;
 	}
 
 	if (currentRatio > targetRatio) {
-		// 幅が広すぎる → 幅を縮小
+		// Width too large - shrink width
 		const newWidth = rect.height * targetRatio;
 		const xOffset = (rect.width - newWidth) / 2;
 		return {
@@ -250,7 +250,7 @@ function adjustToAspectRatio(rect: Rect, targetRatio: number): Rect {
 			height: rect.height,
 		};
 	}
-	// 高さが高すぎる → 高さを縮小
+	// Height too large - shrink height
 	const newHeight = rect.width / targetRatio;
 	const yOffset = (rect.height - newHeight) / 2;
 	return {
@@ -262,26 +262,26 @@ function adjustToAspectRatio(rect: Rect, targetRatio: number): Rect {
 }
 
 /**
- * 信頼度を計算
+ * Calculate confidence score
  */
 function calculateConfidence(
 	rect: Rect,
 	imageData: ImageData,
 	options: Required<DetectionOptions>,
 ): number {
-	// グレー密度（0-1）
+	// Gray density (0-1)
 	const grayDensity = calculateGrayDensity(imageData, rect, options);
 
-	// アスペクト比一致度（0-1）
+	// Aspect ratio match (0-1)
 	const actualRatio = rect.width / rect.height;
 	const ratioDiff = Math.abs(actualRatio - TARGET_ASPECT_RATIO);
 	const ratioConfidence = Math.max(0, 1 - ratioDiff / TARGET_ASPECT_RATIO);
 
-	// サイズの妥当性（小さすぎないか）
+	// Size validity (not too small)
 	const area = rect.width * rect.height;
 	const sizeConfidence = Math.min(1, area / options.minRegionArea);
 
-	// 加重平均
+	// Weighted average
 	return grayDensity * 0.4 + ratioConfidence * 0.4 + sizeConfidence * 0.2;
 }
 
@@ -298,36 +298,36 @@ export function detectBoardRegion(
 ): DetectedRegion | null {
 	const opts = { ...DEFAULT_DETECTION_OPTIONS, ...options };
 
-	// Step 1: グレーピクセルのランを検出
+	// Step 1: Detect gray pixel runs
 	const runs = findHorizontalRuns(imageData, opts);
 	if (runs.length < 10) {
-		return null; // 十分なグレー領域がない
+		return null; // Not enough gray regions
 	}
 
-	// Step 2: バウンディングボックスを計算
+	// Step 2: Calculate bounding box
 	const roughBox = findBoundingBoxFromRuns(runs);
 	if (!roughBox) {
 		return null;
 	}
 
-	// Step 3: 領域サイズを検証
+	// Step 3: Validate region size
 	const area = roughBox.width * roughBox.height;
 	if (area < opts.minRegionArea) {
-		return null; // 領域が小さすぎる
+		return null; // Region too small
 	}
 
-	// Step 4: エッジをリファイン
+	// Step 4: Refine edges
 	const refinedBox = refineEdges(imageData, roughBox, opts);
 
-	// Step 5: アスペクト比を検証・調整
+	// Step 5: Validate and adjust aspect ratio
 	const aspectRatio = refinedBox.width / refinedBox.height;
 	const ratioDiff = Math.abs(aspectRatio - TARGET_ASPECT_RATIO);
 
 	if (ratioDiff > opts.aspectRatioTolerance) {
-		// アスペクト比が大きく異なる場合は調整
+		// Adjust if aspect ratio differs significantly
 		const adjustedBox = adjustToAspectRatio(refinedBox, TARGET_ASPECT_RATIO);
 
-		// 調整後の信頼度を計算
+		// Calculate confidence after adjustment
 		const confidence = calculateConfidence(adjustedBox, imageData, opts);
 
 		return {
@@ -337,7 +337,7 @@ export function detectBoardRegion(
 		};
 	}
 
-	// Step 6: 信頼度を計算
+	// Step 6: Calculate confidence
 	const confidence = calculateConfidence(refinedBox, imageData, opts);
 
 	return {
