@@ -546,6 +546,15 @@ function ViewerContent({
 		[actions],
 	);
 
+	// ボード削除ハンドラー
+	const handleCloseBoard = useCallback(
+		(id: string) => {
+			reorderPendingRef.current = true;
+			actions.removeBoard(id);
+		},
+		[actions],
+	);
+
 	return (
 		<div className="min-h-screen bg-background text-foreground">
 			<AppHeader currentPage="viewer" title={t("viewer.pageTitle")} />
@@ -618,7 +627,7 @@ function ViewerContent({
 						boards={boards}
 						activeId={activeBoard?.id ?? null}
 						onSelectTab={actions.setActiveBoard}
-						onCloseTab={actions.removeBoard}
+						onCloseTab={handleCloseBoard}
 						onReorder={handleReorderBoards}
 					/>
 				)}
@@ -631,7 +640,7 @@ function ViewerContent({
 							actions.setActiveBoard(id);
 							actions.setViewMode("tab");
 						}}
-						onCloseBoard={actions.removeBoard}
+						onCloseBoard={handleCloseBoard}
 						onReorder={handleReorderBoards}
 					/>
 				)}
