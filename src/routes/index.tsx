@@ -247,11 +247,11 @@ function App() {
 		if (resolvedStgyCodes.length > 0) {
 			return parseMultipleStgyCodes(resolvedStgyCodes.join("\n"));
 		}
-		// サンプルコードを使用
-		return parseMultipleStgyCodes(SAMPLE_STGY);
+		// 何も指定がない場合は空
+		return [];
 	}, [resolvedStgyCodes]);
 
-	const isUsingDefaultSample = resolvedStgyCodes.length === 0;
+	const hasInitialCode = resolvedStgyCodes.length > 0;
 
 	const initialViewMode = mode === "grid" ? "grid" : "tab";
 
@@ -260,7 +260,7 @@ function App() {
 			initialBoards={initialBoards}
 			initialViewMode={initialViewMode}
 		>
-			<ViewerContent isUsingDefaultSample={isUsingDefaultSample} />
+			<ViewerContent hasInitialCode={hasInitialCode} />
 		</ViewerStoreProvider>
 	);
 }
@@ -268,11 +268,7 @@ function App() {
 /**
  * ViewerContent: 実際のViewer UI
  */
-function ViewerContent({
-	isUsingDefaultSample: initialIsUsingDefaultSample,
-}: {
-	isUsingDefaultSample: boolean;
-}) {
+function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { featureFlags } = Route.useLoaderData();
@@ -288,12 +284,11 @@ function ViewerContent({
 	const actions = useViewerActions();
 
 	// ローカル状態
-	const [isUsingDefaultSample, setIsUsingDefaultSample] = useState(
-		initialIsUsingDefaultSample,
-	);
 	const [stgyInput, setStgyInput] = useState(() =>
 		boards.map((b) => b.stgyCode).join("\n"),
 	);
+	// URLに反映するかどうか（初期コードがある場合のみ反映）
+	const [shouldUpdateUrl, setShouldUpdateUrl] = useState(hasInitialCode);
 	const [isExpandModalOpen, setIsExpandModalOpen] = useState(false);
 	const stgyInputId = useId();
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -323,8 +318,8 @@ function ViewerContent({
 		// text inputを同期
 		setStgyInput(boards.map((b) => b.stgyCode).join("\n"));
 
-		// URLを同期（サンプルコード使用時は更新しない）
-		if (!isUsingDefaultSample) {
+		// URLを同期
+		if (shouldUpdateUrl) {
 			const codes = boards.map((b) => b.stgyCode).filter((c) => c);
 			const url = new URL(window.location.href);
 			url.searchParams.delete("stgy");
@@ -334,7 +329,7 @@ function ViewerContent({
 			}
 			window.history.replaceState(null, "", url.toString());
 		}
-	}, [boards, isUsingDefaultSample]);
+	}, [boards, shouldUpdateUrl]);
 
 	// ボードサイズのリサイズ機能
 	const [boardWidth, setBoardWidth] = useState<number | null>(null);
@@ -479,16 +474,31 @@ function ViewerContent({
 		}
 	}, [activeBoard?.stgyCode]);
 
+	// サンプル読み込みハンドラー
+	const handleLoadSample = useCallback(() => {
+		setStgyInput(SAMPLE_STGY);
+		actions.loadBoards(SAMPLE_STGY);
+		setShouldUpdateUrl(true);
+
+		// URLに反映
+		const url = new URL(window.location.href);
+		url.searchParams.delete("stgy");
+		url.searchParams.delete("s");
+		url.searchParams.append("stgy", SAMPLE_STGY);
+		window.history.replaceState(null, "", url.toString());
+	}, [actions]);
+
 	// 入力変更ハンドラー
 	const handleInputChange = useCallback(
 		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
 			const newValue = e.target.value;
 			setStgyInput(newValue);
-			if (isUsingDefaultSample) {
-				setIsUsingDefaultSample(false);
+			// 入力があったらURLを更新するようにする
+			if (!shouldUpdateUrl && newValue.trim()) {
+				setShouldUpdateUrl(true);
 			}
 		},
-		[isUsingDefaultSample],
+		[shouldUpdateUrl],
 	);
 
 	// 入力変更時の自動デコード＆URL更新（デバウンス付き）
@@ -501,8 +511,8 @@ function ViewerContent({
 			// 改行区切りで複数ボードをパース
 			actions.loadBoards(stgyInput);
 
-			// サンプルコード使用時はURLを更新しない
-			if (!isUsingDefaultSample) {
+			// URLを更新
+			if (shouldUpdateUrl) {
 				const codes = stgyInput
 					.split("\n")
 					.map((line) => line.trim())
@@ -525,7 +535,7 @@ function ViewerContent({
 				clearTimeout(debounceTimerRef.current);
 			}
 		};
-	}, [stgyInput, actions, isUsingDefaultSample]);
+	}, [stgyInput, actions, shouldUpdateUrl]);
 
 	// オブジェクト選択ハンドラー
 	const handleSelectObject = useCallback(
@@ -563,24 +573,34 @@ function ViewerContent({
 				<div className="mb-6 space-y-3">
 					<div className="flex items-center justify-between">
 						<Label htmlFor={stgyInputId}>{t("viewer.inputLabel")}</Label>
-						<button
-							type="button"
-							onClick={handleCopyStgyCode}
-							disabled={!boardData}
-							className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							{copiedStgyCode ? (
-								<>
-									<Check className="size-3.5" />
-									{t("common.copied")}
-								</>
-							) : (
-								<>
-									<Copy className="size-3.5" />
-									{t("common.copy")}
-								</>
-							)}
-						</button>
+						{stgyInput.trim() ? (
+							<button
+								type="button"
+								onClick={handleCopyStgyCode}
+								disabled={!boardData}
+								className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+							>
+								{copiedStgyCode ? (
+									<>
+										<Check className="size-3.5" />
+										{t("common.copied")}
+									</>
+								) : (
+									<>
+										<Copy className="size-3.5" />
+										{t("common.copy")}
+									</>
+								)}
+							</button>
+						) : (
+							<button
+								type="button"
+								onClick={handleLoadSample}
+								className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+							>
+								{t("viewer.loadSample")}
+							</button>
+						)}
 					</div>
 					<Textarea
 						id={stgyInputId}

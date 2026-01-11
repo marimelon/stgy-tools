@@ -65,6 +65,7 @@
 		"pageTitle": "STGY Tools Viewer",
 		"inputLabel": "stgyコードを入力 (複数可):",
 		"inputPlaceholder": "[stgy:a...]",
+		"loadSample": "サンプル",
 		"boardInfo": {
 			"title": "ボード情報",
 			"name": "名前",
