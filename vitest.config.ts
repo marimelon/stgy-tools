@@ -1,10 +1,32 @@
 import { playwright } from "@vitest/browser-playwright";
-import { defineConfig, mergeConfig } from "vitest/config";
+import { defineConfig, mergeConfig, type Plugin } from "vitest/config";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
 const baseConfig = {
 	plugins: [viteTsConfigPaths()],
 };
+
+/**
+ * Vite plugin to replace server-only modules with mocks in browser tests
+ */
+function serverModuleMock(): Plugin {
+	const mockPath = new URL(
+		"./src/__tests__/mocks/empty-module.ts",
+		import.meta.url,
+	).pathname;
+
+	return {
+		name: "server-module-mock",
+		enforce: "pre",
+		resolveId(id) {
+			// cloudflareContext uses node:async_hooks
+			if (id.includes("cloudflareContext")) {
+				return mockPath;
+			}
+			return null;
+		},
+	};
+}
 
 const baseTestConfig = {
 	globals: true,
@@ -26,12 +48,40 @@ export default defineConfig({
 			}),
 			// ブラウザテスト（E2E）
 			mergeConfig(baseConfig, {
+				plugins: [serverModuleMock()],
+				resolve: {
+					alias: [
+						// サーバー専用モジュールをブラウザテストで空モジュールに置換
+						{
+							find: "@tanstack/start-storage-context",
+							replacement: new URL(
+								"./src/__tests__/mocks/empty-module.ts",
+								import.meta.url,
+							).pathname,
+						},
+						{
+							find: "@tanstack/react-start/server",
+							replacement: new URL(
+								"./src/__tests__/mocks/empty-module.ts",
+								import.meta.url,
+							).pathname,
+						},
+					],
+				},
 				optimizeDeps: {
 					include: [
+						"react",
+						"react/jsx-runtime",
+						"react-dom",
 						"@dnd-kit/core",
 						"@dnd-kit/modifiers",
 						"@dnd-kit/sortable",
 						"@dnd-kit/utilities",
+					],
+					exclude: [
+						"@tanstack/react-start",
+						"@tanstack/react-start/server",
+						"@tanstack/start-storage-context",
 					],
 				},
 				test: {
