@@ -259,6 +259,28 @@ export function useViewerActions() {
 					selectedObjectIds: {},
 				}));
 			},
+
+			/**
+			 * ボードの順番を入れ替え
+			 */
+			reorderBoards: (fromIndex: number, toIndex: number) => {
+				store.setState((state) => {
+					const { boards } = state;
+					if (
+						fromIndex < 0 ||
+						fromIndex >= boards.length ||
+						toIndex < 0 ||
+						toIndex >= boards.length ||
+						fromIndex === toIndex
+					) {
+						return state;
+					}
+					const newBoards = [...boards];
+					const [removed] = newBoards.splice(fromIndex, 1);
+					newBoards.splice(toIndex, 0, removed);
+					return { ...state, boards: newBoards };
+				});
+			},
 		}),
 		[store],
 	);

@@ -1990,6 +1990,11 @@ packages:
     peerDependencies:
       typescript: '>=4.7'
 
+  '@tanstack/db@0.5.18':
+    resolution: {integrity: sha512-lEXMfuKBMsCcN63Rmm/nJdk583uQcZ4rkDwzVz3Xe6yI/+MjnwRonlM9e236IPVf2iADxpGwUulEXOMJ8bpnPA==}
+    peerDependencies:
+      typescript: '>=4.7'
+
   '@tanstack/devtools-client@0.0.3':
     resolution: {integrity: sha512-kl0r6N5iIL3t9gGDRAv55VRM3UIyMKVH83esRGq7xBjYsRLe/BeCIN2HqrlJkObUXQMKhy7i8ejuGOn+bDqDBw==}
     engines: {node: '>=18'}
@@ -2034,6 +2039,10 @@ packages:
 
   '@tanstack/pacer-lite@0.1.1':
     resolution: {integrity: sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w==}
+    engines: {node: '>=18'}
+
+  '@tanstack/pacer-lite@0.2.1':
+    resolution: {integrity: sha512-3PouiFjR4B6x1c969/Pl4ZIJleof1M0n6fNX8NRiC9Sqv1g06CVDlEaXUR4212ycGFyfq4q+t8Gi37Xy+z34iQ==}
     engines: {node: '>=18'}
 
   '@tanstack/query-core@5.90.12':
@@ -5096,6 +5105,13 @@ snapshots:
       '@tanstack/pacer-lite': 0.1.1
       typescript: 5.9.3
 
+  '@tanstack/db@0.5.18(typescript@5.9.3)':
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+      '@tanstack/db-ivm': 0.1.14(typescript@5.9.3)
+      '@tanstack/pacer-lite': 0.2.1
+      typescript: 5.9.3
+
   '@tanstack/devtools-client@0.0.3':
     dependencies:
       '@tanstack/devtools-event-client': 0.3.5
@@ -5160,6 +5176,8 @@ snapshots:
   '@tanstack/history@1.141.0': {}
 
   '@tanstack/pacer-lite@0.1.1': {}
+
+  '@tanstack/pacer-lite@0.2.1': {}
 
   '@tanstack/query-core@5.90.12': {}
 
@@ -6550,7 +6568,7 @@ snapshots:
   tanstack-dexie-db-collection@0.1.4(dexie@4.2.1)(typescript@5.9.3):
     dependencies:
       '@standard-schema/spec': 1.1.0
-      '@tanstack/db': 0.5.16(typescript@5.9.3)
+      '@tanstack/db': 0.5.18(typescript@5.9.3)
       debug: 4.4.3
       dexie: 4.2.1
       typescript: 5.9.3

@@ -125,7 +125,8 @@
 			"boardCount": "{{count}} boards",
 			"parseError": "{{count}} codes failed to parse",
 			"share": "Share",
-			"noData": "No data"
+			"noData": "No data",
+			"dragToReorder": "Drag to reorder"
 		},
 		"importComplete": "Imported {{count}} boards to \"{{folder}}\""
 	},

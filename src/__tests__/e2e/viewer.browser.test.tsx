@@ -302,6 +302,51 @@ describe("Viewer E2E", () => {
 
 			expect(closedId).toBe(initialBoards[0].id);
 		});
+
+		it("タブがドラッグ可能である（cursor-grabスタイル）", async () => {
+			const initialBoards = createTestBoards();
+
+			const screen = await render(
+				<ViewerStoreProvider initialBoards={initialBoards}>
+					<ViewerTabs
+						boards={initialBoards}
+						activeId={initialBoards[0].id}
+						onSelectTab={() => {}}
+						onCloseTab={() => {}}
+					/>
+				</ViewerStoreProvider>,
+			);
+
+			// タブにcursor-grabスタイルがあることを確認
+			const tabs = screen.container.querySelectorAll("[role='tab']");
+			expect(tabs.length).toBe(2);
+			expect(tabs[0].className).toContain("cursor-grab");
+		});
+
+		it("onReorderコールバックが渡されている場合、DndContextが機能する", async () => {
+			const initialBoards = createTestBoards();
+			let reorderCalled = false;
+
+			const screen = await render(
+				<ViewerStoreProvider initialBoards={initialBoards}>
+					<ViewerTabs
+						boards={initialBoards}
+						activeId={initialBoards[0].id}
+						onSelectTab={() => {}}
+						onCloseTab={() => {}}
+						onReorder={() => {
+							reorderCalled = true;
+						}}
+					/>
+				</ViewerStoreProvider>,
+			);
+
+			// DndContextがレンダリングされていることを確認（タブが表示されている）
+			const tabs = screen.container.querySelectorAll("[role='tab']");
+			expect(tabs.length).toBe(2);
+			// onReorderはドラッグ操作でのみ呼ばれるため、ここでは呼ばれない
+			expect(reorderCalled).toBe(false);
+		});
 	});
 
 	describe("ViewerGrid", () => {
@@ -312,7 +357,6 @@ describe("Viewer E2E", () => {
 				<ViewerStoreProvider initialBoards={initialBoards}>
 					<ViewerGrid
 						boards={initialBoards}
-						activeId={initialBoards[0].id}
 						onSelectBoard={() => {}}
 						onCloseBoard={() => {}}
 					/>
@@ -334,7 +378,6 @@ describe("Viewer E2E", () => {
 				<ViewerStoreProvider initialBoards={initialBoards}>
 					<ViewerGrid
 						boards={initialBoards}
-						activeId={initialBoards[0].id}
 						onSelectBoard={(id) => {
 							selectedId = id;
 						}}
@@ -360,7 +403,6 @@ describe("Viewer E2E", () => {
 				<ViewerStoreProvider initialBoards={initialBoards}>
 					<ViewerGrid
 						boards={initialBoards}
-						activeId={initialBoards[0].id}
 						onSelectBoard={() => {}}
 						onCloseBoard={(id) => {
 							closedId = id;
@@ -385,29 +427,6 @@ describe("Viewer E2E", () => {
 			expect(closedId).toBe(initialBoards[0].id);
 		});
 
-		it("アクティブなカードにはring-2クラスがある", async () => {
-			const initialBoards = createTestBoards();
-
-			const screen = await render(
-				<ViewerStoreProvider initialBoards={initialBoards}>
-					<ViewerGrid
-						boards={initialBoards}
-						activeId={initialBoards[0].id}
-						onSelectBoard={() => {}}
-						onCloseBoard={() => {}}
-					/>
-				</ViewerStoreProvider>,
-			);
-
-			const cards = screen.container.querySelectorAll(
-				"[data-testid='viewer-grid-card']",
-			);
-			// 最初のカード（アクティブ）はring-2クラスを持つ
-			expect(cards[0].className).toContain("ring-2");
-			// 2番目のカードはring-2クラスを持たない
-			expect(cards[1].className).not.toContain("ring-2");
-		});
-
 		it("コピーボタンをクリックするとstgyCodeがクリップボードにコピーされる", async () => {
 			const initialBoards = createTestBoards();
 			let copiedText: string | null = null;
@@ -428,7 +447,6 @@ describe("Viewer E2E", () => {
 				<ViewerStoreProvider initialBoards={initialBoards}>
 					<ViewerGrid
 						boards={initialBoards}
-						activeId={initialBoards[0].id}
 						onSelectBoard={() => {}}
 						onCloseBoard={() => {}}
 					/>
@@ -456,6 +474,65 @@ describe("Viewer E2E", () => {
 				writable: true,
 				configurable: true,
 			});
+		});
+
+		it("ホバー時にドラッグハンドルが表示される", async () => {
+			const initialBoards = createTestBoards();
+
+			const screen = await render(
+				<ViewerStoreProvider initialBoards={initialBoards}>
+					<ViewerGrid
+						boards={initialBoards}
+						onSelectBoard={() => {}}
+						onCloseBoard={() => {}}
+					/>
+				</ViewerStoreProvider>,
+			);
+
+			const cards = screen.container.querySelectorAll(
+				"[data-testid='viewer-grid-card']",
+			);
+			expect(cards.length).toBe(2);
+
+			// ホバー前はドラッグハンドルは opacity-0
+			const dragHandle = cards[0].querySelector("[title]");
+			expect(dragHandle).toBeTruthy();
+
+			// ホバーしてドラッグハンドルを表示
+			await userEvent.hover(cards[0]);
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			// ドラッグハンドルが存在することを確認
+			const handles = cards[0].querySelectorAll(
+				"[class*='cursor-grab']",
+			);
+			expect(handles.length).toBeGreaterThan(0);
+		});
+
+		it("onReorderコールバックが渡されている場合、DndContextが機能する", async () => {
+			const initialBoards = createTestBoards();
+			let reorderCalled = false;
+
+			const screen = await render(
+				<ViewerStoreProvider initialBoards={initialBoards}>
+					<ViewerGrid
+						boards={initialBoards}
+						onSelectBoard={() => {}}
+						onCloseBoard={() => {}}
+						onReorder={() => {
+							reorderCalled = true;
+						}}
+					/>
+				</ViewerStoreProvider>,
+			);
+
+			// DndContextがレンダリングされていることを確認（カードが表示されている）
+			const cards = screen.container.querySelectorAll(
+				"[data-testid='viewer-grid-card']",
+			);
+			expect(cards.length).toBe(2);
+			// onReorderはドラッグ操作でのみ呼ばれるため、ここでは呼ばれない
+			expect(reorderCalled).toBe(false);
 		});
 	});
 
@@ -588,7 +665,6 @@ describe("Viewer E2E", () => {
 						{viewMode === "grid" && (
 							<ViewerGrid
 								boards={boards}
-								activeId={activeId}
 								onSelectBoard={(id) => {
 									actions.setActiveBoard(id);
 									actions.setViewMode("tab");

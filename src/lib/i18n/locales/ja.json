@@ -125,7 +125,8 @@
 			"boardCount": "{{count}}件のボード",
 			"parseError": "{{count}}件のコードが解析できませんでした",
 			"share": "共有",
-			"noData": "データなし"
+			"noData": "データなし",
+			"dragToReorder": "ドラッグして順番を変更"
 		},
 		"importComplete": "「{{folder}}」に{{count}}件のボードをインポートしました"
 	},

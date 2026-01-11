@@ -315,10 +315,32 @@ function ViewerContent({
 		}
 	}, [shortIds, boards]);
 
+	// ボード順番入れ替え後の同期
+	useEffect(() => {
+		if (!reorderPendingRef.current) return;
+		reorderPendingRef.current = false;
+
+		// text inputを同期
+		setStgyInput(boards.map((b) => b.stgyCode).join("\n"));
+
+		// URLを同期（サンプルコード使用時は更新しない）
+		if (!isUsingDefaultSample) {
+			const codes = boards.map((b) => b.stgyCode).filter((c) => c);
+			const url = new URL(window.location.href);
+			url.searchParams.delete("stgy");
+			url.searchParams.delete("s");
+			for (const code of codes.slice(0, MAX_BOARDS)) {
+				url.searchParams.append("stgy", code);
+			}
+			window.history.replaceState(null, "", url.toString());
+		}
+	}, [boards, isUsingDefaultSample]);
+
 	// ボードサイズのリサイズ機能
 	const [boardWidth, setBoardWidth] = useState<number | null>(null);
 	const boardContainerRef = useRef<HTMLDivElement>(null);
 	const isResizing = useRef(false);
+	const reorderPendingRef = useRef(false);
 
 	const handleResizeStart = useCallback((e: React.MouseEvent) => {
 		e.preventDefault();
@@ -515,6 +537,15 @@ function ViewerContent({
 		[activeBoard, actions],
 	);
 
+	// ボード順番入れ替えハンドラー
+	const handleReorderBoards = useCallback(
+		(fromIndex: number, toIndex: number) => {
+			reorderPendingRef.current = true;
+			actions.reorderBoards(fromIndex, toIndex);
+		},
+		[actions],
+	);
+
 	return (
 		<div className="min-h-screen bg-background text-foreground">
 			<AppHeader currentPage="viewer" title={t("viewer.pageTitle")} />
@@ -588,6 +619,7 @@ function ViewerContent({
 						activeId={activeBoard?.id ?? null}
 						onSelectTab={actions.setActiveBoard}
 						onCloseTab={actions.removeBoard}
+						onReorder={handleReorderBoards}
 					/>
 				)}
 
@@ -595,12 +627,12 @@ function ViewerContent({
 				{viewMode === "grid" && boardCount > 1 && (
 					<ViewerGrid
 						boards={boards}
-						activeId={activeBoard?.id ?? null}
 						onSelectBoard={(id) => {
 							actions.setActiveBoard(id);
 							actions.setViewMode("tab");
 						}}
 						onCloseBoard={actions.removeBoard}
+						onReorder={handleReorderBoards}
 					/>
 				)}
 

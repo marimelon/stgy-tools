@@ -1,4 +1,6 @@
-import { Check, Copy, X } from "lucide-react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Check, Copy, GripVertical, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BoardViewer } from "@/components/board";
@@ -8,7 +10,6 @@ import type { ViewerBoard } from "@/lib/viewer";
 interface ViewerGridCardProps {
 	board: ViewerBoard;
 	index: number;
-	isActive: boolean;
 	onClick: () => void;
 	onClose: () => void;
 }
@@ -16,12 +17,26 @@ interface ViewerGridCardProps {
 export function ViewerGridCard({
 	board,
 	index,
-	isActive,
 	onClick,
 	onClose,
 }: ViewerGridCardProps) {
 	const { t } = useTranslation();
 	const [copied, setCopied] = useState(false);
+
+	const {
+		attributes,
+		listeners,
+		setNodeRef,
+		setActivatorNodeRef,
+		transform,
+		transition,
+		isDragging,
+	} = useSortable({ id: board.id });
+
+	const style = {
+		transform: CSS.Transform.toString(transform),
+		transition,
+	};
 
 	const handleCopyCode = useCallback(
 		async (e: React.MouseEvent) => {
@@ -41,12 +56,12 @@ export function ViewerGridCard({
 	return (
 		// biome-ignore lint/a11y/useSemanticElements: 内部にBoardViewerを含むため、buttonではなくdivを使用
 		<div
+			ref={setNodeRef}
+			style={style}
 			className={cn(
-				"group relative border rounded-lg overflow-hidden cursor-pointer transition-all",
-				isActive
-					? "ring-2 ring-primary border-primary"
-					: "border-border hover:border-primary/50",
+				"group relative border rounded-lg overflow-hidden cursor-pointer transition-all border-border hover:border-primary/50",
 				board.error && "border-destructive/50",
+				isDragging && "opacity-50 shadow-lg z-10",
 			)}
 			onClick={onClick}
 			onKeyDown={(e) => {
@@ -54,9 +69,10 @@ export function ViewerGridCard({
 					onClick();
 				}
 			}}
+			data-testid="viewer-grid-card"
+			{...attributes}
 			role="button"
 			tabIndex={0}
-			data-testid="viewer-grid-card"
 		>
 			{/* サムネイル */}
 			<div className="aspect-[4/3] bg-muted pointer-events-none">
@@ -92,7 +108,18 @@ export function ViewerGridCard({
 				</div>
 			</div>
 
-			{/* ホバー時のアクションボタン */}
+			{/* ドラッグハンドル（左上） */}
+			<div
+				ref={setActivatorNodeRef}
+				className="absolute top-2 left-2 p-1 bg-background/80 hover:bg-muted rounded cursor-grab opacity-0 group-hover:opacity-100 transition-opacity"
+				title={t("viewer.multiBoard.dragToReorder")}
+				aria-label={t("viewer.multiBoard.dragToReorder")}
+				{...listeners}
+			>
+				<GripVertical className="size-4 text-muted-foreground" />
+			</div>
+
+			{/* ホバー時のアクションボタン（右上） */}
 			<div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
 				{/* コピーボタン */}
 				{board.stgyCode && (
