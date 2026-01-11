@@ -47,7 +47,14 @@ export { useAutoSave } from "./hooks/useAutoSave";
 export type { EditorActions } from "./hooks/useEditorActions";
 // Actions Hook
 export { useEditorActions } from "./hooks/useEditorActions";
-
+// Board Manager Hook
+export type {
+	DecodeError,
+	EditorBoardActions,
+	EditorBoardState,
+	UseEditorBoardManagerReturn,
+} from "./hooks/useEditorBoardManager";
+export { useEditorBoardManager } from "./hooks/useEditorBoardManager";
 // Derived Hooks
 export {
 	useCanAlign,
@@ -65,6 +72,20 @@ export {
 	useSelectedObjects,
 	useSelectionDerived,
 } from "./hooks/useEditorDerived";
+// Import Hook
+export type {
+	ImportSuccess,
+	UseEditorImportOptions,
+	UseEditorImportReturn,
+} from "./hooks/useEditorImport";
+export { useEditorImport } from "./hooks/useEditorImport";
+// Initialization Hook
+export type {
+	EditorSearchParams,
+	UseEditorInitializationOptions,
+	UseEditorInitializationReturn,
+} from "./hooks/useEditorInitialization";
+export { useEditorInitialization } from "./hooks/useEditorInitialization";
 // Store Hooks
 export {
 	selectors,

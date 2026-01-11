@@ -13,8 +13,6 @@ import {
 	AssetPanelActions,
 	BoardTabs,
 	DebugPanel,
-	DuplicateBoardModal,
-	type DuplicateBoardResult,
 	EditorBoard,
 	EditorToolbar,
 	ErrorToast,
@@ -32,24 +30,19 @@ import {
 } from "@/components/editor/BoardManager";
 import { ResizableLayout } from "@/components/panel";
 import { CompactAppHeader } from "@/components/ui/AppHeader";
-import { BoardsProvider, useBoards, useFolders } from "@/lib/boards";
-import {
-	convertGroupsToIdBased,
-	convertGroupsToIndexBased,
-	type StoredObjectGroup,
-} from "@/lib/boards/groupConversion";
+import { BoardsProvider, useBoards } from "@/lib/boards";
 import type { StoredBoard } from "@/lib/boards/schema";
 import {
-	createEmptyBoard,
-	DEFAULT_OVERLAY_SETTINGS,
 	EditorStoreProvider,
 	type GridSettings,
 	type ObjectGroup,
-	recalculateBoardSize,
 	TabStoreProvider,
 	useActiveTabId,
 	useAutoSave,
 	useEditorActions,
+	useEditorBoardManager,
+	useEditorImport,
+	useEditorInitialization,
 	useFocusedGroup,
 	useIsFocusMode,
 	useKeyboardShortcuts,
@@ -65,14 +58,7 @@ import {
 } from "@/lib/seo";
 import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
 import { SettingsStoreProvider } from "@/lib/settings";
-import {
-	assignBoardObjectIds,
-	type BoardData,
-	type BoardObject,
-	decodeStgy,
-	encodeStgy,
-	parseBoardData,
-} from "@/lib/stgy";
+import type { BoardObject } from "@/lib/stgy";
 
 /** キャンバスの基本サイズ */
 const CANVAS_WIDTH = 512;
@@ -128,31 +114,6 @@ export const Route = createFileRoute("/editor")({
 	}),
 });
 
-/** Default grid settings */
-const DEFAULT_GRID_SETTINGS: GridSettings = {
-	enabled: false,
-	size: 16,
-	showGrid: false,
-	overlayType: "none",
-	showBackground: true,
-	canvasColor: "slate-800",
-	overlaySettings: DEFAULT_OVERLAY_SETTINGS,
-};
-
-/**
- * Decode board from stgyCode
- */
-function decodeBoardFromStgy(stgyCode: string): BoardData | null {
-	try {
-		const binary = decodeStgy(stgyCode);
-		const parsed = parseBoardData(binary);
-		return assignBoardObjectIds(parsed);
-	} catch (error) {
-		console.warn("Failed to decode board:", error);
-		return null;
-	}
-}
-
 /** Import success toast component */
 interface ImportSuccessToastProps {
 	count: number;
@@ -207,117 +168,52 @@ interface EditorPageContentProps {
 function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const {
-		stgy: codeFromUrl,
-		import: importMode,
-		key: importKey,
-	} = Route.useSearch();
-
-	// Board manager state
-	const [currentBoardId, setCurrentBoardId] = useState<string | null>(null);
-	const [isInitialized, setIsInitialized] = useState(false);
-
-	// Decode error state
-	const [decodeError, setDecodeError] = useState<{
-		boardId: string;
-		boardName: string;
-	} | null>(null);
-
-	// Initial board state
-	const [initialBoard, setInitialBoard] = useState<BoardData>(() =>
-		createEmptyBoard(),
-	);
-	const [initialGroups, setInitialGroups] = useState<ObjectGroup[]>([]);
-	const [initialGridSettings, setInitialGridSettings] = useState<GridSettings>(
-		DEFAULT_GRID_SETTINGS,
-	);
-
-	// Key to force re-render EditorProvider when switching boards
-	const [editorKey, setEditorKey] = useState(0);
-
-	// Pending board IDs from multi-import (to be opened in tabs)
-	const [pendingImportBoardIds, setPendingImportBoardIds] = useState<
-		string[] | null
-	>(null);
-
-	// Import success toast state
-	const [importSuccess, setImportSuccess] = useState<{
-		count: number;
-		folderName: string;
-	} | null>(null);
-
-	// Ref to prevent multiple initialization attempts
-	const initializingRef = useRef(false);
+	const searchParams = Route.useSearch();
 
 	// Board operations from useBoards
+	const { boards, isLoading, error: storageError, deleteBoard } = useBoards();
+
+	// Board manager hook
+	const boardManager = useEditorBoardManager();
 	const {
-		boards,
-		isLoading,
-		error: storageError,
-		createBoard,
-		updateBoard,
-		deleteBoard,
-		getBoard,
-		findBoardByContent,
-	} = useBoards();
+		currentBoardId,
+		initialBoard,
+		initialGroups,
+		initialGridSettings,
+		editorKey,
+		decodeError,
+		openBoard,
+		createNewBoard,
+		saveBoard,
+		duplicateBoard,
+		createBoardFromImport,
+		clearDecodeError,
+		setBoard,
+	} = boardManager;
 
-	// Folder operations
-	const { createFolder, deleteFolder } = useFolders();
-
-	// Handle opening a board
-	const handleOpenBoard = useCallback(
-		(boardId: string): boolean => {
-			const board = getBoard(boardId);
-			if (!board) return false;
-
-			const decodedBoard = decodeBoardFromStgy(board.stgyCode);
-			if (!decodedBoard) {
-				// Show decode error dialog
-				setDecodeError({ boardId: board.id, boardName: board.name });
-				return false;
-			}
-
-			setDecodeError(null);
-			setCurrentBoardId(boardId);
-			// Use stored board name (may have been renamed) instead of decoded name
-			setInitialBoard({ ...decodedBoard, name: board.name });
-			// Convert stored groups (index-based) to runtime groups (ID-based)
-			const runtimeGroups = convertGroupsToIdBased(
-				board.groups as StoredObjectGroup[],
-				decodedBoard.objects,
-			);
-			setInitialGroups(runtimeGroups);
-			setInitialGridSettings(board.gridSettings);
-
-			setEditorKey((prev) => prev + 1);
-			return true;
+	// Import hook
+	const importManager = useEditorImport({
+		onBoardCreated: (boardId, board) => {
+			setBoard(boardId, board);
 		},
-		[getBoard],
-	);
+		onOpenBoard: openBoard,
+		onCreateNewBoard: createNewBoard,
+		navigate,
+		boards,
+	});
+	const { pendingImportBoardIds, importSuccess, clearImportSuccess } =
+		importManager;
 
-	// Handle creating a new board
-	const handleCreateNewBoard = useCallback(async () => {
-		const defaultName = t("boardManager.defaultBoardName");
-		const newBoard = createEmptyBoard(defaultName);
-
-		const { width, height } = recalculateBoardSize(newBoard);
-		const boardToSave = { ...newBoard, width, height };
-		const stgyCode = encodeStgy(boardToSave);
-
-		const newBoardId = await createBoard(
-			newBoard.name,
-			stgyCode,
-			[],
-			DEFAULT_GRID_SETTINGS,
-		);
-
-		setCurrentBoardId(newBoardId);
-		setInitialBoard(newBoard);
-		setInitialGroups([]);
-		setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-
-		setEditorKey((prev) => prev + 1);
-	}, [createBoard, t]);
+	// Initialization hook
+	const { isInitialized } = useEditorInitialization({
+		boardManager,
+		importManager,
+		searchParams,
+		navigate,
+		isLoadingBoards: isLoading,
+		storageError,
+		boards,
+	});
 
 	// Handle decode error using nice-modal
 	useEffect(() => {
@@ -334,19 +230,19 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 					(b) => b.id !== decodeError.boardId,
 				);
 				if (remainingBoards.length > 0) {
-					handleOpenBoard(remainingBoards[0].id);
+					openBoard(remainingBoards[0].id);
 				} else {
-					await handleCreateNewBoard();
+					await createNewBoard();
 				}
 			} else if (result === "open-another") {
 				NiceModal.show(BoardManagerModal, {
 					currentBoardId,
-					onOpenBoard: handleOpenBoard,
-					onCreateNewBoard: handleCreateNewBoard,
+					onOpenBoard: openBoard,
+					onCreateNewBoard: createNewBoard,
 				});
 			}
 
-			setDecodeError(null);
+			clearDecodeError();
 		};
 
 		showDecodeErrorModal();
@@ -354,255 +250,11 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 		decodeError,
 		deleteBoard,
 		boards,
-		handleOpenBoard,
-		handleCreateNewBoard,
+		openBoard,
+		createNewBoard,
 		currentBoardId,
+		clearDecodeError,
 	]);
-
-	// Handle importing a board from URL query parameter
-	const handleImportFromUrl = useCallback(
-		async (code: string): Promise<boolean> => {
-			const trimmedCode = code.trim();
-
-			// Check for existing board with same content (ignores encryption key)
-			const existingBoard = await findBoardByContent(trimmedCode);
-			if (existingBoard) {
-				// Show duplicate detection modal using nice-modal
-				const result = (await NiceModal.show(DuplicateBoardModal, {
-					existingBoard,
-				})) as DuplicateBoardResult;
-
-				// Clear URL parameter
-				navigate({ to: "/editor", search: {}, replace: true });
-
-				if (result === "open-existing") {
-					handleOpenBoard(existingBoard.id);
-					return true;
-				}
-				if (result === "create-new") {
-					const decodedBoard = decodeBoardFromStgy(trimmedCode);
-					if (!decodedBoard) {
-						console.warn("Failed to decode board from pending import");
-						return false;
-					}
-
-					const boardName =
-						decodedBoard.name || t("boardManager.defaultBoardName");
-					const newBoardId = await createBoard(
-						boardName,
-						trimmedCode,
-						[],
-						DEFAULT_GRID_SETTINGS,
-					);
-
-					setCurrentBoardId(newBoardId);
-					setInitialBoard({ ...decodedBoard, name: boardName });
-					setInitialGroups([]);
-					setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-					setEditorKey((prev) => prev + 1);
-					return true;
-				}
-
-				// Cancelled - open most recent board or create new one
-				if (boards.length > 0) {
-					handleOpenBoard(boards[0].id);
-				} else {
-					await handleCreateNewBoard();
-				}
-				return false;
-			}
-
-			// Decode the stgy code
-			const decodedBoard = decodeBoardFromStgy(trimmedCode);
-			if (!decodedBoard) {
-				console.warn("Failed to decode board from URL parameter");
-				return false;
-			}
-
-			// Create a new board with the imported data
-			const boardName = decodedBoard.name || t("boardManager.defaultBoardName");
-			const newBoardId = await createBoard(
-				boardName,
-				trimmedCode,
-				[],
-				DEFAULT_GRID_SETTINGS,
-			);
-
-			// Initialize editor with the imported board
-			setCurrentBoardId(newBoardId);
-			setInitialBoard({ ...decodedBoard, name: boardName });
-			setInitialGroups([]);
-			setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-
-			setEditorKey((prev) => prev + 1);
-
-			// Clear the URL parameter to prevent re-import on refresh
-			navigate({ to: "/editor", search: {}, replace: true });
-
-			return true;
-		},
-		[
-			createBoard,
-			t,
-			navigate,
-			findBoardByContent,
-			boards,
-			handleOpenBoard,
-			handleCreateNewBoard,
-		],
-	);
-
-	// Handle multi-import from viewer
-	const handleMultiImport = useCallback(
-		async (
-			sessionKey: string,
-		): Promise<{ boardIds: string[]; folderName: string }> => {
-			const storageKey = `board-import-${sessionKey}`;
-			const data = sessionStorage.getItem(storageKey);
-			if (!data) return { boardIds: [], folderName: "" };
-
-			try {
-				const parsed = JSON.parse(data) as {
-					stgyCodes: string[];
-					folderName: string;
-				};
-				const { stgyCodes, folderName } = parsed;
-
-				if (!stgyCodes || stgyCodes.length === 0)
-					return { boardIds: [], folderName: "" };
-
-				// Create folder first
-				const folderId = await createFolder(folderName);
-
-				// Create boards
-				const createdBoardIds: string[] = [];
-				for (const stgyCode of stgyCodes) {
-					const decodedBoard = decodeBoardFromStgy(stgyCode);
-					if (!decodedBoard) continue;
-
-					const boardName =
-						decodedBoard.name || t("boardManager.defaultBoardName");
-					const newBoardId = await createBoard(
-						boardName,
-						stgyCode,
-						[],
-						DEFAULT_GRID_SETTINGS,
-						folderId,
-					);
-					createdBoardIds.push(newBoardId);
-				}
-
-				// Clear session storage
-				sessionStorage.removeItem(storageKey);
-
-				// If no boards were created, delete the empty folder
-				if (createdBoardIds.length === 0) {
-					deleteFolder(folderId);
-					return { boardIds: [], folderName: "" };
-				}
-
-				return { boardIds: createdBoardIds, folderName };
-			} catch (error) {
-				console.warn("Failed to parse multi-import data:", error);
-				sessionStorage.removeItem(storageKey);
-				return { boardIds: [], folderName: "" };
-			}
-		},
-		[createBoard, createFolder, deleteFolder, t],
-	);
-
-	// Auto-initialize: create first board or open last edited board
-	useEffect(() => {
-		// Wait for loading to complete, skip if error
-		if (isLoading || isInitialized || storageError) return;
-
-		// Prevent multiple initialization attempts (race condition with boards update)
-		if (initializingRef.current) return;
-		initializingRef.current = true;
-
-		const initializeEditor = async () => {
-			// Check for multi-import from viewer
-			if (importMode === "multi" && importKey) {
-				// Clear URL parameter immediately
-				navigate({ to: "/editor", search: {}, replace: true });
-
-				const { boardIds, folderName } = await handleMultiImport(importKey);
-				if (boardIds.length > 0) {
-					// Set pending board IDs to be opened in tabs by EditorWithTabs
-					setPendingImportBoardIds(boardIds);
-					// Show success toast
-					setImportSuccess({ count: boardIds.length, folderName });
-					// Open the first imported board
-					handleOpenBoard(boardIds[0]);
-					setIsInitialized(true);
-					return;
-				}
-				// No boards created, continue to normal flow
-			}
-
-			// Check for stgy code in URL query parameter (from Image Generator page)
-			if (codeFromUrl) {
-				// Clear URL parameter immediately to prevent re-processing on state updates
-				navigate({ to: "/editor", search: {}, replace: true });
-
-				const result = await handleImportFromUrl(codeFromUrl);
-				if (result) {
-					// Import successful
-					setIsInitialized(true);
-					return;
-				}
-				// result === false: decode failed or cancelled, continue to normal flow
-			}
-
-			if (boards.length === 0) {
-				// First time: auto-create a new board
-				await handleCreateNewBoard();
-				setIsInitialized(true);
-			} else if (!currentBoardId) {
-				// Revisit: open the most recently updated board
-				const mostRecentBoard = boards[0]; // Already sorted by updatedAt desc
-				handleOpenBoard(mostRecentBoard.id);
-				setIsInitialized(true);
-			}
-		};
-
-		initializeEditor();
-	}, [
-		isLoading,
-		isInitialized,
-		boards,
-		currentBoardId,
-		storageError,
-		codeFromUrl,
-		importMode,
-		importKey,
-		handleCreateNewBoard,
-		handleOpenBoard,
-		handleImportFromUrl,
-		handleMultiImport,
-		navigate,
-	]);
-
-	// Clear pendingImportBoardIds after TabStoreProvider has consumed it
-	useEffect(() => {
-		if (pendingImportBoardIds && isInitialized) {
-			// Clear after a short delay to ensure TabStoreProvider has mounted with the initial state
-			const timer = setTimeout(() => {
-				setPendingImportBoardIds(null);
-			}, 100);
-			return () => clearTimeout(timer);
-		}
-	}, [pendingImportBoardIds, isInitialized]);
-
-	// Auto-dismiss import success toast
-	useEffect(() => {
-		if (importSuccess) {
-			const timer = setTimeout(() => {
-				setImportSuccess(null);
-			}, 5000);
-			return () => clearTimeout(timer);
-		}
-	}, [importSuccess]);
 
 	// Show error state
 	if (storageError) {
@@ -647,62 +299,11 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 								boards={boards}
 								currentBoardId={currentBoardId}
 								shortLinksEnabled={featureFlags.shortLinksEnabled}
-								onSaveBoard={(
-									name,
-									stgyCode,
-									groups,
-									gridSettings,
-									objects,
-								) => {
-									if (currentBoardId) {
-										const storedGroups = convertGroupsToIndexBased(
-											groups,
-											objects,
-										);
-										void updateBoard(currentBoardId, {
-											name,
-											stgyCode,
-											groups: storedGroups,
-											gridSettings,
-										});
-									}
-								}}
-								onCreateBoardFromImport={async (name, stgyCode) => {
-									// stgyCodeをデコードしてボードデータを取得
-									const decodedBoard = decodeBoardFromStgy(stgyCode);
-									if (!decodedBoard) {
-										console.warn("Failed to decode imported board");
-										return;
-									}
-
-									// 新しいボードをIndexedDBに保存
-									const newBoardId = await createBoard(
-										name,
-										stgyCode,
-										[],
-										DEFAULT_GRID_SETTINGS,
-									);
-
-									// 直接エディターを初期化（IndexedDBの反映を待たずに）
-									setCurrentBoardId(newBoardId);
-									setInitialBoard({ ...decodedBoard, name });
-									setInitialGroups([]);
-									setInitialGridSettings(DEFAULT_GRID_SETTINGS);
-
-									setEditorKey((prev) => prev + 1);
-								}}
-								onSelectBoard={handleOpenBoard}
-								onCreateNewBoard={handleCreateNewBoard}
-								onDuplicateBoard={(id) => {
-									const board = getBoard(id);
-									if (!board) return;
-									void createBoard(
-										`${board.name} (Copy)`,
-										board.stgyCode,
-										board.groups,
-										board.gridSettings,
-									);
-								}}
+								onSaveBoard={saveBoard}
+								onCreateBoardFromImport={createBoardFromImport}
+								onSelectBoard={openBoard}
+								onCreateNewBoard={createNewBoard}
+								onDuplicateBoard={duplicateBoard}
 							/>
 						</EditorStoreProvider>
 					</PanelStoreProvider>
@@ -713,7 +314,7 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 				<ImportSuccessToast
 					count={importSuccess.count}
 					folderName={importSuccess.folderName}
-					onDismiss={() => setImportSuccess(null)}
+					onDismiss={clearImportSuccess}
 				/>
 			)}
 		</>
