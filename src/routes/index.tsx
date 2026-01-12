@@ -373,7 +373,8 @@ function App() {
 	// Don't show "not found" if we have cached data
 	const effectiveGroupNotFound = groupNotFound && !cachedGroup;
 
-	const initialViewMode = mode === "tab" ? "tab" : "grid";
+	const initialViewMode =
+		mode === "tab" ? "tab" : initialBoards.length === 1 ? "tab" : "grid";
 
 	return (
 		<ViewerStoreProvider
