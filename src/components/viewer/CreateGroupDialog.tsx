@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cacheCreatedGroup } from "@/lib/server/shortLinks/createdGroupCache";
 import { createGroupFn } from "@/lib/server/shortLinks/serverFn";
+import { saveEditKey } from "@/lib/viewer/editKeyStorage";
 
 interface CreateGroupDialogProps {
 	open: boolean;
@@ -49,10 +50,12 @@ export function CreateGroupDialog({
 	const nameInputId = useId();
 	const descriptionInputId = useId();
 	const customKeyCheckboxId = useId();
+	const saveKeyCheckboxId = useId();
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const [useCustomKey, setUseCustomKey] = useState(false);
 	const [customEditKey, setCustomEditKey] = useState("");
+	const [shouldSaveEditKey, setShouldSaveEditKey] = useState(true);
 	const [isCreating, setIsCreating] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [createdInfo, setCreatedInfo] = useState<CreatedGroupInfo | null>(null);
@@ -98,6 +101,14 @@ export function CreateGroupDialog({
 					description: description || undefined,
 					stgyCodes,
 				});
+
+				// Save edit key to localStorage if requested
+				if (shouldSaveEditKey) {
+					const keyToSave = useCustomKey ? customEditKey : result.data.editKey;
+					if (keyToSave) {
+						saveEditKey(result.data.id, keyToSave);
+					}
+				}
 
 				setCreatedInfo({
 					editKey: result.data.editKey,
@@ -148,6 +159,7 @@ export function CreateGroupDialog({
 		setDescription("");
 		setUseCustomKey(false);
 		setCustomEditKey("");
+		setShouldSaveEditKey(true);
 		setError(null);
 		setCreatedInfo(null);
 		setCopiedUrl(false);
@@ -333,6 +345,24 @@ export function CreateGroupDialog({
 										</p>
 									</div>
 								)}
+							</div>
+
+							<div className="flex items-start gap-2">
+								<Checkbox
+									id={saveKeyCheckboxId}
+									checked={shouldSaveEditKey}
+									onCheckedChange={(checked) =>
+										setShouldSaveEditKey(checked === true)
+									}
+								/>
+								<div className="grid gap-1 leading-none">
+									<Label htmlFor={saveKeyCheckboxId} className="cursor-pointer">
+										{t("viewer.group.saveEditKey")}
+									</Label>
+									<p className="text-xs text-muted-foreground">
+										{t("viewer.group.saveEditKeyDescriptionCreate")}
+									</p>
+								</div>
 							</div>
 
 							{error && <p className="text-sm text-destructive">{error}</p>}

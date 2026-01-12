@@ -9,6 +9,12 @@ vi.mock("@/lib/server/shortLinks/serverFn", () => ({
 	deleteGroupFn: vi.fn(),
 }));
 
+// Mock editKeyStorage
+vi.mock("../editKeyStorage", () => ({
+	getStoredEditKey: vi.fn().mockReturnValue(null),
+	saveEditKey: vi.fn(),
+}));
+
 // Mock i18n
 vi.mock("react-i18next", () => ({
 	useTranslation: () => ({
@@ -108,7 +114,7 @@ describe("useGroupEdit", () => {
 
 			// First, set the edit key by confirming
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Exit edit mode
@@ -135,7 +141,10 @@ describe("useGroupEdit", () => {
 
 			let confirmResult: boolean;
 			await act(async () => {
-				confirmResult = await result.current.handleEditKeyConfirm("validKey");
+				confirmResult = await result.current.handleEditKeyConfirm(
+					"validKey",
+					false,
+				);
 			});
 
 			expect(confirmResult!).toBe(true);
@@ -151,7 +160,10 @@ describe("useGroupEdit", () => {
 
 			let confirmResult: boolean;
 			await act(async () => {
-				confirmResult = await result.current.handleEditKeyConfirm("invalidKey");
+				confirmResult = await result.current.handleEditKeyConfirm(
+					"invalidKey",
+					false,
+				);
 			});
 
 			expect(confirmResult!).toBe(false);
@@ -164,7 +176,10 @@ describe("useGroupEdit", () => {
 
 			let confirmResult: boolean;
 			await act(async () => {
-				confirmResult = await result.current.handleEditKeyConfirm("anyKey");
+				confirmResult = await result.current.handleEditKeyConfirm(
+					"anyKey",
+					false,
+				);
 			});
 
 			expect(confirmResult!).toBe(false);
@@ -178,7 +193,10 @@ describe("useGroupEdit", () => {
 
 			let confirmResult: boolean;
 			await act(async () => {
-				confirmResult = await result.current.handleEditKeyConfirm("anyKey");
+				confirmResult = await result.current.handleEditKeyConfirm(
+					"anyKey",
+					false,
+				);
 			});
 
 			expect(confirmResult!).toBe(false);
@@ -193,7 +211,7 @@ describe("useGroupEdit", () => {
 
 			// Enter edit mode
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Modify values
@@ -227,7 +245,7 @@ describe("useGroupEdit", () => {
 
 			// Enter edit mode
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Modify values
@@ -263,7 +281,7 @@ describe("useGroupEdit", () => {
 
 			// Enter edit mode
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Save
@@ -284,7 +302,7 @@ describe("useGroupEdit", () => {
 
 			// Enter edit mode
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Save
@@ -326,7 +344,7 @@ describe("useGroupEdit", () => {
 
 			// Enter edit mode
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Start first save
@@ -359,7 +377,7 @@ describe("useGroupEdit", () => {
 
 			// Enter edit mode
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Start save
@@ -389,7 +407,7 @@ describe("useGroupEdit", () => {
 
 			// Enter edit mode to set edit key
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Delete
@@ -413,7 +431,7 @@ describe("useGroupEdit", () => {
 
 			// Enter edit mode
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Delete
@@ -432,7 +450,7 @@ describe("useGroupEdit", () => {
 
 			// Enter edit mode
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Delete
@@ -471,7 +489,7 @@ describe("useGroupEdit", () => {
 
 			// Enter edit mode
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			// Start delete
@@ -610,7 +628,7 @@ describe("useGroupEdit", () => {
 
 			// Save to create local overrides
 			await act(async () => {
-				await result.current.handleEditKeyConfirm("validKey");
+				await result.current.handleEditKeyConfirm("validKey", false);
 			});
 
 			act(() => {

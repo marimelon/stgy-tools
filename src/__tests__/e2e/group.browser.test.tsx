@@ -38,7 +38,7 @@ describe("Group E2E", () => {
 		function EditKeyDialogWrapper({
 			onConfirm,
 		}: {
-			onConfirm: (editKey: string) => Promise<boolean>;
+			onConfirm: (editKey: string, shouldSave: boolean) => Promise<boolean>;
 		}) {
 			const [open, setOpen] = useState(false);
 

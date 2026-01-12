@@ -5,6 +5,7 @@ import {
 	updateGroupFn,
 	verifyGroupEditKeyFn,
 } from "@/lib/server/shortLinks/serverFn";
+import { getStoredEditKey, saveEditKey } from "./editKeyStorage";
 
 export interface GroupInfo {
 	name: string;
@@ -34,7 +35,9 @@ export function useGroupEdit({
 
 	// Edit mode state
 	const [isEditMode, setIsEditMode] = useState(false);
-	const [editKey, setEditKey] = useState<string | null>(null);
+	const [editKey, setEditKey] = useState<string | null>(() =>
+		groupId ? getStoredEditKey(groupId) : null,
+	);
 	const [editedName, setEditedName] = useState(groupInfo?.name ?? "");
 	const [editedDescription, setEditedDescription] = useState(
 		groupInfo?.description ?? "",
@@ -86,7 +89,7 @@ export function useGroupEdit({
 	}, [editKey]);
 
 	const handleEditKeyConfirm = useCallback(
-		async (key: string): Promise<boolean> => {
+		async (key: string, shouldSave: boolean): Promise<boolean> => {
 			if (!groupId) return false;
 
 			try {
@@ -97,6 +100,9 @@ export function useGroupEdit({
 				if (isValid) {
 					setEditKey(key);
 					setIsEditMode(true);
+					if (shouldSave) {
+						saveEditKey(groupId, key);
+					}
 					return true;
 				}
 				return false;

@@ -2,6 +2,7 @@ import { KeyRound, Loader2 } from "lucide-react";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -16,7 +17,7 @@ import { Label } from "@/components/ui/label";
 interface EditKeyDialogProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	onConfirm: (editKey: string) => Promise<boolean>;
+	onConfirm: (editKey: string, shouldSave: boolean) => Promise<boolean>;
 }
 
 export function EditKeyDialog({
@@ -26,7 +27,9 @@ export function EditKeyDialog({
 }: EditKeyDialogProps) {
 	const { t } = useTranslation();
 	const inputId = useId();
+	const checkboxId = useId();
 	const [editKey, setEditKey] = useState("");
+	const [shouldSave, setShouldSave] = useState(true);
 	const [isVerifying, setIsVerifying] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +40,7 @@ export function EditKeyDialog({
 		setError(null);
 
 		try {
-			const success = await onConfirm(editKey.trim());
+			const success = await onConfirm(editKey.trim(), shouldSave);
 			if (success) {
 				handleClose();
 			} else {
@@ -52,6 +55,7 @@ export function EditKeyDialog({
 
 	const handleClose = () => {
 		setEditKey("");
+		setShouldSave(true);
 		setError(null);
 		onOpenChange(false);
 	};
@@ -88,6 +92,22 @@ export function EditKeyDialog({
 							className="font-mono"
 							autoFocus
 						/>
+					</div>
+
+					<div className="flex items-start gap-2">
+						<Checkbox
+							id={checkboxId}
+							checked={shouldSave}
+							onCheckedChange={(checked) => setShouldSave(checked === true)}
+						/>
+						<div className="grid gap-1 leading-none">
+							<Label htmlFor={checkboxId} className="cursor-pointer">
+								{t("viewer.group.saveEditKey")}
+							</Label>
+							<p className="text-xs text-muted-foreground">
+								{t("viewer.group.saveEditKeyDescription")}
+							</p>
+						</div>
 					</div>
 
 					{error && <p className="text-sm text-destructive">{error}</p>}
