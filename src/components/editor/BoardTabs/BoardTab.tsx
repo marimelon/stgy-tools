@@ -14,6 +14,7 @@ const MAX_TAB_WIDTH = 120;
 
 interface BoardTabProps {
 	tab: TabInfo;
+	isActive: boolean;
 	isOnlyTab: boolean;
 	onSelect: () => void;
 	onClose: () => void;
@@ -23,6 +24,7 @@ interface BoardTabProps {
 
 export function BoardTab({
 	tab,
+	isActive,
 	isOnlyTab,
 	onSelect,
 	onClose,
@@ -79,7 +81,7 @@ export function BoardTab({
 					"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
 					"transition-[background-color,border-color,color,opacity]",
 					"touch-none", // Prevent touch scrolling while dragging
-					tab.isActive
+					isActive
 						? "bg-background border-border text-foreground -mb-px z-10"
 						: "bg-muted/50 border-transparent text-muted-foreground hover:bg-muted hover:text-foreground",
 					isDragging && "opacity-50 shadow-lg",

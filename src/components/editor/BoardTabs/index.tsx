@@ -80,7 +80,7 @@ export function BoardTabs({
 		}),
 	);
 
-	// Build tab info from open tabs
+	// Build tab info from open tabs (without isActive to avoid re-renders on tab switch)
 	const tabs: TabInfo[] = useMemo(() => {
 		const boardMap = new Map(boards.map((b) => [b.id, b]));
 		return openTabs
@@ -90,12 +90,11 @@ export function BoardTabs({
 				return {
 					id: board.id,
 					name: board.name,
-					isActive: id === activeTabId,
 					hasUnsavedChanges: unsavedBoardIds.has(id),
 				};
 			})
 			.filter((tab): tab is TabInfo => tab !== null);
-	}, [openTabs, boards, activeTabId, unsavedBoardIds]);
+	}, [openTabs, boards, unsavedBoardIds]);
 
 	// Tab IDs for SortableContext
 	const tabIds = useMemo(() => tabs.map((t) => t.id), [tabs]);
@@ -123,22 +122,6 @@ export function BoardTabs({
 
 		return () => observer.disconnect();
 	}, [updateScrollState, openTabs]);
-
-	// Scroll to active tab
-	useEffect(() => {
-		if (!activeTabId || !tabsRef.current) return;
-
-		const activeElement = tabsRef.current.querySelector(
-			`[data-tab-id="${activeTabId}"]`,
-		);
-		if (activeElement) {
-			activeElement.scrollIntoView({
-				behavior: "smooth",
-				block: "nearest",
-				inline: "nearest",
-			});
-		}
-	}, [activeTabId]);
 
 	const handleScroll = useCallback(
 		(direction: "left" | "right") => {
@@ -284,6 +267,7 @@ export function BoardTabs({
 							<div key={tab.id} data-tab-id={tab.id}>
 								<BoardTab
 									tab={tab}
+									isActive={tab.id === activeTabId}
 									isOnlyTab={isOnlyTab}
 									onSelect={() => handleTabSelect(tab.id)}
 									onClose={() => handleTabClose(tab.id)}

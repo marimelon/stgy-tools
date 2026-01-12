@@ -3,7 +3,7 @@
  */
 
 import { useLiveQuery } from "@tanstack/react-db";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GridSettings, ObjectGroup } from "@/lib/editor/types";
 import {
 	assignBoardObjectIdsDeterministic,
@@ -106,25 +106,29 @@ export function useBoards(options: UseBoardsOptions = {}) {
 	// Combined loading state
 	const isLoading = isInitializing || isQueryLoading;
 
-	// Client-side filtering and sorting
-	const boards = (data ?? [])
-		.filter((board) => {
-			if (!searchQuery) return true;
-			return board.name.toLowerCase().includes(searchQuery.toLowerCase());
-		})
-		.sort((a, b) => {
-			let comparison = 0;
-			if (sortBy === "name") {
-				comparison = a.name.localeCompare(b.name);
-			} else if (sortBy === "createdAt") {
-				comparison =
-					new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-			} else {
-				comparison =
-					new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-			}
-			return sortDirection === "desc" ? -comparison : comparison;
-		});
+	// Client-side filtering and sorting (memoized to prevent unnecessary re-renders)
+	const boards = useMemo(
+		() =>
+			(data ?? [])
+				.filter((board) => {
+					if (!searchQuery) return true;
+					return board.name.toLowerCase().includes(searchQuery.toLowerCase());
+				})
+				.sort((a, b) => {
+					let comparison = 0;
+					if (sortBy === "name") {
+						comparison = a.name.localeCompare(b.name);
+					} else if (sortBy === "createdAt") {
+						comparison =
+							new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+					} else {
+						comparison =
+							new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+					}
+					return sortDirection === "desc" ? -comparison : comparison;
+				}),
+		[data, searchQuery, sortBy, sortDirection],
+	);
 
 	const [deletedBoard, setDeletedBoard] = useState<StoredBoard | null>(null);
 	const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

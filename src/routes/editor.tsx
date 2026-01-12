@@ -58,7 +58,7 @@ import {
 } from "@/lib/seo";
 import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
 import { SettingsStoreProvider } from "@/lib/settings";
-import type { BoardObject } from "@/lib/stgy";
+import type { BoardData, BoardObject } from "@/lib/stgy";
 
 /** Base canvas size */
 const CANVAS_WIDTH = 512;
@@ -288,24 +288,20 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 			<SettingsStoreProvider>
 				<TabStoreProvider initialBoardIds={pendingImportBoardIds}>
 					<PanelStoreProvider>
-						<EditorStoreProvider
-							key={editorKey}
+						<EditorWithTabs
+							boards={boards}
+							currentBoardId={currentBoardId}
+							shortLinksEnabled={featureFlags.shortLinksEnabled}
+							onSaveBoard={saveBoard}
+							onCreateBoardFromImport={createBoardFromImport}
+							onSelectBoard={openBoard}
+							onCreateNewBoard={createNewBoard}
+							onDuplicateBoard={duplicateBoard}
+							editorKey={editorKey}
 							initialBoard={initialBoard}
 							initialGroups={initialGroups}
 							initialGridSettings={initialGridSettings}
-							boardId={currentBoardId}
-						>
-							<EditorWithTabs
-								boards={boards}
-								currentBoardId={currentBoardId}
-								shortLinksEnabled={featureFlags.shortLinksEnabled}
-								onSaveBoard={saveBoard}
-								onCreateBoardFromImport={createBoardFromImport}
-								onSelectBoard={openBoard}
-								onCreateNewBoard={createNewBoard}
-								onDuplicateBoard={duplicateBoard}
-							/>
-						</EditorStoreProvider>
+						/>
 					</PanelStoreProvider>
 				</TabStoreProvider>
 			</SettingsStoreProvider>
@@ -337,8 +333,6 @@ interface EditorContentProps {
 		name: string,
 		stgyCode: string,
 	) => void | Promise<void>;
-	/** Optional tab bar to render at the bottom of the canvas area */
-	children?: React.ReactNode;
 }
 
 /**
@@ -350,7 +344,6 @@ function EditorContent({
 	onOpenBoardManager,
 	onSaveBoard,
 	onCreateBoardFromImport,
-	children,
 }: EditorContentProps) {
 	useKeyboardShortcuts();
 
@@ -410,7 +403,7 @@ function EditorContent({
 	);
 
 	return (
-		<div className="h-screen flex flex-col bg-background">
+		<div className="flex-1 flex flex-col bg-background min-h-0">
 			<CompactAppHeader
 				currentPage="editor"
 				title="STGY Tools Editor"
@@ -456,7 +449,6 @@ function EditorContent({
 							)}
 							<EditorBoard scale={scale} />
 						</div>
-						{children}
 					</div>
 				</ResizableLayout>
 			</div>
@@ -468,15 +460,20 @@ function EditorContent({
 
 /** EditorWithTabs props */
 interface EditorWithTabsProps
-	extends Omit<EditorContentProps, "onOpenBoardManager"> {
+	extends Omit<EditorContentProps, "onOpenBoardManager" | "children"> {
 	boards: StoredBoard[];
 	onSelectBoard: (boardId: string) => boolean;
 	onDuplicateBoard: (boardId: string) => void;
 	onCreateNewBoard: () => void;
+	editorKey: number;
+	initialBoard: BoardData;
+	initialGroups: ObjectGroup[];
+	initialGridSettings: GridSettings;
 }
 
 /**
  * Editor wrapper with tab bar
+ * BoardTabs is rendered outside EditorStoreProvider to prevent re-mounting on board switch
  */
 function EditorWithTabs({
 	boards,
@@ -484,6 +481,10 @@ function EditorWithTabs({
 	onDuplicateBoard,
 	onCreateNewBoard,
 	currentBoardId,
+	editorKey,
+	initialBoard,
+	initialGroups,
+	initialGridSettings,
 	...contentProps
 }: EditorWithTabsProps) {
 	const openTabs = useOpenTabs();
@@ -569,11 +570,22 @@ function EditorWithTabs({
 	const unsavedBoardIds = useMemo(() => new Set<string>(), []);
 
 	return (
-		<EditorContent
-			{...contentProps}
-			currentBoardId={currentBoardId}
-			onOpenBoardManager={handleOpenBoardManager}
-		>
+		<div className="h-screen flex flex-col">
+			{/* EditorStoreProvider with key - re-mounts on board switch */}
+			<EditorStoreProvider
+				key={editorKey}
+				initialBoard={initialBoard}
+				initialGroups={initialGroups}
+				initialGridSettings={initialGridSettings}
+				boardId={currentBoardId}
+			>
+				<EditorContent
+					{...contentProps}
+					currentBoardId={currentBoardId}
+					onOpenBoardManager={handleOpenBoardManager}
+				/>
+			</EditorStoreProvider>
+			{/* BoardTabs outside EditorStoreProvider - won't re-mount on board switch */}
 			<BoardTabs
 				boards={boards}
 				unsavedBoardIds={unsavedBoardIds}
@@ -581,6 +593,6 @@ function EditorWithTabs({
 				onSelectBoard={handleOpenBoard}
 				onDuplicateBoard={onDuplicateBoard}
 			/>
-		</EditorContent>
+		</div>
 	);
 }
