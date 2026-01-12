@@ -128,7 +128,9 @@
 			"parseError": "{{count}}件のコードが解析できませんでした",
 			"share": "共有",
 			"noData": "データなし",
-			"dragToReorder": "ドラッグして順番を変更"
+			"dragToReorder": "ドラッグして順番を変更",
+			"prevTab": "前のタブ",
+			"nextTab": "次のタブ"
 		},
 		"group": {
 			"createTitle": "ボードグループを作成",

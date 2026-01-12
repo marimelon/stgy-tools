@@ -491,6 +491,37 @@ function ViewerContent({
 		}
 	}, [shortIds, boards]);
 
+	// Global keyboard shortcuts for tab navigation (Arrow keys)
+	useEffect(() => {
+		if (viewMode !== "tab" || boards.length <= 1) return;
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			// Skip if user is typing in an input field
+			const target = e.target as HTMLElement;
+			if (
+				target.tagName === "INPUT" ||
+				target.tagName === "TEXTAREA" ||
+				target.isContentEditable
+			) {
+				return;
+			}
+
+			const activeIndex = boards.findIndex((b) => b.id === activeBoard?.id);
+			if (activeIndex === -1) return;
+
+			if (e.key === "ArrowLeft" && activeIndex > 0) {
+				e.preventDefault();
+				actions.setActiveBoard(boards[activeIndex - 1].id);
+			} else if (e.key === "ArrowRight" && activeIndex < boards.length - 1) {
+				e.preventDefault();
+				actions.setActiveBoard(boards[activeIndex + 1].id);
+			}
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	}, [viewMode, boards, activeBoard, actions]);
+
 	// Sync text input and URL after board reorder
 	useEffect(() => {
 		if (!reorderPendingRef.current) return;

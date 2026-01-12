@@ -149,7 +149,10 @@ export function ViewerTabs({
 				items={boards.map((b) => b.id)}
 				strategy={horizontalListSortingStrategy}
 			>
-				<div className="flex items-center gap-1 overflow-x-auto border-b border-border pb-2 mb-4">
+				<div
+					className="flex items-center gap-1 overflow-x-auto border-b border-border pb-2 mb-4"
+					role="tablist"
+				>
 					{boards.map((board, index) => (
 						<SortableTab
 							key={board.id}

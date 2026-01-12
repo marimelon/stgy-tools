@@ -128,7 +128,9 @@
 			"parseError": "{{count}} codes failed to parse",
 			"share": "Share",
 			"noData": "No data",
-			"dragToReorder": "Drag to reorder"
+			"dragToReorder": "Drag to reorder",
+			"prevTab": "Previous tab",
+			"nextTab": "Next tab"
 		},
 		"group": {
 			"createTitle": "Create Board Group",
