@@ -338,8 +338,8 @@ describe("Server rendering consistency", () => {
 		const boardData = createTestBoardData([
 			createObject(ObjectIds.Line, {
 				position: { x: 50, y: 50 },
-				param1: 4500, // 終点X (450 * 10)
-				param2: 3500, // 終点Y (350 * 10)
+				param1: 4500, // endpoint X (450 * 10)
+				param2: 3500, // endpoint Y (350 * 10)
 				color: { r: 255, g: 255, b: 0, opacity: 0 },
 			}),
 		]);

@@ -43,7 +43,7 @@ function MixedIndicator() {
 	const { t } = useTranslation();
 	return (
 		<span className="text-xs text-muted-foreground italic">
-			{t("batchProperty.mixed", "複数の値")}
+			{t("batchProperty.mixed", "Mixed values")}
 		</span>
 	);
 }
@@ -100,7 +100,9 @@ export function BatchPropertyPanel({
 	const handleVisibleChange = useCallback(
 		(visible: boolean) => {
 			onUpdate({ flags: { visible } });
-			onCommitHistory(t("batchProperty.visibilityChanged", "表示状態変更"));
+			onCommitHistory(
+				t("batchProperty.visibilityChanged", "Visibility changed"),
+			);
 		},
 		[onUpdate, onCommitHistory, t],
 	);
@@ -108,7 +110,7 @@ export function BatchPropertyPanel({
 	const handleFlipHorizontalChange = useCallback(
 		(flipHorizontal: boolean) => {
 			onUpdate({ flags: { flipHorizontal } });
-			onCommitHistory(t("batchProperty.flipChanged", "反転変更"));
+			onCommitHistory(t("batchProperty.flipChanged", "Flip changed"));
 		},
 		[onUpdate, onCommitHistory, t],
 	);
@@ -116,7 +118,7 @@ export function BatchPropertyPanel({
 	const handleFlipVerticalChange = useCallback(
 		(flipVertical: boolean) => {
 			onUpdate({ flags: { flipVertical } });
-			onCommitHistory(t("batchProperty.flipChanged", "反転変更"));
+			onCommitHistory(t("batchProperty.flipChanged", "Flip changed"));
 		},
 		[onUpdate, onCommitHistory, t],
 	);
@@ -124,7 +126,7 @@ export function BatchPropertyPanel({
 	const handleLockedChange = useCallback(
 		(locked: boolean) => {
 			onUpdate({ flags: { locked } });
-			onCommitHistory(t("batchProperty.lockChanged", "ロック変更"));
+			onCommitHistory(t("batchProperty.lockChanged", "Lock changed"));
 		},
 		[onUpdate, onCommitHistory, t],
 	);
@@ -434,7 +436,7 @@ function ObjectSpecificParams({
 									onChange={handleChange}
 									onBlur={() =>
 										onCommitHistory(
-											`${paramDef.name}${t("batchProperty.changed", "変更")}`,
+											`${paramDef.name}${t("batchProperty.changed", " changed")}`,
 										)
 									}
 								/>
@@ -448,7 +450,7 @@ function ObjectSpecificParams({
 									onChange={handleChange}
 									onBlur={() =>
 										onCommitHistory(
-											`${paramDef.name}${t("batchProperty.changed", "変更")}`,
+											`${paramDef.name}${t("batchProperty.changed", " changed")}`,
 										)
 									}
 								/>

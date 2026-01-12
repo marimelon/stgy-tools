@@ -34,8 +34,8 @@ export function PanelHeader({
 				aria-expanded={!collapsed}
 				aria-label={
 					collapsed
-						? t("panel.expand", "展開")
-						: t("panel.collapse", "折りたたむ")
+						? t("panel.expand", "Expand")
+						: t("panel.collapse", "Collapse")
 				}
 			>
 				{collapsed ? (

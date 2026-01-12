@@ -251,43 +251,43 @@
   background: var(--color-bg-hover);
 }
 
-/* 選択状態 */
+/* Selected state */
 .layer-item.selected {
   background: var(--color-selection-bg);
   border-color: var(--color-selection-border);
 }
 
-/* 選択中のホバー状態 - 選択を維持しつつ微妙に強調 */
+/* Selected hover state */
 .layer-item.selected:hover {
   background: var(--color-selection-bg-hover);
   border-color: var(--color-selection-border);
 }
 
-/* グループ選択状態 */
+/* Group selected state */
 .layer-item.group-selected {
   background: var(--color-group-bg);
   border-color: var(--color-group-border);
 }
 
-/* グループ選択中のホバー状態 */
+/* Group selected hover state */
 .layer-item.group-selected:hover {
   background: oklch(0.62 0.2 300 / 0.28);
   border-color: var(--color-group-border);
 }
 
-/* フォーカス状態（グループのフォーカスモード） */
+/* Focused state (group focus mode) */
 .layer-item.focused {
   background: oklch(0.6 0.15 250 / 0.2);
   border-color: oklch(0.6 0.15 250 / 0.5);
 }
 
-/* フォーカス中のホバー状態 */
+/* Focused hover state */
 .layer-item.focused:hover {
   background: oklch(0.6 0.15 250 / 0.3);
   border-color: oklch(0.6 0.15 250 / 0.5);
 }
 
-/* グループ内アイテムの縦線スタイル */
+/* In-group item vertical line */
 .layer-item.in-group {
   margin-left: 20px;
   position: relative;
@@ -305,7 +305,7 @@
   }
 }
 
-/* 縦線 */
+/* Vertical line */
 .layer-item.in-group::before {
   content: '';
   position: absolute;
@@ -329,12 +329,12 @@
   }
 }
 
-/* グループ内最後のアイテムは縦線を中央までに */
+/* Last item in group: vertical line extends to center */
 .layer-item.in-group.last-in-group::before {
   bottom: 50%;
 }
 
-/* 横の接続線 */
+/* Horizontal connector line */
 .layer-item.in-group::after {
   content: '';
   position: absolute;

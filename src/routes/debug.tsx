@@ -41,7 +41,7 @@ function DebugPage() {
 		<div className="min-h-screen bg-background text-foreground">
 			<DebugHeader
 				title="Object ID Debug View"
-				description={`全${ALL_OBJECT_IDS.length}種類のオブジェクトID描画確認`}
+				description={`Render test for all ${ALL_OBJECT_IDS.length} object IDs`}
 			/>
 
 			<main className="p-4">
