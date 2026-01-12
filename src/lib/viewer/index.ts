@@ -28,3 +28,5 @@ export type {
 	ViewerState,
 } from "./types";
 export { initialViewerState, MAX_BOARDS } from "./types";
+export type { GroupInfo } from "./useGroupEdit";
+export { useGroupEdit } from "./useGroupEdit";

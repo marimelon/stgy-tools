@@ -24,6 +24,11 @@ import { Footer } from "@/components/ui/Footer";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BoardExpandModal } from "@/components/viewer/BoardExpandModal";
+import { CreateGroupDialog } from "@/components/viewer/CreateGroupDialog";
+import { DeleteGroupDialog } from "@/components/viewer/DeleteGroupDialog";
+import { EditKeyDialog } from "@/components/viewer/EditKeyDialog";
+import { GroupHistoryDialog } from "@/components/viewer/GroupHistoryDialog";
+import { GroupInfoBanner } from "@/components/viewer/GroupInfoBanner";
 import { ObjectListPanel } from "@/components/viewer/ObjectListPanel";
 import { ViewerGrid } from "@/components/viewer/ViewerGrid";
 import { ViewerTabs } from "@/components/viewer/ViewerTabs";
@@ -36,14 +41,23 @@ import {
 } from "@/lib/seo";
 import { getFeatureFlagsFn } from "@/lib/server/featureFlags";
 import {
+	clearCachedGroup,
+	getCachedGroup,
+} from "@/lib/server/shortLinks/createdGroupCache";
+import { isValidStgyCode } from "@/lib/server/shortLinks/idGenerator";
+import {
 	createShortLinkFn,
+	getGroupHistoryFn,
+	resolveGroupIdFn,
 	resolveShortIdFn,
 } from "@/lib/server/shortLinks/serverFn";
 import type { BoardObject } from "@/lib/stgy";
 import { ObjectNames } from "@/lib/stgy";
 import {
+	type GroupInfo,
 	MAX_BOARDS,
 	parseMultipleStgyCodes,
+	useGroupEdit,
 	useViewerActions,
 	useViewerActiveBoard,
 	useViewerActiveSelection,
@@ -70,6 +84,11 @@ export const Route = createFileRoute("/")({
 		return {
 			stgy: parseStringOrArray(search.stgy),
 			s: parseStringOrArray(search.s),
+			g: typeof search.g === "string" ? search.g : undefined,
+			v:
+				typeof search.v === "string" || typeof search.v === "number"
+					? Number(search.v)
+					: undefined,
 			lang: typeof search.lang === "string" ? search.lang : undefined,
 			mode:
 				search.mode === "tab" || search.mode === "grid"
@@ -78,7 +97,12 @@ export const Route = createFileRoute("/")({
 			active: typeof search.active === "number" ? search.active : undefined,
 		};
 	},
-	loaderDeps: ({ search }) => ({ s: search.s, stgy: search.stgy }),
+	loaderDeps: ({ search }) => ({
+		s: search.s,
+		stgy: search.stgy,
+		g: search.g,
+		v: search.v,
+	}),
 	loader: async ({ deps }) => {
 		const featureFlags = await getFeatureFlagsFn();
 
@@ -88,6 +112,90 @@ export const Route = createFileRoute("/")({
 			if (!value) return [];
 			return Array.isArray(value) ? value : [value];
 		};
+
+		// Handle group parameter (takes precedence)
+		if (deps.g) {
+			const groupData = await resolveGroupIdFn({ data: { groupId: deps.g } });
+			if (groupData) {
+				// Check if viewing a specific past version
+				if (deps.v !== undefined) {
+					// Validate version parameter
+					if (
+						!Number.isInteger(deps.v) ||
+						deps.v < 1 ||
+						deps.v >= groupData.version
+					) {
+						// Invalid or non-existent version - show current with error
+						return {
+							resolvedStgyCodes: groupData.stgyCodes,
+							shortIds: undefined,
+							groupInfo: {
+								name: groupData.name,
+								description: groupData.description,
+								version: groupData.version,
+								versionNotFound: true,
+							} satisfies GroupInfo,
+							groupNotFound: false,
+							featureFlags,
+						};
+					}
+
+					const history = await getGroupHistoryFn({
+						data: { groupId: deps.g },
+					});
+					const versionData = history?.find((h) => h.version === deps.v);
+					if (versionData) {
+						return {
+							resolvedStgyCodes: versionData.stgyCodes,
+							shortIds: undefined,
+							groupInfo: {
+								name: versionData.name,
+								description: versionData.description,
+								version: versionData.version,
+								currentVersion: groupData.version,
+								isPastVersion: true,
+							} satisfies GroupInfo,
+							groupNotFound: false,
+							featureFlags,
+						};
+					}
+
+					// Version not found in history - show current with error
+					return {
+						resolvedStgyCodes: groupData.stgyCodes,
+						shortIds: undefined,
+						groupInfo: {
+							name: groupData.name,
+							description: groupData.description,
+							version: groupData.version,
+							versionNotFound: true,
+						} satisfies GroupInfo,
+						groupNotFound: false,
+						featureFlags,
+					};
+				}
+
+				return {
+					resolvedStgyCodes: groupData.stgyCodes,
+					shortIds: undefined,
+					groupInfo: {
+						name: groupData.name,
+						description: groupData.description,
+						version: groupData.version,
+					} satisfies GroupInfo,
+					groupNotFound: false,
+					featureFlags,
+				};
+			}
+			// Group not found - show error on viewer page
+			return {
+				resolvedStgyCodes: [],
+				shortIds: undefined,
+				groupInfo: undefined,
+				groupNotFound: true,
+				featureFlags,
+			};
+		}
 
 		const stgyCodes = normalizeToArray(deps.stgy);
 		const shortIds = normalizeToArray(deps.s);
@@ -117,6 +225,8 @@ export const Route = createFileRoute("/")({
 		return {
 			resolvedStgyCodes: allStgyCodes,
 			shortIds: shortIds.length > 0 ? shortIds : undefined,
+			groupInfo: undefined as GroupInfo | undefined,
+			groupNotFound: false,
 			featureFlags,
 		};
 	},
@@ -126,6 +236,7 @@ export const Route = createFileRoute("/")({
 		const firstStgy = Array.isArray(stgy) ? stgy[0] : stgy;
 		const firstShortId = Array.isArray(s) ? s[0] : s;
 		const resolvedStgyCodes = loaderData?.resolvedStgyCodes ?? [];
+		const groupInfo = loaderData?.groupInfo;
 		const resolvedStgy = resolvedStgyCodes[0] ?? firstStgy;
 		const hasCode = Boolean(resolvedStgy);
 		const seo = getLocalizedSeo("home", lang);
@@ -140,17 +251,20 @@ export const Route = createFileRoute("/")({
 		// Twitter Card type: use summary_large_image when image exists
 		const twitterCard = hasCode ? "summary_large_image" : "summary";
 
-		// Dynamic OG description based on language
+		// Dynamic OG title/description based on group info or board count
 		const boardCount = resolvedStgyCodes.length;
-		const ogDescription = hasCode
-			? seo.lang === "ja"
-				? boardCount > 1
-					? `${boardCount}件のFFXIV ストラテジーボードダイアグラムを表示`
-					: "FFXIV ストラテジーボードのダイアグラムを表示"
-				: boardCount > 1
-					? `View ${boardCount} FFXIV Strategy Board diagrams`
-					: "View this FFXIV Strategy Board diagram"
-			: seo.description;
+		const ogTitle = groupInfo ? `${groupInfo.name} | ${seo.title}` : seo.title;
+		const ogDescription = groupInfo?.description
+			? groupInfo.description
+			: hasCode
+				? seo.lang === "ja"
+					? boardCount > 1
+						? `${boardCount}件のFFXIV ストラテジーボードダイアグラムを表示`
+						: "FFXIV ストラテジーボードのダイアグラムを表示"
+					: boardCount > 1
+						? `View ${boardCount} FFXIV Strategy Board diagrams`
+						: "View this FFXIV Strategy Board diagram"
+				: seo.description;
 
 		return {
 			meta: [
@@ -169,7 +283,7 @@ export const Route = createFileRoute("/")({
 				// Open Graph
 				{
 					property: "og:title",
-					content: seo.title,
+					content: ogTitle,
 				},
 				{
 					property: "og:description",
@@ -206,7 +320,7 @@ export const Route = createFileRoute("/")({
 				},
 				{
 					name: "twitter:title",
-					content: seo.title,
+					content: ogTitle,
 				},
 				{
 					name: "twitter:description",
@@ -232,35 +346,91 @@ const SAMPLE_STGY =
 const DEBOUNCE_DELAY = 300;
 
 function App() {
-	const { mode } = Route.useSearch();
-	const { resolvedStgyCodes } = Route.useLoaderData();
+	const { mode, g: groupId } = Route.useSearch();
+	const { resolvedStgyCodes, groupInfo, groupNotFound } = Route.useLoaderData();
+
+	// Check for cached group data (handles KV propagation delay)
+	const cachedGroup = useMemo(() => {
+		if (groupId && !groupInfo && groupNotFound) {
+			return getCachedGroup(groupId);
+		}
+		return null;
+	}, [groupId, groupInfo, groupNotFound]);
 
 	const initialBoards = useMemo(() => {
+		// Use cached stgyCodes if KV data not available
+		if (cachedGroup && cachedGroup.stgyCodes.length > 0) {
+			return parseMultipleStgyCodes(cachedGroup.stgyCodes.join("\n"));
+		}
 		if (resolvedStgyCodes.length > 0) {
 			return parseMultipleStgyCodes(resolvedStgyCodes.join("\n"));
 		}
 		return [];
-	}, [resolvedStgyCodes]);
+	}, [resolvedStgyCodes, cachedGroup]);
 
-	const hasInitialCode = resolvedStgyCodes.length > 0;
+	const hasInitialCode = resolvedStgyCodes.length > 0 || !!cachedGroup;
 
-	const initialViewMode = mode === "grid" ? "grid" : "tab";
+	// Don't show "not found" if we have cached data
+	const effectiveGroupNotFound = groupNotFound && !cachedGroup;
+
+	const initialViewMode = mode === "tab" ? "tab" : "grid";
 
 	return (
 		<ViewerStoreProvider
 			initialBoards={initialBoards}
 			initialViewMode={initialViewMode}
 		>
-			<ViewerContent hasInitialCode={hasInitialCode} />
+			<ViewerContent
+				hasInitialCode={hasInitialCode}
+				groupInfo={groupInfo}
+				groupNotFound={effectiveGroupNotFound}
+			/>
 		</ViewerStoreProvider>
 	);
 }
 
-function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
+function ViewerContent({
+	hasInitialCode,
+	groupInfo: loaderGroupInfo,
+	groupNotFound,
+}: {
+	hasInitialCode: boolean;
+	groupInfo?: GroupInfo;
+	groupNotFound: boolean;
+}) {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { featureFlags } = Route.useLoaderData();
 	const { shortIds } = Route.useLoaderData();
+	const { g: groupId } = Route.useSearch();
+
+	// Use cached group data as fallback when KV hasn't propagated yet
+	const groupInfo = useMemo(() => {
+		if (loaderGroupInfo) {
+			// KV data available - clear cache if any
+			if (groupId) {
+				clearCachedGroup(groupId);
+			}
+			return loaderGroupInfo;
+		}
+		// Try to get from cache (handles KV propagation delay)
+		if (groupId) {
+			const cached = getCachedGroup(groupId);
+			if (cached) {
+				return {
+					name: cached.name,
+					description: cached.description,
+					version: cached.version,
+				} satisfies GroupInfo;
+			}
+		}
+		return undefined;
+	}, [loaderGroupInfo, groupId]);
+
+	// Construct group URL for sharing
+	const groupUrl = groupId
+		? `${window.location.origin}/?g=${groupId}`
+		: undefined;
 
 	const boards = useViewerBoards();
 	const activeBoard = useViewerActiveBoard();
@@ -273,11 +443,37 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 	const [stgyInput, setStgyInput] = useState(() =>
 		boards.map((b) => b.stgyCode).join("\n"),
 	);
-	// Whether to sync state to URL (only enabled when initial code exists)
-	const [shouldUpdateUrl, setShouldUpdateUrl] = useState(hasInitialCode);
+	// Whether to sync state to URL (only enabled when initial code exists, but NOT for group views)
+	const [shouldUpdateUrl, setShouldUpdateUrl] = useState(
+		hasInitialCode && !groupInfo,
+	);
 	const [isExpandModalOpen, setIsExpandModalOpen] = useState(false);
+	const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
 	const stgyInputId = useId();
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// Group edit hook
+	const stgyCodesForEdit = useMemo(
+		() =>
+			stgyInput
+				.split("\n")
+				.map((line) => line.trim())
+				.filter((line) => line.length > 0),
+		[stgyInput],
+	);
+
+	const groupEdit = useGroupEdit({
+		groupId,
+		groupInfo,
+		stgyCodes: stgyCodesForEdit,
+		onSaveSuccess: (newStgyCodes) => {
+			actions.loadBoards(newStgyCodes.join("\n"));
+		},
+		onCancelReset: () => {
+			setStgyInput(boards.map((b) => b.stgyCode).join("\n"));
+			return boards.map((b) => b.stgyCode);
+		},
+	});
 
 	// Replace ?s=xxx with ?stgy=xxx on initial load when opened via short ID
 	const hasInitialized = useRef(false);
@@ -360,7 +556,8 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		if (validBoards.length === 0) return;
 
 		const key = crypto.randomUUID();
-		const folderName = `Imported - ${new Date().toLocaleString()}`;
+		const folderName =
+			groupInfo?.name ?? `Imported - ${new Date().toLocaleString()}`;
 
 		sessionStorage.setItem(
 			`board-import-${key}`,
@@ -371,7 +568,7 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		);
 
 		navigate({ to: "/editor", search: { import: "multi", key } });
-	}, [boards, navigate]);
+	}, [boards, groupInfo?.name, navigate]);
 
 	// Generate short links for multiple boards
 	const handleGenerateShortLink = useCallback(async () => {
@@ -457,11 +654,12 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
 			const newValue = e.target.value;
 			setStgyInput(newValue);
-			if (!shouldUpdateUrl && newValue.trim()) {
+			// Don't enable URL updates for group views
+			if (!shouldUpdateUrl && newValue.trim() && !groupInfo) {
 				setShouldUpdateUrl(true);
 			}
 		},
-		[shouldUpdateUrl],
+		[shouldUpdateUrl, groupInfo],
 	);
 
 	// Auto-decode and URL update on input change (debounced)
@@ -523,51 +721,104 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 		[actions],
 	);
 
+	const handleOpenCreateGroupDialog = useCallback(() => {
+		setIsCreateGroupDialogOpen(true);
+	}, []);
+
+	const handleGroupCreated = useCallback((groupId: string) => {
+		// Use window.location for clean navigation to group URL
+		window.location.href = `/?g=${groupId}`;
+	}, []);
+
+	// Get valid stgy codes for group creation
+	const validStgyCodes = useMemo(
+		() =>
+			boards.filter((b) => b.stgyCode && b.boardData).map((b) => b.stgyCode),
+		[boards],
+	);
+
+	// Check if stgyInput has valid stgy codes (for edit mode validation)
+	const hasValidStgyCodesInInput = useMemo(() => {
+		const codes = stgyInput
+			.split("\n")
+			.map((line) => line.trim())
+			.filter((line) => line.length > 0);
+		// At least one code must be present and all codes must be valid
+		return codes.length > 0 && codes.every((code) => isValidStgyCode(code));
+	}, [stgyInput]);
+
 	return (
 		<div className="min-h-screen bg-background text-foreground">
 			<AppHeader currentPage="viewer" title={t("viewer.pageTitle")} />
 
 			<main className="p-4 max-w-5xl mx-auto">
-				<div className="mb-6 space-y-3">
-					<div className="flex items-center justify-between">
-						<Label htmlFor={stgyInputId}>{t("viewer.inputLabel")}</Label>
-						{stgyInput.trim() ? (
-							<button
-								type="button"
-								onClick={handleCopyStgyCode}
-								disabled={!boardData}
-								className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-							>
-								{copiedStgyCode ? (
-									<>
-										<Check className="size-3.5" />
-										{t("common.copied")}
-									</>
-								) : (
-									<>
-										<Copy className="size-3.5" />
-										{t("common.copy")}
-									</>
-								)}
-							</button>
-						) : (
-							<button
-								type="button"
-								onClick={handleLoadSample}
-								className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
-							>
-								{t("viewer.loadSample")}
-							</button>
-						)}
+				{groupNotFound && (
+					<div className="mb-6 flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
+						<AlertCircle className="size-5" />
+						<p>{t("viewer.group.notFound")}</p>
 					</div>
-					<Textarea
-						id={stgyInputId}
-						value={stgyInput}
-						onChange={handleInputChange}
-						className="h-12 font-mono text-sm"
-						placeholder={t("viewer.inputPlaceholder")}
-					/>
-				</div>
+				)}
+
+				{groupInfo?.versionNotFound && (
+					<div className="mb-6 flex items-center gap-2 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400">
+						<AlertCircle className="size-5" />
+						<p>{t("viewer.group.versionNotFound")}</p>
+					</div>
+				)}
+
+				{(groupNotFound || !groupInfo || groupEdit.isEditMode) && (
+					<div className="mb-6 space-y-3">
+						<div className="flex items-center justify-between">
+							<Label htmlFor={stgyInputId}>
+								{groupEdit.isEditMode
+									? t("viewer.group.editStgyCodes")
+									: t("viewer.inputLabel")}
+							</Label>
+							{stgyInput.trim() ? (
+								<button
+									type="button"
+									onClick={handleCopyStgyCode}
+									disabled={!boardData}
+									className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									{copiedStgyCode ? (
+										<>
+											<Check className="size-3.5" />
+											{t("common.copied")}
+										</>
+									) : (
+										<>
+											<Copy className="size-3.5" />
+											{t("common.copy")}
+										</>
+									)}
+								</button>
+							) : (
+								!groupEdit.isEditMode && (
+									<button
+										type="button"
+										onClick={handleLoadSample}
+										className="flex items-center gap-1.5 px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors"
+									>
+										{t("viewer.loadSample")}
+									</button>
+								)
+							)}
+						</div>
+						<Textarea
+							id={stgyInputId}
+							value={stgyInput}
+							onChange={handleInputChange}
+							className={
+								groupEdit.isEditMode
+									? "h-24 font-mono text-sm"
+									: "h-12 font-mono text-sm"
+							}
+							placeholder={t("viewer.inputPlaceholder")}
+							disabled={groupEdit.isUpdating}
+						/>
+					</div>
+				)}
 
 				{/* Error display: show when some boards failed to decode */}
 				{failedBoardCount > 0 && (
@@ -586,6 +837,33 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 					</div>
 				)}
 
+				{groupInfo && (
+					<GroupInfoBanner
+						name={groupEdit.displayedGroupName}
+						description={groupEdit.displayedGroupDescription}
+						boardCount={boardCount}
+						groupUrl={groupUrl}
+						stgyCodes={boards.map((b) => b.stgyCode)}
+						version={groupEdit.groupVersion}
+						currentVersion={groupInfo.currentVersion}
+						isPastVersion={groupInfo.isPastVersion}
+						isEditMode={groupEdit.isEditMode}
+						isUpdating={groupEdit.isUpdating}
+						updateError={groupEdit.updateError}
+						editedName={groupEdit.editedName}
+						editedDescription={groupEdit.editedDescription}
+						hasValidStgyCodes={hasValidStgyCodesInInput}
+						onEditedNameChange={groupEdit.setEditedName}
+						onEditedDescriptionChange={groupEdit.setEditedDescription}
+						onEditClick={groupEdit.handleEditClick}
+						onCancelEdit={groupEdit.handleCancelEdit}
+						onSaveEdit={groupEdit.handleSaveEdit}
+						onDeleteClick={groupEdit.handleDeleteClick}
+						onHistoryClick={groupEdit.handleHistoryClick}
+						onBackToCurrentVersion={groupEdit.handleBackToCurrentVersion}
+					/>
+				)}
+
 				<ViewerToolbar
 					viewMode={viewMode}
 					onViewModeChange={actions.setViewMode}
@@ -595,6 +873,8 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 					copiedShortLink={copiedShortLink}
 					shortLinksEnabled={featureFlags.shortLinksEnabled}
 					onEditAllInEditor={handleEditAllInEditor}
+					onCreateGroup={handleOpenCreateGroupDialog}
+					isGroupView={!!groupInfo}
 				/>
 
 				{viewMode === "tab" && (
@@ -774,6 +1054,38 @@ function ViewerContent({ hasInitialCode }: { hasInitialCode: boolean }) {
 					open={isExpandModalOpen}
 					onOpenChange={setIsExpandModalOpen}
 				/>
+			)}
+
+			<CreateGroupDialog
+				open={isCreateGroupDialogOpen}
+				onOpenChange={setIsCreateGroupDialogOpen}
+				stgyCodes={validStgyCodes}
+				onCreated={handleGroupCreated}
+			/>
+
+			{groupId && groupInfo && (
+				<>
+					<EditKeyDialog
+						open={groupEdit.dialogs.editKey.isOpen}
+						onOpenChange={groupEdit.dialogs.editKey.setIsOpen}
+						onConfirm={groupEdit.dialogs.editKey.onConfirm}
+					/>
+					<GroupHistoryDialog
+						open={groupEdit.dialogs.history.isOpen}
+						onOpenChange={groupEdit.dialogs.history.setIsOpen}
+						groupId={groupId}
+						currentVersion={groupEdit.groupVersion}
+						onViewVersion={groupEdit.dialogs.history.onViewVersion}
+					/>
+					<DeleteGroupDialog
+						open={groupEdit.dialogs.delete.isOpen}
+						onOpenChange={groupEdit.dialogs.delete.onOpenChange}
+						groupName={groupInfo.name}
+						isDeleting={groupEdit.isDeleting}
+						error={groupEdit.deleteError}
+						onConfirm={groupEdit.dialogs.delete.onConfirm}
+					/>
+				</>
 			)}
 
 			<Footer />

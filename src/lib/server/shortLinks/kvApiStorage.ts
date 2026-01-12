@@ -42,8 +42,7 @@ export class KVApiShortLinkStorage implements ShortLinkStorage {
 			}
 
 			if (!response.ok) {
-				const errorText = await response.text().catch(() => "Unknown error");
-				console.error(`KV API GET failed: ${response.status} - ${errorText}`);
+				console.error(`KV API GET failed: ${response.status}`);
 				return null;
 			}
 
@@ -52,11 +51,11 @@ export class KVApiShortLinkStorage implements ShortLinkStorage {
 			try {
 				return JSON.parse(text) as ShortLinkData;
 			} catch {
-				console.error("Failed to parse KV value as JSON:", text);
+				console.error("Failed to parse KV value as JSON");
 				return null;
 			}
-		} catch (error) {
-			console.error("KV API GET error:", error);
+		} catch {
+			console.error("KV API GET error");
 			return null;
 		}
 	}
@@ -74,8 +73,20 @@ export class KVApiShortLinkStorage implements ShortLinkStorage {
 		});
 
 		if (!response.ok) {
-			const errorText = await response.text().catch(() => "Unknown error");
-			throw new Error(`KV API PUT failed: ${response.status} - ${errorText}`);
+			throw new Error(`KV API PUT failed: ${response.status}`);
+		}
+	}
+
+	async delete(id: string): Promise<void> {
+		const url = this.buildUrl(`/values/${encodeURIComponent(id)}`);
+
+		const response = await fetch(url, {
+			method: "DELETE",
+			headers: this.buildHeaders(),
+		});
+
+		if (!response.ok && response.status !== 404) {
+			throw new Error(`KV API DELETE failed: ${response.status}`);
 		}
 	}
 

@@ -32,6 +32,10 @@ export class KVShortLinkStorage implements ShortLinkStorage {
 		await this.kv.put(id, JSON.stringify(data));
 	}
 
+	async delete(id: string): Promise<void> {
+		await this.kv.delete(id);
+	}
+
 	async exists(id: string): Promise<boolean> {
 		return (await this.kv.get(id, { type: "text" })) !== null;
 	}

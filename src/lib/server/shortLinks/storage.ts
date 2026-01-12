@@ -15,6 +15,7 @@ import type { ShortLinkData } from "./types";
 export interface ShortLinkStorage {
 	get(id: string): Promise<ShortLinkData | null>;
 	save(id: string, data: ShortLinkData): Promise<void>;
+	delete(id: string): Promise<void>;
 	exists(id: string): Promise<boolean>;
 	isAvailable(): boolean;
 }
@@ -28,6 +29,10 @@ export class NullShortLinkStorage implements ShortLinkStorage {
 	}
 
 	async save(_id: string, _data: ShortLinkData): Promise<void> {
+		// No-op
+	}
+
+	async delete(_id: string): Promise<void> {
 		// No-op
 	}
 

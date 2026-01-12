@@ -1,5 +1,6 @@
 import {
 	Check,
+	FolderPlus,
 	LayoutGrid,
 	LayoutList,
 	Link,
@@ -19,6 +20,8 @@ interface ViewerToolbarProps {
 	copiedShortLink?: boolean;
 	shortLinksEnabled?: boolean;
 	onEditAllInEditor?: () => void;
+	onCreateGroup?: () => void;
+	isGroupView?: boolean;
 }
 
 export function ViewerToolbar({
@@ -30,6 +33,8 @@ export function ViewerToolbar({
 	copiedShortLink,
 	shortLinksEnabled,
 	onEditAllInEditor,
+	onCreateGroup,
+	isGroupView,
 }: ViewerToolbarProps) {
 	const { t } = useTranslation();
 
@@ -43,7 +48,20 @@ export function ViewerToolbar({
 				{t("viewer.multiBoard.boardCount", { count: boardCount })}
 			</span>
 			<div className="flex items-center gap-2">
-				{shortLinksEnabled && onGenerateShortLink && (
+				{shortLinksEnabled && onCreateGroup && !isGroupView && (
+					<button
+						type="button"
+						className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted border border-border hover:border-border rounded-lg transition-all"
+						onClick={onCreateGroup}
+						title={t("viewer.group.createTitle")}
+					>
+						<FolderPlus className="size-4" />
+						<span className="hidden sm:inline">
+							{t("viewer.group.createButton")}
+						</span>
+					</button>
+				)}
+				{shortLinksEnabled && onGenerateShortLink && !isGroupView && (
 					<button
 						type="button"
 						className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
