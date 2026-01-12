@@ -98,22 +98,20 @@ function LanguageSelector() {
 function useCurrentStgy(): string | undefined {
 	const location = useLocation();
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Re-evaluate on URL change
 	return useMemo(() => {
-		const searchParams = new URLSearchParams(window.location.search);
+		const searchParams = new URLSearchParams(location.searchStr);
 		return searchParams.get("stgy") ?? undefined;
-	}, [location.href]);
+	}, [location.searchStr]);
 }
 
 /** Returns lang parameter from current URL */
 function useCurrentLang(): string | undefined {
 	const location = useLocation();
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Re-evaluate on URL change
 	return useMemo(() => {
-		const searchParams = new URLSearchParams(window.location.search);
+		const searchParams = new URLSearchParams(location.searchStr);
 		return searchParams.get("lang") ?? undefined;
-	}, [location.href]);
+	}, [location.searchStr]);
 }
 
 export function AppHeader({
