@@ -511,7 +511,9 @@
 		"shareLinkCopied": "コピーしました",
 		"createShortLink": "短縮リンク",
 		"shortLinkCopied": "コピーしました",
-		"generatingShortLink": "生成中..."
+		"generatingShortLink": "生成中...",
+		"exportAllTabs": "全てのタブをエクスポート ({{count}}件)",
+		"imageGeneratorDisabledForMultiple": "複数ボードの画像生成は対応していません"
 	},
 	"importModal": {
 		"title": "インポート",

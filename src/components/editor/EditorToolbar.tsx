@@ -37,9 +37,10 @@ import {
 	Ungroup,
 	Upload,
 } from "lucide-react";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { SettingsModal } from "@/components/settings";
+import { useBoards } from "@/lib/boards";
 import {
 	GRID_SIZES,
 	useCanAlign,
@@ -50,6 +51,7 @@ import {
 	useGlobalClipboard,
 	useGridSettings,
 	useIsDirty,
+	useOpenTabs,
 	useSelectedGroup,
 	useSelectedIds,
 } from "@/lib/editor";
@@ -100,6 +102,8 @@ export function EditorToolbar({
 	const hasClipboard = useGlobalClipboard();
 	const gridSettings = useGridSettings();
 	const isDirty = useIsDirty();
+	const openTabs = useOpenTabs();
+	const { getBoard } = useBoards();
 
 	const canUndo = useCanUndo();
 	const canRedo = useCanRedo();
@@ -125,6 +129,16 @@ export function EditorToolbar({
 	const hasSelection = selectedIds.length > 0;
 	const hasSingleSelection = selectedIds.length === 1;
 
+	// Get all board codes from open tabs for export all feature
+	const allTabBoardCodes = useMemo(() => {
+		return openTabs
+			.map((tabId) => {
+				const storedBoard = getBoard(tabId);
+				return storedBoard?.stgyCode ?? null;
+			})
+			.filter((code): code is string => code !== null);
+	}, [openTabs, getBoard]);
+
 	const openImportModal = async () => {
 		const result = (await NiceModal.show(ImportModal)) as
 			| ImportResult
@@ -139,7 +153,7 @@ export function EditorToolbar({
 	};
 
 	const openExportModal = () => {
-		NiceModal.show(ExportModal, { shortLinksEnabled });
+		NiceModal.show(ExportModal, { shortLinksEnabled, allTabBoardCodes });
 	};
 
 	return (

@@ -16,6 +16,7 @@ import {
 import { useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -32,23 +33,32 @@ import { encodeStgy } from "@/lib/stgy";
 
 export interface ExportModalProps {
 	shortLinksEnabled?: boolean;
+	/** All board codes from open tabs (for "export all tabs" feature) */
+	allTabBoardCodes?: string[];
 }
 export const ExportModal = NiceModal.create(
-	({ shortLinksEnabled = false }: ExportModalProps) => {
+	({ shortLinksEnabled = false, allTabBoardCodes = [] }: ExportModalProps) => {
 		const { t } = useTranslation();
 		const modal = useModal();
 		const board = useBoard();
 		const codeTextareaId = useId();
+		const exportAllCheckboxId = useId();
 		const [copied, setCopied] = useState(false);
 		const [copiedShareLink, setCopiedShareLink] = useState(false);
 		const [isGeneratingShortLink, setIsGeneratingShortLink] = useState(false);
 		const [copiedShortLink, setCopiedShortLink] = useState(false);
+		const [exportAllTabs, setExportAllTabs] = useState(false);
+
+		const hasMultipleTabs = allTabBoardCodes.length > 1;
 
 		const exportedCode = useMemo(() => {
+			if (exportAllTabs && hasMultipleTabs) {
+				return allTabBoardCodes.join("\n");
+			}
 			const { width, height } = recalculateBoardSize(board);
 			const exportBoard = { ...board, width, height };
 			return encodeStgy(exportBoard);
-		}, [board]);
+		}, [board, exportAllTabs, hasMultipleTabs, allTabBoardCodes]);
 
 		const generateShareCode = (): string => {
 			const { width, height } = recalculateBoardSize(board);
@@ -73,9 +83,19 @@ export const ExportModal = NiceModal.create(
 
 		const handleCreateShareLink = async () => {
 			try {
-				const shareCode = generateShareCode();
-				const shareUrl = `${window.location.origin}/?stgy=${encodeURIComponent(shareCode)}`;
-				await navigator.clipboard.writeText(shareUrl);
+				if (exportAllTabs && hasMultipleTabs) {
+					// Multiple boards: create URL with multiple stgy params
+					const url = new URL(window.location.origin);
+					for (const code of allTabBoardCodes) {
+						url.searchParams.append("stgy", code);
+					}
+					url.searchParams.set("mode", "grid");
+					await navigator.clipboard.writeText(url.toString());
+				} else {
+					const shareCode = generateShareCode();
+					const shareUrl = `${window.location.origin}/?stgy=${encodeURIComponent(shareCode)}`;
+					await navigator.clipboard.writeText(shareUrl);
+				}
 				setCopiedShareLink(true);
 				setTimeout(() => setCopiedShareLink(false), 2000);
 			} catch {
@@ -87,14 +107,47 @@ export const ExportModal = NiceModal.create(
 			setIsGeneratingShortLink(true);
 			setCopiedShortLink(false);
 			try {
-				const shareCode = generateShareCode();
-				const result = await createShortLinkFn({
-					data: { stgy: shareCode, baseUrl: window.location.origin },
-				});
-				if (result.success && result.data.url) {
-					await navigator.clipboard.writeText(result.data.url);
-					setCopiedShortLink(true);
-					setTimeout(() => setCopiedShortLink(false), 2000);
+				if (exportAllTabs && hasMultipleTabs) {
+					// Generate short links for all boards
+					const results = await Promise.all(
+						allTabBoardCodes.map((code) =>
+							createShortLinkFn({
+								data: { stgy: code, baseUrl: window.location.origin },
+							}),
+						),
+					);
+
+					const shortIds = results
+						.filter(
+							(
+								r,
+							): r is {
+								success: true;
+								data: { id: string; url: string; viewerUrl: string };
+							} => r.success && !!r.data.id,
+						)
+						.map((r) => r.data.id);
+
+					if (shortIds.length > 0) {
+						const url = new URL(window.location.origin);
+						for (const shortId of shortIds) {
+							url.searchParams.append("s", shortId);
+						}
+						url.searchParams.set("mode", "grid");
+						await navigator.clipboard.writeText(url.toString());
+						setCopiedShortLink(true);
+						setTimeout(() => setCopiedShortLink(false), 2000);
+					}
+				} else {
+					const shareCode = generateShareCode();
+					const result = await createShortLinkFn({
+						data: { stgy: shareCode, baseUrl: window.location.origin },
+					});
+					if (result.success && result.data.url) {
+						await navigator.clipboard.writeText(result.data.url);
+						setCopiedShortLink(true);
+						setTimeout(() => setCopiedShortLink(false), 2000);
+					}
 				}
 			} catch {
 				// Ignore errors
@@ -103,9 +156,26 @@ export const ExportModal = NiceModal.create(
 			}
 		};
 
+		const handleOpenViewer = () => {
+			if (exportAllTabs && hasMultipleTabs) {
+				const url = new URL(window.location.origin);
+				for (const code of allTabBoardCodes) {
+					url.searchParams.append("stgy", code);
+				}
+				url.searchParams.set("mode", "grid");
+				window.open(url.toString(), "_blank");
+			} else {
+				const shareCode = generateShareCode();
+				const url = `/?stgy=${encodeURIComponent(shareCode)}`;
+				window.open(url, "_blank");
+			}
+		};
+
 		const handleClose = () => {
 			modal.hide();
 		};
+
+		const isExportingAll = exportAllTabs && hasMultipleTabs;
 
 		return (
 			<Dialog
@@ -126,6 +196,26 @@ export const ExportModal = NiceModal.create(
 					</DialogHeader>
 
 					<div className="space-y-4">
+						{hasMultipleTabs && (
+							<div className="flex items-center space-x-2">
+								<Checkbox
+									id={exportAllCheckboxId}
+									checked={exportAllTabs}
+									onCheckedChange={(checked) =>
+										setExportAllTabs(checked === true)
+									}
+								/>
+								<Label
+									htmlFor={exportAllCheckboxId}
+									className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+								>
+									{t("exportModal.exportAllTabs", {
+										count: allTabBoardCodes.length,
+									})}
+								</Label>
+							</div>
+						)}
+
 						<div className="space-y-2">
 							<div className="flex items-center justify-between">
 								<Label htmlFor={codeTextareaId}>
@@ -216,27 +306,25 @@ export const ExportModal = NiceModal.create(
 						<div className="flex gap-2 sm:mr-auto">
 							<Button
 								variant="outline"
-								onClick={() => {
-									const shareCode = generateShareCode();
-									const url = `/?stgy=${encodeURIComponent(shareCode)}`;
-									window.open(url, "_blank");
-								}}
+								onClick={handleOpenViewer}
 								disabled={!exportedCode}
 							>
 								<Eye className="size-4" />
 								{t("exportModal.openViewer")}
 							</Button>
-							<Button
-								variant="outline"
-								onClick={() => {
-									const url = `/image/generate?stgy=${encodeURIComponent(exportedCode)}`;
-									window.open(url, "_blank");
-								}}
-								disabled={!exportedCode}
-							>
-								<ExternalLink className="size-4" />
-								{t("exportModal.openImageGenerator")}
-							</Button>
+							{!isExportingAll && (
+								<Button
+									variant="outline"
+									onClick={() => {
+										const url = `/image/generate?stgy=${encodeURIComponent(exportedCode)}`;
+										window.open(url, "_blank");
+									}}
+									disabled={!exportedCode}
+								>
+									<ExternalLink className="size-4" />
+									{t("exportModal.openImageGenerator")}
+								</Button>
+							)}
 						</div>
 						<Button variant="ghost" onClick={handleClose}>
 							{t("exportModal.close")}

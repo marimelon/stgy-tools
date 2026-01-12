@@ -511,7 +511,9 @@
 		"shareLinkCopied": "Copied",
 		"createShortLink": "Short Link",
 		"shortLinkCopied": "Copied",
-		"generatingShortLink": "Generating..."
+		"generatingShortLink": "Generating...",
+		"exportAllTabs": "Export all tabs ({{count}})",
+		"imageGeneratorDisabledForMultiple": "Image generation is not supported for multiple boards"
 	},
 	"importModal": {
 		"title": "Import",
