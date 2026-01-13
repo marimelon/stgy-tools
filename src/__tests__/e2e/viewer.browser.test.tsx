@@ -733,5 +733,36 @@ describe("Viewer E2E", () => {
 			expect(currentBoardCount).toBe(0);
 			expect(currentActiveId).toBeNull();
 		});
+
+		it("loadBoards auto-switches to tab mode when loading single board", async () => {
+			let currentMode: ViewerMode = "grid";
+			const actionsRef: ActionsRef = { current: null };
+
+			function TestComponent() {
+				const viewMode = useViewerMode();
+				const actions = useViewerActions();
+
+				currentMode = viewMode;
+				actionsRef.current = actions;
+
+				return null;
+			}
+
+			await render(
+				<ViewerStoreProvider initialBoards={[]} initialViewMode="grid">
+					<TestComponent />
+				</ViewerStoreProvider>,
+			);
+
+			// Initial state: grid mode
+			expect(currentMode).toBe("grid");
+
+			// Load a single board
+			actionsRef.current!.loadBoards(SAMPLE_STGY_1);
+			await new Promise((resolve) => setTimeout(resolve, 50));
+
+			// Should auto-switch to tab mode when loading single board
+			expect(currentMode).toBe("tab");
+		});
 	});
 });

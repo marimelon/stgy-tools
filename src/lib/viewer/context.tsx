@@ -145,6 +145,8 @@ export function useViewerActions() {
 					...state,
 					boards,
 					activeId: boards[0]?.id ?? null,
+					// Auto-switch to tab mode when only 1 board
+					viewMode: boards.length === 1 ? "tab" : state.viewMode,
 					selectedObjectIds: {},
 				}));
 			},
