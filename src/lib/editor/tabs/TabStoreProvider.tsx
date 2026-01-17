@@ -20,6 +20,8 @@ interface TabStoreProviderProps {
 	children: ReactNode;
 	/** If provided, ignore persisted state and initialize with these board IDs */
 	initialBoardIds?: string[] | null;
+	/** Called after initialBoardIds has been consumed (applied to store) */
+	onInitialBoardIdsConsumed?: () => void;
 }
 
 /** Compare arrays for equality */
@@ -35,9 +37,13 @@ function arraysEqual(a: string[], b: string[]): boolean {
 export function TabStoreProvider({
 	children,
 	initialBoardIds,
+	onInitialBoardIdsConsumed,
 }: TabStoreProviderProps) {
 	// Track last applied initialBoardIds to detect changes
 	const lastAppliedBoardIdsRef = useRef<string[] | null>(null);
+	// Track callback to avoid stale closure in useMemo
+	const onConsumedRef = useRef(onInitialBoardIdsConsumed);
+	onConsumedRef.current = onInitialBoardIdsConsumed;
 
 	// Create store with persisted state or initial board IDs
 	// biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only run on mount
@@ -45,6 +51,8 @@ export function TabStoreProvider({
 		// If initialBoardIds provided, use them instead of persisted state
 		if (initialBoardIds && initialBoardIds.length > 0) {
 			lastAppliedBoardIdsRef.current = initialBoardIds;
+			// Notify parent that initialBoardIds has been consumed (deferred to avoid setState during render)
+			queueMicrotask(() => onConsumedRef.current?.());
 			return createTabStore({
 				openTabs: initialBoardIds,
 				activeTabId: initialBoardIds[0],
@@ -62,9 +70,11 @@ export function TabStoreProvider({
 			if (!lastApplied || !arraysEqual(initialBoardIds, lastApplied)) {
 				lastAppliedBoardIdsRef.current = initialBoardIds;
 				actions.replaceAllTabs(store, initialBoardIds);
+				// Notify parent that initialBoardIds has been consumed
+				onInitialBoardIdsConsumed?.();
 			}
 		}
-	}, [initialBoardIds, store]);
+	}, [initialBoardIds, store, onInitialBoardIdsConsumed]);
 
 	// Subscribe to state changes and persist
 	useEffect(() => {

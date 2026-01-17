@@ -201,8 +201,12 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 		navigate,
 		boards,
 	});
-	const { pendingImportBoardIds, importSuccess, clearImportSuccess } =
-		importManager;
+	const {
+		pendingImportBoardIds,
+		importSuccess,
+		clearImportSuccess,
+		clearPendingImport,
+	} = importManager;
 
 	// Initialization hook
 	const { isInitialized } = useEditorInitialization({
@@ -286,7 +290,10 @@ function EditorPageContent({ featureFlags }: EditorPageContentProps) {
 	return (
 		<>
 			<SettingsStoreProvider>
-				<TabStoreProvider initialBoardIds={pendingImportBoardIds}>
+				<TabStoreProvider
+					initialBoardIds={pendingImportBoardIds}
+					onInitialBoardIdsConsumed={clearPendingImport}
+				>
 					<PanelStoreProvider>
 						<EditorWithTabs
 							boards={boards}

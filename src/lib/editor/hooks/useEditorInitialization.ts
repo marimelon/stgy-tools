@@ -67,13 +67,7 @@ export function useEditorInitialization(
 		key: importKey,
 	} = searchParams;
 	const { openBoard, createNewBoard, currentBoardId } = boardManager;
-	const {
-		importFromUrl,
-		importMultiple,
-		setPendingImport,
-		clearPendingImport,
-		pendingImportBoardIds,
-	} = importManager;
+	const { importFromUrl, importMultiple, setPendingImport } = importManager;
 
 	const [isInitialized, setIsInitialized] = useState(false);
 	const initializingRef = useRef(false);
@@ -151,17 +145,6 @@ export function useEditorInitialization(
 		setPendingImport,
 		navigate,
 	]);
-
-	// Clear pendingImportBoardIds after TabStoreProvider has consumed it
-	useEffect(() => {
-		if (pendingImportBoardIds && isInitialized) {
-			// Clear after a short delay to ensure TabStoreProvider has mounted with the initial state
-			const timer = setTimeout(() => {
-				clearPendingImport();
-			}, 100);
-			return () => clearTimeout(timer);
-		}
-	}, [pendingImportBoardIds, isInitialized, clearPendingImport]);
 
 	return {
 		isInitialized,
