@@ -49,7 +49,20 @@ export function ViewerGrid({
 			const oldIndex = boards.findIndex((b) => b.id === active.id);
 			const newIndex = boards.findIndex((b) => b.id === over.id);
 			if (oldIndex !== -1 && newIndex !== -1) {
+				// Preserve scroll position across reorder (dnd-kit and TanStack Router may reset it)
+				const scrollX = window.scrollX;
+				const scrollY = window.scrollY;
 				onReorder(oldIndex, newIndex);
+				// Monitor and restore scroll position for a period after reorder
+				const handleScroll = () => {
+					if (window.scrollX !== scrollX || window.scrollY !== scrollY) {
+						window.scrollTo(scrollX, scrollY);
+					}
+				};
+				window.addEventListener("scroll", handleScroll);
+				setTimeout(() => {
+					window.removeEventListener("scroll", handleScroll);
+				}, 500);
 			}
 		}
 	};
@@ -59,6 +72,7 @@ export function ViewerGrid({
 			sensors={sensors}
 			collisionDetection={closestCenter}
 			onDragEnd={handleDragEnd}
+			accessibility={{ restoreFocus: false }}
 		>
 			<SortableContext
 				items={boards.map((b) => b.id)}
