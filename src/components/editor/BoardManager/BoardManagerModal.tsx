@@ -34,6 +34,8 @@ export interface BoardManagerModalProps {
 	onOpenBoard: (id: string) => void;
 	onOpenBoards?: (ids: string[]) => void;
 	onCreateNewBoard: () => void;
+	/** Called when boards are deleted to remove their tabs */
+	onRemoveDeletedBoardTabs?: (deletedBoardIds: string[]) => void;
 }
 
 export const BoardManagerModal = NiceModal.create(
@@ -42,6 +44,7 @@ export const BoardManagerModal = NiceModal.create(
 		onOpenBoard,
 		onOpenBoards,
 		onCreateNewBoard,
+		onRemoveDeletedBoardTabs,
 	}: BoardManagerModalProps) => {
 		const { t } = useTranslation();
 		const modal = useModal();
@@ -151,10 +154,16 @@ export const BoardManagerModal = NiceModal.create(
 			if (!folderToDelete) return;
 
 			const boardsInFolder = getBoardsByFolder(folderToDelete.id);
+			const deletedBoardIds = boardsInFolder.map((b) => b.id);
 
 			// Delete all boards in the folder permanently (no undo)
 			for (const board of boardsInFolder) {
 				deleteBoardPermanently(board.id);
+			}
+
+			// Remove deleted boards from tabs
+			if (onRemoveDeletedBoardTabs && deletedBoardIds.length > 0) {
+				onRemoveDeletedBoardTabs(deletedBoardIds);
 			}
 
 			// If current board was in the folder, open another board

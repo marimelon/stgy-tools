@@ -260,4 +260,96 @@ describe("Tab ordering", () => {
 			expect(tabNames[2]).toContain("board3");
 		});
 	});
+
+	describe("onInitialBoardIdsConsumed callback", () => {
+		it("callback is called after initialBoardIds are consumed", async () => {
+			const boards: StoredBoard[] = [
+				createTestBoard("board-1", "Board 1"),
+				createTestBoard("board-2", "Board 2"),
+			];
+
+			const initialBoardIds = ["board-1", "board-2"];
+			const onConsumed = vi.fn();
+
+			const screen = await render(
+				<TabStoreProvider
+					initialBoardIds={initialBoardIds}
+					onInitialBoardIdsConsumed={onConsumed}
+				>
+					<BoardTabs
+						boards={boards}
+						unsavedBoardIds={new Set()}
+						onSelectBoard={vi.fn()}
+						onAddClick={vi.fn()}
+						onDuplicateBoard={vi.fn()}
+					/>
+				</TabStoreProvider>,
+			);
+
+			// Wait for tabs to render
+			await waitFor(() => {
+				const tabs = screen.container.querySelectorAll("[data-tab-id]");
+				expect(tabs.length).toBe(2);
+			});
+
+			// Callback should have been called
+			await waitFor(() => {
+				expect(onConsumed).toHaveBeenCalledTimes(1);
+			});
+		});
+
+		it("callback is not called when initialBoardIds is null", async () => {
+			const boards: StoredBoard[] = [createTestBoard("board-1", "Board 1")];
+
+			const onConsumed = vi.fn();
+
+			await render(
+				<TabStoreProvider
+					initialBoardIds={null}
+					onInitialBoardIdsConsumed={onConsumed}
+				>
+					<BoardTabs
+						boards={boards}
+						unsavedBoardIds={new Set()}
+						onSelectBoard={vi.fn()}
+						onAddClick={vi.fn()}
+						onDuplicateBoard={vi.fn()}
+					/>
+				</TabStoreProvider>,
+			);
+
+			// Wait a bit to ensure callback would have been called if it was going to be
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			// Callback should NOT have been called
+			expect(onConsumed).not.toHaveBeenCalled();
+		});
+
+		it("callback is not called when initialBoardIds is empty array", async () => {
+			const boards: StoredBoard[] = [createTestBoard("board-1", "Board 1")];
+
+			const onConsumed = vi.fn();
+
+			await render(
+				<TabStoreProvider
+					initialBoardIds={[]}
+					onInitialBoardIdsConsumed={onConsumed}
+				>
+					<BoardTabs
+						boards={boards}
+						unsavedBoardIds={new Set()}
+						onSelectBoard={vi.fn()}
+						onAddClick={vi.fn()}
+						onDuplicateBoard={vi.fn()}
+					/>
+				</TabStoreProvider>,
+			);
+
+			// Wait a bit to ensure callback would have been called if it was going to be
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			// Callback should NOT have been called
+			expect(onConsumed).not.toHaveBeenCalled();
+		});
+	});
 });

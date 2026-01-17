@@ -496,7 +496,8 @@ function EditorWithTabs({
 }: EditorWithTabsProps) {
 	const openTabs = useOpenTabs();
 	const activeTabId = useActiveTabId();
-	const { addTab, setInitialTab, replaceAllTabs } = useTabActions();
+	const { addTab, setInitialTab, replaceAllTabs, removeDeletedBoardTab } =
+		useTabActions();
 
 	// Track initial mount to distinguish reload initialization from user actions
 	const isInitialMountRef = useRef(true);
@@ -564,14 +565,38 @@ function EditorWithTabs({
 		[replaceAllTabs, onSelectBoard],
 	);
 
+	// Remove deleted boards from tabs
+	const handleRemoveDeletedBoardTabs = useCallback(
+		(deletedBoardIds: string[]) => {
+			// Find replacement board (first remaining board not being deleted)
+			const remainingBoards = boards.filter(
+				(b) => !deletedBoardIds.includes(b.id),
+			);
+			const replacementId =
+				remainingBoards.length > 0 ? remainingBoards[0].id : undefined;
+
+			for (const boardId of deletedBoardIds) {
+				removeDeletedBoardTab(boardId, replacementId);
+			}
+		},
+		[boards, removeDeletedBoardTab],
+	);
+
 	const handleOpenBoardManager = useCallback(() => {
 		NiceModal.show(BoardManagerModal, {
 			currentBoardId,
 			onOpenBoard: handleOpenBoard,
 			onOpenBoards: handleOpenBoards,
 			onCreateNewBoard,
+			onRemoveDeletedBoardTabs: handleRemoveDeletedBoardTabs,
 		});
-	}, [currentBoardId, handleOpenBoard, handleOpenBoards, onCreateNewBoard]);
+	}, [
+		currentBoardId,
+		handleOpenBoard,
+		handleOpenBoards,
+		onCreateNewBoard,
+		handleRemoveDeletedBoardTabs,
+	]);
 
 	// Set of unsaved board IDs (to be implemented)
 	const unsavedBoardIds = useMemo(() => new Set<string>(), []);

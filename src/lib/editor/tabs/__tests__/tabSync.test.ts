@@ -497,6 +497,132 @@ describe.skip("deleted board tab sync logic (legacy prevBoardIds)", () => {
 	});
 });
 
+describe("folder deletion tab removal", () => {
+	let store: TabStore;
+
+	beforeEach(() => {
+		store = createTabStore();
+	});
+
+	/**
+	 * Simulate handleRemoveDeletedBoardTabs logic from editor.tsx
+	 * This is called when a folder is deleted along with its boards
+	 */
+	function simulateFolderDeletion(params: {
+		deletedBoardIds: string[];
+		remainingBoards: { id: string }[];
+	}) {
+		const { deletedBoardIds, remainingBoards } = params;
+
+		// Find replacement board (first remaining board not being deleted)
+		const replacementId =
+			remainingBoards.length > 0 ? remainingBoards[0].id : undefined;
+
+		for (const boardId of deletedBoardIds) {
+			actions.removeDeletedBoardTab(store, boardId, replacementId);
+		}
+	}
+
+	it("removes all tabs when folder with multiple boards is deleted", () => {
+		// Setup: 5 tabs open, 3 of them are in a folder to be deleted
+		store.setState(() => ({
+			openTabs: ["board-1", "board-2", "board-3", "board-4", "board-5"],
+			activeTabId: "board-2",
+		}));
+
+		// Delete folder containing board-2, board-3, board-4
+		simulateFolderDeletion({
+			deletedBoardIds: ["board-2", "board-3", "board-4"],
+			remainingBoards: [{ id: "board-1" }, { id: "board-5" }],
+		});
+
+		// Only board-1 and board-5 should remain
+		expect(store.state.openTabs).toEqual(["board-1", "board-5"]);
+	});
+
+	it("switches to replacement board when active tab is deleted", () => {
+		store.setState(() => ({
+			openTabs: ["board-1", "board-2", "board-3"],
+			activeTabId: "board-2",
+		}));
+
+		// Delete folder containing board-2
+		simulateFolderDeletion({
+			deletedBoardIds: ["board-2"],
+			remainingBoards: [{ id: "board-1" }, { id: "board-3" }],
+		});
+
+		expect(store.state.openTabs).toEqual(["board-1", "board-3"]);
+		// Active tab should switch to next tab (board-3) or replacement
+		expect(store.state.activeTabId).not.toBe("board-2");
+	});
+
+	it("handles deleting all open tabs with replacement", () => {
+		store.setState(() => ({
+			openTabs: ["board-a", "board-b", "board-c"],
+			activeTabId: "board-a",
+		}));
+
+		// Delete all boards in folder, but there's a remaining board outside
+		simulateFolderDeletion({
+			deletedBoardIds: ["board-a", "board-b", "board-c"],
+			remainingBoards: [{ id: "board-new" }],
+		});
+
+		// Should have the replacement board
+		expect(store.state.openTabs).toEqual(["board-new"]);
+		expect(store.state.activeTabId).toBe("board-new");
+	});
+
+	it("handles empty remaining boards gracefully", () => {
+		store.setState(() => ({
+			openTabs: ["board-1", "board-2"],
+			activeTabId: "board-1",
+		}));
+
+		// Delete all boards (no replacement available)
+		simulateFolderDeletion({
+			deletedBoardIds: ["board-1", "board-2"],
+			remainingBoards: [],
+		});
+
+		// Tabs should be empty
+		expect(store.state.openTabs).toEqual([]);
+		expect(store.state.activeTabId).toBeNull();
+	});
+
+	it("does not affect tabs not in deleted list", () => {
+		store.setState(() => ({
+			openTabs: ["keep-1", "delete-1", "keep-2", "delete-2", "keep-3"],
+			activeTabId: "keep-1",
+		}));
+
+		simulateFolderDeletion({
+			deletedBoardIds: ["delete-1", "delete-2"],
+			remainingBoards: [{ id: "keep-1" }, { id: "keep-2" }, { id: "keep-3" }],
+		});
+
+		expect(store.state.openTabs).toEqual(["keep-1", "keep-2", "keep-3"]);
+		expect(store.state.activeTabId).toBe("keep-1");
+	});
+
+	it("maintains tab order after deletion", () => {
+		store.setState(() => ({
+			openTabs: ["a", "b", "c", "d", "e"],
+			activeTabId: "a",
+		}));
+
+		// Delete b and d
+		simulateFolderDeletion({
+			deletedBoardIds: ["b", "d"],
+			remainingBoards: [{ id: "a" }, { id: "c" }, { id: "e" }],
+		});
+
+		// Order should be preserved: a, c, e
+		expect(store.state.openTabs).toEqual(["a", "c", "e"]);
+	});
+});
+
 describe("initialBoardIds ordering", () => {
 	describe("createTabStore with initial state", () => {
 		it("tabs initialized in order specified by initialState", () => {
