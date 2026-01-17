@@ -77,6 +77,7 @@ export default defineConfig({
 						"@dnd-kit/modifiers",
 						"@dnd-kit/sortable",
 						"@dnd-kit/utilities",
+						"@tanstack/react-router",
 					],
 					exclude: [
 						"@tanstack/react-start",
