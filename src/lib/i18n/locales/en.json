@@ -616,6 +616,15 @@
 			"emptyFolder": "Folder is empty",
 			"openInViewer": "Open in Viewer",
 			"openAllInEditor": "Open All in Tabs"
+		},
+		"selection": {
+			"selectedCount": "{{count}} selected",
+			"clearSelection": "Clear selection",
+			"selectAll": "Select all",
+			"delete": "Delete",
+			"duplicate": "Duplicate",
+			"moveToFolder": "Move to folder",
+			"undoBatchDelete": "Undo delete of {{count}} board(s)"
 		}
 	},
 	"boardTabs": {

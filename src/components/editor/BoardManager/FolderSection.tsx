@@ -12,12 +12,15 @@ interface FolderSectionProps {
 	folder: StoredFolder;
 	boards: StoredBoard[];
 	currentBoardId: string | null;
+	selectedBoardIds?: Set<string>;
+	isSelectionMode?: boolean;
 	onToggleCollapse: () => void;
 	onRenameFolder: (newName: string) => void;
 	onDeleteFolder: () => void;
 	onOpenInViewer?: () => void;
 	onOpenAllInEditor?: () => void;
 	onOpenBoard: (id: string) => void;
+	onSelectBoard?: (id: string, additive: boolean, range: boolean) => void;
 	onRenameBoard: (id: string, newName: string) => void;
 	onDuplicateBoard: (id: string) => void;
 	onDeleteBoard: (id: string) => void;
@@ -39,12 +42,15 @@ export function FolderSection({
 	folder,
 	boards,
 	currentBoardId,
+	selectedBoardIds,
+	isSelectionMode = false,
 	onToggleCollapse,
 	onRenameFolder,
 	onDeleteFolder,
 	onOpenInViewer,
 	onOpenAllInEditor,
 	onOpenBoard,
+	onSelectBoard,
 	onRenameBoard,
 	onDuplicateBoard,
 	onDeleteBoard,
@@ -92,9 +98,12 @@ export function FolderSection({
 						<BoardGrid
 							boards={boards}
 							currentBoardId={currentBoardId}
+							selectedBoardIds={selectedBoardIds}
+							isSelectionMode={isSelectionMode}
 							isLoading={false}
 							searchQuery=""
 							onOpenBoard={onOpenBoard}
+							onSelectBoard={onSelectBoard}
 							onRenameBoard={onRenameBoard}
 							onDuplicateBoard={onDuplicateBoard}
 							onDeleteBoard={onDeleteBoard}

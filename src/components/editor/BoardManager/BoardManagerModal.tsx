@@ -5,7 +5,7 @@
 
 import NiceModal, { useModal } from "@ebay/nice-modal-react";
 import { ArrowUpDown, FolderPlus, Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,7 @@ import { BoardGrid } from "./BoardGrid";
 import { CreateFolderDialog } from "./CreateFolderDialog";
 import { DeleteFolderDialog } from "./DeleteFolderDialog";
 import { FolderSection } from "./FolderSection";
+import { SelectionToolbar } from "./SelectionToolbar";
 import { UndoToast } from "./UndoToast";
 
 export interface BoardManagerModalProps {
@@ -52,6 +53,14 @@ export const BoardManagerModal = NiceModal.create(
 			name: string;
 			boardCount: number;
 		} | null>(null);
+
+		// Selection state
+		const [selectedBoardIds, setSelectedBoardIds] = useState<Set<string>>(
+			new Set(),
+		);
+		const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
+
+		const isSelectionMode = selectedBoardIds.size > 0;
 
 		const {
 			boards,
@@ -202,6 +211,191 @@ export const BoardManagerModal = NiceModal.create(
 		// Get root boards (not in any folder)
 		const rootBoards = getBoardsByFolder(null);
 
+		// Selection handlers
+		const handleClearSelection = useCallback(() => {
+			setSelectedBoardIds(new Set());
+			setLastSelectedId(null);
+		}, []);
+
+		// Clear selection when search or sort changes
+		// biome-ignore lint/correctness/useExhaustiveDependencies: intentionally trigger on searchQuery/sortBy changes
+		useEffect(() => {
+			handleClearSelection();
+		}, [searchQuery, sortBy, handleClearSelection]);
+
+		// Get all visible board IDs in display order (for range selection)
+		const allVisibleBoardIds = useMemo(() => {
+			const ids: string[] = [];
+			// Add folder boards in order (only from non-collapsed folders)
+			for (const folder of folders) {
+				if (!folder.collapsed) {
+					for (const board of getBoardsByFolder(folder.id)) {
+						ids.push(board.id);
+					}
+				}
+			}
+			// Add root boards
+			for (const board of rootBoards) {
+				ids.push(board.id);
+			}
+			return ids;
+		}, [folders, rootBoards, getBoardsByFolder]);
+
+		const handleSelectBoard = useCallback(
+			(boardId: string, additive: boolean, range: boolean) => {
+				if (range && lastSelectedId) {
+					// Shift+click: Select range
+					const startIdx = allVisibleBoardIds.indexOf(lastSelectedId);
+					const endIdx = allVisibleBoardIds.indexOf(boardId);
+					if (startIdx !== -1 && endIdx !== -1) {
+						const rangeIds = allVisibleBoardIds.slice(
+							Math.min(startIdx, endIdx),
+							Math.max(startIdx, endIdx) + 1,
+						);
+						setSelectedBoardIds((prev) => {
+							const next = new Set(prev);
+							for (const id of rangeIds) {
+								next.add(id);
+							}
+							return next;
+						});
+					}
+				} else if (additive) {
+					// Ctrl/Cmd+click or selection mode click: Toggle selection
+					setSelectedBoardIds((prev) => {
+						const next = new Set(prev);
+						if (next.has(boardId)) {
+							next.delete(boardId);
+						} else {
+							next.add(boardId);
+						}
+						return next;
+					});
+					setLastSelectedId(boardId);
+				}
+			},
+			[allVisibleBoardIds, lastSelectedId],
+		);
+
+		const handleSelectAll = useCallback(() => {
+			setSelectedBoardIds(new Set(allVisibleBoardIds));
+		}, [allVisibleBoardIds]);
+
+		// Batch operation handlers (will be connected to useBoards batch functions in Phase 3)
+		const handleBatchDelete = useCallback(() => {
+			if (selectedBoardIds.size === 0) return;
+
+			// Check if current board is being deleted
+			const deletingCurrent =
+				currentBoardId && selectedBoardIds.has(currentBoardId);
+
+			// Delete each board individually (will be replaced with batch function)
+			for (const id of selectedBoardIds) {
+				deleteBoard(id);
+			}
+
+			// Clear selection
+			handleClearSelection();
+
+			// Handle current board deletion
+			if (deletingCurrent) {
+				const remainingBoards = boards.filter(
+					(b) => !selectedBoardIds.has(b.id),
+				);
+				if (remainingBoards.length > 0) {
+					onOpenBoard(remainingBoards[0].id);
+				} else {
+					onCreateNewBoard();
+				}
+			}
+		}, [
+			selectedBoardIds,
+			currentBoardId,
+			boards,
+			deleteBoard,
+			handleClearSelection,
+			onOpenBoard,
+			onCreateNewBoard,
+		]);
+
+		const handleBatchDuplicate = useCallback(() => {
+			if (selectedBoardIds.size === 0) return;
+
+			// Duplicate each board individually (will be replaced with batch function)
+			for (const id of selectedBoardIds) {
+				duplicateBoard(id);
+			}
+
+			// Clear selection after duplicate
+			handleClearSelection();
+		}, [selectedBoardIds, duplicateBoard, handleClearSelection]);
+
+		const handleBatchMoveToFolder = useCallback(
+			(folderId: string | null) => {
+				if (selectedBoardIds.size === 0) return;
+
+				// Move each board individually (will be replaced with batch function)
+				for (const id of selectedBoardIds) {
+					moveBoardToFolder(id, folderId);
+				}
+
+				// Clear selection after move
+				handleClearSelection();
+			},
+			[selectedBoardIds, moveBoardToFolder, handleClearSelection],
+		);
+
+		// Keyboard shortcuts for selection
+		useEffect(() => {
+			const handleKeyDown = (e: KeyboardEvent) => {
+				// Ignore when input focused
+				const target = e.target as HTMLElement;
+				if (
+					target.tagName === "INPUT" ||
+					target.tagName === "TEXTAREA" ||
+					target.isContentEditable
+				) {
+					return;
+				}
+
+				const isMod = e.ctrlKey || e.metaKey;
+
+				// Ctrl/Cmd + A: Select all
+				if (isMod && e.key === "a") {
+					e.preventDefault();
+					handleSelectAll();
+					return;
+				}
+
+				// Escape: Clear selection
+				if (e.key === "Escape") {
+					if (selectedBoardIds.size > 0) {
+						e.preventDefault();
+						handleClearSelection();
+						return;
+					}
+				}
+
+				// Delete/Backspace: Delete selected
+				if (
+					(e.key === "Delete" || e.key === "Backspace") &&
+					selectedBoardIds.size > 0
+				) {
+					e.preventDefault();
+					handleBatchDelete();
+					return;
+				}
+			};
+
+			window.addEventListener("keydown", handleKeyDown);
+			return () => window.removeEventListener("keydown", handleKeyDown);
+		}, [
+			selectedBoardIds,
+			handleSelectAll,
+			handleClearSelection,
+			handleBatchDelete,
+		]);
+
 		const sortOptions: { value: BoardSortOption; label: string }[] = [
 			{ value: "updatedAt", label: t("boardManager.sortByUpdated") },
 			{ value: "createdAt", label: t("boardManager.sortByCreated") },
@@ -294,6 +488,8 @@ export const BoardManagerModal = NiceModal.create(
 										folder={folder}
 										boards={getBoardsByFolder(folder.id)}
 										currentBoardId={currentBoardId}
+										selectedBoardIds={selectedBoardIds}
+										isSelectionMode={isSelectionMode}
 										onToggleCollapse={() => toggleCollapsed(folder.id)}
 										onRenameFolder={(newName) =>
 											handleRenameFolder(folder.id, newName)
@@ -306,6 +502,7 @@ export const BoardManagerModal = NiceModal.create(
 												: undefined
 										}
 										onOpenBoard={handleOpenBoard}
+										onSelectBoard={handleSelectBoard}
 										onRenameBoard={handleRenameBoard}
 										onDuplicateBoard={handleDuplicateBoard}
 										onDeleteBoard={handleDeleteBoard}
@@ -319,9 +516,12 @@ export const BoardManagerModal = NiceModal.create(
 								<BoardGrid
 									boards={rootBoards}
 									currentBoardId={currentBoardId}
+									selectedBoardIds={selectedBoardIds}
+									isSelectionMode={isSelectionMode}
 									isLoading={isLoading}
 									searchQuery={searchQuery}
 									onOpenBoard={handleOpenBoard}
+									onSelectBoard={handleSelectBoard}
 									onRenameBoard={handleRenameBoard}
 									onDuplicateBoard={handleDuplicateBoard}
 									onDeleteBoard={handleDeleteBoard}
@@ -339,6 +539,16 @@ export const BoardManagerModal = NiceModal.create(
 								? t("boardManager.boardCountFiltered", { count: boards.length })
 								: t("boardManager.boardCount", { count: boards.length })}
 						</div>
+
+						{/* Selection toolbar */}
+						<SelectionToolbar
+							selectedCount={selectedBoardIds.size}
+							folders={folders}
+							onClear={handleClearSelection}
+							onDelete={handleBatchDelete}
+							onDuplicate={handleBatchDuplicate}
+							onMoveToFolder={handleBatchMoveToFolder}
+						/>
 					</DialogContent>
 				</Dialog>
 

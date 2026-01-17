@@ -3,6 +3,7 @@
  */
 
 import {
+	Check,
 	ClipboardCopy,
 	Copy,
 	Folder,
@@ -34,7 +35,10 @@ import { BoardThumbnail } from "./BoardThumbnail";
 export interface BoardCardProps {
 	board: StoredBoard;
 	isCurrent: boolean;
+	isSelected?: boolean;
+	isSelectionMode?: boolean;
 	onOpen: () => void;
+	onSelect?: (additive: boolean, range: boolean) => void;
 	onRename: (newName: string) => void;
 	onDuplicate: () => void;
 	onDelete: () => void;
@@ -43,10 +47,16 @@ export interface BoardCardProps {
 	currentFolderId?: string | null;
 }
 
+/** Long press threshold in milliseconds */
+const LONG_PRESS_THRESHOLD_MS = 500;
+
 export function BoardCard({
 	board,
 	isCurrent,
+	isSelected = false,
+	isSelectionMode = false,
 	onOpen,
+	onSelect,
 	onRename,
 	onDuplicate,
 	onDelete,
@@ -59,6 +69,8 @@ export function BoardCard({
 	const [isEditing, setIsEditing] = useState(false);
 	const [editName, setEditName] = useState(board.name);
 	const inputRef = useRef<HTMLInputElement>(null);
+	const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const isLongPressRef = useRef(false);
 
 	// Focus input when editing starts
 	useEffect(() => {
@@ -122,23 +134,122 @@ export function BoardCard({
 		});
 	};
 
+	// Handle click on thumbnail
+	const handleThumbnailClick = (e: React.MouseEvent) => {
+		// In selection mode, toggle selection
+		if (isSelectionMode) {
+			onSelect?.(true, e.shiftKey);
+			return;
+		}
+
+		// Ctrl/Cmd + click: enter selection mode and select
+		const isMod = e.ctrlKey || e.metaKey;
+		if (isMod && onSelect) {
+			onSelect(true, false);
+			return;
+		}
+
+		// Shift + click: range selection
+		if (e.shiftKey && onSelect) {
+			onSelect(false, true);
+			return;
+		}
+
+		// Normal click: open board
+		onOpen();
+	};
+
+	// Long press handlers for touch devices
+	const handlePointerDown = (e: React.PointerEvent) => {
+		// Only handle touch events for long press
+		if (e.pointerType !== "touch") return;
+
+		isLongPressRef.current = false;
+		longPressTimerRef.current = setTimeout(() => {
+			isLongPressRef.current = true;
+			onSelect?.(true, false);
+		}, LONG_PRESS_THRESHOLD_MS);
+	};
+
+	const handlePointerUp = () => {
+		if (longPressTimerRef.current) {
+			clearTimeout(longPressTimerRef.current);
+			longPressTimerRef.current = null;
+		}
+	};
+
+	const handlePointerCancel = () => {
+		if (longPressTimerRef.current) {
+			clearTimeout(longPressTimerRef.current);
+			longPressTimerRef.current = null;
+		}
+	};
+
+	// Handle touch click (prevent opening if long press occurred)
+	const handleTouchClick = (e: React.MouseEvent) => {
+		if (isLongPressRef.current) {
+			e.preventDefault();
+			e.stopPropagation();
+			isLongPressRef.current = false;
+			return;
+		}
+		handleThumbnailClick(e);
+	};
+
+	// Generate card class names
+	const cardClassName = [
+		"group relative rounded-lg border bg-card overflow-hidden transition-all hover:border-primary/50",
+		isCurrent && "ring-2 ring-primary border-primary",
+		isSelected &&
+			"ring-2 ring-blue-500 border-blue-500 bg-blue-50 dark:bg-blue-950/30",
+		isSelectionMode && "cursor-pointer",
+	]
+		.filter(Boolean)
+		.join(" ");
+
 	return (
-		<div
-			className={`group relative rounded-lg border bg-card overflow-hidden transition-all hover:border-primary/50 ${
-				isCurrent ? "ring-2 ring-primary border-primary" : ""
-			}`}
-		>
+		<div className={cardClassName}>
 			{/* Thumbnail */}
 			<button
 				type="button"
-				onClick={onOpen}
-				className="w-full aspect-[4/3] bg-muted cursor-pointer"
+				onClick={handleTouchClick}
+				onPointerDown={handlePointerDown}
+				onPointerUp={handlePointerUp}
+				onPointerCancel={handlePointerCancel}
+				onPointerLeave={handlePointerCancel}
+				className="w-full aspect-[4/3] bg-muted cursor-pointer touch-none"
 			>
 				<BoardThumbnail stgyCode={board.stgyCode} className="w-full h-full" />
 			</button>
 
+			{/* Selection checkbox (always available, visible on hover or when selected/in selection mode) */}
+			{onSelect && (
+				<button
+					type="button"
+					className={`absolute top-2 left-2 z-10 transition-opacity ${
+						isSelectionMode || isSelected
+							? "opacity-100"
+							: "opacity-0 group-hover:opacity-100"
+					}`}
+					onClick={(e) => {
+						e.stopPropagation();
+						onSelect(true, e.shiftKey);
+					}}
+				>
+					<div
+						className={`size-5 rounded border-2 flex items-center justify-center transition-colors ${
+							isSelected
+								? "bg-blue-500 border-blue-500 text-white"
+								: "bg-white/80 border-gray-400 dark:bg-gray-800/80 dark:border-gray-500 hover:border-blue-400"
+						}`}
+					>
+						{isSelected && <Check className="size-3" />}
+					</div>
+				</button>
+			)}
+
 			{/* Current indicator */}
-			{isCurrent && (
+			{isCurrent && !isSelectionMode && (
 				<div className="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-medium bg-primary text-primary-foreground">
 					{t("boardManager.currentBoard")}
 				</div>

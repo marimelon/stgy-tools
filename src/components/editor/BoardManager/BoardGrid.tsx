@@ -9,9 +9,12 @@ import { EmptyState } from "./EmptyState";
 export interface BoardGridProps {
 	boards: StoredBoard[];
 	currentBoardId: string | null;
+	selectedBoardIds?: Set<string>;
+	isSelectionMode?: boolean;
 	isLoading: boolean;
 	searchQuery: string;
 	onOpenBoard: (id: string) => void;
+	onSelectBoard?: (id: string, additive: boolean, range: boolean) => void;
 	onRenameBoard: (id: string, newName: string) => void;
 	onDuplicateBoard: (id: string) => void;
 	onDeleteBoard: (id: string) => void;
@@ -24,9 +27,12 @@ export interface BoardGridProps {
 export function BoardGrid({
 	boards,
 	currentBoardId,
+	selectedBoardIds,
+	isSelectionMode = false,
 	isLoading,
 	searchQuery,
 	onOpenBoard,
+	onSelectBoard,
 	onRenameBoard,
 	onDuplicateBoard,
 	onDeleteBoard,
@@ -60,7 +66,14 @@ export function BoardGrid({
 					key={board.id}
 					board={board}
 					isCurrent={board.id === currentBoardId}
+					isSelected={selectedBoardIds?.has(board.id) ?? false}
+					isSelectionMode={isSelectionMode}
 					onOpen={() => onOpenBoard(board.id)}
+					onSelect={
+						onSelectBoard
+							? (additive, range) => onSelectBoard(board.id, additive, range)
+							: undefined
+					}
 					onRename={(newName) => onRenameBoard(board.id, newName)}
 					onDuplicate={() => onDuplicateBoard(board.id)}
 					onDelete={() => onDeleteBoard(board.id)}

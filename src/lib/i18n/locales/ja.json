@@ -616,6 +616,15 @@
 			"emptyFolder": "フォルダが空です",
 			"openInViewer": "Viewerで開く",
 			"openAllInEditor": "すべてタブで開く"
+		},
+		"selection": {
+			"selectedCount": "{{count}}件選択中",
+			"clearSelection": "選択解除",
+			"selectAll": "全選択",
+			"delete": "削除",
+			"duplicate": "複製",
+			"moveToFolder": "フォルダに移動",
+			"undoBatchDelete": "{{count}}件のボードの削除を取り消し"
 		}
 	},
 	"boardTabs": {
