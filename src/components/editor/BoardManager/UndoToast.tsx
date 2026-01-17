@@ -8,22 +8,34 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 export interface UndoToastProps {
-	boardName: string;
+	/** Board name (for single delete) */
+	boardName?: string;
+	/** Number of boards deleted (for batch delete) */
+	deletedCount?: number;
 	onUndo: () => void;
 	onDismiss: () => void;
 }
 
-export function UndoToast({ boardName, onUndo, onDismiss }: UndoToastProps) {
+export function UndoToast({
+	boardName,
+	deletedCount,
+	onUndo,
+	onDismiss,
+}: UndoToastProps) {
 	const { t } = useTranslation();
+
+	// Determine message based on single or batch delete
+	const message =
+		deletedCount && deletedCount > 1
+			? t("boardManager.selection.undoBatchDelete", { count: deletedCount })
+			: t("boardManager.undoDelete", { name: boardName });
 
 	return createPortal(
 		<div
 			className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg bg-foreground text-background shadow-lg animate-in slide-in-from-bottom-4 fade-in duration-200"
 			onPointerDown={(e) => e.stopPropagation()}
 		>
-			<span className="text-sm">
-				{t("boardManager.undoDelete", { name: boardName })}
-			</span>
+			<span className="text-sm">{message}</span>
 			<Button
 				variant="secondary"
 				size="sm"

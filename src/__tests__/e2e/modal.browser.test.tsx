@@ -600,5 +600,286 @@ describe("Modal E2E", () => {
 			// Test passes if undo button was clickable (no error occurred)
 			expect(true).toBe(true);
 		});
+
+		describe("Multi-selection", () => {
+			it("shows checkbox on hover", async () => {
+				const screen = await render(
+					<BoardManagerTestProviders>
+						<BoardManagerTestSetup />
+					</BoardManagerTestProviders>,
+				);
+
+				// Set up boards
+				const trigger = screen.getByTestId("open-board-manager");
+				await userEvent.click(trigger);
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				// Open modal
+				await userEvent.click(trigger);
+				await expect.element(screen.getByRole("dialog")).toBeVisible();
+
+				// Find board cards
+				const boardCards = screen.container.querySelectorAll(
+					".group.relative.rounded-lg",
+				);
+				expect(boardCards.length).toBeGreaterThan(0);
+
+				// Hover over a card to show checkbox
+				await userEvent.hover(boardCards[0] as HTMLElement);
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
+				// Checkbox should be visible (size-5 rounded border-2)
+				const checkbox = boardCards[0].querySelector(
+					".size-5.rounded.border-2",
+				);
+				expect(checkbox).toBeTruthy();
+			});
+
+			it("enters selection mode on Ctrl+click", async () => {
+				const screen = await render(
+					<BoardManagerTestProviders>
+						<BoardManagerTestSetup />
+					</BoardManagerTestProviders>,
+				);
+
+				// Set up boards
+				const trigger = screen.getByTestId("open-board-manager");
+				await userEvent.click(trigger);
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				// Open modal
+				await userEvent.click(trigger);
+				await expect.element(screen.getByRole("dialog")).toBeVisible();
+
+				// Find thumbnail buttons
+				const boardThumbnails = screen.container.querySelectorAll(
+					"button.aspect-\\[4\\/3\\]",
+				);
+				expect(boardThumbnails.length).toBeGreaterThan(0);
+
+				// Ctrl+click to select
+				await userEvent.click(boardThumbnails[0] as HTMLElement, {
+					modifiers: ["Control"],
+				});
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
+				// Selection toolbar should appear
+				const selectionToolbar = screen.container.querySelector(
+					".shrink-0.bg-background.border-t",
+				);
+				expect(selectionToolbar).toBeTruthy();
+
+				// Should show "1件選択中" or "1 selected"
+				const selectedText = screen.getByText(/1.*選択|1.*selected/i);
+				expect(selectedText).toBeTruthy();
+			});
+
+			it("selects multiple boards with Ctrl+click", async () => {
+				const screen = await render(
+					<BoardManagerTestProviders>
+						<BoardManagerTestSetup />
+					</BoardManagerTestProviders>,
+				);
+
+				// Set up boards
+				const trigger = screen.getByTestId("open-board-manager");
+				await userEvent.click(trigger);
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				// Open modal
+				await userEvent.click(trigger);
+				await expect.element(screen.getByRole("dialog")).toBeVisible();
+
+				// Find thumbnail buttons
+				const boardThumbnails = screen.container.querySelectorAll(
+					"button.aspect-\\[4\\/3\\]",
+				);
+				expect(boardThumbnails.length).toBeGreaterThan(1);
+
+				// Ctrl+click first board
+				await userEvent.click(boardThumbnails[0] as HTMLElement, {
+					modifiers: ["Control"],
+				});
+				await new Promise((resolve) => setTimeout(resolve, 50));
+
+				// Ctrl+click second board
+				await userEvent.click(boardThumbnails[1] as HTMLElement, {
+					modifiers: ["Control"],
+				});
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
+				// Should show "2件選択中" or "2 selected"
+				const selectedText = screen.getByText(/2.*選択|2.*selected/i);
+				expect(selectedText).toBeTruthy();
+			});
+
+			it("clears selection on clear button click", async () => {
+				const screen = await render(
+					<BoardManagerTestProviders>
+						<BoardManagerTestSetup />
+					</BoardManagerTestProviders>,
+				);
+
+				// Set up boards
+				const trigger = screen.getByTestId("open-board-manager");
+				await userEvent.click(trigger);
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				// Open modal
+				await userEvent.click(trigger);
+				await expect.element(screen.getByRole("dialog")).toBeVisible();
+
+				// Ctrl+click to select a board
+				const boardThumbnails = screen.container.querySelectorAll(
+					"button.aspect-\\[4\\/3\\]",
+				);
+				await userEvent.click(boardThumbnails[0] as HTMLElement, {
+					modifiers: ["Control"],
+				});
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
+				// Click clear selection button
+				const clearButton = screen.getByRole("button", {
+					name: /clear|選択解除/i,
+				});
+				await userEvent.click(clearButton);
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
+				// Selection toolbar should disappear
+				const selectionToolbar = screen.container.querySelector(
+					".shrink-0.bg-background.border-t",
+				);
+				expect(selectionToolbar).toBeFalsy();
+			});
+
+			it("clears selection on Escape key", async () => {
+				const screen = await render(
+					<BoardManagerTestProviders>
+						<BoardManagerTestSetup />
+					</BoardManagerTestProviders>,
+				);
+
+				// Set up boards
+				const trigger = screen.getByTestId("open-board-manager");
+				await userEvent.click(trigger);
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				// Open modal
+				await userEvent.click(trigger);
+				await expect.element(screen.getByRole("dialog")).toBeVisible();
+
+				// Ctrl+click to select
+				const boardThumbnails = screen.container.querySelectorAll(
+					"button.aspect-\\[4\\/3\\]",
+				);
+				await userEvent.click(boardThumbnails[0] as HTMLElement, {
+					modifiers: ["Control"],
+				});
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
+				// Press Escape to clear selection
+				await userEvent.keyboard("{Escape}");
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
+				// Selection should be cleared (toolbar hidden)
+				const selectionToolbar = screen.container.querySelector(
+					".shrink-0.bg-background.border-t",
+				);
+				expect(selectionToolbar).toBeFalsy();
+			});
+
+			it("batch deletes selected boards", async () => {
+				const screen = await render(
+					<BoardManagerTestProviders>
+						<BoardManagerTestSetup />
+					</BoardManagerTestProviders>,
+				);
+
+				// Set up boards
+				const trigger = screen.getByTestId("open-board-manager");
+				await userEvent.click(trigger);
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				// Open modal
+				await userEvent.click(trigger);
+				await expect.element(screen.getByRole("dialog")).toBeVisible();
+
+				// Ctrl+click to select first board
+				const boardThumbnails = screen.container.querySelectorAll(
+					"button.aspect-\\[4\\/3\\]",
+				);
+				await userEvent.click(boardThumbnails[0] as HTMLElement, {
+					modifiers: ["Control"],
+				});
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
+				// Click batch delete button
+				const deleteButton = screen.getByRole("button", {
+					name: /削除|delete/i,
+				});
+				// Find the one in SelectionToolbar (has destructive class)
+				const destructiveButtons = screen.container.querySelectorAll(
+					"button[class*='destructive']",
+				);
+				if (destructiveButtons.length > 0) {
+					await userEvent.click(destructiveButtons[0] as HTMLElement);
+				} else {
+					await userEvent.click(deleteButton);
+				}
+				await new Promise((resolve) => setTimeout(resolve, 300));
+
+				// Undo toast should appear
+				const undoButton = screen.getByRole("button", {
+					name: /undo|元に戻す/i,
+				});
+				expect(undoButton).toBeTruthy();
+			});
+
+			it("shows batch undo message for multiple deleted boards", async () => {
+				const screen = await render(
+					<BoardManagerTestProviders>
+						<BoardManagerTestSetup />
+					</BoardManagerTestProviders>,
+				);
+
+				// Set up boards
+				const trigger = screen.getByTestId("open-board-manager");
+				await userEvent.click(trigger);
+				await new Promise((resolve) => setTimeout(resolve, 200));
+
+				// Open modal
+				await userEvent.click(trigger);
+				await expect.element(screen.getByRole("dialog")).toBeVisible();
+
+				// Ctrl+click to select both boards
+				const boardThumbnails = screen.container.querySelectorAll(
+					"button.aspect-\\[4\\/3\\]",
+				);
+				expect(boardThumbnails.length).toBeGreaterThan(1);
+
+				await userEvent.click(boardThumbnails[0] as HTMLElement, {
+					modifiers: ["Control"],
+				});
+				await new Promise((resolve) => setTimeout(resolve, 50));
+				await userEvent.click(boardThumbnails[1] as HTMLElement, {
+					modifiers: ["Control"],
+				});
+				await new Promise((resolve) => setTimeout(resolve, 100));
+
+				// Click batch delete button
+				const destructiveButtons = screen.container.querySelectorAll(
+					"button[class*='destructive']",
+				);
+				expect(destructiveButtons.length).toBeGreaterThan(0);
+				await userEvent.click(destructiveButtons[0] as HTMLElement);
+				await new Promise((resolve) => setTimeout(resolve, 300));
+
+				// Should show batch delete message "2件のボードの削除を取り消し"
+				const batchUndoText = screen.getByText(
+					/2.*ボード.*削除|delete.*2.*board/i,
+				);
+				expect(batchUndoText).toBeTruthy();
+			});
+		});
 	});
 });

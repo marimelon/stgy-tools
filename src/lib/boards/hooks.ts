@@ -130,7 +130,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		[data, searchQuery, sortBy, sortDirection],
 	);
 
-	const [deletedBoard, setDeletedBoard] = useState<StoredBoard | null>(null);
+	const [deletedBoards, setDeletedBoards] = useState<StoredBoard[]>([]);
 	const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	// Clear undo timeout on unmount
@@ -228,15 +228,48 @@ export function useBoards(options: UseBoardsOptions = {}) {
 				clearTimeout(undoTimeoutRef.current);
 			}
 
-			// Store for undo
-			setDeletedBoard(boardToDelete);
+			// Store for undo (single board as array)
+			setDeletedBoards([boardToDelete]);
 
 			// Delete from collection
 			collection.delete(id);
 
 			// Set timeout to clear undo
 			undoTimeoutRef.current = setTimeout(() => {
-				setDeletedBoard(null);
+				setDeletedBoards([]);
+			}, UNDO_TIMEOUT_MS);
+		},
+		[boards, collection],
+	);
+
+	// Delete multiple boards (with undo support for all)
+	const deleteBoardsBatch = useCallback(
+		(ids: string[]) => {
+			if (ids.length === 0) return;
+
+			// Find all boards before deleting
+			const boardsToDelete = ids
+				.map((id) => boards.find((b) => b.id === id))
+				.filter((b): b is StoredBoard => b !== undefined);
+
+			if (boardsToDelete.length === 0) return;
+
+			// Clear previous undo timeout
+			if (undoTimeoutRef.current) {
+				clearTimeout(undoTimeoutRef.current);
+			}
+
+			// Store all for undo
+			setDeletedBoards(boardsToDelete);
+
+			// Delete all from collection
+			for (const board of boardsToDelete) {
+				collection.delete(board.id);
+			}
+
+			// Set timeout to clear undo
+			undoTimeoutRef.current = setTimeout(() => {
+				setDeletedBoards([]);
 			}, UNDO_TIMEOUT_MS);
 		},
 		[boards, collection],
@@ -251,7 +284,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 	);
 
 	const undoDelete = useCallback(() => {
-		if (!deletedBoard) return;
+		if (deletedBoards.length === 0) return;
 
 		// Clear timeout
 		if (undoTimeoutRef.current) {
@@ -259,12 +292,14 @@ export function useBoards(options: UseBoardsOptions = {}) {
 			undoTimeoutRef.current = null;
 		}
 
-		// Re-insert the board
-		collection.insert(deletedBoard);
+		// Re-insert all boards
+		for (const board of deletedBoards) {
+			collection.insert(board);
+		}
 
 		// Clear undo state
-		setDeletedBoard(null);
-	}, [deletedBoard, collection]);
+		setDeletedBoards([]);
+	}, [deletedBoards, collection]);
 
 	// Dismiss undo toast
 	const dismissUndo = useCallback(() => {
@@ -272,7 +307,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 			clearTimeout(undoTimeoutRef.current);
 			undoTimeoutRef.current = null;
 		}
-		setDeletedBoard(null);
+		setDeletedBoards([]);
 	}, []);
 
 	// Duplicate a board
@@ -453,6 +488,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		createBoard,
 		updateBoard,
 		deleteBoard,
+		deleteBoardsBatch,
 		deleteBoardPermanently,
 		duplicateBoard,
 		getBoard,
@@ -465,7 +501,7 @@ export function useBoards(options: UseBoardsOptions = {}) {
 		moveBoardToFolder,
 		getBoardsByFolder,
 		// Undo support
-		deletedBoard,
+		deletedBoards,
 		undoDelete,
 		dismissUndo,
 	};

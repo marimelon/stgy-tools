@@ -67,11 +67,12 @@ export const BoardManagerModal = NiceModal.create(
 			isLoading: isBoardsLoading,
 			updateBoard,
 			deleteBoard,
+			deleteBoardsBatch,
 			deleteBoardPermanently,
 			duplicateBoard,
 			moveBoardToFolder,
 			getBoardsByFolder,
-			deletedBoard,
+			deletedBoards,
 			undoDelete,
 			dismissUndo,
 		} = useBoards({
@@ -289,10 +290,8 @@ export const BoardManagerModal = NiceModal.create(
 			const deletingCurrent =
 				currentBoardId && selectedBoardIds.has(currentBoardId);
 
-			// Delete each board individually (will be replaced with batch function)
-			for (const id of selectedBoardIds) {
-				deleteBoard(id);
-			}
+			// Delete all selected boards at once (with batch undo support)
+			deleteBoardsBatch(Array.from(selectedBoardIds));
 
 			// Clear selection
 			handleClearSelection();
@@ -312,7 +311,7 @@ export const BoardManagerModal = NiceModal.create(
 			selectedBoardIds,
 			currentBoardId,
 			boards,
-			deleteBoard,
+			deleteBoardsBatch,
 			handleClearSelection,
 			onOpenBoard,
 			onCreateNewBoard,
@@ -553,9 +552,10 @@ export const BoardManagerModal = NiceModal.create(
 				</Dialog>
 
 				{/* Undo toast */}
-				{deletedBoard && (
+				{deletedBoards.length > 0 && (
 					<UndoToast
-						boardName={deletedBoard.name}
+						boardName={deletedBoards[0].name}
+						deletedCount={deletedBoards.length}
 						onUndo={undoDelete}
 						onDismiss={dismissUndo}
 					/>
