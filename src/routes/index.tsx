@@ -452,6 +452,7 @@ function ViewerContent({
 	const [isCreateGroupDialogOpen, setIsCreateGroupDialogOpen] = useState(false);
 	const stgyInputId = useId();
 	const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
 	// Group edit hook
 	const stgyCodesForEdit = useMemo(
@@ -694,6 +695,26 @@ function ViewerContent({
 		[shouldUpdateUrl, groupInfo],
 	);
 
+	const handleInputFocus = useCallback(() => {
+		const textarea = textareaRef.current;
+		if (!textarea) return;
+
+		// Ensure trailing newline and move cursor to end
+		const value = textarea.value;
+		const newValue =
+			value.endsWith("\n") || value === "" ? value : `${value}\n`;
+
+		if (newValue !== value) {
+			setStgyInput(newValue);
+		}
+
+		// Move cursor to end and scroll to bottom (after React re-render)
+		requestAnimationFrame(() => {
+			textarea.setSelectionRange(newValue.length, newValue.length);
+			textarea.scrollTop = textarea.scrollHeight;
+		});
+	}, []);
+
 	// Auto-decode and URL update on input change (debounced)
 	useEffect(() => {
 		if (debounceTimerRef.current) {
@@ -838,9 +859,11 @@ function ViewerContent({
 							)}
 						</div>
 						<Textarea
+							ref={textareaRef}
 							id={stgyInputId}
 							value={stgyInput}
 							onChange={handleInputChange}
+							onFocus={handleInputFocus}
 							className={
 								groupEdit.isEditMode
 									? "h-24 font-mono text-sm"
