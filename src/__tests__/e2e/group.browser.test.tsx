@@ -142,8 +142,8 @@ describe("Group E2E", () => {
 			// Wait for async operation
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
-			// onConfirm should be called with the key (trimmed)
-			expect(onConfirm).toHaveBeenCalledWith("mySecretKey12345");
+			// onConfirm should be called with the key (trimmed) and shouldSave (default true)
+			expect(onConfirm).toHaveBeenCalledWith("mySecretKey12345", true);
 
 			// Dialog should close on success
 			await new Promise((resolve) => setTimeout(resolve, 300));
@@ -300,8 +300,8 @@ describe("Group E2E", () => {
 			// Wait for async operation
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
-			// onConfirm should be called
-			expect(onConfirm).toHaveBeenCalledWith("myKey12345");
+			// onConfirm should be called with key and shouldSave (default true)
+			expect(onConfirm).toHaveBeenCalledWith("myKey12345", true);
 		});
 
 		it("does not submit on Enter when input is empty", async () => {
@@ -351,8 +351,8 @@ describe("Group E2E", () => {
 			// Wait for async operation
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
-			// onConfirm should be called with trimmed key
-			expect(onConfirm).toHaveBeenCalledWith("myKey12345");
+			// onConfirm should be called with trimmed key and shouldSave (default true)
+			expect(onConfirm).toHaveBeenCalledWith("myKey12345", true);
 		});
 
 		it("shows loading state during verification", async () => {
